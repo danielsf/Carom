@@ -34,7 +34,7 @@ ff = gfortran -O3
 #ff = /opt/local/bin/gfortran-mp-4.8 -O3 -g
 
 object/containers.o: src/containers.cpp include/containers.h
-	$(gg) -c -o object/containers.o src/containers.cpp
+	$(gg) -c -o object/containers.o src/containers.cpp $(INCLUDE)
 
 object/goto_tools.o: include/goto_tools.h src/goto_tools.cpp object/containers.o
 	$(gg) -c -o object/goto_tools.o src/goto_tools.cpp $(INCLUDE)
@@ -57,6 +57,4 @@ all:
 	make s_curve_multinest_analysis
 	make coverage
 clean:
-	rm *.o test_containers test_kd test_box test_eigen ellipse \
-	aps_extract s_curve s_control s_curve_analysis \
-	s_curve_mcmc_analysis s_curve_mcmc_analysis coverage
+	rm object/*.o bin/test_containers
