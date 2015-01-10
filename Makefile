@@ -60,10 +60,19 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
 	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
 
+object/aps_extractor.o: src/analysis/aps_extractor.cpp include/aps_extractor.h object/goto_tools.o
+	$(gg) -c -o object/aps_extractor.o src/analysis/aps_extractor.cpp
+
+s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_extractor.o
+	$(gg) -o bin/s_curve_analysis src/analysis/s_curve_analyzer.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o object/chisq.o \
+	$(LIBRARIES)
+
 all:
 	make test_containers
 	make test_kd
 	make test_eigen
+	make s_curve_analysis
 
 clean:
-	rm object/*.o bin/test_containers bin/test_kd bin/test_eigen
+	rm object/*.o bin/*

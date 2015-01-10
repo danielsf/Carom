@@ -6,6 +6,7 @@
 
 #define chisq_exception 1.0e30
 
+enum{iAPS,iSimplex,iCompass,iBisect,iNodeBisect,iRicochet,iCoulomb};
 
 void kill(char*);
 
