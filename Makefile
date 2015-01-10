@@ -26,33 +26,41 @@ WMAP_LIBRARIES = $(LIBRARIES) $(WMAP_LIB) $(CAMB_LIB) $(CFITSIO_LIB)
 WMAP_INCLUDE = $(INCLUDE) $(CAMB_INC) $(WMAP_INC)
 
 #do not use these compilers with omp
-gg = g++ -Wno-write-strings -O3
+gg = g++ -Wno-write-strings -O3 $(INCLUDE)
 ff = gfortran -O3
 
 #use these compilers if you are going to use omp
 #gg = /opt/local/bin/g++-mp-4.8 -Wno-write-strings -O3 -fopenmp -DUSE_OPENMP -g
 #ff = /opt/local/bin/gfortran-mp-4.8 -O3 -g
 
-object/containers.o: src/containers.cpp include/containers.h
-	$(gg) -c -o object/containers.o src/containers.cpp $(INCLUDE)
+object/containers.o: src/utils/containers.cpp include/containers.h
+	$(gg) -c -o object/containers.o src/utils/containers.cpp
 
-object/goto_tools.o: include/goto_tools.h src/goto_tools.cpp object/containers.o
-	$(gg) -c -o object/goto_tools.o src/goto_tools.cpp $(INCLUDE)
+object/goto_tools.o: include/goto_tools.h src/utils/goto_tools.cpp object/containers.o
+	$(gg) -c -o object/goto_tools.o src/utils/goto_tools.cpp
 
-test_containers: object/containers.o src/test_containers.cpp object/goto_tools.o
-	$(gg) -o bin/test_containers src/test_containers.cpp object/containers.o \
-        object/goto_tools.o $(INCLUDE) $(LIBRARIES)
+test_containers: object/containers.o src/tests/test_containers.cpp object/goto_tools.o
+	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
+        object/goto_tools.o $(LIBRARIES)
 
-object/kd.o: src/kd.cpp include/kd.h object/containers.o object/goto_tools.o
-	$(gg) -c -o object/kd.o src/kd.cpp $(INCLUDE)
+object/kd.o: src/utils/kd.cpp include/kd.h object/containers.o object/goto_tools.o
+	$(gg) -c -o object/kd.o src/utils/kd.cpp
 
-test_kd: src/test_kd.cpp object/kd.o
-	$(gg) -o bin/test_kd src/test_kd.cpp object/containers.o object/goto_tools.o \
-	object/kd.o $(INCLUDE) $(LIBRARIES)
+test_kd: src/tests/test_kd.cpp object/kd.o
+	$(gg) -o bin/test_kd src/tests/test_kd.cpp object/containers.o object/goto_tools.o \
+	object/kd.o $(LIBRARIES)
+
+object/eigen_wrapper.o: src/utils/eigen_wrapper.cpp include/eigen_wrapper.h object/goto_tools.o
+	$(gg) -c -o object/eigen_wrapper.o src/utils/eigen_wrapper.cpp
+
+test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
+	$(gg) -o bin/test_eigen src/tests/test_eigen.cpp object/containers.o object/goto_tools.o \
+	object/eigen_wrapper.o $(LIBRARIES)
 
 all:
 	make test_containers
 	make test_kd
+	make test_eigen
 
 clean:
-	rm object/*.o bin/test_containers bin/test_kd
+	rm object/*.o bin/test_containers bin/test_kd bin/test_eigen
