@@ -112,7 +112,7 @@ void chisq_wrapper::set_deltachi(double xx){
     _deltachi=xx;
 }
 
-void chisq_wrapper::initialize(int npts, int dim){
+void chisq_wrapper::initialize(int npts){
     if(_chifn==NULL){
         printf("WARNING calling chisq_wrapper_initialize with null chifn\n");
         exit(1);
@@ -123,16 +123,16 @@ void chisq_wrapper::initialize(int npts, int dim){
         exit(1);
     }
     
-    if(_range_min.get_dim()!=dim){
+    if(_range_min.get_dim()!=_chifn->get_dim()){
         printf("WARNING chisq_wrapper_initialize dim %d range_min %d\n",
-        dim,_range_min.get_dim());
+        _chifn->get_dim(),_range_min.get_dim());
         
         exit(1);
     }
     
-    if(_range_max.get_dim()!=dim){
+    if(_range_max.get_dim()!=_chifn->get_dim()){
         printf("WARNING chisq_wrapper_initialize dim %d range_max %d\n",
-        dim,_range_max.get_dim());
+        _chifn->get_dim(),_range_max.get_dim());
         
         exit(1);
     }
@@ -150,9 +150,9 @@ void chisq_wrapper::initialize(int npts, int dim){
     double mu;
     
     _fn.reset();
-    data.set_cols(dim);
+    data.set_cols(_chifn->get_dim());
     for(i=0;i<npts;i++){
-        for(j=0;j<dim;j++){
+        for(j=0;j<_chifn->get_dim();j++){
             vv.set(j,_range_min.get_data(j)+_dice->doub()*(_range_max.get_data(j)-_range_min.get_data(j)));
         }
         mu=_chifn[0](vv);
@@ -168,7 +168,7 @@ void chisq_wrapper::initialize(int npts, int dim){
     array_1d<double> temp_max,temp_min;
     temp_max.set_name("chisq_wrapper_initialize_temp_max");
     temp_min.set_name("chisq_wrapper_initialize_temp_min");
-    for(i=0;i<dim;i++){
+    for(i=0;i<_chifn->get_dim();i++){
         if(_characteristic_length.get_dim()>i && _characteristic_length.get_data(i)>0.0){
             temp_min.set(i,0.0);
             temp_max.set(i,_characteristic_length.get_data(i));
@@ -218,6 +218,12 @@ void chisq_wrapper::is_it_safe(char *word){
     if(_fn.get_dim()!=_kptr->get_pts()){
         printf("WARNING in chisq_wrapper::%s\n",word);
         printf("fn dim %d kptr pts %d\n",_fn.get_dim(),_kptr->get_pts());
+        exit(1);
+    }
+    
+    if(_chifn->get_dim()!=_kptr->get_dim()){
+        printf("WARNING in chisq_wrapper::%s\n",word);
+        printf("chifn dim %d kptr %d\n",_chifn->get_dim(),_kptr->get_dim());
         exit(1);
     }
 }
@@ -289,6 +295,11 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
 int chisq_wrapper::get_pts(){
     is_it_safe("get_pts");
     return _kptr->get_pts();
+}
+
+int chisq_wrapper::get_dim(){
+    is_it_safe("get_dim");
+    return _kptr->get_dim();
 }
 
 double chisq_wrapper::random_double(){

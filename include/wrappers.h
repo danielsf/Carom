@@ -24,7 +24,7 @@ public:
     chisq_wrapper();
     ~chisq_wrapper();
     
-    void initialize(int,int);
+    void initialize(int);
     
     void set_chisquared(chisquared*);
     
@@ -37,9 +37,10 @@ public:
     void set_min(array_1d<double>&);
     void set_max(array_1d<double>&);
     void set_ddmin(double);
-
+    
     double target();
     int get_pts();
+    int get_dim();
     
     double random_double();
     int random_int();
