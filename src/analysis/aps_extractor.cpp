@@ -3,7 +3,7 @@
 aps_extractor::aps_extractor(){
     chi_min=-1.0;
     chi_target=-1.0;
-    delta_chi = chisq_exception;
+    delta_chi=exception_value;
     filename[0]=0;
     nparams=-1;
     asserted=0;
@@ -295,7 +295,7 @@ void aps_extractor::make_boxes(){
     /*read in the data (the raw APS outputs)*/
     input=fopen(filename,"r");
     for(i=0;i<nparams+extra_words;i++)fscanf(input,"%s",word);
-    double nn,chimin=chisq_exception;
+    double nn,chimin=exception_value;
     while(fscanf(input,"%le",&nn)>0 && (ct<cutoff || cutoff<0)){
         ct++;
         vv.set(0,nn);
@@ -358,8 +358,8 @@ void aps_extractor::make_boxes(){
         }
         
         for(j=0;j<nparams;j++){
-            box_max.set(i,j,2.0*chisq_exception);
-            box_min.set(i,j,2.0*chisq_exception);
+            box_max.set(i,j,2.0*exception_value);
+            box_min.set(i,j,2.0*exception_value);
         }
         
         /*iterate over the neighbors, trying to set bounds on the hyberbox*/
@@ -378,7 +378,7 @@ void aps_extractor::make_boxes(){
             found_it=0;
             for(k=nparams-1;k>0 && found_it==0;){
                 if(data.get_data(neigh.get_data(j),r_dex.get_data(k))<data.get_data(i,r_dex.get_data(k)) &&
-                   box_min.get_data(i,r_dex.get_data(k))>=chisq_exception){
+                   box_min.get_data(i,r_dex.get_data(k))>=exception_value){
                    
                    /*this neighbor is useful for setting a minimum of the hyperbox*/
 
@@ -386,7 +386,7 @@ void aps_extractor::make_boxes(){
               
                 }
                 else if(data.get_data(neigh.get_data(j),r_dex.get_data(k))>data.get_data(i,r_dex.get_data(k)) &&
-                   box_max.get_data(i,r_dex.get_data(k))>=chisq_exception){
+                   box_max.get_data(i,r_dex.get_data(k))>=exception_value){
                     
                     /*this neighbor is useful for setting a maximum of the hyperbox*/
                     
@@ -402,12 +402,12 @@ void aps_extractor::make_boxes(){
                 bound*/
                 
                 if(data.get_data(neigh.get_data(j),r_dex.get_data(k))>data.get_data(i,r_dex.get_data(k)) &&
-                   box_max.get_data(i,r_dex.get_data(k))>=chisq_exception){
+                   box_max.get_data(i,r_dex.get_data(k))>=exception_value){
                
                        found_it=1;
                 }
                 if(data.get_data(neigh.get_data(j),r_dex.get_data(k))<data.get_data(i,r_dex.get_data(k)) &&
-                   box_min.get_data(i,r_dex.get_data(k))>=chisq_exception){
+                   box_min.get_data(i,r_dex.get_data(k))>=exception_value){
               
                     found_it=1;
                
@@ -437,19 +437,19 @@ void aps_extractor::make_boxes(){
         }
         
         for(k=0;k<nparams;k++){
-            if(box_max.get_data(i,k)>=chisq_exception && box_min.get_data(i,k)>=chisq_exception){
+            if(box_max.get_data(i,k)>=exception_value && box_min.get_data(i,k)>=exception_value){
                 for(j=0;j<n_neigh;j++){
                     nn=data.get_data(neigh.get_data(j),k);
                    
                     
                     if(nn<data.get_data(i,k)-1.0e-10*(kd.get_max(k)-kd.get_min(k))){
-                        if(box_min.get_data(i,k)>=chisq_exception || nn>box_min.get_data(i,k)){
+                        if(box_min.get_data(i,k)>=exception_value || nn>box_min.get_data(i,k)){
                             box_min.set(i,k,nn);
                         }
                     }
                     
                     if(nn>data.get_data(i,k)+1.0e-10*(kd.get_max(k)-kd.get_min(k))){
-                        if(box_max.get_data(i,k)>=chisq_exception || nn<box_max.get_data(i,k)){
+                        if(box_max.get_data(i,k)>=exception_value || nn<box_max.get_data(i,k)){
                             box_max.set(i,k,nn);
                         }
                     }
@@ -458,7 +458,7 @@ void aps_extractor::make_boxes(){
         }
         
         for(k=0;k<nparams;k++){
-            if(box_max.get_data(i,k)>=chisq_exception && box_min.get_data(i,k)>=chisq_exception){
+            if(box_max.get_data(i,k)>=exception_value && box_min.get_data(i,k)>=exception_value){
                 printf("WARNING failed to find a bound %d %d %e %e\n",i,k,box_min.get_data(i,k),box_max.get_data(i,k));
                 printf("chisq %e\n",chisq.get_data(i));
                 for(j=0;j<n_neigh;j++){
@@ -467,11 +467,11 @@ void aps_extractor::make_boxes(){
                 
                 exit(1);
             }
-            else if(box_max.get_data(i,k)>=chisq_exception && box_min.get_data(i,k)<chisq_exception){
+            else if(box_max.get_data(i,k)>=exception_value && box_min.get_data(i,k)<exception_value){
                 box_max.set(i,k,2.0*data.get_data(i,k)-box_min.get_data(i,k));
             
             }
-            else if(box_min.get_data(i,k)>=chisq_exception && box_max.get_data(i,k)<chisq_exception){
+            else if(box_min.get_data(i,k)>=exception_value && box_max.get_data(i,k)<exception_value){
                 box_min.set(i,k,2.0*data.get_data(i,k)-box_max.get_data(i,k));
             
             }
