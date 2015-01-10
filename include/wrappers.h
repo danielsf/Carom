@@ -45,6 +45,7 @@ public:
     int random_int();
 
     void evaluate(array_1d<double>&, double*, int*);
+    virtual double operator()(array_1d<double>&);
     double get_fn(int);
     double get_pt(int,int);
     

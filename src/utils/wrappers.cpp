@@ -256,6 +256,13 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
     
 }
 
+double chisq_wrapper::operator()(array_1d<double> &pt){
+    double mu;
+    int dex;
+    evaluate(pt,&mu,&dex);
+    return mu;
+}
+
 void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     is_it_safe("evaluate");
     
