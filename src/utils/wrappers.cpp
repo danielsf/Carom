@@ -28,7 +28,7 @@ chisq_wrapper::chisq_wrapper(){
     _valid_dd.set_name("chisq_wrapper_valid_dd");
     _ddmin=1.0e-8;
     _adaptive_target=1;
-    _delta_chi=-1.0;
+    _deltachi=-1.0;
     _chimin=2.0*exception_value;
     _target=2.0*exception_value;
     _seed=-1;
@@ -36,17 +36,17 @@ chisq_wrapper::chisq_wrapper(){
 }
 
 chisq_wrapper::~chisq_wrapper(){
-    if(kptr!=NULL){
-        delete kptr;
+    if(_kptr!=NULL){
+        delete _kptr;
     }
     
-    if(dice!=NULL){
-        delete dice;
+    if(_dice!=NULL){
+        delete _dice;
     }
 }
 
 void chisq_wrapper::set_chisquared(chisquared *xx){
-    chifn=xx;
+    _chifn=xx;
 }
 
 void chisq_wrapper::set_seed(int i){
@@ -63,7 +63,7 @@ void chisq_wrapper::set_ddmin(double dd){
 }
 
 void chisq_wrapper::set_min(array_1d<double> &vv){
-    if(kptr!=NULL){
+    if(_kptr!=NULL){
         printf("WARNING in chisq_wrapper setting min but kptr not null\n");
         exit(1);
     }
@@ -76,7 +76,7 @@ void chisq_wrapper::set_min(array_1d<double> &vv){
 }
 
 void chisq_wrapper::set_max(array_1d<double> &vv){
-    if(kptr!=NULL){
+    if(_kptr!=NULL){
         printf("WARNINGin chisq_wrapper setting max but kptr not null\n");
         exit(1);
     }
@@ -89,7 +89,7 @@ void chisq_wrapper::set_max(array_1d<double> &vv){
 }
 
 void chisq_wrapper::set_characteristic_length(int dex, double xx){
-    if(kptr!=NULL){
+    if(_kptr!=NULL){
         printf("WARNING in chisq_wrapper setting characteristic_length but kptr not null\n");
         exit(1);
     }
@@ -113,12 +113,12 @@ void chisq_wrapper::set_deltachi(double xx){
 }
 
 void chisq_wrapper::initialize(int npts, int dim){
-    if(chifn==NULL){
+    if(_chifn==NULL){
         printf("WARNING calling chisq_wrapper_initialize with null chifn\n");
         exit(1);
     }
     
-    if(kptr!=NULL){
+    if(_kptr!=NULL){
         printf("WARNING calling chisq_wrapper_initialize even though kptr not null\n");
         exit(1);
     }
@@ -137,9 +137,9 @@ void chisq_wrapper::initialize(int npts, int dim){
         exit(1);
     }
     
-    if(dice==NULL){
+    if(_dice==NULL){
         if(_seed<0)_seed=int(time(NULL));
-        dice=new Ran(_seed);
+        _dice=new Ran(_seed);
     }
     
     array_2d<double> data;
@@ -153,9 +153,9 @@ void chisq_wrapper::initialize(int npts, int dim){
     data.set_cols(dim);
     for(i=0;i<npts;i++){
         for(j=0;j<dim;j++){
-            vv.set(j,_range_min.get_data(j)+dice->doub()*(_range_max.get_data(j)-_range_min.get_data(j)));
+            vv.set(j,_range_min.get_data(j)+_dice->doub()*(_range_max.get_data(j)-_range_min.get_data(j)));
         }
-        mu=chifn[0](vv);
+        mu=_chifn[0](vv);
         _called++;
         if(mu<_chimin){
             _chimin=mu;
@@ -179,7 +179,7 @@ void chisq_wrapper::initialize(int npts, int dim){
         }
     }
 
-    kptr=new kd_tree(data,temp_min,temp_max);
+    _kptr=new kd_tree(data,temp_min,temp_max);
     
     if(_adaptive_target==1){
         if(_deltachi<0.0){
@@ -191,33 +191,33 @@ void chisq_wrapper::initialize(int npts, int dim){
 }
 
 void chisq_wrapper::is_it_safe(char *word){
-    if(kptr==NULL){
+    if(_kptr==NULL){
         printf("WARNING in chisq_wrapper::%s\n",word);
         printf("kptr is null\n");
         exit(1);
     }
     
-    if(dice==NULL){
+    if(_dice==NULL){
         printf("WARNING in chisq_wrapper::%s\n",word);
         printf("dice is null\n");
         exit(1);
     }
     
-    if(chifn==NULL){
+    if(_chifn==NULL){
         printf("WARNING in chisq_wrapper::%s\n",word);
         printf("chifn is null\n");
         exit(1);
     }
     
-    if(_adaptive_target==1 && _delta_chi<0){
+    if(_adaptive_target==1 && _deltachi<0){
         printf("WARNING in chisq_wrapper::%s\n",word);
-        printf("adaptive target but delta_chi %e\n",_deltachi);
+        printf("adaptive target but deltachi %e\n",_deltachi);
         exit(1);
     }
     
-    if(_fn.get_dim()!=kptr->get_pts()){
+    if(_fn.get_dim()!=_kptr->get_pts()){
         printf("WARNING in chisq_wrapper::%s\n",word);
-        printf("fn dim %d kptr pts %d\n",_fn.get_dim(),kptr->get_pts());
+        printf("fn dim %d kptr pts %d\n",_fn.get_dim(),_kptr->get_pts());
         exit(1);
     }
 }
@@ -232,15 +232,15 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
     int i;
     neighdex[0]=-1;
     for(i=0;i<pt.get_dim();i++){
-        if(pt.get_data(i)>chifn->get_max(i)){
+        if(pt.get_data(i)>_chifn->get_max(i)){
             return 0;
         }
-        if(pt.get_data(i)<chifn->get_min(i)){
+        if(pt.get_data(i)<_chifn->get_min(i)){
             return 0;
         }
     }
 
-    kptr->nn_srch(pt,1,_valid_neigh,_valid_dd);
+    _kptr->nn_srch(pt,1,_valid_neigh,_valid_dd);
     if(_valid_dd.get_data(0)<_ddmin){
         neighdex[0]=_valid_neigh.get_data(0);
         return 0;
@@ -269,16 +269,16 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     }
     
     double mu;
-    mu=chifn[0](pt);
+    mu=_chifn[0](pt);
     _called++;
     
     if(mu<exception_value){
-        kptr->add(pt);
+        _kptr->add(pt);
         _fn.add(mu);
     
         if(mu<_chimin){
             _chimin=mu;
-            _mindex=kptr->get_pts();
+            _mindex=_kptr->get_pts();
             if(_adaptive_target==1){
                 _target=_chimin+_deltachi;
             }
@@ -288,25 +288,25 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
 
 int chisq_wrapper::get_pts(){
     is_it_safe("get_pts");
-    return kptr->get_pts();
+    return _kptr->get_pts();
 }
 
 double chisq_wrapper::random_double(){
-    if(dice==NULL){
+    if(_dice==NULL){
         printf("WARNING chisq_wrapper random_double dice is null\n");
         exit(1);
     }
     
-    return dice->doub();
+    return _dice->doub();
 }
 
 int chisq_wrapper::random_int(){
-    if(dice==NULL){
+    if(_dice==NULL){
         printf("WARNING chisq_wrapper random_int dice is null\n");
         exit(1);
     }
     
-    return dice->int32();
+    return _dice->int32();
 }
 
 double chisq_wrapper::get_fn(int dex){
@@ -319,5 +319,5 @@ double chisq_wrapper::get_fn(int dex){
 
 void chisq_wrapper::nn_srch(array_1d<double> &vv, int kk, array_1d<int> &neigh, array_1d<double> &dd){
     is_it_safe("nn_srch");
-    kptr->nn_srch(vv,kk,neigh,dd);
+    _kptr->nn_srch(vv,kk,neigh,dd);
 }

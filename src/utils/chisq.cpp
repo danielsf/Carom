@@ -30,8 +30,8 @@ void chisquared::allot_arrays(){
     maxs.set_dim(dim);
 
     for(ix=0;ix<dim;ix++){
-        mins.set(ix,2.0*chisq_exception);
-	maxs.set(ix,-2.0*chisq_exception);
+        mins.set(ix,2.0*exception_value);
+	maxs.set(ix,-2.0*exception_value);
     } 
     
     bases.set_name("chisq_bases");
@@ -373,7 +373,7 @@ double chisquared::get_center(int ic, int ix){
 
 double chisquared::get_real_center(int ic, int ix){
     if(ic>=ncenters || ix>=dim){
-        return chisq_exception;
+        return exception_value;
     }
     
     int i;
@@ -423,7 +423,7 @@ double chisquared::get_boundary(int ix, int iy, int ipt, int idim){
         printf("WARNING asked for boundary slog %d %d but dim %d\n",ix,iy,dim);
     }
     
-    if(idim>=3 || ipt>=nboundary.get_data(ix*dim+iy))return chisq_exception;
+    if(idim>=3 || ipt>=nboundary.get_data(ix*dim+iy))return exception_value;
     return boundary[ix*dim+iy][ipt][idim];
 }
 

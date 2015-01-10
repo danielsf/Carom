@@ -68,6 +68,9 @@ s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_ex
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o object/chisq.o \
 	$(LIBRARIES)
 
+object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
+	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
+
 all:
 	make test_containers
 	make test_kd

@@ -55,8 +55,8 @@ array_1d<double> chisq,vv,vvprojected,mu,sig;
 array_1d<int> ling;
 
 for(i=0;i<dim;i++){
-    xmin.set(i,2.0*chisq_exception);
-    xmax.set(i,-2.0*chisq_exception);
+    xmin.set(i,2.0*exception_value);
+    xmax.set(i,-2.0*exception_value);
 }
 
 int hdex;

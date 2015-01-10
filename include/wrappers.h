@@ -1,5 +1,5 @@
-#ifndef WRAPPER_H
-#define WRAPPER_H
+#ifndef WRAPPERS_H
+#define WRAPPERS_H
 
 #include <math.h>
 #include <time.h>
@@ -24,7 +24,9 @@ public:
     chisq_wrapper();
     ~chisq_wrapper();
     
-    void set_chisquared(*chisquared);
+    void initialize(int,int);
+    
+    void set_chisquared(chisquared*);
     
     virtual double operator()(array_1d<double>&);
 
@@ -37,23 +39,31 @@ public:
     void set_ddmin(double);
 
     double target();
+    int get_pts();
     
     double random_double();
     int random_int();
 
     void evaluate(array_1d<double>&, double*, int*);
+    double get_fn(int);
+    
+    void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
 
 private:
     double _chimin,_deltachi,_target,_ddmin;
-    int _adaptive_target,_seed;
+    int _adaptive_target,_seed,_called,_mindex;
     
-    array_1d<double> _characteristic_length,_range_min,_range_max;
+    array_1d<double> _characteristic_length,_range_min,_range_max,_fn;
     
-    chisquared *chifn;
-    kd_tree *kptr;
-    Ran *dice;
+    chisquared *_chifn;
+    kd_tree *_kptr;
+    Ran *_dice;
     
-    int is_valid(array_1d<double>&);
-}
+    int is_valid(array_1d<double>&, int*);
+    void is_it_safe(char*);
+    
+    array_1d<double> _valid_dd;
+    array_1d<int> _valid_neigh;
+};
 
 #endif
