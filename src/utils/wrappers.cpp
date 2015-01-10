@@ -238,10 +238,10 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
     int i;
     neighdex[0]=-1;
     for(i=0;i<pt.get_dim();i++){
-        if(pt.get_data(i)>_chifn->get_max(i)){
+        if(_chifn->get_max(i)>-1.0*exception_value && pt.get_data(i)>_chifn->get_max(i)){
             return 0;
         }
-        if(pt.get_data(i)<_chifn->get_min(i)){
+        if(_chifn->get_min(i)<exception_value && pt.get_data(i)<_chifn->get_min(i)){
             return 0;
         }
     }
@@ -259,6 +259,7 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
 double chisq_wrapper::operator()(array_1d<double> &pt){
     double mu;
     int dex;
+    int i;
     evaluate(pt,&mu,&dex);
     return mu;
 }
@@ -283,6 +284,7 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     
     double mu;
     mu=_chifn[0](pt);
+    value[0]=mu;
     _called++;
     
     if(mu<exception_value){

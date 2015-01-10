@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "wrappers.h"
+#include "simplex.h"
 
 class carom{
 
@@ -26,6 +27,7 @@ public:
     
     void set_chisquared(chisquared*);
 
+    void search();
     void write_pts();
     
 private:
@@ -35,6 +37,8 @@ private:
     double _time_started;
     
     char _outname[letters],_timingname[letters];
+
+    void simplex_search();
 
 };
 

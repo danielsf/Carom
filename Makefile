@@ -71,13 +71,16 @@ s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_ex
 object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
 	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
 
-object/carom.o: src/carom/carom.cpp include/carom.h object/wrappers.o
+object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o
+	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
+
+object/carom.o: src/carom/carom.cpp include/carom.h object/simplex.o
 	$(gg) -c -o object/carom.o src/carom/carom.cpp
 
 s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/carom.o \
+	object/wrappers.o object/simplex.o object/carom.o \
 	$(LIBRARIES)
 
 all:

@@ -72,7 +72,7 @@ void carom::write_pts(){
         for(j=0;j<chifn.get_dim();j++){
             fprintf(output,"%.18e ",chifn.get_pt(i,j));
         }
-        fprintf(output,"%.18e\n",chifn.get_fn(i));
+        fprintf(output,"%.18e 0 0 1\n",chifn.get_fn(i));
     }
     fclose(output);
     
@@ -85,4 +85,39 @@ void carom::write_pts(){
     
 
     _last_written=chifn.get_called();
+}
+
+void carom::simplex_search(){
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&chifn);
+    ffmin.set_dice(chifn.get_dice());
+    array_1d<double> min,max;
+    min.set_name("carom_simplex_search_min");
+    max.set_name("carom_simplex_search_min");
+    chifn.get_min(min);
+    chifn.get_max(max);
+    ffmin.set_minmax(min,max);
+    ffmin.use_gradient();
+    
+    array_1d<double> minpt;
+    minpt.set_name("carom_simplex_search_minpt");
+    
+    array_2d<double> seed;
+    seed.set_name("carom_simplex_search_seed");
+    
+    seed.set_cols(chifn.get_dim());
+    int i,j;
+    for(i=0;i<chifn.get_dim()+1;i++){
+        for(j=0;j<chifn.get_dim();j++){
+            seed.set(i,j,chifn.get_pt(i,j));
+        }
+    }
+    
+    ffmin.find_minimum(seed,minpt);
+    write_pts();
+}
+
+void carom::search(){
+    simplex_search();
 }

@@ -75,13 +75,16 @@ s_curve chifn(dim,ncenters);
 
 FILE *input,*output;
 
+double maxerr=-1.0;
+double chitrue;
+
 output=fopen("output/s_curve_projected.sav","w");
 input=fopen(inputName,"r");
-for(i=0;i<dim+5;i++){
+/*for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
     fprintf(output,"%s ",word);
 }
-fprintf(output,"\n");
+fprintf(output,"\n");*/
 while(fscanf(input,"%le",&nn)>0){
     vv.set(0,nn);
     for(i=1;i<dim;i++){
@@ -89,9 +92,16 @@ while(fscanf(input,"%le",&nn)>0){
         vv.set(i,nn);
     }
     
+    chitrue=chifn(vv);
     
     fscanf(input,"%le",&chival);
     chisq.add(chival);
+    
+    if(fabs(chitrue-chival)>maxerr){
+        maxerr=fabs(chitrue-chival);
+        printf("    maxerr %e %e %e\n",maxerr,chitrue,chival);
+    }
+    
     fscanf(input,"%le",&nn);
     mu.add(nn);
     fscanf(input,"%le",&nn);
@@ -166,7 +176,7 @@ while(fscanf(input,"%le",&nn)>0){
 fclose(input);
 fclose(output);
 
-printf("\n");
+printf("\n\nmaxerr %e\n\n",maxerr);
 for(i=0;i<dim;i++){
     printf("d%d %e to %e\n",
     i,xmin.get_data(i),xmax.get_data(i));
