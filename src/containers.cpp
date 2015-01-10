@@ -447,9 +447,8 @@ T array_1d<T>::get_data(int dex) const{
         printf("dying from get_data because request makes no sense\n");
         die(dex);
     }
-    else{
-        return data[dex];
-    }
+    
+    return data[dex];
     
 }
 
@@ -1157,9 +1156,9 @@ T array_2d<T>::get_data(int ir, int ic) const{
        printf("dying from get_data\n");
         die(ir,ic);
     }
-    else{
-        return data[ir].get_data(ic);
-    }
+
+    return data[ir].get_data(ic);
+    
 }
 
 template <typename T>
@@ -1438,7 +1437,7 @@ T asymm_array_2d<T>::get_data(int ir, int ic){
 	die(ir);
     }
 
-
+    return data[ir].get_data(ic);
 }
 
 template <typename T>
