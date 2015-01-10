@@ -52,6 +52,9 @@ public:
     void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
     
     Ran* get_dice();
+    
+    void get_min(array_1d<double>&);
+    void get_max(array_1d<double>&);
 
 private:
     double _chimin,_deltachi,_target,_ddmin;

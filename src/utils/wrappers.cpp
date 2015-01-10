@@ -370,3 +370,19 @@ Ran* chisq_wrapper::get_dice(){
     is_it_safe("get_dice");
     return _dice;
 }
+
+void chisq_wrapper::get_min(array_1d<double> &vv){
+    int i;
+    vv.set_dim(_range_min.get_dim());
+    for(i=0;i<_range_min.get_dim();i++){
+        vv.set(i,_range_min.get_data(i));
+    }
+}
+
+void chisq_wrapper::get_max(array_1d<double> &vv){
+    int i;
+    vv.set_dim(_range_max.get_dim());
+    for(i=0;i<_range_max.get_dim();i++){
+        vv.set(i,_range_max.get_data(i));
+    }
+}
