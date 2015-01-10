@@ -43,18 +43,16 @@ test_containers: object/containers.o src/test_containers.cpp object/goto_tools.o
 	$(gg) -o bin/test_containers src/test_containers.cpp object/containers.o \
         object/goto_tools.o $(INCLUDE) $(LIBRARIES)
 
+object/kd.o: src/kd.cpp include/kd.h object/containers.o object/goto_tools.o
+	$(gg) -c -o object/kd.o src/kd.cpp $(INCLUDE)
+
+test_kd: src/test_kd.cpp object/kd.o
+	$(gg) -o bin/test_kd src/test_kd.cpp object/containers.o object/goto_tools.o \
+	object/kd.o $(INCLUDE) $(LIBRARIES)
+
 all:
 	make test_containers
 	make test_kd
-	make test_eigen
-	make test_box
-	make ellipse
-	make aps_extract
-	make s_control
-	make s_curve
-	make s_curve_analysis
-	make s_curve_mcmc_analysis
-	make s_curve_multinest_analysis
-	make coverage
+
 clean:
-	rm object/*.o bin/test_containers
+	rm object/*.o bin/test_containers bin/test_kd
