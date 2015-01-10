@@ -10,6 +10,10 @@ carom::carom(){
 
 carom::~carom(){}
 
+void carom::set_seed(int ii){
+    chifn.set_seed(ii);
+}
+
 void carom::set_min(array_1d<double> &vv){
     chifn.set_min(vv);
 }

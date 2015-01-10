@@ -14,6 +14,7 @@ public:
     
     void initialize(int);
     
+    void set_seed(int);
     void set_min(array_1d<double>&);
     void set_max(array_1d<double>&);
     void set_characteristic_length(int,double);

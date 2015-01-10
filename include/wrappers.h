@@ -18,7 +18,7 @@ public:
     virtual int get_called();
 };
 
-class chisq_wrapper : function_wrapper{
+class chisq_wrapper : public function_wrapper{
 
 public:
     chisq_wrapper();
@@ -27,8 +27,6 @@ public:
     void initialize(int);
     
     void set_chisquared(chisquared*);
-    
-    virtual double operator()(array_1d<double>&);
 
     void set_target(double);
     void set_seed(int);
@@ -41,7 +39,7 @@ public:
     double target();
     int get_pts();
     int get_dim();
-    int get_called();
+    virtual int get_called();
     
     double random_double();
     int random_int();
