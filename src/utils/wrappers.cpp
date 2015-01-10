@@ -360,7 +360,13 @@ double chisq_wrapper::get_pt(int dex, int idim){
     
     return _kptr->get_pt(dex,idim);
 }
+
 void chisq_wrapper::nn_srch(array_1d<double> &vv, int kk, array_1d<int> &neigh, array_1d<double> &dd){
     is_it_safe("nn_srch");
     _kptr->nn_srch(vv,kk,neigh,dd);
+}
+
+Ran* chisq_wrapper::get_dice(){
+    is_it_safe("get_dice");
+    return _dice;
 }

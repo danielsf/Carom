@@ -50,6 +50,8 @@ public:
     double get_pt(int,int);
     
     void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
+    
+    Ran* get_dice();
 
 private:
     double _chimin,_deltachi,_target,_ddmin;
