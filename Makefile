@@ -57,6 +57,9 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 	$(gg) -o bin/test_eigen src/tests/test_eigen.cpp object/containers.o object/goto_tools.o \
 	object/eigen_wrapper.o $(LIBRARIES)
 
+object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
+	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
+
 all:
 	make test_containers
 	make test_kd

@@ -513,6 +513,7 @@ void chisquared::decrement_called(){
 
 double chisquared::operator()(array_1d<double> &v)const{
     death_knell("meaningless operator");
+    return -1.0;
 }
 
 void chisquared::build_boundary(double rr){
