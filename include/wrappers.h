@@ -41,12 +41,14 @@ public:
     double target();
     int get_pts();
     int get_dim();
+    int get_called();
     
     double random_double();
     int random_int();
 
     void evaluate(array_1d<double>&, double*, int*);
     double get_fn(int);
+    double get_pt(int,int);
     
     void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
 

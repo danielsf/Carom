@@ -71,6 +71,9 @@ s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_ex
 object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
 	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
 
+object/carom.o: src/carom/carom.cpp include/carom.h object/wrappers.o
+	$(gg) -c -o object/carom.o src/carom/carom.cpp
+
 all:
 	make test_containers
 	make test_kd

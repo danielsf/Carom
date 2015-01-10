@@ -292,6 +292,11 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     }
 }
 
+int chisq_wrapper::get_called(){
+    is_it_safe("get_called");
+    return _chifn->get_called();
+}
+
 int chisq_wrapper::get_pts(){
     is_it_safe("get_pts");
     return _kptr->get_pts();
@@ -321,13 +326,33 @@ int chisq_wrapper::random_int(){
 }
 
 double chisq_wrapper::get_fn(int dex){
-    if(dex<0 || dex>_fn.get_dim()){
+    if(dex<0 || dex>=_fn.get_dim()){
         printf("WARNING asking for fn %d but %d\n",dex,_fn.get_dim());
     }
     
     return _fn.get_data(dex);
 }
 
+
+double chisq_wrapper::get_pt(int dex, int idim){
+    is_it_safe("get_pt");
+
+    if(dex<0 || dex>=_fn.get_dim()){
+        printf("WARNING asking for pt %d but only have %d \n",
+        dex,_fn.get_dim());
+        
+        exit(1);
+    }
+    
+    if(idim<0 || idim>=_kptr->get_dim()){
+        printf("WARNING asking for pt dim %d but only have %d\n",
+        idim,_kptr->get_dim());
+        
+        exit(1);
+    }
+    
+    return _kptr->get_pt(dex,idim);
+}
 void chisq_wrapper::nn_srch(array_1d<double> &vv, int kk, array_1d<int> &neigh, array_1d<double> &dd){
     is_it_safe("nn_srch");
     _kptr->nn_srch(vv,kk,neigh,dd);
