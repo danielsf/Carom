@@ -232,6 +232,10 @@ double chisq_wrapper::target(){
     return _target;
 }
 
+double chisq_wrapper::get_deltachi(){
+    return _deltachi;
+}
+
 int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
     is_it_safe("is_valid");
     
