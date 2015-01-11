@@ -70,7 +70,7 @@ void node::copy(const node &in){
     _basis_vectors.set_cols(in._basis_vectors.get_cols());
     for(i=0;i<in._basis_vectors.get_rows();i++){
         for(j=0;j<in._basis_vectors.get_cols();j++){
-            _basis_vectors.get_data(i,j,in._basis_vectors.get_data(i,j));
+            _basis_vectors.set(i,j,in._basis_vectors.get_data(i,j));
         }
     }
 }
@@ -82,7 +82,7 @@ void node::set_center(int ix){
     }
 }
 
-void node::set_chisquared(chisquared *cc){
+void node::set_chisquared(chisq_wrapper *cc){
     _chisquared=cc;
     if(_centerdex>=0){
         _chimin=_chisquared->get_fn(_centerdex);
@@ -122,15 +122,15 @@ void node::is_it_safe(char *word){
         exit(1);
     }
     
-    if(_basis_vectors.get_cols()!=_chisquared.get_dim() || 
-       _basis_vectors.get_rows()!=_chisquared.get_dim()){
+    if(_basis_vectors.get_cols()!=_chisquared->get_dim() || 
+       _basis_vectors.get_rows()!=_chisquared->get_dim()){
     
         printf("WARNING in node::%s\n",word);
         
         printf("_basis_vectors %d by %d\n",_basis_vectors.get_rows(),
         _basis_vectors.get_cols());
         
-        printf("but dim should be %d\n",_chisquared.get_dim());
+        printf("but dim should be %d\n",_chisquared->get_dim());
         
         exit(1);
     
@@ -138,21 +138,21 @@ void node::is_it_safe(char *word){
 }
 
 void node::evaluate(array_1d<double> &pt, double *value, int *dex){
-    is_it_safe();
+    is_it_safe("evaluate");
     
     _chisquared->evaluate(pt,value,dex);
     
     if(dex>=0){
-        if(value<_chimin){
-            _chimin=value;
-            _centerdex=dex;
+        if(value[0]<_chimin){
+            _chimin=value[0];
+            _centerdex=dex[0];
         }
     }
 }
 
-void node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh){
+int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh){
 
-    is_it_safe();
+    is_it_safe("bisection");
     
     if(flow>fhigh){
         printf("WARNING in node bisection flow %e fhigh %e\n",flow,fhigh);
@@ -174,7 +174,7 @@ void node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &h
     
     iout=-1;
     while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
-        for(i=0;i<_chisquared.get_dim();i++){
+        for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
         }
         
@@ -203,40 +203,40 @@ void node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &h
 
 }
 
-void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> bases_out){
+void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> &bases_out){
     
-    is_it_safe();
+    is_it_safe("perturb_bases");
     
     int i,j;
-    for(i=0;i<_chisquared.get_dim();i++){
-        for(j=0;j<_chisquared.get_dim();j++){
+    for(i=0;i<_chisquared->get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
             bases_out.set(i,j,_basis_vectors.get_data(i,j));
         }
     }
     
-    for(i=0;i<_chisquared.get_dim();i++){
+    for(i=0;i<_chisquared->get_dim();i++){
         bases_out.add_val(idim,i,dx.get_data(i));
     }
-    bases_out(idim).normalize();
+    bases_out(idim)->normalize();
     
     int ix,jx;
     double mu;
     
     for(ix=idim+1;ix!=idim;){
-        if(ix>=_chisquared.get_dim()){
+        if(ix>=_chisquared->get_dim()){
             ix=0;
         }
         
         for(jx=idim;jx!=ix;){
-            if(ix>=_chisquared.get_dim()){
+            if(ix>=_chisquared->get_dim()){
                 jx=0;
             }
             
             mu=0.0;
-            for(i=0;i<_chisquared.get_dim();i++){
+            for(i=0;i<_chisquared->get_dim();i++){
                 mu+=bases_out.get_data(ix,i)*bases_out.get_data(jx,i);
             }
-            for(i=0;i<_chisquared.get_dim();i++){
+            for(i=0;i<_chisquared->get_dim();i++){
                 bases_out.subtract_val(ix,i,mu*bases_out.get_data(jx,i));
             }
             
@@ -244,7 +244,7 @@ void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> bases_
             else jx=0;
         }
         
-        bases_out(ix).normalize();
+        bases_out(ix)->normalize();
         
         if(ix<_chisquared->get_dim()-1)ix++;
         else ix=0;
@@ -252,9 +252,9 @@ void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> bases_
     }
     
     /////////////////testing
-    for(ix=0;ix<_chisquared.get_dim();ix++){
+    for(ix=0;ix<_chisquared->get_dim();ix++){
         mu=0.0;
-        for(i=0;i<_chisquared.get_dim();i++){
+        for(i=0;i<_chisquared->get_dim();i++){
             mu+=bases_out.get_data(ix,i)*bases_out.get_data(ix,i);
         }
         if(fabs(mu-1.0)>1.0e-6){
@@ -262,9 +262,9 @@ void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> bases_
             exit(1);
         }
         
-        for(jx=ix+1;jx<_chisquared.get_dim();jx++){
+        for(jx=ix+1;jx<_chisquared->get_dim();jx++){
             mu=0.0;
-            for(i=0;i<_chisquared.get_dim();i++){
+            for(i=0;i<_chisquared->get_dim();i++){
                 mu+=bases_out.get_data(ix,i)*bases_out.get_data(jx,i);
             }
             
@@ -286,15 +286,15 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
         exit(1);
     }
     
-    is_it_safe();
+    is_it_safe("basis_error");
     
     trial_model.zero();
     if(_basis_ddsq.get_rows()>_basis_associates.get_dim()){
         _basis_ddsq.reset();
     }
     
-    if(_ddsq.get_cols()!=_chisquared->get_dim()){
-        _ddsq.set_cols(_chisquared->get_dim());
+    if(_basis_ddsq.get_cols()!=_chisquared->get_dim()){
+        _basis_ddsq.set_cols(_chisquared->get_dim());
     }
     
     if(_basis_mm.get_dim()!=_chisquared->get_dim()*_chisquared->get_dim()){
@@ -317,10 +317,10 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
     int i,j,ix;
     double mu;
     for(ix=0;ix<_basis_associates.get_dim();ix++){
-        for(i=0;i<_chisquared.get_dim();i++){
+        for(i=0;i<_chisquared->get_dim();i++){
             mu=0.0;
-            for(j=0;j<_chisquared.get_dim();j++){
-                mu+=_chisquared->get_dim(_basis_associates.get_data(ix),j)*trial_bases.get_data(i,j);
+            for(j=0;j<_chisquared->get_dim();j++){
+                mu+=_chisquared->get_pt(_basis_associates.get_data(ix),j)*trial_bases.get_data(i,j);
             }
             _basis_ddsq.set(ix,i,mu*mu);
         }
@@ -328,14 +328,14 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
     
     for(i=0;i<_chisquared->get_dim();i++){
         for(j=0;j<_basis_associates.get_dim();j++){
-            _basis_bb.add_val(i,_ddsq.get_data(j,i)*(_chisquared->get_fn(_basis_associates.get_data(j))-_chimin));
+            _basis_bb.add_val(i,_basis_ddsq.get_data(j,i)*(_chisquared->get_fn(_basis_associates.get_data(j))-_chimin));
         }
     }
     
     int k;
     for(i=0;i<_chisquared->get_dim();i++){
         for(j=i;j<_chisquared->get_dim();j++){
-            ix=i*_chisquared.get_dim()+j;
+            ix=i*_chisquared->get_dim()+j;
             for(k=0;k<_basis_associates.get_dim();k++){
                 _basis_mm.add_val(ix,_basis_ddsq.get_data(k,i)*_basis_ddsq.get_data(k,j));
             }
@@ -368,7 +368,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::compass_search(){
     
-    is_it_safe();
+    is_it_safe("compass_search");
     
     int ix,i,j,iFound;
     double sgn,flow,fhigh,dx,ftrial,step;
@@ -429,11 +429,11 @@ void node::compass_search(){
             
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
-                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(center_dex,i)+_chisquared->get_pt(iFound,i));
+                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i));
             }
             
             for(i=0;i<_chisquared->get_dim();i++){
-                trial.set(i,0.5*(_chisquared->get_pt(center_dex,i)+_chisquared->get_pt(iFound,i)));
+                trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
             }
             evaluate(trial,&ftrial,&iFound);
             if(iFound>=0){
@@ -446,14 +446,14 @@ void node::compass_search(){
 ///////////////arrayOfNodes code below//////////
 
 arrayOfNodes::arrayOfNodes(){
-    data=NULL;
-    ct=0;
-    room=0;
+    _data=NULL;
+    _ct=0;
+    _room=0;
 }
 
 arrayOfNodes::~arrayOfNodes(){
-    if(data!=NULL){
-        delete [] data;
+    if(_data!=NULL){
+        delete [] _data;
     }
 }
 
@@ -464,33 +464,33 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     
     if(_ct==_room){
         if(_ct>0){
-            buffer=new node[ct];
-            for(i=0;i<ct;i++){
-                buffer[i].copy(data[i]);
+            buffer=new node[_ct];
+            for(i=0;i<_ct;i++){
+                buffer[i].copy(_data[i]);
             }
             
-            delete [] data;
+            delete [] _data;
         }
         
         _room+=5;
-        data=new node[_room];
+        _data=new node[_room];
         
         if(_ct>0){
             for(i=0;i<_ct;i++){
-                data[i].copy(buffer[i]);
+                _data[i].copy(buffer[i]);
             }
             delete [] buffer;
         }
     }
     
-    data[ct].set_chisquared(gg);
-    data[ct].set_center(cc);
+    _data[_ct].set_chisquared(gg);
+    _data[_ct].set_center(cc);
 
     _ct++;
 
 }
 
-void arrayOfNodes::add(gpWrapper *g, int i){
+void arrayOfNodes::add(chisq_wrapper *g, int i){
     add(i,g);
 }
 
@@ -503,7 +503,7 @@ void arrayOfNodes::remove(int ii){
     if(ii>=_ct) return;
     
     for(i=ii+1;i<_ct;i++){
-        data[i-1].copy(data[i]);
+        _data[i-1].copy(_data[i]);
     }
     _ct--;
 }
@@ -515,5 +515,5 @@ node* arrayOfNodes::operator()(int dex){
         
         exit(1);
     }
-    return &data[dex];
+    return &_data[dex];
 }

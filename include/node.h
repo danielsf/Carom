@@ -11,8 +11,9 @@ public:
     node(const node&);
     node& operator=(const node&);
     ~node();
+    void copy(const node&);
     
-    void set_chisquared(chisquared*);
+    void set_chisquared(chisq_wrapper*);
     void set_center(int);
     void set_basis(int,int,double);
     void evaluate(array_1d<double>&, double*, int*);
@@ -33,7 +34,6 @@ private:
     void perturb_bases(int,array_1d<double>&,array_2d<double>&);
     double basis_error(array_2d<double>&,array_1d<double>&);
     void initialize();
-    void copy(const node&);
     
     void is_it_safe(char*);
     
@@ -53,7 +53,7 @@ public:
     node* operator()(int);
         
 private:
-    node *data;
+    node *_data;
     int _ct,_room;
 };
 
