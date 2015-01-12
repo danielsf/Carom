@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include "eigen_wrapper.h"
 #include "wrappers.h"
 #include "simplex.h"
 #include "node.h"
@@ -58,9 +59,10 @@ public:
 private:
     chisq_wrapper *_chifn;
     
-    array_2d<double> _covarin;
-    array_1d<int> _neigh;
-    double _ell;
+    array_2d<double> _covarin,_covar;
+    array_1d<int> _neigh,_neigh_buff;
+    array_1d<double> _dd,_qq;
+    double _ell,_fbar;
     int _called;
 
     void is_it_safe(char*);

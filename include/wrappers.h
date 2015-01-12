@@ -50,6 +50,9 @@ public:
     double get_fn(int);
     double get_pt(int,int);
     
+    double distance(array_1d<double>&,int);
+    double distance(int,int);
+    
     void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
     
     Ran* get_dice();

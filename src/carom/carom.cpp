@@ -172,6 +172,11 @@ gp_cost::gp_cost(){
     _called=0;
     _ell=-1.0;
     _covarin.set_name("gp_cost_covarin");
+    _covar.set_name("gp_cost_covar");
+    _neigh.set_name("gp_cost_neigh");
+    _neigh_buff.set_name("gp_cost_neigh");
+    _qq.set_name("gp_cost_qq");
+    _dd.set_name("gp_cost_dd");
     _chifn=NULL;
 }
 
@@ -194,6 +199,80 @@ int gp_cost::get_called(){
 }
 
 double gp_cost::operator()(array_1d<double> &pt){
+    is_it_safe("operator()");
     _called++;
-    return 10.0;
+    
+    int npts,dosrch=0;
+    
+    npts=5;
+    _chifn->nn_srch(pt,npts,_neigh_buff,_dd);
+    
+    if(_ell<=0.0){
+        dosrch=1;
+    }
+    
+    if(_neigh.get_dim()!=_neigh_buff.get_dim()){
+        dosrch=1;
+    }
+    
+    if(_covarin.get_rows()!=_neigh_buff.get_dim() || _covarin.get_cols()!=_neigh_buff.get_dim()){
+        dosrch=1;
+    }
+    
+    if(_qq.get_dim()!=_neigh_buff.get_dim()){
+        dosrch=1;
+    }
+    
+    int i,j;
+    double nugget=1.0e-4;
+    if(dosrch==0){
+       for(i=0;i<npts && dosrch==0;i++){
+           dosrch=1;
+           for(j=0;j<_neigh.get_dim();j++){
+               if(_neigh.get_data(j)==_neigh_buff.get_data(i)){
+                   dosrch=0;
+               }
+           }
+       }
+    }
+    
+    if(dosrch==1){
+        _ell=_dd.get_data(2);
+        _fbar=0.0;
+        for(i=0;i<_neigh_buff.get_dim();i++){
+            _neigh.set(i,_neigh_buff.get_data(i));
+            _fbar+=_chifn->get_fn(_neigh_buff.get_data(i));
+        }
+        _fbar=_fbar/double(_chifn->get_dim());
+        
+        _covar.set_cols(_neigh_buff.get_dim());
+        
+        for(i=0;i<_neigh_buff.get_dim();i++){
+            for(j=i;j<_neigh_buff.get_dim();j++){
+                _covar.set(i,j,exp(-0.5*power(_chifn->distance(_neigh_buff.get_data(i),_neigh_buff.get_data(j))/_ell,2)));
+                if(i==j){
+                    _covar.add_val(i,j,nugget);
+                }
+                else{
+                    _covar.set(j,i,_covar.get_data(i,j));
+                }
+            }
+            
+        }
+        
+        invert_lapack(_covar,_covarin,0);
+    }
+    
+    for(i=0;i<_neigh_buff.get_dim();i++){
+        _qq.set(i,exp(-0.5*power(_chifn->distance(pt,_neigh_buff.get_data(i))/_ell,2)));
+    }
+    
+    double mu=-1.0*_fbar;
+    for(i=0;i<_neigh_buff.get_dim();i++){
+        for(j=0;j<_neigh_buff.get_dim();j++){
+            mu-=_qq.get_data(i)*_covarin.get_data(i,j)*(_chifn->get_fn(_neigh_buff.get_data(i))-_fbar);
+        }
+    }
+    
+    return mu;
 }

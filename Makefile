@@ -77,13 +77,15 @@ object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o
 object/node.o: src/carom/node.cpp include/node.h object/wrappers.o
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
-object/carom.o: src/carom/carom.cpp include/carom.h object/simplex.o object/node.o
+object/carom.o: src/carom/carom.cpp include/carom.h \
+object/simplex.o object/node.o object/eigen_wrapper.o
 	$(gg) -c -o object/carom.o src/carom/carom.cpp
 
 s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/simplex.o object/node.o object/carom.o \
+	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/node.o object/carom.o \
 	$(LIBRARIES)
 
 all:

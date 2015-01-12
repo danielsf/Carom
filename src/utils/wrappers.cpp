@@ -392,3 +392,13 @@ void chisq_wrapper::get_max(array_1d<double> &vv){
         vv.set(i,_range_max.get_data(i));
     }
 }
+
+double chisq_wrapper::distance(array_1d<double> &p, int dex){
+    is_it_safe("distance(arr,i)");
+    return _kptr->distance(p,dex);
+}
+
+double chisq_wrapper::distance(int i1, int i2){
+    is_it_safe("distance(i,i)");
+    return _kptr->distance(i1,i2);
+}
