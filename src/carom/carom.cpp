@@ -11,31 +11,31 @@ carom::carom(){
 carom::~carom(){}
 
 void carom::set_seed(int ii){
-    chifn.set_seed(ii);
+    _chifn.set_seed(ii);
 }
 
 void carom::set_min(array_1d<double> &vv){
-    chifn.set_min(vv);
+    _chifn.set_min(vv);
 }
 
 void carom::set_max(array_1d<double> &vv){
-    chifn.set_max(vv);
+    _chifn.set_max(vv);
 }
 
 void carom::set_characteristic_length(int dex, double vv){
-    chifn.set_characteristic_length(dex,vv);
+    _chifn.set_characteristic_length(dex,vv);
 }
 
 void carom::set_chisquared(chisquared *xx){
-    chifn.set_chisquared(xx);
+    _chifn.set_chisquared(xx);
 }
 
 void carom::set_deltachi(double xx){
-    chifn.set_deltachi(xx);
+    _chifn.set_deltachi(xx);
 }
 
 void carom::set_target(double tt){
-    chifn.set_target(tt);
+    _chifn.set_target(tt);
 }
 
 void carom::set_write_every(int ww){
@@ -59,7 +59,7 @@ void carom::set_timingname(char *nn){
 }
 
 void carom::initialize(int npts){
-    chifn.initialize(npts);
+    _chifn.initialize(npts);
     write_pts();
 }
 
@@ -68,35 +68,35 @@ void carom::write_pts(){
     
     int i,j;
     output=fopen(_outname,"w");
-    for(i=0;i<chifn.get_pts();i++){
-        for(j=0;j<chifn.get_dim();j++){
-            fprintf(output,"%.18e ",chifn.get_pt(i,j));
+    for(i=0;i<_chifn.get_pts();i++){
+        for(j=0;j<_chifn.get_dim();j++){
+            fprintf(output,"%.18e ",_chifn.get_pt(i,j));
         }
-        fprintf(output,"%.18e 0 0 1\n",chifn.get_fn(i));
+        fprintf(output,"%.18e 0 0 1\n",_chifn.get_fn(i));
     }
     fclose(output);
     
     output=fopen(_timingname,"a");
     fprintf(output,"%d %e %e\n",
-        chifn.get_called(),
+        _chifn.get_called(),
         double(time(NULL))-_time_started,
-        (double(time(NULL))-_time_started)/double(chifn.get_called()));
+        (double(time(NULL))-_time_started)/double(_chifn.get_called()));
     fclose(output);
     
 
-    _last_written=chifn.get_called();
+    _last_written=_chifn.get_called();
 }
 
 void carom::simplex_search(){
 
     simplex_minimizer ffmin;
-    ffmin.set_chisquared(&chifn);
-    ffmin.set_dice(chifn.get_dice());
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_dice(_chifn.get_dice());
     array_1d<double> min,max;
     min.set_name("carom_simplex_search_min");
     max.set_name("carom_simplex_search_min");
-    chifn.get_min(min);
-    chifn.get_max(max);
+    _chifn.get_min(min);
+    _chifn.get_max(max);
     ffmin.set_minmax(min,max);
     ffmin.use_gradient();
     
@@ -106,11 +106,11 @@ void carom::simplex_search(){
     array_2d<double> seed;
     seed.set_name("carom_simplex_search_seed");
     
-    seed.set_cols(chifn.get_dim());
+    seed.set_cols(_chifn.get_dim());
     int i,j;
-    for(i=0;i<chifn.get_dim()+1;i++){
-        for(j=0;j<chifn.get_dim();j++){
-            seed.set(i,j,chifn.get_pt(i,j));
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        for(j=0;j<_chifn.get_dim();j++){
+            seed.set(i,j,_chifn.get_pt(i,j));
         }
     }
     
@@ -120,4 +120,47 @@ void carom::simplex_search(){
 
 void carom::search(){
     simplex_search();
+}
+
+void carom::assess_node(int dex){
+    if(dex<0 || dex>_chifn.get_pts()){
+        printf("WARNING asking to assess node %d but only have %d pts\n",
+        dex,_chifn.get_pts());
+        
+        exit(1);
+    }
+    
+    if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
+        _nodes.add(dex,&_chifn);
+        return;
+    }
+    
+    int keep_it,i,ix,so_far_so_good,iFound;
+    double ftrial,dx;
+    array_1d<double> trial;
+    trial.set_name("carom_assess_node_trial");
+    
+    keep_it=1;
+    for(ix=0;ix<_nodes.get_dim() && keep_it==1;ix++){
+        so_far_so_good=0;
+        for(dx=0.25;dx<0.8 && so_far_so_good==0;dx+=0.25){
+            for(i=0;i<_chifn.get_dim();i++){
+                trial.set(i,dx*_chifn.get_pt(dex,i)+(1.0-dx)*_chifn.get_pt(_nodes(i)->get_center(),i));
+            }
+            _chifn.evaluate(trial,&ftrial,&iFound);
+            
+            if(ftrial>_chifn.target()){
+                so_far_so_good=1;
+            }
+        }
+
+        if(so_far_so_good==0){
+            keep_it=0;
+        } 
+    }
+    
+    if(keep_it==1){
+        _nodes.add(dex,&_chifn);
+    }
+    
 }
