@@ -172,6 +172,7 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
     
     int took_a_step=0,ct,i,iout;
     
+    ct=0;
     iout=-1;
     while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
         for(i=0;i<_chisquared->get_dim();i++){
@@ -179,10 +180,9 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
         }
         
         evaluate(trial,&ftrial,&i);
-        
         if(ftrial<_chisquared->target()){
             flow=ftrial;
-            if(iout>=0)iout=i;
+            if(i>=0)iout=i;
             for(i=0;i<_chisquared->get_dim();i++){
                 lowball.set(i,trial.get_data(i));
             }
