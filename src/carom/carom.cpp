@@ -226,7 +226,7 @@ double gp_cost::operator()(array_1d<double> &pt){
     int i,j;
     double nugget=1.0e-4;
     if(dosrch==0){
-       for(i=0;i<npts && dosrch==0;i++){
+       for(i=0;i<_neigh_buff.get_dim() && dosrch==0;i++){
            dosrch=1;
            for(j=0;j<_neigh.get_dim();j++){
                if(_neigh.get_data(j)==_neigh_buff.get_data(i)){
@@ -243,7 +243,7 @@ double gp_cost::operator()(array_1d<double> &pt){
             _neigh.set(i,_neigh_buff.get_data(i));
             _fbar+=_chifn->get_fn(_neigh_buff.get_data(i));
         }
-        _fbar=_fbar/double(_chifn->get_dim());
+        _fbar=_fbar/double(_neigh_buff.get_dim());
         
         _covar.set_cols(_neigh_buff.get_dim());
         
