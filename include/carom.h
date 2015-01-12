@@ -45,4 +45,26 @@ private:
 
 };
 
+class gp_cost : public function_wrapper{
+
+public:
+
+    gp_cost();
+    ~gp_cost();
+    void set_chifn(chisq_wrapper*);
+    virtual double operator()(array_1d<double>&);
+    virtual int get_called();
+
+private:
+    chisq_wrapper *_chifn;
+    
+    array_2d<double> _covarin;
+    array_1d<int> _neigh;
+    double _ell;
+    int _called;
+
+    void is_it_safe(char*);
+
+};
+
 #endif

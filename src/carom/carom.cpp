@@ -164,3 +164,36 @@ void carom::assess_node(int dex){
     }
     
 }
+
+
+///////////////////////gp_cost
+
+gp_cost::gp_cost(){
+    _called=0;
+    _ell=-1.0;
+    _covarin.set_name("gp_cost_covarin");
+    _chifn=NULL;
+}
+
+gp_cost::~gp_cost(){}
+
+void gp_cost::set_chifn(chisq_wrapper *cc){
+    _chifn=cc;
+}
+
+void gp_cost::is_it_safe(char *word){
+    if(_chifn==NULL){
+        printf("WARNING in gp_cost::%s\n",word);
+        printf("_chifn is null\n");
+        exit(1);
+    }
+}
+
+int gp_cost::get_called(){
+    return _called;
+}
+
+double gp_cost::operator()(array_1d<double> &pt){
+    _called++;
+    return 10.0;
+}
