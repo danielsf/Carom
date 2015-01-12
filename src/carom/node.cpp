@@ -609,7 +609,7 @@ void node::find_bases(){
     int ct,idim,aborted,max_abort,total_aborted,changed_bases;
     double error0,error,errorBest,stdev,stdevlim,error1;
     
-    stdev=0.1;
+    stdev=0.1/sqrt(double(_chisquared->get_dim()));
     stdevlim=1.0e-5/sqrt(double(_chisquared->get_dim()));
     max_abort=_chisquared->get_dim()*100;
     
