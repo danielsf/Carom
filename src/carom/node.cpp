@@ -321,7 +321,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
         for(i=0;i<_chisquared->get_dim();i++){
             mu=0.0;
             for(j=0;j<_chisquared->get_dim();j++){
-                mu+=_chisquared->get_pt(_basis_associates.get_data(ix),j)*trial_bases.get_data(i,j);
+                mu+=(_chisquared->get_pt(_basis_associates.get_data(ix),j)-_chisquared->get_pt(_centerdex,j))*trial_bases.get_data(i,j);
             }
             _basis_ddsq.set(ix,i,mu*mu);
         }
@@ -622,7 +622,7 @@ void node::find_bases(){
     changed_bases=0;
     ct=0;
     
-    printf("error0 %e\n",error0);
+    printf("error0 %e %d\n",error0,_basis_associates.get_dim());
     while(stdev>stdevlim && aborted<max_abort){
         ct++;
         idim=-1;
