@@ -38,6 +38,7 @@ private:
     void is_it_safe(char*);
     
     void compass_search();
+    void compass_off_diagonal();
 };
 
 class arrayOfNodes{

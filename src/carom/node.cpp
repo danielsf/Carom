@@ -432,15 +432,147 @@ void node::compass_search(){
                 dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i));
             }
             
-            for(i=0;i<_chisquared->get_dim();i++){
-                trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
-            }
-            evaluate(trial,&ftrial,&iFound);
             if(iFound>=0){
-                _basis_associates.add(iFound);
+                j=iFound;
+                for(i=0;i<_chisquared->get_dim();i++){
+                    trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
+                }
+                evaluate(trial,&ftrial,&iFound);
+                if(iFound>=0){
+                    _basis_associates.add(iFound);
+                }
+            
+                for(i=0;i<_chisquared->get_dim();i++){
+                    trial.set(i,0.75*_chisquared->get_pt(_centerdex,i)+0.25*_chisquared->get_pt(j,i));
+                }
+                evaluate(trial,&ftrial,&iFound);
+                if(iFound>=0){
+                    _basis_associates.add(iFound);
+                }
+            }
+            
+        }
+    }
+}
+
+void node::compass_off_diagonal(){
+    is_it_safe("compass_off_diagonal");
+
+    int ix,iy;
+    array_1d<double> trial,lowball,highball,dir;
+    trial.set_name("node_off_diag_trial");
+    lowball.set_name("node_off_diag_lowball");
+    highball.set_name("node_off_diag_highball");
+    dir.set_name("node_off_diag_dir");
+    
+    double dx,dy,dmin,step;
+    double flow,fhigh,ftrial;
+    int i,j,k,iFound;
+    
+    double sqrt2o2,xweight,yweight;
+    
+    sqrt2o2=0.5*sqrt(2.0);
+    
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        i=2*ix;
+        j=i+1;
+        
+        dx=-1.0;
+        if(_compass_points.get_dim()>i && _compass_points.get_dim()>j){
+            dx=0.0;
+            for(k=0;k<_chisquared->get_dim();k++){
+                dx+=0.5*(_chisquared->get_pt(j,k)-_chisquared->get_pt(i,k))*_basis_vectors.get_data(ix,k);
+            }
+        }
+        
+        if(dx<0.0){
+            dx=2.0*exception_value;
+        }
+        
+        for(iy=ix+1;iy<_chisquared->get_dim();iy++){
+            i=2*iy;
+            j=i+1;
+            
+            dy=-1.0;
+            if(_compass_points.get_dim()>i && _compass_points.get_dim()>j){
+                dy=0.0;
+                for(k=0;k<_chisquared->get_dim();k++){
+                    dy+=0.5*(_chisquared->get_pt(j,k)-_chisquared->get_pt(i,k))*_basis_vectors.get_data(iy,k);
+                }
+            }
+            
+            if(dy<0.0){
+                dy=2.0*exception_value;
+            }
+            
+            if(dx<dy){
+                dmin=dx;
+            }
+            else{
+                dmin=dy;
+            }
+            
+            for(xweight=-1.0*sqrt2o2;xweight<sqrt2o2*1.1;xweight+=2.0*sqrt2o2){
+                for(yweight=-1.0*sqrt2o2;yweight<sqrt2o2*1.1;yweight+=2.0*sqrt2o2){
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        dir.set(i,xweight*_basis_vectors.get_data(ix,i)+yweight*_basis_vectors.get_data(iy,i));
+                    }
+                
+                    flow=2.0*exception_value;
+                    fhigh=-2.0*exception_value;
+                    if(dmin<exception_value){
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            trial.set(i,_chisquared->get_pt(_centerdex,i)+dmin*dir.get_data(i));
+                        }
+                        evaluate(trial,&ftrial,&iFound);
+                        
+                        if(ftrial<_chisquared->target()){
+                            flow=ftrial;
+                            for(i=0;i<_chisquared->get_dim();i++){
+                                lowball.set(i,trial.get_data(i));
+                            }
+                        }
+                        else{
+                            fhigh=ftrial;
+                            for(i=0;i<_chisquared->get_dim();i++){
+                                highball.set(i,trial.get_data(i));
+                            }
+                        }
+                    }
+                    
+                    if(flow>_chisquared->target()){
+                        flow=_chimin;
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                        }
+                    }
+                    
+                    step=1.0;
+                    while(fhigh<_chisquared->target()){
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            highball.set(i,lowball.get_data(i)+step*dir.get_data(i));
+                        }
+                        evaluate(highball,&fhigh,&iFound);
+                        step*=2.0;
+                    }
+                    
+                    iFound=bisection(lowball,flow,highball,fhigh);
+                    
+                    if(iFound>=0){
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
+                        }
+                        evaluate(trial,&ftrial,&iFound);
+                        if(iFound>=0){
+                            _basis_associates.add(iFound);
+                        }
+                    }
+                    
+                }
             }
         }
     }
+
 }
 
 ///////////////arrayOfNodes code below//////////
