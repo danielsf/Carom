@@ -198,7 +198,7 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
         
         ct++;
     }
-    
+
     return iout;
 
 }
@@ -208,6 +208,7 @@ void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> &bases
     is_it_safe("perturb_bases");
     
     int i,j;
+    bases_out.set_cols(_basis_vectors.get_cols());
     for(i=0;i<_chisquared->get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
             bases_out.set(i,j,_basis_vectors.get_data(i,j));
@@ -361,7 +362,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
         }
         error+=power(_chisquared->get_fn(_basis_associates.get_data(i))-chi_model,2);
     }
-    
+
     return error;
     
 }
@@ -425,6 +426,7 @@ void node::compass_search(){
                 step*=2.0;
             }
             
+            iFound=-1;
             iFound=bisection(lowball,flow,highball,fhigh);
             
             dx=0.0;
@@ -618,9 +620,10 @@ void node::find_bases(){
     aborted=0;
     total_aborted=0;
     changed_bases=0;
+    ct=0;
     
     printf("error0 %e\n",error0);
-    while(stdev>stdevlim && aborted>max_abort){
+    while(stdev>stdevlim && aborted<max_abort){
         ct++;
         idim=-1;
         while(idim>=_chisquared->get_dim() || idim<0){
@@ -672,6 +675,7 @@ void node::find_bases(){
         compass_search();
     }
     
+    printf("done finding bases\n");
 }
 
 

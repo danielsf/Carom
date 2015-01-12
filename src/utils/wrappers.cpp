@@ -274,6 +274,7 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     int validity,neighdex;
     validity=is_valid(pt,&neighdex);
     
+    dex[0]=-1;
     if(validity!=1){
         if(neighdex>=0){
             value[0]=_fn.get_data(neighdex);
@@ -294,6 +295,7 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     if(mu<exception_value){
         _kptr->add(pt);
         _fn.add(mu);
+        dex[0]=_kptr->get_pts()-1;
     
         if(mu<_chimin){
             _chimin=mu;

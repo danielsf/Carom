@@ -80,11 +80,12 @@ double chitrue;
 
 output=fopen("output/s_curve_projected.sav","w");
 input=fopen(inputName,"r");
-/*for(i=0;i<dim+5;i++){
+for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
     fprintf(output,"%s ",word);
 }
-fprintf(output,"\n");*/
+fprintf(output,"\n");
+printf("word %s dim %d\n",word,dim);
 while(fscanf(input,"%le",&nn)>0){
     vv.set(0,nn);
     for(i=1;i<dim;i++){

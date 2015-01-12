@@ -68,6 +68,11 @@ void carom::write_pts(){
     
     int i,j;
     output=fopen(_outname,"w");
+    fprintf(output,"# ");
+    for(i=0;i<_chifn.get_dim();i++){
+        fprintf(output,"p%d ",i);
+    }
+    fprintf(output,"chisq mu sig ling\n");
     for(i=0;i<_chifn.get_pts();i++){
         for(j=0;j<_chifn.get_dim();j++){
             fprintf(output,"%.18e ",_chifn.get_pt(i,j));
