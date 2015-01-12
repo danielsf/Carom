@@ -150,6 +150,7 @@ void carom::assess_node(int dex){
     
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
         _nodes.add(dex,&_chifn);
+        _nodes(0)->find_bases();
         return;
     }
     
@@ -163,7 +164,7 @@ void carom::assess_node(int dex){
         so_far_so_good=0;
         for(dx=0.25;dx<0.8 && so_far_so_good==0;dx+=0.25){
             for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,dx*_chifn.get_pt(dex,i)+(1.0-dx)*_chifn.get_pt(_nodes(i)->get_center(),i));
+                trial.set(i,dx*_chifn.get_pt(dex,i)+(1.0-dx)*_chifn.get_pt(_nodes(ix)->get_center(),i));
             }
             _chifn.evaluate(trial,&ftrial,&iFound);
             
