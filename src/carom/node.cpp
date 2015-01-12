@@ -298,7 +298,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
     }
     
     if(_basis_mm.get_dim()!=_chisquared->get_dim()*_chisquared->get_dim()){
-        _basis_mm.set_dim(_chisquared->get_dim()&_chisquared->get_dim());
+        _basis_mm.set_dim(_chisquared->get_dim()*_chisquared->get_dim());
     }
     
     if(_basis_bb.get_dim()!=_chisquared->get_dim()){
