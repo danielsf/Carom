@@ -18,6 +18,7 @@ public:
     void set_basis(int,int,double);
     void evaluate(array_1d<double>&, double*, int*);
     int get_center();
+    void find_bases();
     
 private:
     int _centerdex;

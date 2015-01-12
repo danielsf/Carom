@@ -453,6 +453,8 @@ void node::compass_search(){
             
         }
     }
+    
+    compass_off_diagonal();
 }
 
 void node::compass_off_diagonal(){
@@ -574,6 +576,104 @@ void node::compass_off_diagonal(){
     }
 
 }
+
+void node::find_bases(){
+    is_it_safe("find_bases");
+    
+    if(_basis_associates.get_dim()==0){
+        compass_search();
+    }
+    
+    int i,j;
+    for(i=0;i<_basis_associates.get_dim();i++){
+        if(_chisquared->get_fn(_basis_associates.get_data(i))-_chimin < 1.0e-6){
+            _basis_associates.remove(i);
+            i--;
+        }
+    }
+    
+    if(_basis_associates.get_dim()==0){
+        printf("WARNING _basis associates is empty\n");
+        exit(1);
+    }
+    
+    array_2d<double> trial_bases;
+    array_1d<double> trial_model,dx;
+    
+    trial_bases.set_name("node_find_bases_trial_bases");
+    trial_model.set_name("node_find_bases_trial_model");
+    dx.set_name("node_find_bases_dx");
+    
+    int ct,idim,aborted,max_abort,total_aborted,changed_bases;
+    double error0,error,errorBest,stdev,stdevlim,error1;
+    
+    stdev=0.1;
+    stdevlim=1.0e-5/sqrt(double(_chisquared->get_dim()));
+    max_abort=_chisquared->get_dim()*100;
+    
+    error=basis_error(_basis_vectors,_basis_model);
+    error0=error;
+    error1=error;
+    errorBest=error;
+    aborted=0;
+    total_aborted=0;
+    changed_bases=0;
+    
+    printf("error0 %e\n",error0);
+    while(stdev>stdevlim && aborted>max_abort){
+        ct++;
+        idim=-1;
+        while(idim>=_chisquared->get_dim() || idim<0){
+            idim=_chisquared->random_int()%_chisquared->get_dim();
+        }
+        
+        for(i=0;i<_chisquared->get_dim();i++){
+            dx.set(i,normal_deviate(_chisquared->get_dice(),0.0,stdev));
+        }
+        
+        perturb_bases(idim,dx,trial_bases);
+        error=basis_error(trial_bases,trial_model);
+        
+        if(error<errorBest){
+            if(error1-error>1.0e-5*error){
+                aborted=0;
+            }
+            else{
+                aborted++;
+                total_aborted++;
+            }
+            
+            changed_bases=1;
+            for(i=0;i<_chisquared->get_dim();i++){
+                _basis_model.set(i,trial_model.get_data(i));
+                for(j=0;j<_chisquared->get_dim();j++){
+                    _basis_vectors.set(i,j,trial_bases.get_data(i,j));
+                }
+            }
+            errorBest=error;
+        }
+        else{
+            aborted++;
+            total_aborted++;
+        }
+        
+        if(ct%(max_abort/2)==0){
+            if(total_aborted<(3*ct)/4)stdev*=1.5;
+            else if(total_aborted>(3*ct)/4)stdev*=0.5;
+        }
+        
+        if(ct%1000==0){
+            error1=errorBest;
+            printf("    ct %d error %e from %e\n",ct,errorBest,error0);
+        }
+    }
+    
+    if(changed_bases==1){
+        compass_search();
+    }
+    
+}
+
 
 ///////////////arrayOfNodes code below//////////
 
