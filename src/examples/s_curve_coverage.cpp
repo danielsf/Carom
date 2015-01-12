@@ -127,6 +127,9 @@ printf("time to initialize\n");
 chisq.reset_timer();
 carom_test.initialize(1000);
 carom_test.search();
+carom_test.search();
+carom_test.search();
+carom_test.search();
 
 /*
 double chival,chivaltest,err;

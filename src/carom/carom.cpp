@@ -114,7 +114,25 @@ void carom::simplex_search(){
         }
     }
     
+    gp_cost cost_fn;
+    
+    if(_nodes.get_dim()>0){
+        cost_fn.set_chifn(&_chifn);
+        ffmin.set_cost(&cost_fn);
+    }
+    
     ffmin.find_minimum(seed,minpt);
+    
+    array_1d<int> neigh;
+    array_1d<double> dd;
+    neigh.set_name("carom_simplex_neigh");
+    dd.set_name("carom_simplex_dd");
+    _chifn.nn_srch(minpt,1,neigh,dd);
+    
+    assess_node(neigh.get_data(0));
+    
+    printf("done simplex searching; called cost %d _nodes %d\n",cost_fn.get_called(),_nodes.get_dim());
+    
     write_pts();
 }
 
@@ -161,6 +179,10 @@ void carom::assess_node(int dex){
     
     if(keep_it==1){
         _nodes.add(dex,&_chifn);
+        
+        i=_nodes.get_dim()-1;
+        _nodes(i)->find_bases();
+        
     }
     
 }

@@ -571,3 +571,10 @@ void simplex_minimizer::expand(){
     if(need_thaw_temp==1)_freeze_temp=0;
     if(need_thaw_called==1)_freeze_called=0;
 }
+
+void simplex_minimizer::get_minpt(array_1d<double> &out){
+    int i;
+    for(i=0;i<_min_pt.get_dim();i++){
+        out.set(i,_min_pt.get_data(i));
+    }
+}

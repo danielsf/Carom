@@ -20,6 +20,7 @@ public:
     void use_gradient();
     void freeze_temp();
     void unfreeze_temp();
+    void get_minpt(array_1d<double>&);
     
     /*
     the array_2d will be the input array of points;
