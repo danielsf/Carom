@@ -112,10 +112,29 @@ void carom::simplex_search(){
     seed.set_name("carom_simplex_search_seed");
     
     seed.set_cols(_chifn.get_dim());
-    int i,j;
-    for(i=0;i<_chifn.get_dim()+1;i++){
-        for(j=0;j<_chifn.get_dim();j++){
-            seed.set(i,j,_chifn.get_pt(i,j));
+    int i,j,iFound;
+    array_1d<double> trial;
+    array_1d<int> seed_dex;
+    double ftrial;
+    trial.set_name("carom_simplex_search_trial");
+    seed_dex.set_name("carom_simplex_search_seed_dex");
+    
+    while(seed.get_rows()<_chifn.get_dim()+1){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,min.get_data(i)+_chifn.random_double()*(max.get_data(i)-min.get_data(i)));
+        }
+        _chifn.evaluate(trial,&ftrial,&iFound);
+        
+        if(ftrial<exception_value){
+            j=1;
+            for(i=0;i<seed_dex.get_dim() && j==1;i++){
+                if(iFound==seed_dex.get_data(i))j=0;
+            }
+            
+            if(j==1){
+                seed_dex.add(iFound);
+                seed.add_row(trial);
+            }
         }
     }
     
