@@ -31,6 +31,8 @@ void node::initialize(){
     _basis_vectors.set_name("node_basis_vectors");
     _basis_ddsq.set_name("node_basis_ddsq");
     _basis_vv.set_name("node_basis_vv");
+    _max_found.set_name("node_max_found");
+    _min_found.set_name("node_min_found");
 }
 
 void node::copy(const node &in){
@@ -73,6 +75,16 @@ void node::copy(const node &in){
             _basis_vectors.set(i,j,in._basis_vectors.get_data(i,j));
         }
     }
+    
+    _min_found.reset();
+    for(i=0;i<in._min_found.get_dim();i++){
+        _min_found.set(i,in._min_found.get_data(i));
+    }
+    
+    _max_found.reset();
+    for(i=0;i<in._max_found.get_dim();i++){
+        _max_found.set(i,in._max_found.get_data(i));
+    }
 }
 
 void node::set_center(int ix){
@@ -105,6 +117,22 @@ void node::set_chisquared(chisq_wrapper *cc){
 
 int node::get_center(){
     return _centerdex;
+}
+
+double node::volume(){
+    is_it_safe("volume");
+    if(_min_found.get_dim()!=_chisquared->get_dim() || _max_found.get_dim()!=_chisquared->get_dim()){
+        return 0.0;
+    }
+    
+    double ans;
+    int i;
+    ans=1.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        ans*=(_max_found.get_data(i)-_min_found.get_data(i));
+    }
+    
+    return ans;
 }
 
 void node::set_basis(int ii, int jj, double vv){
@@ -142,11 +170,26 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
     
     _chisquared->evaluate(pt,value,dex);
     
+    int i;
+    
     if(dex>=0){
         if(value[0]<_chimin){
             _chimin=value[0];
             _centerdex=dex[0];
         }
+        
+        if(value[0]<=_chisquared->target()){
+            for(i=0;i<pt.get_dim();i++){
+                if(i>=_min_found.get_dim() || pt.get_data(i)<_min_found.get_data(i)){
+                    _min_found.set(i,pt.get_data(i));
+                }
+                
+                if(i>=_max_found.get_dim() || pt.get_data(i)>=_max_found.get_data(i)){
+                    _max_found.set(i,pt.get_data(i));
+                }
+            }
+        }
+        
     }
 }
 
