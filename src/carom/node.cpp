@@ -33,6 +33,8 @@ void node::initialize(){
     _basis_vv.set_name("node_basis_vv");
     _max_found.set_name("node_max_found");
     _min_found.set_name("node_min_found");
+    _ricochet_particles.set_name("node_ricochet_particles");
+    _ricochet_velocities.set_name("node_ricochet_velocities");
 }
 
 void node::copy(const node &in){
@@ -84,6 +86,17 @@ void node::copy(const node &in){
     _max_found.reset();
     for(i=0;i<in._max_found.get_dim();i++){
         _max_found.set(i,in._max_found.get_data(i));
+    }
+    
+    _ricochet_particles.reset();
+    _ricochet_velocities.reset();
+    _ricochet_particles.set_cols(in._ricochet_velocities.get_cols());
+    _ricochet_velocities.set_cols(in._ricochet_velocities.get_cols());
+    for(i=0;i<in._ricochet_velocities.get_rows();i++){
+        for(j=0;j<in._ricochet_velocities.get_cols();i++){
+            _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
+            _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
+        }
     }
 }
 
@@ -413,6 +426,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 void node::compass_search(){
     
     is_it_safe("compass_search");
+    _compass_points.reset();
     
     int ix,i,j,iFound;
     double sgn,flow,fhigh,dx,ftrial,step;
@@ -478,6 +492,7 @@ void node::compass_search(){
             }
             
             if(iFound>=0){
+                _compass_points.add(iFound);
                 j=iFound;
                 for(i=0;i<_chisquared->get_dim();i++){
                     trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
@@ -719,6 +734,49 @@ void node::find_bases(){
     }
     
     printf("done finding bases\n");
+}
+
+void node::initialize_ricochet(){
+    is_it_safe("initialize_ricochet");
+    
+    if(_compass_points.get_dim()==0){
+        find_bases();
+    }
+    
+    _ricochet_velocities.reset();
+    _ricochet_particles.reset();
+    _ricochet_velocities.set_cols(_chisquared->get_dim());
+    _ricochet_particles.set_cols(_chisquared->get_dim());
+    
+    array_1d<double> trial,radius;
+    trial.set_name("node_initialize_ricochet_trial");
+    radius.set_name("node_initialize_ricochet_radius");
+    
+    double mu;
+    int i,j;
+    for(i=0;i<_compass_points.get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        
+        
+        for(j=0;j<_chisquared->get_dim();j++){
+            _ricochet_particles.set(i,j,_chisquared->get_pt(_compass_points.get_data(i),j));
+            radius.set(j,_chisquared->get_pt(_centerdex,j)-_ricochet_particles.get_data(i,j));
+        }
+        radius.normalize();
+        mu=0.0;
+        for(j=0;j<_chisquared->get_dim();j++){
+            mu+=trial.get_data(j)*radius.get_data(j);
+        }
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial.subtract_val(j,mu*radius.get_data(j));
+        }
+        //spock
+        //next step is to add a little bit of a radial component back in
+        //then normalize
+        
+    }
 }
 
 
