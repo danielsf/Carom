@@ -814,6 +814,7 @@ void node::ricochet(){
        
    }
    
+   printf("    starting ricochet with volume %e\n",volume());
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir;
    
@@ -910,7 +911,7 @@ void node::ricochet(){
        }
        
    }
-    
+   printf("    ending ricochet with volume %e\n\n",volume());
 }
 
 
