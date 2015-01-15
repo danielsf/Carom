@@ -788,6 +788,95 @@ void node::initialize_ricochet(){
     }
 }
 
+void node::ricochet(){
+    is_it_safe("ricochet");
+    
+    if(_ricochet_velocities.get_rows()==0){
+        initialize_ricochet();
+    }
+    
+    if(_ricochet_velocities.get_rows()!=_ricochet_particles.get_rows()){
+        printf("WARNING in node n_velocities %d n_particles %d\n",
+        _ricochet_velocities.get_rows(),_ricochet_particles.get_rows());
+        
+        exit(1);
+    }
+    
+    if(_ricochet_velocities.get_cols()!=_chisquared->get_dim() ||
+       _ricochet_particles.get_cols()!=_chisquared->get_dim()){
+   
+       printf("WARNING in node ricochet dim %d %d shld be %d\n",
+       _ricochet_velocities.get_cols(),_ricochet_particles.get_cols(),
+       _chisquared->get_dim());
+       
+       exit(1);
+       
+   }
+   
+   double flow,fhigh;
+   array_1d<double> lowball,highball;
+   
+   lowball.set_name("node_ricochet_lowball");
+   highball.set_name("node_ricochet_highball");
+    
+   int ix,i,j,iFound;
+   double dx,x1,x2,y1,y2,component;
+   array_1d<double> gradient,trial,dir;
+   
+   gradient.set_name("node_ricochet_gradient");
+   trial.set_name("node_ricochet_trial");
+   dir.set_name("node_ricochet_dir");
+   
+   for(ix=0;ix<_ricochet_particles.get_rows();ix++){
+       flow=2.0*exception_value;
+       fhigh=-2.0*exception_value;
+       try{
+           _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
+       }
+       catch(int iex){
+           //code to do a brute force gradient if necessary
+       }
+       
+       gradient.normalize();
+       component=0.0;
+       for(i=0;i<_chisquared->get_dim();i++){
+           component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
+       }
+       
+       for(i=0;i<_chisquared->get_dim();i++){
+           dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
+       }
+       
+       _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
+       if(flow>=_chisquared->target()){
+           printf("WARNING in node ricochet flow %e\n",flow);
+           exit(1);
+       }
+       
+       for(i=0;i<_chisquared->get_dim();i++){
+           lowball.set(i,_ricochet_particles.get_data(ix,i));
+           highball.set(i,_ricochet_particles.get_data(ix,i));
+       }
+       
+       component=1.0;
+       while(fhigh<_chisquared->target()){
+           for(i=0;i<_chisquared->get_dim();i++){
+               highball.add_val(i,component*dir.get_data(i));
+           }
+           evaluate(highball,&fhigh,&j);
+           component*=2.0;
+       }
+       
+       iFound=bisection(lowball,flow,highball,fhigh);
+       for(i=0;i<_chisquared->get_dim();i++){
+           _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
+           _ricochet_velocities.set(ix,i,dir.get_data(i));
+       }
+       
+   }
+    
+}
+
 
 ///////////////arrayOfNodes code below//////////
 
