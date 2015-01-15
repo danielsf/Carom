@@ -748,9 +748,9 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     
-    array_1d<double> trial,radius;
+    array_1d<double> trial,gradient;
     trial.set_name("node_initialize_ricochet_trial");
-    radius.set_name("node_initialize_ricochet_radius");
+    gradient.set_name("node_initialize_ricochet_gradient");
     
     double mu;
     int i,j;
@@ -762,23 +762,24 @@ void node::initialize_ricochet(){
         //find the radial vector pointing from the particle to _centerdex
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(_compass_points.get_data(i),j));
-            radius.set(j,_chisquared->get_pt(_centerdex,j)-_ricochet_particles.get_data(i,j));
         }
-        radius.normalize();
+        
+        _chisquared->find_gradient(_ricochet_particles(i)[0],gradient);
+        gradient.normalize();
         
         //make the trial velocity perpendicular to the radial vector
         mu=0.0;
         for(j=0;j<_chisquared->get_dim();j++){
-            mu+=trial.get_data(j)*radius.get_data(j);
+            mu+=trial.get_data(j)*gradient.get_data(j);
         }
         for(j=0;j<_chisquared->get_dim();j++){
-            trial.subtract_val(j,mu*radius.get_data(j));
+            trial.subtract_val(j,mu*gradient.get_data(j));
         }
         trial.normalize();
         
         //add a little radial component in so it is slanting in towards a different part of the surface
         for(j=0;j<_chisquared->get_dim();j++){
-            trial.add_val(j,0.05*radius.get_data(j));
+            trial.add_val(j,0.05*gradient.get_data(j));
         }
         trial.normalize();
         for(j=0;j<_chisquared->get_dim();j++){
