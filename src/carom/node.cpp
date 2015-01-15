@@ -835,6 +835,8 @@ void node::ricochet(){
            _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
        }
        catch(int iex){
+           printf("ricochet failed to get gradient\n");
+           exit(1);
            //code to do a brute force gradient if necessary
        }
        
