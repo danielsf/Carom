@@ -759,12 +759,14 @@ void node::initialize_ricochet(){
             trial.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
         
-        
+        //find the radial vector pointing from the particle to _centerdex
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(_compass_points.get_data(i),j));
             radius.set(j,_chisquared->get_pt(_centerdex,j)-_ricochet_particles.get_data(i,j));
         }
         radius.normalize();
+        
+        //make the trial velocity perpendicular to the radial vector
         mu=0.0;
         for(j=0;j<_chisquared->get_dim();j++){
             mu+=trial.get_data(j)*radius.get_data(j);
@@ -772,9 +774,16 @@ void node::initialize_ricochet(){
         for(j=0;j<_chisquared->get_dim();j++){
             trial.subtract_val(j,mu*radius.get_data(j));
         }
-        //spock
-        //next step is to add a little bit of a radial component back in
-        //then normalize
+        trial.normalize();
+        
+        //add a little radial component in so it is slanting in towards a different part of the surface
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial.add_val(j,0.05*radius.get_data(j));
+        }
+        trial.normalize();
+        for(j=0;j<_chisquared->get_dim();j++){
+            _ricochet_velocities.set(i,j,trial.get_data(j));
+        }
         
     }
 }
