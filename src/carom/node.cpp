@@ -957,6 +957,8 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
+    
+    _data[_ct].find_bases();
 
     _ct++;
 
