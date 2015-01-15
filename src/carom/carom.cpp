@@ -176,6 +176,10 @@ void carom::search(){
         }
         _ct_node+=_chifn.get_called()-before;
     }
+    
+    if(_chifn.get_called()-_last_written>_write_every){
+        write_pts();
+    }
 }
 
 void carom::assess_node(int dex){
