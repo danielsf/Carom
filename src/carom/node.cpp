@@ -814,11 +814,14 @@ void node::ricochet(){
        
    }
    
-   double flow,fhigh;
-   array_1d<double> lowball,highball;
+   double flow,fhigh,eflow,efhigh;
+   array_1d<double> lowball,highball,elowball,ehighball,edir;
    
    lowball.set_name("node_ricochet_lowball");
    highball.set_name("node_ricochet_highball");
+   elowball.set_name("node_ricochet_elowball");
+   ehighball.set_name("node_ricochet_ehighball"); 
+   edir.set_name("node_ricochet_edir");
     
    int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component;
@@ -851,14 +854,44 @@ void node::ricochet(){
        }
        
        _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
+       for(i=0;i<_chisquared->get_dim();i++){
+           lowball.set(i,_ricochet_particles.get_data(ix,i));
+       }
+       if(flow>=_chisquared->target()){
+           for(i=0;i<_chisquared->get_dim();i++){
+               elowball.set(i,_chisquared->get_pt(_centerdex,i));
+               ehighball.set(i,elowball.get_data(i));
+               edir.set(i,lowball.get_data(i)-elowball.get_data(i));
+           }
+           edir.normalize();
+           eflow=_chimin;
+           
+           component=1.0;
+           efhigh=-2.0*exception_value;
+           while(efhigh<=_chisquared->target()){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   ehighball.add_val(i,component*edir.get_data(i));
+               }
+               evaluate(ehighball,&efhigh,&i);
+               component*=2.0;
+               
+           }
+           
+           iFound=bisection(elowball,eflow,ehighball,efhigh);
+           for(i=0;i<_chisquared->get_dim();i++){
+               lowball.set(i,_chisquared->get_pt(iFound,i));
+           }
+           flow=_chisquared->get_fn(iFound);
+           
+       }
+       
        if(flow>=_chisquared->target()){
            printf("WARNING in node ricochet flow %e\n",flow);
            exit(1);
        }
        
        for(i=0;i<_chisquared->get_dim();i++){
-           lowball.set(i,_ricochet_particles.get_data(ix,i));
-           highball.set(i,_ricochet_particles.get_data(ix,i));
+           highball.set(i,lowball.get_data(i));
        }
        
        component=1.0;
