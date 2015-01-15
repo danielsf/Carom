@@ -3,6 +3,8 @@
 carom::carom(){
     _write_every=3000;
     _last_written=0;
+    _ct_simplex=0;
+    _ct_node=0;
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
@@ -161,7 +163,19 @@ void carom::simplex_search(){
 }
 
 void carom::search(){
-    simplex_search();
+    int before,i;
+    if(_nodes.get_dim()==0 || _ct_node>_ct_simplex){
+        before=_chifn.get_called();
+        simplex_search();
+        _ct_simplex+=_chifn.get_called()-before;
+    }
+    else{
+        before=_chifn.get_called();
+        for(i=0;i<_nodes.get_dim();i++){
+            _nodes(i)->ricochet();
+        }
+        _ct_node+=_chifn.get_called()-before;
+    }
 }
 
 void carom::assess_node(int dex){
@@ -174,7 +188,6 @@ void carom::assess_node(int dex){
     
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
         _nodes.add(dex,&_chifn);
-        _nodes(0)->find_bases();
         return;
     }
     
@@ -206,7 +219,6 @@ void carom::assess_node(int dex){
         _nodes.add(dex,&_chifn);
         
         i=_nodes.get_dim()-1;
-        _nodes(i)->find_bases();
         
     }
     
