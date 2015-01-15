@@ -404,3 +404,106 @@ double chisq_wrapper::distance(int i1, int i2){
     is_it_safe("distance(i,i)");
     return _kptr->distance(i1,i2);
 }
+
+void chisq_wrapper::find_gradient(array_1d<double> &pt, array_1d<double> &grad){
+    is_it_safe("find_gradient");
+    
+    if(_kptr->get_pts()<_kptr->get_dim()){
+        printf("WARNING cannot compute gradient dim %d pts %d\n",
+        _kptr->get_dim(),_kptr->get_pts());
+        
+        exit(1);
+    }
+    
+    double fCenter;
+    int iCenter;
+    evaluate(pt,&fCenter,&iCenter);
+    
+    array_1d<int> neigh,use;
+    array_1d<double> dd,trial_dir;
+    array_2d<double> dirs;
+    
+    neigh.set_name("chisq_wrapper_grad_neigh");
+    dd.set_name("chisq_wrapper_grad_dd");
+    dirs.set_name("chisq_wrapper_grad_dirs");
+    use.set_name("chisq_wrapper_grad_use");
+    trial_dir.set_name("chisq_wrapper_grad_trial_dir");
+    
+    int dosrch,npts,ix,i,j;
+    dosrch=1;
+    npts=5*_kptr->get_dim();
+    if(_kptr->get_pts()<npts){
+        dosrch=0;
+    }
+    
+    if(dosrch==1){
+        nn_srch(pt,npts,neigh,dd);
+    }
+    else{
+        neigh.set(0,iCenter);
+        dd.set(0,0.0);
+        for(i=0;i<_kptr->get_pts();i++){
+            if(i!=neigh.get_data(0)){
+                neigh.add(i);
+                dd.add(_kptr->distance(pt,i));
+            }
+        }
+    }
+    
+    int use_it;
+    double threshold,dotproduct;
+    
+    threshold=0.05;
+    for(ix=1;ix<neigh.get_dim() && use.get_dim()<_kptr->get_dim();ix++){
+        use_it=1;
+        for(i=0;i<_kptr->get_dim();i++){
+            trial_dir.set(i,_kptr->get_pt(neigh.get_data(ix),i)-pt.get_data(i));
+        }
+        trial_dir.normalize();
+            
+        for(i=0;i<dirs.get_rows() && use_it==1;i++){
+            dotproduct=0.0;
+            for(j=0;j<_kptr->get_dim();j++){
+                dotproduct+=trial_dir.get_data(j)*dirs.get_data(i,j);
+            }
+                
+            if(fabs(dotproduct-1.0)<threshold){
+                use_it=0;
+            }
+        }
+            
+        if(use_it==1){
+            use.add(neigh.get_data(ix));
+            dirs.add_row(trial_dir);
+        }
+     }
+    
+    if(use.get_dim()!=_kptr->get_dim()){
+        printf("WARNING gradient failed with dim %d needed %d\n",use.get_dim(),_kptr->get_dim());
+        exit(1);
+    }
+    
+    grad.zero();
+    array_1d<double> mm,bb;
+    mm.set_name("chisq_wrapper_gradient_mm");
+    bb.set_name("chisq_wrapper_gradient_bb");
+    
+    mm.set_dim(_kptr->get_dim()*_kptr->get_dim());
+    bb.set_dim(_kptr->get_dim());
+    
+    for(i=0;i<_kptr->get_dim();i++){
+        bb.set(i,_fn.get_data(use.get_data(i))-fCenter);
+        for(j=0;j<_kptr->get_dim();j++){
+            mm.set(i*_kptr->get_dim()+j,_kptr->get_pt(use.get_data(i),j)-pt.get_data(j));
+        }
+    }
+    
+    try{
+        naive_gaussian_solver(mm,bb,grad,_kptr->get_dim());
+    }
+    catch(int iex){
+        printf("WARNING in gradient naive gaussian solver threw an exception\n");
+        exit(1);
+    }
+    
+}
