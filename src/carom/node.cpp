@@ -940,7 +940,7 @@ void node::perturb_ricochet(){
     int ix,i,j;
     double component;
     
-    for(ix=0;ix<_ricochet_particles.get_rows();i++){
+    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
         _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
         gradient.normalize();
         for(i=0;i<_chisquared->get_dim();i++){
