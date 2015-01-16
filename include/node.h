@@ -24,7 +24,7 @@ public:
     
 private:
     int _centerdex;
-    int _ricochet_since_expansion,_ricochet_since_perturbation,_min_changed;
+    int _ricochet_since_expansion,_min_changed;
     double _chimin,_bisection_tolerance;
     
     array_1d<int> _compass_points,_basis_associates;
@@ -47,7 +47,6 @@ private:
     void compass_search();
     void compass_off_diagonal();
     void initialize_ricochet();
-    void perturb_ricochet();
 };
 
 class arrayOfNodes{

@@ -24,7 +24,6 @@ void node::initialize(){
     _centerdex=-1;
     _bisection_tolerance=0.01;
     _ricochet_since_expansion=0;
-    _ricochet_since_perturbation=0;
     _min_changed=0;
     _compass_points.set_name("node_compass_points");
     _basis_associates.set_name("node_basis_associates");
@@ -44,7 +43,6 @@ void node::copy(const node &in){
     _centerdex=in._centerdex;
     _chimin=in._chimin;
     _ricochet_since_expansion=in._ricochet_since_expansion;
-    _ricochet_since_perturbation=in._ricochet_since_perturbation;
     _min_changed=in._min_changed;
     
     
@@ -755,7 +753,6 @@ void node::initialize_ricochet(){
     }
     
     _ricochet_since_expansion=0;
-    _ricochet_since_perturbation=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
@@ -917,52 +914,10 @@ void node::ricochet(){
        _ricochet_since_expansion=0;
    }
    else{
-       if(_ricochet_since_perturbation>0){
-           perturb_ricochet();
-       }
-       else{
-           _ricochet_since_perturbation++;
-       }
        _ricochet_since_expansion++;
    }
    
    printf("    ending ricochet with volume %e\n\n",volume1);
-}
-
-void node::perturb_ricochet(){
-    is_it_safe("perturb_ricochet");
-    _ricochet_since_perturbation=0;
-    
-    array_1d<double> gradient,trial;
-    gradient.set_name("node_perturb_ricochet_gradient");
-    trial.set_name("node_perturb_ricochet_trial");
-    
-    int ix,i,j;
-    double component;
-    
-    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
-        _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
-        gradient.normalize();
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        component=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            component+=trial.get_data(i)*gradient.get_data(i);
-        }
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial.subtract_val(i,component*gradient.get_data(i));
-        }
-        
-        component=trial.normalize();
-        printf("    component %e\n",component);
-        _ricochet_velocities(ix)->normalize();
-        for(i=0;i<_chisquared->get_dim();i++){
-            _ricochet_velocities(ix)->add_val(i,0.1*trial.get_data(i));
-        }
-        
-    }
-    
 }
 
 ///////////////arrayOfNodes code below//////////
