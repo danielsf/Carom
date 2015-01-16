@@ -90,6 +90,10 @@ void carom::write_pts(){
         (double(time(NULL))-_time_started)/double(_chifn.get_called()));
     fclose(output);
     
+    printf("\nNODE CENTERS\n");
+    for(i=0;i<_nodes.get_dim();i++){
+        printf("    %e\n",_chifn.get_fn(_nodes(i)->get_center()));
+    }
 
     _last_written=_chifn.get_called();
 }
