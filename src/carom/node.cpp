@@ -917,6 +917,12 @@ void node::ricochet(){
        _ricochet_since_expansion=0;
    }
    else{
+       if(_ricochet_since_perturbation>0){
+           perturb_ricochet();
+       }
+       else{
+           _ricochet_since_perturbation++;
+       }
        _ricochet_since_expansion++;
    }
    
