@@ -621,6 +621,7 @@ void node::compass_off_diagonal(){
                     iFound=bisection(lowball,flow,highball,fhigh);
                     
                     if(iFound>=0){
+                        _compass_points.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
                             trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
                         }
@@ -748,45 +749,29 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     
-    array_1d<double> trial,gradient;
-    trial.set_name("node_initialize_ricochet_trial");
-    gradient.set_name("node_initialize_ricochet_gradient");
-    
-    double mu;
+    array_1d<int> dexes;
+    array_1d<double> dd,ddsorted;
     int i,j;
+    dexes.set_name("node_initialize_ricochet_dexes");
+    dd.set_name("node_initialize_ricochet_dd");
+    ddsorted.set_name("node_initialize_ricochet_ddsorted");
+    
     for(i=0;i<_compass_points.get_dim();i++){
-        for(j=0;j<_chisquared->get_dim();j++){
-            trial.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        
-        //find the radial vector pointing from the particle to _centerdex
-        for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_particles.set(i,j,_chisquared->get_pt(_compass_points.get_data(i),j));
-        }
-        
-        _chisquared->find_gradient(_ricochet_particles(i)[0],gradient);
-        gradient.normalize();
-        
-        //make the trial velocity perpendicular to the radial vector
-        mu=0.0;
-        for(j=0;j<_chisquared->get_dim();j++){
-            mu+=trial.get_data(j)*gradient.get_data(j);
-        }
-        for(j=0;j<_chisquared->get_dim();j++){
-            trial.subtract_val(j,mu*gradient.get_data(j));
-        }
-        trial.normalize();
-        
-        //add a little radial component in so it is slanting in towards a different part of the surface
-        for(j=0;j<_chisquared->get_dim();j++){
-            trial.add_val(j,0.05*gradient.get_data(j));
-        }
-        trial.normalize();
-        for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_velocities.set(i,j,trial.get_data(j));
-        }
-        
+        dd.set(i,_chisquared->distance(_centerdex,_compass_points.get_data(i)));
+        dexes.set(i,_compass_points.get_data(i));
     }
+    
+    sort_and_check(dd,ddsorted,dexes);
+    
+    int iUse;
+    for(i=0;i<dexes.get_dim() && i<2*_chisquared->get_dim();i++){
+        iUse=dexes.get_data(dexes.get_dim()-1-i);
+        for(j=0;j<_chisquared->get_dim();j++){
+            _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
+            _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
+        }
+    }
+
 }
 
 void node::ricochet(){
