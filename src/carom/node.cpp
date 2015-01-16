@@ -754,8 +754,8 @@ void node::initialize_ricochet(){
         find_bases();
     }
     
-    _ricochets_since_expansion=0;
-    _ricochets_since_perturbation=0;
+    _ricochet_since_expansion=0;
+    _ricochet_since_perturbation=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
@@ -923,6 +923,39 @@ void node::ricochet(){
    printf("    ending ricochet with volume %e\n\n",volume1);
 }
 
+void node::perturb_ricochet(){
+    is_it_safe("perturb_ricochet");
+    _ricochet_since_perturbation=0;
+    
+    array_1d<double> gradient,trial;
+    gradient.set_name("node_perturb_ricochet_gradient");
+    trial.set_name("node_perturb_ricochet_trial");
+    
+    int ix,i,j;
+    double component;
+    
+    for(ix=0;ix<_ricochet_particles.get_rows();i++){
+        _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
+        gradient.normalize();
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        component=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            component+=trial.get_data(i)*gradient.get_data(i);
+        }
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.subtract_val(i,component*gradient.get_data(i));
+        }
+        
+        _ricochet_velocities(ix)->normalize();
+        for(i=0;i<_chisquared->get_dim();i++){
+            _ricochet_velocities(ix)->add_val(i,0.1*trial.get_data(i));
+        }
+        
+    }
+    
+}
 
 ///////////////arrayOfNodes code below//////////
 

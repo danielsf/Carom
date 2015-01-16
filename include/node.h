@@ -47,6 +47,7 @@ private:
     void compass_search();
     void compass_off_diagonal();
     void initialize_ricochet();
+    void perturb_ricochet();
 };
 
 class arrayOfNodes{
