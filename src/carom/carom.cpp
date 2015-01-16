@@ -3,6 +3,8 @@
 carom::carom(){
     _write_every=3000;
     _last_written=0;
+    _ct_simplex=0;
+    _ct_node=0;
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
@@ -40,6 +42,10 @@ void carom::set_target(double tt){
 
 void carom::set_write_every(int ww){
     _write_every=ww;
+}
+
+int carom::get_called(){
+    return _chifn.get_called();
 }
 
 void carom::set_outname(char *nn){
@@ -88,11 +94,16 @@ void carom::write_pts(){
         (double(time(NULL))-_time_started)/double(_chifn.get_called()));
     fclose(output);
     
+    printf("\nNODE CENTERS\n");
+    for(i=0;i<_nodes.get_dim();i++){
+        printf("    %e\n",_chifn.get_fn(_nodes(i)->get_center()));
+    }
 
     _last_written=_chifn.get_called();
 }
 
 void carom::simplex_search(){
+    int ibefore=_chifn.get_called();
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&_chifn);
@@ -153,15 +164,31 @@ void carom::simplex_search(){
     dd.set_name("carom_simplex_dd");
     _chifn.nn_srch(minpt,1,neigh,dd);
     
+    _ct_simplex+=_chifn.get_called()-ibefore;
+    
     assess_node(neigh.get_data(0));
     
     printf("done simplex searching; called cost %d _nodes %d\n",cost_fn.get_called(),_nodes.get_dim());
-    
+
     write_pts();
 }
 
 void carom::search(){
-    simplex_search();
+    int before,i;
+    if(_nodes.get_dim()==0 || _ct_node>_ct_simplex){
+        simplex_search();
+    }
+    else{
+        before=_chifn.get_called();
+        for(i=0;i<_nodes.get_dim();i++){
+            _nodes(i)->ricochet();
+        }
+        _ct_node+=_chifn.get_called()-before;
+    }
+    
+    if(_chifn.get_called()-_last_written>_write_every){
+        write_pts();
+    }
 }
 
 void carom::assess_node(int dex){
@@ -174,7 +201,6 @@ void carom::assess_node(int dex){
     
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
         _nodes.add(dex,&_chifn);
-        _nodes(0)->find_bases();
         return;
     }
     
@@ -206,7 +232,6 @@ void carom::assess_node(int dex){
         _nodes.add(dex,&_chifn);
         
         i=_nodes.get_dim()-1;
-        _nodes(i)->find_bases();
         
     }
     

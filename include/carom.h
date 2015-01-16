@@ -32,11 +32,14 @@ public:
     void search();
     void write_pts();
     
+    int get_called();
+    
 private:
 
     chisq_wrapper _chifn;
     arrayOfNodes _nodes;
     int _write_every,_last_written;
+    int _ct_simplex,_ct_node;
     double _time_started;
     
     char _outname[letters],_timingname[letters];

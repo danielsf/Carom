@@ -404,3 +404,35 @@ double chisq_wrapper::distance(int i1, int i2){
     is_it_safe("distance(i,i)");
     return _kptr->distance(i1,i2);
 }
+
+void chisq_wrapper::find_gradient(array_1d<double> &pt, array_1d<double> &grad){
+    is_it_safe("find_gradient");
+
+    double fCenter;
+    int iCenter;
+    evaluate(pt,&fCenter,&iCenter);
+    
+    int ix,i;
+    double x2,dx;
+    array_1d<double> trial;
+    trial.set_name("chisq_wrapper_gradient_trial");
+    
+    for(i=0;i<_kptr->get_dim();i++){
+        trial.set(i,pt.get_data(i));
+    }
+    
+    for(ix=0;ix<_kptr->get_dim();ix++){
+        if(_range_max.get_dim()==0 || _range_max.get_data(ix)-_range_min.get_data(ix)>1.0){
+            dx=0.01;
+        }
+        else{
+            dx=0.01*(_range_max.get_data(ix)-_range_min.get_data(ix));
+        }
+        
+        trial.add_val(ix,dx);
+        evaluate(trial,&x2,&i);
+        grad.set(ix,(fCenter-x2)/(pt.get_data(ix)-trial.get_data(ix)));
+        trial.set(ix,pt.get_data(ix));
+    }
+    
+}

@@ -59,6 +59,8 @@ public:
     
     void get_min(array_1d<double>&);
     void get_max(array_1d<double>&);
+    
+    void find_gradient(array_1d<double>&,array_1d<double>&);
 
 private:
     double _chimin,_deltachi,_target,_ddmin;

@@ -23,7 +23,7 @@ void simplex_minimizer::initialize(){
     _chisquared=NULL;
     _dice=NULL;
     
-    _min_temp=-8.0;
+    _min_temp=-4.0;
     
     _use_gradient=0;
     
@@ -162,11 +162,6 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
         }
     }
     
-    if(_called_evaluate>_last_cooled_off+1000 && _called_evaluate>0){
-        cool_off();
-        _last_cooled_off=_called_evaluate;
-    }
-    
     if(_freeze_called==0)_called_evaluate++;
 
     return fval;
@@ -179,6 +174,7 @@ void simplex_minimizer::cool_off(){
     expand();
    
     _last_found=_called_evaluate;
+    _last_cooled_off=_called_evaluate;
     
 }
 
@@ -373,8 +369,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        }
        
        if(_called_evaluate-_last_found>=abort_max && _temp>_min_temp){
-           expand();
-           _last_found=_called_evaluate;
+           cool_off();
        }
        //printf("spread %e %e %e\n\n",spread,_temp,_min_ff);
     }
