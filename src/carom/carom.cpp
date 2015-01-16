@@ -164,12 +164,12 @@ void carom::simplex_search(){
     dd.set_name("carom_simplex_dd");
     _chifn.nn_srch(minpt,1,neigh,dd);
     
+    _ct_simplex+=_chifn.get_called()-ibefore;
+    
     assess_node(neigh.get_data(0));
     
     printf("done simplex searching; called cost %d _nodes %d\n",cost_fn.get_called(),_nodes.get_dim());
-    
-    _ct_simplex+=_chifn.get_called()-ibefore;
-    
+
     write_pts();
 }
 
