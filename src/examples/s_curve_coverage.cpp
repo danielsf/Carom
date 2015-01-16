@@ -126,7 +126,7 @@ carom_test.set_max(max);
 printf("time to initialize\n");
 chisq.reset_timer();
 carom_test.initialize(1000);
-for(i=0;i<6;i++){
+while(carom_test.get_called()<nsamples){
     carom_test.search();
 }
 
