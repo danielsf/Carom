@@ -27,6 +27,8 @@ void node::initialize(){
     _min_changed=0;
     _active=1;
     _found_bases=0;
+    _ct_ricochet=0;
+    
     _compass_points.set_name("node_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
@@ -48,6 +50,7 @@ void node::copy(const node &in){
     _min_changed=in._min_changed;
     _active=in._active;
     _found_bases=in._found_bases;
+    _ct_ricochet=in._ct_ricochet;
     
     
     int i,j;
@@ -111,6 +114,10 @@ void node::copy(const node &in){
 
 int node::get_activity(){
     return _active;
+}
+
+int node::get_ct_ricochet(){
+    return _ct_ricochet;
 }
 
 void node::set_center(int ix){
@@ -817,6 +824,7 @@ void node::ricochet(){
        
    }
    
+   int ibefore=_chisquared->get_called();
    double volume0=volume();
    
    printf("    starting ricochet with volume %e\n",volume0);
@@ -918,6 +926,8 @@ void node::ricochet(){
    }
    
    double volume1=volume();
+   
+   _ct_ricochet+=_chisquared->get_called()-ibefore;
    
    if(volume1>1.001*volume0){
        _ricochet_since_expansion=0;

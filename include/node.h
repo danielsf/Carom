@@ -22,10 +22,12 @@ public:
     void ricochet();
     double volume();
     int get_activity();
+    int get_ct_ricochet();
     
 private:
     int _centerdex,_active,_found_bases;
     int _ricochet_since_expansion,_min_changed;
+    int _ct_ricochet;
     double _chimin,_bisection_tolerance;
     
     array_1d<int> _compass_points,_basis_associates;

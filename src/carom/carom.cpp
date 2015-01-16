@@ -177,23 +177,23 @@ void carom::search(){
     int before,i;
     int active_nodes=0;
     
+    _ct_node=0;
     for(i=0;i<_nodes.get_dim();i++){
         if(_nodes(i)->get_activity()==1){
             active_nodes++;
         }
+        _ct_node+=_nodes(i)->get_ct_ricochet();
     }
     
     if(active_nodes==0 || _ct_node>_ct_simplex){
         simplex_search();
     }
     else{
-        before=_chifn.get_called();
         for(i=0;i<_nodes.get_dim();i++){
             if(_nodes(i)->get_activity()==1){
                 _nodes(i)->ricochet();
             }
         }
-        _ct_node+=_chifn.get_called()-before;
     }
     
     if(_chifn.get_called()-_last_written>_write_every){
