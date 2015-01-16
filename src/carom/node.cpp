@@ -25,6 +25,7 @@ void node::initialize(){
     _bisection_tolerance=0.01;
     _ricochet_since_expansion=0;
     _min_changed=0;
+    _active=1;
     _compass_points.set_name("node_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
@@ -44,6 +45,7 @@ void node::copy(const node &in){
     _chimin=in._chimin;
     _ricochet_since_expansion=in._ricochet_since_expansion;
     _min_changed=in._min_changed;
+    _active=in._active;
     
     
     int i,j;
@@ -103,6 +105,10 @@ void node::copy(const node &in){
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
         }
     }
+}
+
+int node::get_activity(){
+    return _active;
 }
 
 void node::set_center(int ix){

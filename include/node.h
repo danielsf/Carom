@@ -21,9 +21,10 @@ public:
     void find_bases();
     void ricochet();
     double volume();
+    int get_activity();
     
 private:
-    int _centerdex;
+    int _centerdex,_active;
     int _ricochet_since_expansion,_min_changed;
     double _chimin,_bisection_tolerance;
     
