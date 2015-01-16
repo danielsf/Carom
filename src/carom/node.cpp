@@ -26,6 +26,7 @@ void node::initialize(){
     _ricochet_since_expansion=0;
     _min_changed=0;
     _active=1;
+    _found_bases=0;
     _compass_points.set_name("node_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
@@ -46,6 +47,7 @@ void node::copy(const node &in){
     _ricochet_since_expansion=in._ricochet_since_expansion;
     _min_changed=in._min_changed;
     _active=in._active;
+    _found_bases=in._found_bases;
     
     
     int i,j;
@@ -748,6 +750,7 @@ void node::find_bases(){
         compass_search();
     }
     
+    _found_bases++;
     printf("done finding bases\n");
 }
 
@@ -921,6 +924,15 @@ void node::ricochet(){
    }
    else{
        _ricochet_since_expansion++;
+   }
+   
+   if(_ricochet_since_expansion>3){
+       if(_found_bases<2){
+           find_bases();
+       }
+       else{
+           _active=0;
+       }
    }
    
    printf("    ending ricochet with volume %e\n\n",volume1);
