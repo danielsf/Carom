@@ -95,6 +95,7 @@ void carom::write_pts(){
 }
 
 void carom::simplex_search(){
+    int ibefore=_chifn.get_called();
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&_chifn);
@@ -159,15 +160,15 @@ void carom::simplex_search(){
     
     printf("done simplex searching; called cost %d _nodes %d\n",cost_fn.get_called(),_nodes.get_dim());
     
+    _ct_simplex+=_chifn.get_called()-ibefore;
+    
     write_pts();
 }
 
 void carom::search(){
     int before,i;
     if(_nodes.get_dim()==0 || _ct_node>_ct_simplex){
-        before=_chifn.get_called();
         simplex_search();
-        _ct_simplex+=_chifn.get_called()-before;
     }
     else{
         before=_chifn.get_called();
