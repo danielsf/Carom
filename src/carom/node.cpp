@@ -754,6 +754,8 @@ void node::initialize_ricochet(){
         find_bases();
     }
     
+    _ricochets_since_expansion=0;
+    _ricochets_since_perturbation=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
