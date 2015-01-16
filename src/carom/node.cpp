@@ -954,7 +954,8 @@ void node::perturb_ricochet(){
             trial.subtract_val(i,component*gradient.get_data(i));
         }
         
-        trial.normalize();
+        component=trial.normalize();
+        printf("    component %e\n",component);
         _ricochet_velocities(ix)->normalize();
         for(i=0;i<_chisquared->get_dim();i++){
             _ricochet_velocities(ix)->add_val(i,0.1*trial.get_data(i));
