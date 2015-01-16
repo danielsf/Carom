@@ -44,6 +44,10 @@ void carom::set_write_every(int ww){
     _write_every=ww;
 }
 
+int carom::get_called(){
+    return _chifn.get_called();
+}
+
 void carom::set_outname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){

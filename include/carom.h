@@ -32,6 +32,8 @@ public:
     void search();
     void write_pts();
     
+    int get_called();
+    
 private:
 
     chisq_wrapper _chifn;
