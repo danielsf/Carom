@@ -24,6 +24,7 @@ public:
     
 private:
     int _centerdex;
+    int _ricochet_since_expansion,_ricochet_since_perturbation,_min_changed;
     double _chimin,_bisection_tolerance;
     
     array_1d<int> _compass_points,_basis_associates;

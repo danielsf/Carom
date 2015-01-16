@@ -23,6 +23,9 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _bisection_tolerance=0.01;
+    _ricochet_since_expansion=0;
+    _ricochet_since_perturbation=0;
+    _min_changed=0;
     _compass_points.set_name("node_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
@@ -40,6 +43,10 @@ void node::initialize(){
 void node::copy(const node &in){
     _centerdex=in._centerdex;
     _chimin=in._chimin;
+    _ricochet_since_expansion=in._ricochet_since_expansion;
+    _ricochet_since_perturbation=in._ricochet_since_perturbation;
+    _min_changed=in._min_changed;
+    
     
     int i,j;
     
@@ -189,6 +196,7 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
         if(value[0]<_chimin){
             _chimin=value[0];
             _centerdex=dex[0];
+            _min_changed=1;
         }
         
         if(value[0]<=_chisquared->target()){
@@ -645,6 +653,8 @@ void node::find_bases(){
         compass_search();
     }
     
+    _min_changed=0;
+    
     int i,j;
     for(i=0;i<_basis_associates.get_dim();i++){
         if(_chisquared->get_fn(_basis_associates.get_data(i))-_chimin < 1.0e-6){
@@ -799,7 +809,9 @@ void node::ricochet(){
        
    }
    
-   printf("    starting ricochet with volume %e\n",volume());
+   double volume0=volume();
+   
+   printf("    starting ricochet with volume %e\n",volume0);
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir;
    
@@ -896,7 +908,17 @@ void node::ricochet(){
        }
        
    }
-   printf("    ending ricochet with volume %e\n\n",volume());
+   
+   double volume1=volume();
+   
+   if(volume1>1.001*volume0){
+       _ricochet_since_expansion=0;
+   }
+   else{
+       _ricochet_since_expansion++;
+   }
+   
+   printf("    ending ricochet with volume %e\n\n",volume1);
 }
 
 
