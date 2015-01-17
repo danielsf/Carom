@@ -436,3 +436,78 @@ void chisq_wrapper::find_gradient(array_1d<double> &pt, array_1d<double> &grad){
     }
     
 }
+
+void chisq_wrapper::copy(chisq_wrapper &in){
+    if(in._chifn==NULL){
+        printf("WARNING cannot copy chisq_wrapper chifn is null\n");
+        exit(1);
+    }
+    
+    if(in._dice==NULL){
+        printf("WARNING cannot copy chisq_wraper dice is null\n");
+        exit(1);
+    }
+    
+    if(in._kptr==NULL){
+        printf("WARNING cannot copy chisq_wrapper kptr is null\n");
+        exit(1);
+    }
+    
+    if(_kptr!=NULL){
+        delete _kptr;
+        _kptr=NULL;
+    }
+    _chifn=in._chifn;
+    _dice=in._dice;
+    _chimin=in._chimin;
+    _target=in._target;
+    _deltachi=in._deltachi;
+    _ddmin=in._ddmin;
+    _adaptive_target=in._adaptive_target;
+    _seed=in._seed;
+    _mindex=in._mindex;
+    
+    
+    int i,j;
+    
+    _range_max.reset();
+    _range_min.reset();
+    _characteristic_length.reset();
+    for(i=0;i<in._characteristic_length.get_dim();i++){
+        _characteristic_length.set(i,in._characteristic_length.get_data(i));
+    }
+    for(i=0;i<in._range_min.get_dim();i++){
+        _range_min.set(i,in._range_min.get_data(i));
+    }
+    for(i=0;i<in._range_max.get_dim();i++){
+        _range_max.set(i,in._range_max.get_data(i));
+    }
+    
+    array_1d<double> temp_min,temp_max;
+    array_2d<double> data;
+    temp_min.set_name("chisq_wrapper_copy_temp_min");
+    temp_max.set_name("chisq_wrapper_copy_temp_max");
+    data.set_name("chisq_wrapper_copy_data");
+    
+    for(i=0;i<_chifn->get_dim();i++){
+        if(_characteristic_length.get_dim()>i && _characteristic_length.get_data(i)>0.0){
+            temp_min.set(i,0.0);
+            temp_max.set(i,_characteristic_length.get_data(i));
+        }
+        else{
+            temp_min.set(i,_range_min.get_data(i));
+            temp_max.set(i,_range_max.get_data(i));
+        }
+    }
+    
+    _fn.reset();
+    data.set_cols(_chifn->get_dim());
+    for(i=0;i<in.get_pts();i++){
+        _fn.set(i,in.get_fn(i));
+        for(j=0;j<_chifn->get_dim();j++){
+            data.set(i,j,in.get_pt(i,j));
+        }
+    }
+    
+    _kptr=new kd_tree(data,temp_min,temp_max);
+}

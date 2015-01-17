@@ -23,6 +23,7 @@ class chisq_wrapper : public function_wrapper{
 public:
     chisq_wrapper();
     ~chisq_wrapper();
+    void copy(chisq_wrapper&);
     
     void initialize(int);
     
