@@ -443,11 +443,6 @@ void chisq_wrapper::copy(chisq_wrapper &in){
         exit(1);
     }
     
-    if(in._dice==NULL){
-        printf("WARNING cannot copy chisq_wraper dice is null\n");
-        exit(1);
-    }
-    
     if(in._kptr==NULL){
         printf("WARNING cannot copy chisq_wrapper kptr is null\n");
         exit(1);
@@ -510,4 +505,6 @@ void chisq_wrapper::copy(chisq_wrapper &in){
     }
     
     _kptr=new kd_tree(data,temp_min,temp_max);
+    if(_seed<0)_seed=int(time(NULL));
+    _dice=new Ran(_seed);
 }
