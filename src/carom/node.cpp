@@ -505,6 +505,11 @@ void node::compass_search(){
             }
             
             iFound=-1;
+            if(flow>_chisquared->target() || flow>fhigh){
+                printf("WARNING in compass %e %e %e\n",
+                flow,fhigh,_chisquared->target());
+                exit(1);
+            }
             iFound=bisection(lowball,flow,highball,fhigh);
             
             dx=0.0;
@@ -639,6 +644,11 @@ void node::compass_off_diagonal(){
                         step*=2.0;
                     }
                     
+                    if(flow>_chisquared->target() || flow>fhigh){
+                        printf("WARNING in off_diag %e %e %e\n",
+                        flow,fhigh,_chisquared->target());
+                        exit(1);
+                    }
                     iFound=bisection(lowball,flow,highball,fhigh);
                     
                     if(iFound>=0){
@@ -891,6 +901,12 @@ void node::ricochet(){
                
            }
            
+           if(eflow>_chisquared->target() || eflow>efhigh){
+               printf("WARNING eflow %e %e %e\n",
+               eflow,efhigh,_chisquared->target());
+               exit(1);
+           }
+           
            iFound=bisection(elowball,eflow,ehighball,efhigh);
            for(i=0;i<_chisquared->get_dim();i++){
                lowball.set(i,_chisquared->get_pt(iFound,i));
@@ -915,6 +931,12 @@ void node::ricochet(){
            }
            evaluate(highball,&fhigh,&j);
            component*=2.0;
+       }
+       
+       if(flow>_chisquared->target() || flow>fhigh){
+           printf("WARNING in ricochet %e %e %e\n",
+           flow,fhigh,_chisquared->target());
+           exit(1);
        }
        
        iFound=bisection(lowball,flow,highball,fhigh);
