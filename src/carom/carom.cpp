@@ -150,9 +150,11 @@ void carom::simplex_search(){
     }
     
     gp_cost cost_fn;
+    chisq_wrapper cost_chi;
     
     if(_nodes.get_dim()>0){
-        cost_fn.set_chifn(&_chifn);
+        cost_chi.copy(_chifn);
+        cost_fn.set_chifn(&cost_chi);
         ffmin.set_cost(&cost_fn);
     }
     
