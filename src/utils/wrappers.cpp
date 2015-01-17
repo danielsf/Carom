@@ -448,6 +448,8 @@ void chisq_wrapper::copy(chisq_wrapper &in){
         exit(1);
     }
     
+    printf("copying chisq\n");
+    
     if(_kptr!=NULL){
         delete _kptr;
         _kptr=NULL;
@@ -503,7 +505,9 @@ void chisq_wrapper::copy(chisq_wrapper &in){
         }
     }
     
+    printf("making kptr\n");
     _kptr=new kd_tree(data,temp_min,temp_max);
     if(_seed<0)_seed=int(time(NULL));
     _dice=new Ran(_seed);
+    printf("done copying\n");
 }
