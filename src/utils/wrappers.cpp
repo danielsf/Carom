@@ -453,7 +453,6 @@ void chisq_wrapper::copy(chisq_wrapper &in){
         _kptr=NULL;
     }
     _chifn=in._chifn;
-    _dice=in._dice;
     _chimin=in._chimin;
     _target=in._target;
     _deltachi=in._deltachi;
