@@ -379,6 +379,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
     printf("    leaving simplex %d %d %d\n",_called_evaluate,_last_found,abort_max);
     printf("    temp %e\n",_temp);
+    printf("    _true_min_ff %e\n",_true_min_ff);
     
     _freeze_temp=-1;
 }
