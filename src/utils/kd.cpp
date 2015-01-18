@@ -47,7 +47,7 @@ void kd_tree::copy(const kd_tree &in){
     
     data.reset();
     data.set_cols(in.data.get_cols());
-    for(i=0;i<data.get_rows();i++){
+    for(i=0;i<in.data.get_rows();i++){
         for(j=0;j<in.data.get_cols();j++){
             data.set(i,j,in.data.get_data(i,j));
         }
