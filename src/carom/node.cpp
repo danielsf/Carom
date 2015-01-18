@@ -11,7 +11,7 @@ node::node(const node &in){
     copy(in);
 }
 
-node& node::operator=(const node&in){
+node& node::operator=(const node &in){
     if(this==&in) return *this;
     initialize();
     copy(in);
