@@ -55,11 +55,11 @@ void kd_tree::copy(const kd_tree &in){
     
     maxs.reset();
     mins.reset();
-    for(i=0;i<mins.get_dim();i++){
+    for(i=0;i<in.mins.get_dim();i++){
         mins.set(i,in.mins.get_data(i));
     }
     
-    for(i=0;i<maxs.get_dim();i++){
+    for(i=0;i<in.maxs.get_dim();i++){
         maxs.set(i,in.maxs.get_data(i));
     }
     
