@@ -715,7 +715,7 @@ void node::find_bases(){
     ct=0;
     
     printf("error0 %e %d\n",error0,_basis_associates.get_dim());
-    while(stdev>stdevlim && aborted<max_abort){
+    while(ct<5000 && stdev>stdevlim && aborted<max_abort){
         ct++;
         idim=-1;
         while(idim>=_chisquared->get_dim() || idim<0){
