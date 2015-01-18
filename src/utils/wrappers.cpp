@@ -479,34 +479,14 @@ void chisq_wrapper::copy(chisq_wrapper &in){
         _range_max.set(i,in._range_max.get_data(i));
     }
     
-    array_1d<double> temp_min,temp_max;
-    array_2d<double> data;
-    temp_min.set_name("chisq_wrapper_copy_temp_min");
-    temp_max.set_name("chisq_wrapper_copy_temp_max");
-    data.set_name("chisq_wrapper_copy_data");
-    
-    for(i=0;i<_chifn->get_dim();i++){
-        if(_characteristic_length.get_dim()>i && _characteristic_length.get_data(i)>0.0){
-            temp_min.set(i,0.0);
-            temp_max.set(i,_characteristic_length.get_data(i));
-        }
-        else{
-            temp_min.set(i,_range_min.get_data(i));
-            temp_max.set(i,_range_max.get_data(i));
-        }
-    }
-    
     _fn.reset();
-    data.set_cols(_chifn->get_dim());
+    
     for(i=0;i<in.get_pts();i++){
         _fn.set(i,in.get_fn(i));
-        for(j=0;j<_chifn->get_dim();j++){
-            data.set(i,j,in.get_pt(i,j));
-        }
     }
     
     printf("making kptr\n");
-    _kptr=new kd_tree(data,temp_min,temp_max);
+    _kptr=new kd_tree(in._kptr[0]);
     if(_seed<0)_seed=int(time(NULL));
     _dice=new Ran(_seed);
     printf("done copying\n");
