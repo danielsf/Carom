@@ -307,6 +307,8 @@ double gp_cost::operator()(array_1d<double> &pt){
         dosrch=1;
     }
     
+    dosrch=1;
+    
     int i,j;
     double nugget=1.0e-4;
     if(dosrch==0){
