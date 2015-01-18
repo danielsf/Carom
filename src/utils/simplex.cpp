@@ -162,8 +162,13 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
         }
     }
     
+    if(_called_evaluate>_last_cooled_off+1000 && _temp>_min_temp){
+        cool_off();
+    }
+    
+    
     if(_freeze_called==0)_called_evaluate++;
-
+    
     return fval;
 }
 
@@ -171,10 +176,32 @@ void simplex_minimizer::cool_off(){
     if(_freeze_temp==1 || _temp<_min_temp) return;
     
     _temp-=1.0;
+    
+    int i,need_thaw_temp,need_thaw_called;
+    
+    _min_ff=2.0*exception_value;
+    
+    if(_freeze_called==0)need_thaw_called=1;
+    else need_thaw_called=0;
+    
+    if(_freeze_temp==0)need_thaw_temp=1;
+    else need_thaw_temp=0;
+    
+    _freeze_called=1;
+    _freeze_temp=1;
+    
+    for(i=0;i<_pts.get_rows();i++){
+        _ff.set(i,evaluate(_pts(i)[0]));
+    }
+    _fstar=evaluate(_pstar);
+    _fstarstar=evaluate(_pstarstar);
+    
     expand();
    
     _last_found=_called_evaluate;
     _last_cooled_off=_called_evaluate;
+    if(need_thaw_called==1)_freeze_called=0;
+    if(need_thaw_temp==1)_freeze_temp=0;
     
 }
 
@@ -369,7 +396,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        }
        
        if(_called_evaluate-_last_found>=abort_max && _temp>_min_temp){
-           cool_off();
+           expand();
+           _last_found=_called_evaluate;
        }
        //printf("spread %e %e %e\n\n",spread,_temp,_min_ff);
     }
