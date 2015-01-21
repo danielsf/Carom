@@ -528,7 +528,7 @@ void node::compass_search(){
             
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
-                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i));
+                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i));
             }
             
             if(iFound>=0){
