@@ -974,7 +974,7 @@ void node::ricochet(){
                exit(1);
            }
            
-           iFound=bisection(elowball,eflow,ehighball,efhigh,0);
+           iFound=bisection(elowball,eflow,ehighball,efhigh,1);
            for(i=0;i<_chisquared->get_dim();i++){
                lowball.set(i,_chisquared->get_pt(iFound,i));
            }
@@ -998,6 +998,14 @@ void node::ricochet(){
            }
            evaluate(highball,&fhigh,&j);
            component*=2.0;
+           
+           if(fhigh<_chisquared->target()){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   lowball.set(i,highball.get_data(i));
+               }
+               flow=fhigh;
+           }
+           
        }
        
        if(flow>_chisquared->target() || flow>fhigh){
