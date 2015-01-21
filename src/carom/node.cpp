@@ -227,7 +227,7 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
     }
 }
 
-int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh){
+int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh, int doSlope){
 
     is_it_safe("bisection");
     
@@ -254,10 +254,14 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
     iout=-1;
     while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
         
-        wgt=(fhigh-_chisquared->target())/(fhigh-flow);
-        
-        if(wgt<0.1)wgt=0.1;
-        else if(wgt>0.9)wgt=0.9;
+        if(doSlope==1){
+            wgt=(fhigh-_chisquared->target())/(fhigh-flow);
+            if(wgt<0.1)wgt=0.1;
+            else if(wgt>0.9)wgt=0.9;
+        }
+        else{
+            wgt=0.5;
+        }
         
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,wgt*lowball.get_data(i)+(1.0-wgt)*highball.get_data(i));
@@ -520,7 +524,7 @@ void node::compass_search(){
                 flow,fhigh,_chisquared->target());
                 exit(1);
             }
-            iFound=bisection(lowball,flow,highball,fhigh);
+            iFound=bisection(lowball,flow,highball,fhigh,1);
             
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
@@ -679,7 +683,7 @@ void node::compass_off_diagonal(){
                         flow,fhigh,_chisquared->target());
                         exit(1);
                     }
-                    iFound=bisection(lowball,flow,highball,fhigh);
+                    iFound=bisection(lowball,flow,highball,fhigh,1);
                     
                     if(iFound>=0){
                         dmin=0.0;
@@ -968,7 +972,7 @@ void node::ricochet(){
                exit(1);
            }
            
-           iFound=bisection(elowball,eflow,ehighball,efhigh);
+           iFound=bisection(elowball,eflow,ehighball,efhigh,0);
            for(i=0;i<_chisquared->get_dim();i++){
                lowball.set(i,_chisquared->get_pt(iFound,i));
            }
@@ -1000,7 +1004,7 @@ void node::ricochet(){
            exit(1);
        }
        
-       iFound=bisection(lowball,flow,highball,fhigh);
+       iFound=bisection(lowball,flow,highball,fhigh,0);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
            _ricochet_velocities.set(ix,i,dir.get_data(i));
