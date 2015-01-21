@@ -561,6 +561,9 @@ void node::compass_off_diagonal(){
     double dx,dy,dmin,step;
     double flow,fhigh,ftrial,mu;
     int i,j,k,iFound;
+    int nGuessHigh=0,nGuessLow=0,isHigh;
+    int spentHigh=0,spentLow=0,spentNeither=0,startFromMin=0;
+    int ibefore;
     
     double sqrt2o2,xweight,yweight;
     double dmin_np,dmin_nn;
@@ -611,6 +614,8 @@ void node::compass_off_diagonal(){
             
             for(xweight=-1.0*sqrt2o2;xweight<sqrt2o2*1.1;xweight+=2.0*sqrt2o2){
                 for(yweight=-1.0*sqrt2o2;yweight<sqrt2o2*1.1;yweight+=2.0*sqrt2o2){
+                    ibefore=_chisquared->get_called();
+                    isHigh=-1;
                     if(xweight>0.0){
                         if(yweight<0.0)dmin=dmin_np;
                         if(yweight>0.0)dmin=dmin_nn;
@@ -628,12 +633,16 @@ void node::compass_off_diagonal(){
                         evaluate(trial,&ftrial,&iFound);
                         
                         if(ftrial<_chisquared->target()){
+                            nGuessLow++;
+                            isHigh=0;
                             flow=ftrial;
                             for(i=0;i<_chisquared->get_dim();i++){
                                 lowball.set(i,trial.get_data(i));
                             }
                         }
                         else{
+                            nGuessHigh++;
+                            isHigh=1;
                             fhigh=ftrial;
                             for(i=0;i<_chisquared->get_dim();i++){
                                 highball.set(i,trial.get_data(i));
@@ -642,6 +651,7 @@ void node::compass_off_diagonal(){
                     }
                     
                     if(flow>_chisquared->target()){
+                        startFromMin++;
                         flow=_chimin;
                         for(i=0;i<_chisquared->get_dim();i++){
                             lowball.set(i,_chisquared->get_pt(_centerdex,i));
@@ -690,10 +700,24 @@ void node::compass_off_diagonal(){
                         }
                     }
                     
+                    if(isHigh==1){
+                        spentHigh+=_chisquared->get_called()-ibefore;
+                    }
+                    else if(isHigh==0){
+                        spentLow+=_chisquared->get_called()-ibefore;
+                    }
+                    else{
+                        spentNeither+=_chisquared->get_called()-ibefore;
+                    }
+                    
                 }
             }
         }
     }
+    
+    printf("nGuessHigh %d nGuessLow %d\n",nGuessHigh,nGuessLow);
+    printf("spentHigh %d spentLow %d spentNeither %d\n",spentHigh,spentLow,spentNeither);
+    printf("startFromMin %d\n",startFromMin);
 
 }
 
