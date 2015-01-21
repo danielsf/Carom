@@ -574,7 +574,7 @@ void simplex_minimizer::expand(){
     }
     if(_pts.get_rows()==0) return;
     
-    printf("expanding\n");
+    //printf("expanding\n");
     
     int need_thaw_temp,need_thaw_called;
     

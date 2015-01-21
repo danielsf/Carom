@@ -211,6 +211,10 @@ void carom::assess_node(int dex){
         exit(1);
     }
     
+    if(_chifn.get_fn(dex)>_chifn.target()){
+        return;
+    }
+    
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
         _nodes.add(dex,&_chifn);
         return;
