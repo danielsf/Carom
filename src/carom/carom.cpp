@@ -5,6 +5,7 @@ carom::carom(){
     _last_written=0;
     _ct_simplex=0;
     _ct_node=0;
+    _calls_to_simplex=0;
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
@@ -88,13 +89,14 @@ void carom::write_pts(){
     fclose(output);
     
     output=fopen(_timingname,"a");
-    fprintf(output,"%d %e %e -- %d %d %d\n",
+    fprintf(output,"%d %e %e -- %d %d %d -- %d %d\n",
         _chifn.get_called(),
         double(time(NULL))-_time_started,
         (double(time(NULL))-_time_started)/double(_chifn.get_called()),
         _chifn.get_ct_where(iSimplex),
         _chifn.get_ct_where(iRicochet),
-        _chifn.get_ct_where(iCompass));
+        _chifn.get_ct_where(iCompass),
+        _calls_to_simplex,_nodes.get_dim());
     fclose(output);
     
     printf("\nNODE CENTERS\n");
@@ -106,6 +108,7 @@ void carom::write_pts(){
 }
 
 void carom::simplex_search(){
+    _calls_to_simplex++;
     _chifn.set_iWhere(iSimplex);
     int ibefore=_chifn.get_called();
 
