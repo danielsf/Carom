@@ -256,8 +256,8 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
         
         wgt=(fhigh-_chisquared->target())/(fhigh-flow);
         
-        if(wgt<0.25)wgt=0.25;
-        else if(wgt>0.75)wgt=0.75;
+        if(wgt<0.1)wgt=0.1;
+        else if(wgt>0.9)wgt=0.9;
         
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,wgt*lowball.get_data(i)+(1.0-wgt)*highball.get_data(i));
@@ -818,7 +818,7 @@ void node::find_bases(){
         
         if(ct%1000==0){
             error1=errorBest;
-            printf("    ct %d error %e from %e\n",ct,errorBest,error0);
+            printf("    ct %d error %e from %e min %e\n",ct,errorBest,error0,_chimin);
         }
     }
     
