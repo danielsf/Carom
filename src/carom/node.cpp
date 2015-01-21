@@ -957,7 +957,8 @@ void node::ricochet(){
            eflow=_chimin;
            
            component=1.0;
-           efhigh=-2.0*exception_value;
+           efhigh=flow;
+           /*efhigh=-2.0*exception_value;
            while(efhigh<=_chisquared->target()){
                for(i=0;i<_chisquared->get_dim();i++){
                    ehighball.add_val(i,component*edir.get_data(i));
@@ -965,7 +966,7 @@ void node::ricochet(){
                evaluate(ehighball,&efhigh,&i);
                component*=2.0;
                
-           }
+           }*/
            
            if(eflow>_chisquared->target() || eflow>efhigh){
                printf("WARNING eflow %e %e %e\n",
