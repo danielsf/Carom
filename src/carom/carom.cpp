@@ -83,15 +83,18 @@ void carom::write_pts(){
         for(j=0;j<_chifn.get_dim();j++){
             fprintf(output,"%.18e ",_chifn.get_pt(i,j));
         }
-        fprintf(output,"%.18e 0 0 1\n",_chifn.get_fn(i));
+        fprintf(output,"%.18e 0 0 %d\n",_chifn.get_fn(i),_chifn.get_where_log(i));
     }
     fclose(output);
     
     output=fopen(_timingname,"a");
-    fprintf(output,"%d %e %e\n",
+    fprintf(output,"%d %e %e -- %d %d %d\n",
         _chifn.get_called(),
         double(time(NULL))-_time_started,
-        (double(time(NULL))-_time_started)/double(_chifn.get_called()));
+        (double(time(NULL))-_time_started)/double(_chifn.get_called()),
+        _chifn.get_ct_where(iSimplex),
+        _chifn.get_ct_where(iRicochet),
+        _chifn.get_ct_where(iCompass));
     fclose(output);
     
     printf("\nNODE CENTERS\n");
@@ -103,6 +106,7 @@ void carom::write_pts(){
 }
 
 void carom::simplex_search(){
+    _chifn.set_iWhere(iSimplex);
     int ibefore=_chifn.get_called();
 
     simplex_minimizer ffmin;

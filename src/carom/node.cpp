@@ -448,6 +448,7 @@ void node::compass_search(){
     
     is_it_safe("compass_search");
     _compass_points.reset();
+    _chisquared->set_iWhere(iCompass);
     
     int ix,i,j,iFound;
     double sgn,flow,fhigh,dx,ftrial,step;
@@ -545,6 +546,7 @@ void node::compass_search(){
 
 void node::compass_off_diagonal(){
     is_it_safe("compass_off_diagonal");
+    _chisquared->set_iWhere(iCompass);
 
     int ix,iy;
     array_1d<double> trial,lowball,highball,dir;
@@ -833,6 +835,8 @@ void node::ricochet(){
        exit(1);
        
    }
+   
+   _chisquared->set_iWhere(iRicochet);
    
    int ibefore=_chisquared->get_called();
    double volume0=volume();
