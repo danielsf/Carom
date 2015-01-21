@@ -8,6 +8,10 @@ kd_tree::~kd_tree(){
    // printf("calling kd destructor\n");
 }
 
+kd_tree::kd_tree(const kd_tree &in){
+    copy(in);
+}
+
 kd_tree::kd_tree(array_2d<double> &mm){
 
     array_1d<double> i_max,i_min;
@@ -23,6 +27,45 @@ kd_tree::kd_tree(array_2d<double> &mm){
 
 kd_tree::kd_tree(array_2d<double> &mm, array_1d<double> &nmin, array_1d<double> &nmax){
     build_tree(mm,nmin,nmax);
+}
+
+void kd_tree::copy(const kd_tree &in){
+    search_time=in.search_time;
+    search_time_solo=in.search_time_solo;
+    search_ct=in.search_ct;
+    search_ct_solo=in.search_ct_solo;
+    diagnostic=in.diagnostic;
+    
+    int i,j;
+    tree.reset();
+    tree.set_cols(in.tree.get_cols());
+    for(i=0;i<in.tree.get_rows();i++){
+        for(j=0;j<in.tree.get_cols();j++){
+             tree.set(i,j,in.tree.get_data(i,j));
+        }
+    }
+    
+    data.reset();
+    data.set_cols(in.data.get_cols());
+    for(i=0;i<in.data.get_rows();i++){
+        for(j=0;j<in.data.get_cols();j++){
+            data.set(i,j,in.data.get_data(i,j));
+        }
+    }
+    
+    maxs.reset();
+    mins.reset();
+    for(i=0;i<in.mins.get_dim();i++){
+        mins.set(i,in.mins.get_data(i));
+    }
+    
+    for(i=0;i<in.maxs.get_dim();i++){
+        maxs.set(i,in.maxs.get_data(i));
+    }
+    
+    masterparent=in.masterparent;
+    tol=in.tol;
+    nkernel=in.nkernel;
 }
 
 double kd_tree::get_search_time(){

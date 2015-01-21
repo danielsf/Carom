@@ -150,9 +150,11 @@ void carom::simplex_search(){
     }
     
     gp_cost cost_fn;
+    chisq_wrapper cost_chi;
     
     if(_nodes.get_dim()>0){
-        cost_fn.set_chifn(&_chifn);
+        cost_chi.copy(_chifn);
+        cost_fn.set_chifn(&cost_chi);
         ffmin.set_cost(&cost_fn);
     }
     
@@ -207,6 +209,10 @@ void carom::assess_node(int dex){
         dex,_chifn.get_pts());
         
         exit(1);
+    }
+    
+    if(_chifn.get_fn(dex)>_chifn.target()){
+        return;
     }
     
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
@@ -304,6 +310,8 @@ double gp_cost::operator()(array_1d<double> &pt){
     if(_qq.get_dim()!=_neigh_buff.get_dim()){
         dosrch=1;
     }
+    
+    dosrch=1;
     
     int i,j;
     double nugget=1.0e-4;

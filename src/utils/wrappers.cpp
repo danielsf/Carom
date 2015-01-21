@@ -436,3 +436,58 @@ void chisq_wrapper::find_gradient(array_1d<double> &pt, array_1d<double> &grad){
     }
     
 }
+
+void chisq_wrapper::copy(chisq_wrapper &in){
+    if(in._chifn==NULL){
+        printf("WARNING cannot copy chisq_wrapper chifn is null\n");
+        exit(1);
+    }
+    
+    if(in._kptr==NULL){
+        printf("WARNING cannot copy chisq_wrapper kptr is null\n");
+        exit(1);
+    }
+    
+    printf("copying chisq\n");
+    
+    if(_kptr!=NULL){
+        delete _kptr;
+        _kptr=NULL;
+    }
+    _chifn=in._chifn;
+    _chimin=in._chimin;
+    _target=in._target;
+    _deltachi=in._deltachi;
+    _ddmin=in._ddmin;
+    _adaptive_target=in._adaptive_target;
+    _seed=in._seed;
+    _mindex=in._mindex;
+    
+    
+    int i,j;
+    
+    _range_max.reset();
+    _range_min.reset();
+    _characteristic_length.reset();
+    for(i=0;i<in._characteristic_length.get_dim();i++){
+        _characteristic_length.set(i,in._characteristic_length.get_data(i));
+    }
+    for(i=0;i<in._range_min.get_dim();i++){
+        _range_min.set(i,in._range_min.get_data(i));
+    }
+    for(i=0;i<in._range_max.get_dim();i++){
+        _range_max.set(i,in._range_max.get_data(i));
+    }
+    
+    _fn.reset();
+    
+    for(i=0;i<in.get_pts();i++){
+        _fn.set(i,in.get_fn(i));
+    }
+    
+    printf("making kptr\n");
+    _kptr=new kd_tree(in._kptr[0]);
+    if(_seed<0)_seed=int(time(NULL));
+    _dice=new Ran(_seed);
+    printf("done copying\n");
+}

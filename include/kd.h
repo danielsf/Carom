@@ -39,7 +39,11 @@ class kd_tree{
         space when searching for nearest neighbors.*/
         kd_tree(array_2d<double>&,array_1d<double>&,array_1d<double>&);
         
+        kd_tree(const kd_tree&);
+        
         ~kd_tree();
+        
+        void copy(const kd_tree&);
         
         /*
         These routines provide the back end for building the KD tree

@@ -103,6 +103,13 @@ void simplex_minimizer::find_il(){
    }
    
    _min_ff=_ff.get_data(_il);
+   //printf("    find_il set min %e %d\n",_min_ff,_il);
+   /*double mu;
+   mu=evaluate(_pts(_il)[0]);
+   if(fabs(mu-_min_ff)>1.0e-2){
+       printf("WARNING find_il should have found %e\n",mu);
+       exit(1);
+   }*/
 }
 
 double simplex_minimizer::evaluate(array_1d<double> &pt){
@@ -136,6 +143,7 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
     raw=fval;
     
     double cval;
+    cval=0.0;
     if(_cost!=NULL){
         cval=evaluate_cost(vv);
         fval+=cval;
@@ -148,7 +156,7 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
     if(fval<_min_ff){
         _last_found=_called_evaluate;
         _min_ff=fval;
-        
+        //printf("    setting min %e\n",_min_ff);
         //printf("min %e true %e cost %e raw %e\n",
         //_min_ff,_true_min_ff,cval,raw);
 
@@ -162,8 +170,21 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
         }
     }
     
+    if(_called_evaluate>_last_cooled_off+1000 && !(_temp<_min_temp) && _freeze_temp==0){
+        cool_off();
+        if(_freeze_called==0)i=1;
+        else i=0;
+        
+        _freeze_called=1;
+        _freeze_temp=1;
+        fval=evaluate(pt);
+        _freeze_temp=0;
+        if(i==1)_freeze_called=0;
+    }
+    
+    
     if(_freeze_called==0)_called_evaluate++;
-
+    
     return fval;
 }
 
@@ -171,10 +192,36 @@ void simplex_minimizer::cool_off(){
     if(_freeze_temp==1 || _temp<_min_temp) return;
     
     _temp-=1.0;
+    
+    int i,need_thaw_temp,need_thaw_called;
+    
+    _min_ff=2.0*exception_value;
+    
+    if(_freeze_called==0)need_thaw_called=1;
+    else need_thaw_called=0;
+    
+    if(_freeze_temp==0)need_thaw_temp=1;
+    else need_thaw_temp=0;
+    
+    _freeze_called=1;
+    _freeze_temp=1;
+    
+    for(i=0;i<_pts.get_rows();i++){
+        _ff.set(i,evaluate(_pts(i)[0]));
+    }
+    _fstar=evaluate(_pstar);
+    _fstarstar=evaluate(_pstarstar);
+    
     expand();
    
     _last_found=_called_evaluate;
     _last_cooled_off=_called_evaluate;
+    if(need_thaw_called==1)_freeze_called=0;
+    if(need_thaw_temp==1)_freeze_temp=0;
+    /*printf("cooled off temp %e min %e true %e\n",_temp,_min_ff,_true_min_ff);
+    for(i=0;i<_pts.get_rows();i++){
+        printf("    %e\n",_ff.get_data(i));
+    }*/
     
 }
 
@@ -368,9 +415,11 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
            
        }
        
-       if(_called_evaluate-_last_found>=abort_max && _temp>_min_temp){
-           cool_off();
+       if(_called_evaluate-_last_found>=abort_max && !(_temp<_min_temp)){
+           expand();
+           _last_found=_called_evaluate;
        }
+       //printf("min %.3e treu %.3e spread %.3e since last %d %.3e\n",_min_ff,_true_min_ff,spread,_last_found-_called_evaluate,_temp);
        //printf("spread %e %e %e\n\n",spread,_temp,_min_ff);
     }
     
@@ -379,6 +428,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
     printf("    leaving simplex %d %d %d\n",_called_evaluate,_last_found,abort_max);
     printf("    temp %e\n",_temp);
+    printf("    _true_min_ff %e\n",_true_min_ff);
     
     _freeze_temp=-1;
 }
@@ -524,6 +574,8 @@ void simplex_minimizer::expand(){
     }
     if(_pts.get_rows()==0) return;
     
+    //printf("expanding\n");
+    
     int need_thaw_temp,need_thaw_called;
     
     if(_freeze_temp==0)need_thaw_temp=1;
@@ -555,11 +607,15 @@ void simplex_minimizer::expand(){
     for(i=0;i<_pts.get_rows();i++){
         if(i!=_il){
             for(j=0;j<_pts.get_cols();j++){
-                _pts.set(i,j,_pts.get_data(_il,j)+2.0*(_dice->doub()-0.5)*(span_max.get_data(j)-span_min.get_data(j)));
+                _pts.set(i,j,_pts.get_data(_il,j)+4.0*(_dice->doub()-0.5)*(span_max.get_data(j)-span_min.get_data(j)));
             }
             
         }
         mu=evaluate(_pts(i)[0]);
+        if(i==_il && fabs(mu-_ff.get_data(_il))>1.0e-2){
+            printf("WARNING at _il %e %e -- %e\n",mu,_ff.get_data(_il),_temp);
+            exit(1);
+        }        
         _ff.set(i,mu);
     }
     find_il();
