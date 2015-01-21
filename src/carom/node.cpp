@@ -1016,6 +1016,7 @@ void node::ricochet(){
    double volume1=volume();
    
    _ct_ricochet+=_chisquared->get_called()-ibefore;
+   int r_called=_chisquared->get_called()-ibefore;
    
    if(volume1>1.001*volume0){
        _ricochet_since_expansion=0;
@@ -1033,7 +1034,7 @@ void node::ricochet(){
        }
    }
    
-   printf("    ending ricochet with volume %e\n\n",volume1);
+   printf("    ending ricochet with volume %e -- %d\n\n",volume1,r_called);
 }
 
 ///////////////arrayOfNodes code below//////////
