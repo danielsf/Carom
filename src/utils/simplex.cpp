@@ -23,7 +23,7 @@ void simplex_minimizer::initialize(){
     _chisquared=NULL;
     _dice=NULL;
     
-    _min_temp=-4.0;
+    _min_temp=-3.0;
     
     _use_gradient=0;
     
