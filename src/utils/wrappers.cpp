@@ -170,6 +170,7 @@ void chisq_wrapper::initialize(int npts){
         }
         _fn.add(mu);
         data.add_row(vv);
+        _where_log.set(i,iSimplex);
     }
     
     array_1d<double> temp_max,temp_min;
