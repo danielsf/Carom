@@ -248,12 +248,19 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
     }
     
     int took_a_step=0,ct,i,iout;
+    double wgt;
     
     ct=0;
     iout=-1;
     while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
+        
+        wgt=(fhigh-_chisquared->target())/(fhigh-flow);
+        
+        if(wgt<0.25)wgt=0.25;
+        else if(wgt>0.75)wgt=0.75;
+        
         for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
+            trial.set(i,wgt*lowball.get_data(i)+(1.0-wgt)*highball.get_data(i));
         }
         
         evaluate(trial,&ftrial,&i);
