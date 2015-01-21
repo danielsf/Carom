@@ -563,6 +563,7 @@ void node::compass_off_diagonal(){
     int i,j,k,iFound;
     
     double sqrt2o2,xweight,yweight;
+    double dmin_np,dmin_nn;
     
     sqrt2o2=0.5*sqrt(2.0);
     
@@ -605,8 +606,15 @@ void node::compass_off_diagonal(){
                 dmin=dy;
             }
             
+            dmin_np=dmin;
+            dmin_nn=dmin;
+            
             for(xweight=-1.0*sqrt2o2;xweight<sqrt2o2*1.1;xweight+=2.0*sqrt2o2){
                 for(yweight=-1.0*sqrt2o2;yweight<sqrt2o2*1.1;yweight+=2.0*sqrt2o2){
+                    if(xweight>0.0){
+                        if(yweight<0.0)dmin=dmin_np;
+                        if(yweight>0.0)dmin=dmin_nn;
+                    }
                     for(i=0;i<_chisquared->get_dim();i++){
                         dir.set(i,xweight*_basis_vectors.get_data(ix,i)+yweight*_basis_vectors.get_data(iy,i));
                     }
@@ -669,6 +677,8 @@ void node::compass_off_diagonal(){
                         }
                         dmin+=mu*mu;
                         dmin=sqrt(dmin);
+                        if(xweight<0.0 && yweight<0.0)dmin_nn=dmin;
+                        if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
                         
                         _compass_points.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
