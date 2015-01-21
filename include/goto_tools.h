@@ -6,7 +6,7 @@
 
 #define exception_value 1.0e30
 
-enum{iAPS,iSimplex,iCompass,iBisect,iNodeBisect,iRicochet,iCoulomb};
+enum{iSimplex,iCompass,iRicochet};
 
 void kill(char*);
 

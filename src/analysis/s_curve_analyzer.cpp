@@ -5,17 +5,14 @@ int main(int iargc, char *argv[]){
 
 int i,j;
 array_1d<double> lnchi_hist,xmin,xmax,chi_hist;
-array_1d<int> apsHist,simplexHist,coulombHist,compassHist;
-array_1d<int> bisectHist,ricochetHist,totalHist;
+array_1d<int> simplexHist,ricochetHist,compassHist;
+array_1d<int> totalHist;
 array_1d<int> totalDistLnChi,totalDistChi;
 
 for(i=0;i<120;i++){
     chi_hist.set(i,i*1.0+0.5);
     lnchi_hist.set(i,-2.0+i*0.1);
-    apsHist.set(i,0);
     simplexHist.set(i,0);
-    coulombHist.set(i,0);
-    bisectHist.set(i,0);
     ricochetHist.set(i,0);
     totalHist.set(i,0);
     compassHist.set(i,0);
@@ -112,20 +109,11 @@ while(fscanf(input,"%le",&nn)>0){
     
     hdex=get_dex(lnchi_hist,log(chival));
     //printf("log %e hdex %d\n",log(chival),hdex);
-    if(j==iAPS){
-        hptr=&apsHist;
-    }
-    else if(j==iSimplex){
+    if(j==iSimplex){
         hptr=&simplexHist;
-    }
-    else if(j==iCoulomb){
-        hptr=&coulombHist;
     }
     else if(j==iCompass){
         hptr=&compassHist;
-    }
-    else if(j==iBisect || j==iNodeBisect){
-        hptr=&bisectHist;
     }
     else if(j==iRicochet){
         hptr=&ricochetHist;
@@ -214,15 +202,12 @@ apsExtractor.write_good_points("output/s_curve_projected_good.sav");
 
 sprintf(outname,"%s_histograms.sav",outputRoot);
 output=fopen(outname,"w");
-fprintf(output,"#lnchi aps simplex coulomb compass bisect ricochet total\n");
+fprintf(output,"#lnchi simplex compass ricochet total\n");
 for(i=0;i<lnchi_hist.get_dim();i++){
-    fprintf(output,"%le %d %d %d %d %d %d %d\n",
+    fprintf(output,"%le %d %d %d %d\n",
     lnchi_hist.get_data(i),
-    apsHist.get_data(i),
     simplexHist.get_data(i),
-    coulombHist.get_data(i),
     compassHist.get_data(i),
-    bisectHist.get_data(i),
     ricochetHist.get_data(i),
     totalHist.get_data(i));
 }
