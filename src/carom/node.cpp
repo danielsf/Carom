@@ -559,7 +559,7 @@ void node::compass_off_diagonal(){
     dir.set_name("node_off_diag_dir");
     
     double dx,dy,dmin,step;
-    double flow,fhigh,ftrial;
+    double flow,fhigh,ftrial,mu;
     int i,j,k,iFound;
     
     double sqrt2o2,xweight,yweight;
@@ -657,6 +657,19 @@ void node::compass_off_diagonal(){
                     iFound=bisection(lowball,flow,highball,fhigh);
                     
                     if(iFound>=0){
+                        dmin=0.0;
+                        mu=0.0;
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            mu+=(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                        }
+                        dmin+=mu*mu;
+                        mu=0.0;
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            mu+=(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(iy,i);
+                        }
+                        dmin+=mu*mu;
+                        dmin=sqrt(dmin);
+                        
                         _compass_points.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
                             trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
