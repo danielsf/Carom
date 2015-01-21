@@ -554,6 +554,7 @@ void node::compass_search(){
         }
     }
     
+    printf("before off_diag %d\n",_chisquared->get_called()-ibefore);
     compass_off_diagonal();
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
