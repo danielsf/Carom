@@ -450,6 +450,8 @@ void node::compass_search(){
     _compass_points.reset();
     _chisquared->set_iWhere(iCompass);
     
+    int ibefore=_chisquared->get_called();
+    
     int ix,i,j,iFound;
     double sgn,flow,fhigh,dx,ftrial,step;
     array_1d<double> lowball,highball,trial;
@@ -542,6 +544,7 @@ void node::compass_search(){
     }
     
     compass_off_diagonal();
+    printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
 
 void node::compass_off_diagonal(){
