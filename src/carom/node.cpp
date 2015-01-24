@@ -835,6 +835,79 @@ void node::find_bases(){
     printf("done finding bases\n");
 }
 
+void node::off_center_compass(int iStart){
+    
+    int ibefore=_chisquared->get_called();
+    
+    array_1d<double> lowball,highball,trial;
+    double flow,fhigh,ftrial,dx;
+    int iFound;
+    
+    lowball.set_name("node_off_center_compass_lowball");
+    highball.set_name("node_off_center_compass_highball");
+    trial.set_name("node_off_center_compass_trial");
+    
+    int ix,i;
+    double sgn;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        dx=1.0;
+        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            flow=2.0*exception_value;
+            fhigh=-2.0*exception_value;
+            
+            if(sgn>0.0){
+                for(i=0;i<_chisquared->get_dim();i++){
+                   trial.set(i,_chisquared->get_pt(iStart,i)+dx*sgn*_basis_vectors.get_data(ix,i));
+                }
+                evaluate(trial,&ftrial,&iFound);
+                
+                if(ftrial<_chisquared->target()){
+                    flow=ftrial;
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        lowball.set(i,trial.get_data(i));
+                    }
+                }
+                else if(ftrial>_chisquared->target()){
+                    fhigh=ftrial;
+                    for(i=0;i<_chisquared->target();i++){
+                        highball.set(i,trial.get_data(i));
+                    }
+                }
+            }
+            
+            if(flow>_chisquared->target()){
+                flow=_chisquared->get_fn(iStart);
+                for(i=0;i<_chisquared->get_dim();i++){
+                    lowball.set(i,_chisquared->get_pt(iStart,i));
+                }
+            }
+            
+            while(fhigh<_chisquared->target()){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    highball.set(i,lowball.get_data(i)+dx*sgn*_basis_vectors.get_data(ix,i));
+                }
+                evaluate(highball,&fhigh,&iFound);
+                dx*=2.0;
+            }
+            
+            iFound=bisection(lowball,flow,highball,fhigh,1);
+            
+            if(sgn<0.0){
+                dx=0.0;
+                for(i=0;i<_chisquared->get_dim();i++){
+                    dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                }
+                if(dx<0.0){
+                    dx*=-1.0;
+                }
+            }
+        }
+    }
+    
+    printf("done with off-center compass %d\n",_chisquared->get_called()-ibefore);
+
+}
+
 void node::initialize_ricochet(){
     is_it_safe("initialize_ricochet");
     

@@ -49,6 +49,7 @@ private:
     
     void compass_search();
     void compass_off_diagonal();
+    void off_center_compass(int);
     void initialize_ricochet();
 };
 
