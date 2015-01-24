@@ -62,10 +62,13 @@ public:
     void get_max(array_1d<double>&);
     
     void find_gradient(array_1d<double>&,array_1d<double>&);
+    void set_iWhere(int);
+    int get_ct_where(int);
+    int get_where_log(int);
 
 private:
     double _chimin,_deltachi,_target,_ddmin;
-    int _adaptive_target,_seed,_called,_mindex;
+    int _adaptive_target,_seed,_called,_mindex,_iWhere;
     
     array_1d<double> _characteristic_length,_range_min,_range_max,_fn;
     
@@ -77,7 +80,7 @@ private:
     void is_it_safe(char*);
     
     array_1d<double> _valid_dd;
-    array_1d<int> _valid_neigh;
+    array_1d<int> _valid_neigh,_ct_where,_where_log;
 };
 
 #endif

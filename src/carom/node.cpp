@@ -227,7 +227,7 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
     }
 }
 
-int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh){
+int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh, int doSlope){
 
     is_it_safe("bisection");
     
@@ -248,12 +248,23 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
     }
     
     int took_a_step=0,ct,i,iout;
+    double wgt;
     
     ct=0;
     iout=-1;
     while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
+        
+        if(doSlope==1){
+            wgt=(fhigh-_chisquared->target())/(fhigh-flow);
+            if(wgt<0.1)wgt=0.1;
+            else if(wgt>0.9)wgt=0.9;
+        }
+        else{
+            wgt=0.5;
+        }
+        
         for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
+            trial.set(i,wgt*lowball.get_data(i)+(1.0-wgt)*highball.get_data(i));
         }
         
         evaluate(trial,&ftrial,&i);
@@ -448,6 +459,9 @@ void node::compass_search(){
     
     is_it_safe("compass_search");
     _compass_points.reset();
+    _chisquared->set_iWhere(iCompass);
+    
+    int ibefore=_chisquared->get_called();
     
     int ix,i,j,iFound;
     double sgn,flow,fhigh,dx,ftrial,step;
@@ -510,11 +524,11 @@ void node::compass_search(){
                 flow,fhigh,_chisquared->target());
                 exit(1);
             }
-            iFound=bisection(lowball,flow,highball,fhigh);
+            iFound=bisection(lowball,flow,highball,fhigh,1);
             
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
-                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i));
+                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i));
             }
             
             if(iFound>=0){
@@ -540,11 +554,14 @@ void node::compass_search(){
         }
     }
     
+    printf("before off_diag %d\n",_chisquared->get_called()-ibefore);
     compass_off_diagonal();
+    printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
 
 void node::compass_off_diagonal(){
     is_it_safe("compass_off_diagonal");
+    _chisquared->set_iWhere(iCompass);
 
     int ix,iy;
     array_1d<double> trial,lowball,highball,dir;
@@ -554,10 +571,14 @@ void node::compass_off_diagonal(){
     dir.set_name("node_off_diag_dir");
     
     double dx,dy,dmin,step;
-    double flow,fhigh,ftrial;
+    double flow,fhigh,ftrial,mu;
     int i,j,k,iFound;
+    int nGuessHigh=0,nGuessLow=0,isHigh;
+    int spentHigh=0,spentLow=0,spentNeither=0,startFromMin=0;
+    int ibefore;
     
     double sqrt2o2,xweight,yweight;
+    double dmin_np,dmin_nn;
     
     sqrt2o2=0.5*sqrt(2.0);
     
@@ -600,8 +621,17 @@ void node::compass_off_diagonal(){
                 dmin=dy;
             }
             
+            dmin_np=dmin;
+            dmin_nn=dmin;
+            
             for(xweight=-1.0*sqrt2o2;xweight<sqrt2o2*1.1;xweight+=2.0*sqrt2o2){
                 for(yweight=-1.0*sqrt2o2;yweight<sqrt2o2*1.1;yweight+=2.0*sqrt2o2){
+                    ibefore=_chisquared->get_called();
+                    isHigh=-1;
+                    if(xweight>0.0){
+                        if(yweight<0.0)dmin=dmin_np;
+                        if(yweight>0.0)dmin=dmin_nn;
+                    }
                     for(i=0;i<_chisquared->get_dim();i++){
                         dir.set(i,xweight*_basis_vectors.get_data(ix,i)+yweight*_basis_vectors.get_data(iy,i));
                     }
@@ -615,12 +645,16 @@ void node::compass_off_diagonal(){
                         evaluate(trial,&ftrial,&iFound);
                         
                         if(ftrial<_chisquared->target()){
+                            nGuessLow++;
+                            isHigh=0;
                             flow=ftrial;
                             for(i=0;i<_chisquared->get_dim();i++){
                                 lowball.set(i,trial.get_data(i));
                             }
                         }
                         else{
+                            nGuessHigh++;
+                            isHigh=1;
                             fhigh=ftrial;
                             for(i=0;i<_chisquared->get_dim();i++){
                                 highball.set(i,trial.get_data(i));
@@ -629,6 +663,7 @@ void node::compass_off_diagonal(){
                     }
                     
                     if(flow>_chisquared->target()){
+                        startFromMin++;
                         flow=_chimin;
                         for(i=0;i<_chisquared->get_dim();i++){
                             lowball.set(i,_chisquared->get_pt(_centerdex,i));
@@ -649,9 +684,24 @@ void node::compass_off_diagonal(){
                         flow,fhigh,_chisquared->target());
                         exit(1);
                     }
-                    iFound=bisection(lowball,flow,highball,fhigh);
+                    iFound=bisection(lowball,flow,highball,fhigh,1);
                     
                     if(iFound>=0){
+                        dmin=0.0;
+                        mu=0.0;
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            mu+=(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                        }
+                        dmin+=mu*mu;
+                        mu=0.0;
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            mu+=(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(iy,i);
+                        }
+                        dmin+=mu*mu;
+                        dmin=sqrt(dmin);
+                        if(xweight<0.0 && yweight<0.0)dmin_nn=dmin;
+                        if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
+                        
                         _compass_points.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
                             trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
@@ -662,10 +712,24 @@ void node::compass_off_diagonal(){
                         }
                     }
                     
+                    if(isHigh==1){
+                        spentHigh+=_chisquared->get_called()-ibefore;
+                    }
+                    else if(isHigh==0){
+                        spentLow+=_chisquared->get_called()-ibefore;
+                    }
+                    else{
+                        spentNeither+=_chisquared->get_called()-ibefore;
+                    }
+                    
                 }
             }
         }
     }
+    
+    printf("nGuessHigh %d nGuessLow %d\n",nGuessHigh,nGuessLow);
+    printf("spentHigh %d spentLow %d spentNeither %d\n",spentHigh,spentLow,spentNeither);
+    printf("startFromMin %d\n",startFromMin);
 
 }
 
@@ -715,7 +779,7 @@ void node::find_bases(){
     ct=0;
     
     printf("error0 %e %d\n",error0,_basis_associates.get_dim());
-    while(ct<10000 && stdev>stdevlim && aborted<max_abort){
+    while(ct<2000 && stdev>stdevlim && aborted<max_abort){
         ct++;
         idim=-1;
         while(idim>=_chisquared->get_dim() || idim<0){
@@ -759,7 +823,7 @@ void node::find_bases(){
         
         if(ct%1000==0){
             error1=errorBest;
-            printf("    ct %d error %e from %e\n",ct,errorBest,error0);
+            printf("    ct %d error %e from %e min %e\n",ct,errorBest,error0,_chimin);
         }
     }
     
@@ -834,6 +898,8 @@ void node::ricochet(){
        
    }
    
+   _chisquared->set_iWhere(iRicochet);
+   
    int ibefore=_chisquared->get_called();
    double volume0=volume();
    
@@ -891,23 +957,15 @@ void node::ricochet(){
            eflow=_chimin;
            
            component=1.0;
-           efhigh=-2.0*exception_value;
-           while(efhigh<=_chisquared->target()){
-               for(i=0;i<_chisquared->get_dim();i++){
-                   ehighball.add_val(i,component*edir.get_data(i));
-               }
-               evaluate(ehighball,&efhigh,&i);
-               component*=2.0;
-               
-           }
-           
+           efhigh=flow;
+
            if(eflow>_chisquared->target() || eflow>efhigh){
                printf("WARNING eflow %e %e %e\n",
                eflow,efhigh,_chisquared->target());
                exit(1);
            }
            
-           iFound=bisection(elowball,eflow,ehighball,efhigh);
+           iFound=bisection(elowball,eflow,ehighball,efhigh,1);
            for(i=0;i<_chisquared->get_dim();i++){
                lowball.set(i,_chisquared->get_pt(iFound,i));
            }
@@ -931,6 +989,14 @@ void node::ricochet(){
            }
            evaluate(highball,&fhigh,&j);
            component*=2.0;
+           
+           if(fhigh<_chisquared->target()){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   lowball.set(i,highball.get_data(i));
+               }
+               flow=fhigh;
+           }
+           
        }
        
        if(flow>_chisquared->target() || flow>fhigh){
@@ -939,7 +1005,7 @@ void node::ricochet(){
            exit(1);
        }
        
-       iFound=bisection(lowball,flow,highball,fhigh);
+       iFound=bisection(lowball,flow,highball,fhigh,0);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
            _ricochet_velocities.set(ix,i,dir.get_data(i));
@@ -950,6 +1016,7 @@ void node::ricochet(){
    double volume1=volume();
    
    _ct_ricochet+=_chisquared->get_called()-ibefore;
+   int r_called=_chisquared->get_called()-ibefore;
    
    if(volume1>1.001*volume0){
        _ricochet_since_expansion=0;
@@ -967,7 +1034,7 @@ void node::ricochet(){
        }
    }
    
-   printf("    ending ricochet with volume %e\n\n",volume1);
+   printf("    ending ricochet with volume %e -- %d\n\n",volume1,r_called);
 }
 
 ///////////////arrayOfNodes code below//////////
