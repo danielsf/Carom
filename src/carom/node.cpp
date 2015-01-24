@@ -869,7 +869,7 @@ void node::off_center_compass(int iStart){
                 }
                 else if(ftrial>_chisquared->target()){
                     fhigh=ftrial;
-                    for(i=0;i<_chisquared->target();i++){
+                    for(i=0;i<_chisquared->get_dim();i++){
                         highball.set(i,trial.get_data(i));
                     }
                 }
