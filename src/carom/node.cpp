@@ -989,7 +989,12 @@ void node::ricochet(){
    int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component;
    array_1d<double> gradient,trial,dir;
+   array_1d<int> end_pts;
    
+   array_2d<double> start_pts;
+   
+   start_pts.set_name("node_ricochet_start_pts");
+   end_pts.set_name("node_ricochet_end_pts");
    gradient.set_name("node_ricochet_gradient");
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
@@ -1079,12 +1084,35 @@ void node::ricochet(){
        }
        
        iFound=bisection(lowball,flow,highball,fhigh,0);
+       start_pts.add_row(lowball);
+       end_pts.add(iFound);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
            _ricochet_velocities.set(ix,i,dir.get_data(i));
        }
        
    }
+   
+   double dd,ddmax;
+   int iChosen;
+   double ftrial;
+   
+   for(i=0;i<end_pts.get_dim();i++){
+       dd=_chisquared->distance(start_pts(i)[0],end_pts.get_data(i));
+       if(i==0 || dd>ddmax){
+           iChosen=i;
+           ddmax=dd;
+       }
+   }
+   
+   for(i=0;i<_chisquared->get_dim();i++){
+       trial.set(i,0.5*(start_pts.get_data(iChosen,i)+_chisquared->get_pt(end_pts.get_data(iChosen),i)));
+   }
+   evaluate(trial,&ftrial,&iFound);
+   if(_chisquared->get_fn(iFound)<_chisquared->target()){
+       off_center_compass(iFound);
+   }
+   
    
    double volume1=volume();
    
