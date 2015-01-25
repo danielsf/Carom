@@ -904,7 +904,7 @@ void node::off_center_compass(int iStart){
         }
     }
     
-    printf("done with off-center compass %d\n",_chisquared->get_called()-ibefore);
+    printf("done with off-center compass %d -- %d %d\n",_chisquared->get_called()-ibefore,iStart,_centerdex);
 
 }
 
