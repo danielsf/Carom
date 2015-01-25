@@ -1083,8 +1083,8 @@ void node::ricochet(){
            exit(1);
        }
        
-       iFound=bisection(lowball,flow,highball,fhigh,0);
        start_pts.add_row(lowball);
+       iFound=bisection(lowball,flow,highball,fhigh,0);
        end_pts.add(iFound);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
@@ -1098,7 +1098,12 @@ void node::ricochet(){
    double ftrial;
    
    for(i=0;i<end_pts.get_dim();i++){
-       dd=_chisquared->distance(start_pts(i)[0],end_pts.get_data(i));
+       if(end_pts.get_data(i)>=0){
+           dd=_chisquared->distance(start_pts(i)[0],end_pts.get_data(i));
+       }
+       else{
+           dd=-2.0*exception_value;
+       }
        if(i==0 || dd>ddmax){
            iChosen=i;
            ddmax=dd;
