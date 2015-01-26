@@ -208,6 +208,18 @@ void node::is_it_safe(char *word){
         exit(1);
     
     }
+    
+    if(_ricochet_particles.get_rows()!=_ricochet_velocities.get_rows() ||
+       _ricochet_rr.get_dim()!=_ricochet_particles.get_rows()){
+    
+        printf("WARNING in node::%s\n",word);
+        printf("ricochet particles %d\n",_ricochet_particles.get_rows());
+        printf("ricochet velocities %d\n",_ricochet_velocities.get_rows());
+        printf("ricochet rr %d\n",_ricochet_rr.get_dim());
+        
+        exit(1);
+    
+    }
 }
 
 void node::evaluate(array_1d<double> &pt, double *value, int *dex){
@@ -1212,6 +1224,7 @@ void node::ricochet(){
            _ricochet_particles.remove_row(i);
            _ricochet_velocities.remove_row(i);
            _ricochet_rr.remove(i);
+           end_pts.remove(i);
            i--;
        }
    }
