@@ -43,6 +43,7 @@ void node::initialize(){
     _min_found.set_name("node_min_found");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_velocities.set_name("node_ricochet_velocities");
+    _ricochet_rr.set_name("node_ricochet_rr");
 }
 
 void node::copy(const node &in){
@@ -110,9 +111,11 @@ void node::copy(const node &in){
     
     _ricochet_particles.reset();
     _ricochet_velocities.reset();
+    _ricochet_rr.reset();
     _ricochet_particles.set_cols(in._ricochet_velocities.get_cols());
     _ricochet_velocities.set_cols(in._ricochet_velocities.get_cols());
     for(i=0;i<in._ricochet_velocities.get_rows();i++){
+        _ricochet_rr.set(i,in._ricochet_rr.get_data(i));
         for(j=0;j<in._ricochet_velocities.get_cols();i++){
             _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
@@ -993,6 +996,7 @@ void node::initialize_ricochet(){
     int iUse;
     for(i=0;i<dexes.get_dim() && i<2*_chisquared->get_dim();i++){
         iUse=dexes.get_data(dexes.get_dim()-1-i);
+        _ricochet_rr.set(i,ricochet_distance(_centerdex,iUse));
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
             _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
@@ -1192,25 +1196,23 @@ void node::ricochet(){
    double ricochet_dd;
    int keep_it;
 
-   if(_calls_to_ricochet>0 && _calls_to_ricochet%2==0){
-       for(i=0;i<_ricochet_particles.get_rows();i++){
-           keep_it=1;
-           for(j=0;j<_chisquared->get_dim() && keep_it==1;j++){
-               if(_ricochet_particles.get_data(i,j)>ricochet_min.get_data(j) &&
-                  _ricochet_particles.get_data(i,j)<ricochet_max.get_data(j)){
-              
-                  keep_it=0;
-              
-              }
-           }
-           
+   if(end_pts.get_dim()!=_ricochet_particles.get_rows()){
+       printf("WARNING end_pts.dim %d number of ricochet particles %d\n",
+       end_pts.get_dim(),_ricochet_particles.get_rows());
        
-           if(keep_it==0){
-               _ricochet_particles.remove_row(i);
-               _ricochet_velocities.remove_row(i);
-               end_pts.remove(i);
-               i--;
-           }
+       exit(1);
+   }
+
+   for(i=0;i<end_pts.get_dim();i++){
+       ricochet_dd=ricochet_distance(_centerdex,end_pts.get_data(i));
+       if(ricochet_dd>_ricochet_rr.get_data(i)){
+           _ricochet_rr.set(i,ricochet_dd);
+       }
+       else{
+           _ricochet_particles.remove_row(i);
+           _ricochet_velocities.remove_row(i);
+           _ricochet_rr.remove(i);
+           i--;
        }
    }
    
