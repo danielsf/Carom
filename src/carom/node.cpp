@@ -1181,37 +1181,9 @@ void node::ricochet(){
        }
        
    }
-   
-   double dd,ddmax;
-   int iChosen,bumEnds;
-   double ftrial;
-   
-   bumEnds=0;
-   for(i=0;i<end_pts.get_dim();i++){
-       if(end_pts.get_data(i)>=0){
-           dd=_chisquared->distance(start_pts(i)[0],end_pts.get_data(i));
-       }
-       else{
-           dd=-2.0*exception_value;
-           bumEnds++;
-       }
-       if(i==0 || dd>ddmax){
-           iChosen=i;
-           ddmax=dd;
-       }
-   }
-   
-   for(i=0;i<_chisquared->get_dim();i++){
-       trial.set(i,0.5*(start_pts.get_data(iChosen,i)+_chisquared->get_pt(end_pts.get_data(iChosen),i)));
-   }
-   evaluate(trial,&ftrial,&iFound);
-   printf("bumEnds %d\n",bumEnds);
-   if(_chisquared->get_fn(iFound)<_chisquared->target()){
-       off_center_compass(iFound);
-   }
-   
-   double ricochet_dd;
-   int keep_it;
+     
+   double ricochet_dd,ddmax;
+   int iChosen;
 
    if(end_pts.get_dim()!=_ricochet_particles.get_rows()){
        printf("WARNING end_pts.dim %d number of ricochet particles %d\n",
@@ -1220,8 +1192,19 @@ void node::ricochet(){
        exit(1);
    }
 
+   iChosen=-1;
    for(i=0;i<end_pts.get_dim();i++){
        ricochet_dd=ricochet_distance(_ellipse_center,end_pts.get_data(i));
+       
+       if(iChosen<0 || ricochet_dd>ddmax){
+           ddmax=ricochet_dd;
+           iChosen=end_pts.get_data(i);
+           for(j=0;j<_chisquared->get_dim();j++){
+               trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
+           }
+       }
+       
+       
        if(ricochet_dd>_ricochet_rr.get_data(i)){
            _ricochet_rr.set(i,ricochet_dd);
        }
@@ -1230,7 +1213,16 @@ void node::ricochet(){
            _ricochet_velocities.remove_row(i);
            _ricochet_rr.remove(i);
            end_pts.remove(i);
+           start_pts.remove_row(i);
            i--;
+       }
+   }
+   
+   double ftrial;
+   if(iChosen>=0){
+       evaluate(trial,&ftrial,&iFound);
+       if(iFound>=0){
+           off_center_compass(iFound);
        }
    }
    
