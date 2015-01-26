@@ -1026,7 +1026,7 @@ void node::ricochet(){
    ricochet_min.set_name("node_ricochet_min");
    
    for(i=0;i<_compass_points.get_dim();i++){
-       for(j=0;j<_chisquared->get_dim();i++){
+       for(j=0;j<_chisquared->get_dim();j++){
            if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)<ricochet_min.get_data(j)){
                ricochet_min.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
            }
