@@ -25,7 +25,7 @@ public:
     int get_ct_ricochet();
     
 private:
-    int _centerdex,_active,_found_bases;
+    int _centerdex,_active,_found_bases,_ellipse_center;
     int _ricochet_since_expansion,_min_changed;
     int _ct_ricochet,_calls_to_ricochet;
     double _chimin,_bisection_tolerance;

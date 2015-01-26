@@ -781,6 +781,7 @@ void node::find_bases(){
         compass_search();
     }
     
+    _ellipse_center=_centerdex;
     _min_changed=0;
     
     int i,j;
@@ -869,6 +870,7 @@ void node::find_bases(){
     }
     
     if(changed_bases==1){
+        _ellipse_center=_centerdex;
         compass_search();
     }
     
@@ -1219,7 +1221,7 @@ void node::ricochet(){
    }
 
    for(i=0;i<end_pts.get_dim();i++){
-       ricochet_dd=ricochet_distance(_centerdex,end_pts.get_data(i));
+       ricochet_dd=ricochet_distance(_ellipse_center,end_pts.get_data(i));
        if(ricochet_dd>_ricochet_rr.get_data(i)){
            _ricochet_rr.set(i,ricochet_dd);
        }
