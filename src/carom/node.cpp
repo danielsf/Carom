@@ -1203,12 +1203,9 @@ void node::ricochet(){
                trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
            }
        }
+       _ricochet_rr.set(i,ricochet_dd);
        
-       
-       if(ricochet_dd>_ricochet_rr.get_data(i)){
-           _ricochet_rr.set(i,ricochet_dd);
-       }
-       else{
+       if(ricochet_dd<1.0+0.2*double(_calls_to_ricochet-1)){
            _ricochet_particles.remove_row(i);
            _ricochet_velocities.remove_row(i);
            _ricochet_rr.remove(i);
