@@ -1020,6 +1020,21 @@ void node::ricochet(){
    array_1d<int> end_pts;
    
    array_2d<double> start_pts;
+   array_1d<double> ricochet_max,ricochet_min;
+   
+   ricochet_max.set_name("node_ricochet_max");
+   ricochet_min.set_name("node_ricochet_min");
+   
+   for(i=0;i<_compass_points.get_dim();i++){
+       for(j=0;j<_chisquared->get_dim();i++){
+           if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)<ricochet_min.get_data(j)){
+               ricochet_min.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
+           }
+           if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)>ricochet_max.get_data(j)){
+               ricochet_max.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
+           }
+       }
+   }
    
    start_pts.set_name("node_ricochet_start_pts");
    end_pts.set_name("node_ricochet_end_pts");
@@ -1146,18 +1161,23 @@ void node::ricochet(){
        off_center_compass(iFound);
    }
    
-   double ricochet_dd,dd_threshold;
-   dd_threshold=0.5*sqrt(double(_chisquared->get_dim()));
+   double ricochet_dd;
+   int keep_it;
+
    if(_calls_to_ricochet>0 && _calls_to_ricochet%2==0){
        for(i=0;i<_ricochet_particles.get_rows();i++){
-           if(end_pts.get_dim()>i){
-               ricochet_dd=ricochet_distance(_ricochet_origins.get_data(i),end_pts.get_data(i));
+           keep_it=1;
+           for(j=0;j<_chisquared->get_dim() && keep_it==1;j++){
+               if(_ricochet_particles.get_data(i,j)>ricochet_min.get_data(j) &&
+                  _ricochet_particles.get_data(i,j)<ricochet_max.get_data(j)){
+              
+                  keep_it=0;
+              
+              }
            }
-           else{
-               ricochet_dd=-1.0;
-           }
+           
        
-           if(ricochet_dd<dd_threshold){
+           if(keep_it==0){
                _ricochet_particles.remove_row(i);
                _ricochet_velocities.remove_row(i);
                _ricochet_origins.remove(i);
