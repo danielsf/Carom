@@ -1181,15 +1181,17 @@ void node::ricochet(){
    }
    
    double dd,ddmax;
-   int iChosen;
+   int iChosen,bumEnds;
    double ftrial;
    
+   bumEnds=0;
    for(i=0;i<end_pts.get_dim();i++){
        if(end_pts.get_data(i)>=0){
            dd=_chisquared->distance(start_pts(i)[0],end_pts.get_data(i));
        }
        else{
            dd=-2.0*exception_value;
+           bumEnds++;
        }
        if(i==0 || dd>ddmax){
            iChosen=i;
@@ -1201,6 +1203,7 @@ void node::ricochet(){
        trial.set(i,0.5*(start_pts.get_data(iChosen,i)+_chisquared->get_pt(end_pts.get_data(iChosen),i)));
    }
    evaluate(trial,&ftrial,&iFound);
+   printf("bumEnds %d\n",bumEnds);
    if(_chisquared->get_fn(iFound)<_chisquared->target()){
        off_center_compass(iFound);
    }
