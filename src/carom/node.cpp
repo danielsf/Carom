@@ -560,14 +560,14 @@ void node::compass_search(){
                         printf("WARNING dx is %e when should be positive for blength\n",dx);
                         exit(1);
                     }
-                    blength+=0.5*dx;
+                    blength=dx;
                 }
                 else{
                     if(dx>0.0){
                         printf("WARNING dx is %e when should be negative for blength\n",dx);
                         exit(1);
                     }
-                    blength-=0.5*dx;
+                    if(-1.0*dx<blength)blength=-1.0*dx;
                 }
             }
             
