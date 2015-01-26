@@ -38,7 +38,6 @@ private:
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
-    array_1d<double> _ricochet_rr;
     
     chisq_wrapper *_chisquared;
     

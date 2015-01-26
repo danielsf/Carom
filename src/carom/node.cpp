@@ -43,7 +43,6 @@ void node::initialize(){
     _min_found.set_name("node_min_found");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_velocities.set_name("node_ricochet_velocities");
-    _ricochet_rr.set_name("node_ricochet_rr");
 }
 
 void node::copy(const node &in){
@@ -111,11 +110,9 @@ void node::copy(const node &in){
     
     _ricochet_particles.reset();
     _ricochet_velocities.reset();
-    _ricochet_rr.reset();
     _ricochet_particles.set_cols(in._ricochet_velocities.get_cols());
     _ricochet_velocities.set_cols(in._ricochet_velocities.get_cols());
     for(i=0;i<in._ricochet_velocities.get_rows();i++){
-        _ricochet_rr.set(i,in._ricochet_rr.get_data(i));
         for(j=0;j<in._ricochet_velocities.get_cols();i++){
             _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
@@ -209,13 +206,11 @@ void node::is_it_safe(char *word){
     
     }
     
-    if(_ricochet_particles.get_rows()!=_ricochet_velocities.get_rows() ||
-       _ricochet_rr.get_dim()!=_ricochet_particles.get_rows()){
+    if(_ricochet_particles.get_rows()!=_ricochet_velocities.get_rows()){
     
         printf("WARNING in node::%s\n",word);
         printf("ricochet particles %d\n",_ricochet_particles.get_rows());
         printf("ricochet velocities %d\n",_ricochet_velocities.get_rows());
-        printf("ricochet rr %d\n",_ricochet_rr.get_dim());
         
         exit(1);
     
@@ -1002,7 +997,6 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     }
     
     return mu;
-    
 }
 
 double node::ricochet_distance(int i1, int i2){
@@ -1064,7 +1058,6 @@ void node::initialize_ricochet(){
     int iUse;
     for(i=0;i<dexes.get_dim() && i<2*_chisquared->get_dim();i++){
         iUse=dexes.get_data(dexes.get_dim()-1-i);
-        _ricochet_rr.set(i,ricochet_distance(_centerdex,iUse));
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
             _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
@@ -1241,35 +1234,35 @@ void node::ricochet(){
    double ricochet_dd,ddmax;
    int iChosen;
 
-   if(end_pts.get_dim()!=_ricochet_particles.get_rows()){
+   if(end_pts.get_dim()!=_ricochet_particles.get_rows() || end_pts.get_dim()!=start_pts.get_rows()){
        printf("WARNING end_pts.dim %d number of ricochet particles %d\n",
        end_pts.get_dim(),_ricochet_particles.get_rows());
+       printf("start pts %d\n",start_pts.get_rows());
        
        exit(1);
    }
 
    iChosen=-1;
-   for(i=0;i<end_pts.get_dim();i++){
-       ricochet_dd=ricochet_distance(_ellipse_center,end_pts.get_data(i));
-       
-       if(iChosen<0 || ricochet_dd>ddmax){
-           ddmax=ricochet_dd;
-           iChosen=end_pts.get_data(i);
-           for(j=0;j<_chisquared->get_dim();j++){
-               trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
-           }
-       }
-       _ricochet_rr.set(i,ricochet_dd);
-       
-       if(ricochet_dd<1.0+0.1*double(_calls_to_ricochet)){
+   double mu;
+   for(i=0;i<_ricochet_particles.get_rows();i++){
+       mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
+       if(mu<_chisquared->target()){
            _ricochet_particles.remove_row(i);
            _ricochet_velocities.remove_row(i);
-           _ricochet_rr.remove(i);
            end_pts.remove(i);
            start_pts.remove_row(i);
            i--;
        }
+       else{
+           if(iChosen<0 || mu>ddmax){
+               ddmax=mu;
+               for(j=0;j<_chisquared->get_dim();j++){
+                   trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
+               }
+           }
+       }
    }
+   
    
    double ftrial;
    if(iChosen>=0){
