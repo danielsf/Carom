@@ -1205,7 +1205,7 @@ void node::ricochet(){
        }
        _ricochet_rr.set(i,ricochet_dd);
        
-       if(ricochet_dd<1.0+0.2*double(_calls_to_ricochet-1)){
+       if(ricochet_dd<1.0){
            _ricochet_particles.remove_row(i);
            _ricochet_velocities.remove_row(i);
            _ricochet_rr.remove(i);
