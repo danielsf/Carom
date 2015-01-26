@@ -1146,7 +1146,8 @@ void node::ricochet(){
        off_center_compass(iFound);
    }
    
-   double ricochet_dd;
+   double ricochet_dd,dd_threshold;
+   dd_threshold=0.5*sqrt(double(_chisquared->get_dim()));
    if(_calls_to_ricochet>0 && _calls_to_ricochet%2==0){
        for(i=0;i<_ricochet_particles.get_rows();i++){
            if(end_pts.get_dim()>i){
@@ -1156,7 +1157,7 @@ void node::ricochet(){
                ricochet_dd=-1.0;
            }
        
-           if(ricochet_dd<0.5){
+           if(ricochet_dd<dd_threshold){
                _ricochet_particles.remove_row(i);
                _ricochet_velocities.remove_row(i);
                _ricochet_origins.remove(i);
