@@ -404,6 +404,11 @@ Ran* chisq_wrapper::get_dice(){
     return _dice;
 }
 
+kd_tree* chisq_wrapper::get_tree(){
+    is_it_safe("get_tree");
+    return _kptr;
+}
+
 void chisq_wrapper::get_min(array_1d<double> &vv){
     int i;
     vv.set_dim(_range_min.get_dim());
