@@ -74,7 +74,7 @@ object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o obje
 object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
-object/node.o: src/carom/node.cpp include/node.h object/wrappers.o
+object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/eigen_wrapper.o
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
 object/carom.o: src/carom/carom.cpp include/carom.h \

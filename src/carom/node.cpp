@@ -951,6 +951,60 @@ void node::off_center_compass(int iStart){
 
 }
 
+double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
+    is_it_safe("ricochet_model");
+
+    int npts=5;
+    double ell;
+    array_2d<double> covar,covarin;
+    array_1d<int> neigh;
+    array_1d<double> dd;
+    
+    covar.set_name("node_ricochet_model_covar");
+    covarin.set_name("node_ricochet_model_covarin");
+    neigh.set_name("node_ricochet_model_neigh");
+    dd.set_name("node_ricochet_model_dd");
+    
+    tree.nn_srch(pt,npts,neigh,dd);
+    ell=dd.get_data(npts/2);
+    
+    double mu,nugget;
+    int i,j,k;
+    nugget=1.0e-4;
+    for(i=0;i<npts;i++){
+        covar.set(i,i,1.0+nugget);
+        for(j=i+1;j<npts;j++){
+            mu=tree.distance(neigh.get_data(i),neigh.get_data(j));
+            covar.set(i,j,exp(-0.5*power(mu/ell,2)));
+            covar.set(j,i,covar.get_data(i,j));
+        }
+    }
+    invert_lapack(covar,covarin,0);
+    
+    array_1d<double> qq;
+    qq.set_name("node_ricochet_model_qq");
+    for(i=0;i<npts;i++){
+        mu=tree.distance(pt,neigh.get_data(i));
+        qq.set(i,exp(-0.5*power(mu/ell,2)));
+    }
+    
+    double fbar=0.0;
+    for(i=0;i<npts;i++){
+        fbar+=_chisquared->get_fn(neigh.get_data(i));
+    }
+    fbar=fbar/double(npts);
+    
+    mu=fbar;
+    for(i=0;i<npts;i++){
+        for(j=0;j<npts;j++){
+            mu+=qq.get_data(i)*covarin.get_data(i,j)*(_chisquared->get_fn(neigh.get_data(j))-fbar);
+        }
+    }
+    
+    return mu;
+    
+}
+
 double node::ricochet_distance(int i1, int i2){
     is_it_safe("ricochet_distance");
     
@@ -1059,6 +1113,8 @@ void node::ricochet(){
    elowball.set_name("node_ricochet_elowball");
    ehighball.set_name("node_ricochet_ehighball"); 
    edir.set_name("node_ricochet_edir");
+   
+   kd_tree kd_copy(_chisquared->get_tree()[0]);
     
    int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component;

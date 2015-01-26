@@ -2,6 +2,7 @@
 #define NODE_H
 
 #include "wrappers.h"
+#include "eigen_wrapper.h"
 
 class node{
 
@@ -54,6 +55,7 @@ private:
     void off_center_compass(int);
     void initialize_ricochet();
     double ricochet_distance(int,int);
+    double ricochet_model(array_1d<double>&, kd_tree&);
 };
 
 class arrayOfNodes{
