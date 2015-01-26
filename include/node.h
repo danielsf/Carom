@@ -27,7 +27,7 @@ public:
 private:
     int _centerdex,_active,_found_bases;
     int _ricochet_since_expansion,_min_changed;
-    int _ct_ricochet;
+    int _ct_ricochet,_calls_to_ricochet;
     double _chimin,_bisection_tolerance;
     
     array_1d<int> _compass_points,_basis_associates;
@@ -36,6 +36,7 @@ private:
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
+    array_1d<int> _ricochet_origins;
     
     chisq_wrapper *_chisquared;
     
@@ -51,6 +52,7 @@ private:
     void compass_off_diagonal();
     void off_center_compass(int);
     void initialize_ricochet();
+    double ricochet_distance(int,int);
 };
 
 class arrayOfNodes{
