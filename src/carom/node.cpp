@@ -42,7 +42,6 @@ void node::initialize(){
     _min_found.set_name("node_min_found");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_velocities.set_name("node_ricochet_velocities");
-    _ricochet_origins.set_name("node_ricochet_origins");
 }
 
 void node::copy(const node &in){
@@ -114,10 +113,6 @@ void node::copy(const node &in){
         }
     }
     
-    _ricochet_origins.reset();
-    for(i=0;i<in._ricochet_origins.get_dim();i++){
-        _ricochet_origins.set(i,in._ricochet_origins.get_data(i));
-    }
 }
 
 int node::get_activity(){
@@ -943,7 +938,6 @@ void node::initialize_ricochet(){
     _ricochet_since_expansion=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
-    _ricochet_origins.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     
@@ -968,7 +962,6 @@ void node::initialize_ricochet(){
             _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
             _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
         }
-        _ricochet_origins.set(i,_centerdex);
     }
 
 }
@@ -1180,12 +1173,8 @@ void node::ricochet(){
            if(keep_it==0){
                _ricochet_particles.remove_row(i);
                _ricochet_velocities.remove_row(i);
-               _ricochet_origins.remove(i);
                end_pts.remove(i);
                i--;
-           }
-           else{
-               _ricochet_origins.set(i,end_pts.get_data(i));
            }
        }
    }
