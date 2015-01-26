@@ -1169,6 +1169,9 @@ void node::ricochet(){
        }
    }
    
+   if(_ricochet_particles.get_rows()==0){
+       _active=0;
+   }
    
    double volume1=volume();
    
