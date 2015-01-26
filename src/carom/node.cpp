@@ -963,6 +963,9 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     tree.nn_srch(pt,npts,neigh,dd);
     ell=dd.get_data(npts/2);
     
+    covar.set_dim(npts,npts);
+    covarin.set_dim(npts,npts);
+    
     double mu,nugget;
     int i,j,k;
     nugget=1.0e-4;
