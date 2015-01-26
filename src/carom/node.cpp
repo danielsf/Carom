@@ -1277,6 +1277,7 @@ void node::ricochet(){
    }
    
    if(_ricochet_particles.get_rows()==0){
+       printf("deactivating because no particles are worth it\n");
        _active=0;
    }
    
