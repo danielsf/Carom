@@ -1232,13 +1232,12 @@ void node::ricochet(){
        _ricochet_since_expansion++;
    }
    
-   if(_ricochet_since_expansion>3){
-       if(_found_bases<2){
-           find_bases();
-       }
-       else{
-           _active=0;
-       }
+   if(_ricochet_since_expansion>2){
+       _active=0;
+   }
+   
+   if(_active==0 && _found_bases<2){
+       find_bases();
    }
    
    printf("    ending ricochet with volume %e -- %d -- %d\n\n",
