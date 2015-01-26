@@ -1255,6 +1255,7 @@ void node::ricochet(){
        }
        else{
            if(iChosen<0 || mu>ddmax){
+               iChosen=i;
                ddmax=mu;
                for(j=0;j<_chisquared->get_dim();j++){
                    trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
