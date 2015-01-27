@@ -159,11 +159,16 @@ void chisq_wrapper::initialize(int npts){
     _fn.reset();
     data.set_cols(_chifn->get_dim());
     for(i=0;i<npts;i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            vv.set(j,_range_min.get_data(j)+_dice->doub()*(_range_max.get_data(j)-_range_min.get_data(j)));
+        mu=2.0*exception_value;
+        
+        while(mu>exception_value){
+            for(j=0;j<_chifn->get_dim();j++){
+                vv.set(j,_range_min.get_data(j)+_dice->doub()*(_range_max.get_data(j)-_range_min.get_data(j)));
+            }
+            mu=_chifn[0](vv);
+            _called++;
         }
-        mu=_chifn[0](vv);
-        _called++;
+        
         if(mu<_chimin){
             _chimin=mu;
             _mindex=i;
