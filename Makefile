@@ -21,7 +21,7 @@ LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
 INCLUDE = -I$(CAROM_HOME)include/
 
-WMAP_LIBRARIES = $(LIBRARIES) $(WMAP_LIB) $(CAMB_LIB) $(CFITSIO_LIB)
+WMAP_LIBRARIES = $(WMAP_LIB) $(CAMB_LIB) $(CFITSIO_LIB)
 
 #do not use these compilers with omp
 gg = g++ -Wno-write-strings -O3 $(INCLUDE)
@@ -96,6 +96,18 @@ s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
 	$(LIBRARIES)
+
+wmap7: src/examples/wmap7_example.cpp object/carom.o \
+object/wmap_likelihood_function.o
+	$(gg) -o bin/wmap7 src/examples/wmap7_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
+	object/wmap_likelihood_function.o \
+	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/node.o object/carom.o \
+	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES) \
+	$(WMAP_LIBRARIES)
+
 
 all:
 	make test_containers
