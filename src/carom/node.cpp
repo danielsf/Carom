@@ -1294,6 +1294,7 @@ void node::ricochet(){
    }
    
    if(_ricochet_since_expansion>2){
+       printf("deactivating because volume did not increase\n");
        _active=0;
    }
    
