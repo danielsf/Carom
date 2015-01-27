@@ -8,12 +8,12 @@ ARPACK_LIB = -L/Users/noldor/physics/ARPACK/ -larpack
 FORTRAN_LIB = -L/opt/local/lib/ -lf95 -lgfortran
 
 CAMB_LIB = -L/Users/noldor/physics/CAMB_110419/camb/ -lcamb
-CAMB_INC = -I/Users/noldor/physics/CAMB_110419/camb/
+CAMB_INCLUDE = -I/Users/noldor/physics/CAMB_110419/camb/
 
 CFITSIO_LIB = -L/Users/noldor/physics/cfitsio/ -lcfitsio
 
 WMAP_LIB = -L/Users/noldor/physics/WMAP7likelihood/ -lwmap7 -lpthread
-WMAP_INC = -I/Users/noldor/physics/WMAP7likelihood/
+WMAP_INCLUDE = -I/Users/noldor/physics/WMAP7likelihood/
 
 R_PATH = /Users/noldor/physics/lib/
 
@@ -22,8 +22,6 @@ LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 INCLUDE = -I$(CAROM_HOME)include/
 
 WMAP_LIBRARIES = $(LIBRARIES) $(WMAP_LIB) $(CAMB_LIB) $(CFITSIO_LIB)
-
-WMAP_INCLUDE = $(INCLUDE) $(CAMB_INC) $(WMAP_INC)
 
 #do not use these compilers with omp
 gg = g++ -Wno-write-strings -O3 $(INCLUDE)
@@ -59,6 +57,17 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 
 object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
 	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
+
+object/camb_wrapper_wmap.o: likelihoods/camb_wrapper_wmap.F90
+	$(ff) -c -o object/camb_wrapper_wmap.o likelihoods/camb_wrapper_wmap.F90 $(CAMB_INCLUDE)
+
+object/wmap_wrapper.o: likelihoods/wmap_wrapper.F90
+	$(ff) -c -o object/wmap_wrapper.o likelihoods/wmap_wrapper.F90 $(WMAP_INCLUDE)
+
+object/wmap_likelihood_function.o: object/chisq.o object/wmap_wrapper.o object/camb_wrapper_wmap.o \
+likelihoods/wmap_likelihood_function.cpp include/wmap_likelihood_function.h
+	$(gg) -c -o object/wmap_likelihood_function.o likelihoods/wmap_likelihood_function.cpp \
+	$(WMAP_INCLUDE) $(CAMB_INCLUDE)
 
 object/aps_extractor.o: src/analysis/aps_extractor.cpp include/aps_extractor.h object/goto_tools.o
 	$(gg) -c -o object/aps_extractor.o src/analysis/aps_extractor.cpp

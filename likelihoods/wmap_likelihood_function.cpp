@@ -31,11 +31,11 @@ double wmap_likelihood::operator()(array_1d<double> &v) const{
   FILE *output;
 
   for(i=0;i<dim;i++){
-      if((v.get_data(i)<mins.get_data(i) && mins.get_data(i)<chisq_exception) || 
-      (v.get_data(i)>maxs.get_data(i) && maxs.get_data(i)>-1.0*chisq_exception)){
+      if((v.get_data(i)<mins.get_data(i) && mins.get_data(i)<exception_value) || 
+      (v.get_data(i)>maxs.get_data(i) && maxs.get_data(i)>-1.0*exception_value)){
           time_spent+=double(time(NULL))-before;
       
-          return 2.0*chisq_exception;
+          return 2.0*exception_value;
       }
   }
   
@@ -65,11 +65,11 @@ double wmap_likelihood::operator()(array_1d<double> &v) const{
   wmaplikeness_(&cltt[start],&clte[start],&clee[start],\
   &clbb[start],&chisquared); //a function to call the WMAP likelihood code
   }
-  else chisquared=2.0*chisq_exception;
+  else chisquared=2.0*exception_value;
 
  //printf("done with likelihood\n");
 
-  if(chisquared<0.01)chisquared=2.0*chisq_exception; 
+  if(chisquared<0.01)chisquared=2.0*exception_value; 
   			//in case the model was so pathological that the
 			//likelihood code crashed and returned
 			//chisquared=0  (this has been known to happen)
