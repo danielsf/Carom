@@ -1132,6 +1132,7 @@ void node::ricochet(){
    
    printf("    starting ricochet with volume %e and pts %d %d\n",volume0,
    _ricochet_particles.get_rows(),_ricochet_velocities.get_rows());
+   
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir;
    
