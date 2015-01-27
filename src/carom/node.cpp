@@ -1130,8 +1130,8 @@ void node::ricochet(){
    int ibefore=_chisquared->get_called();
    double volume0=volume();
    
-   printf("    starting ricochet with volume %e and pts %d %d\n",volume0,
-   _ricochet_particles.get_rows(),_ricochet_velocities.get_rows());
+   printf("    starting ricochet with volume %e and pts %d\n",volume0,
+   _ricochet_particles.get_rows());
    
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir;
