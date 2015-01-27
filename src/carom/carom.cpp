@@ -11,7 +11,10 @@ carom::carom(){
     _time_started=double(time(NULL));
 }
 
-carom::~carom(){}
+carom::~carom(){
+    write_pts();
+
+}
 
 void carom::set_seed(int ii){
     _chifn.set_seed(ii);

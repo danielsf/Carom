@@ -28,8 +28,10 @@ void node::initialize(){
     _active=1;
     _found_bases=0;
     _ct_ricochet=0;
+    _calls_to_ricochet=0;
     
     _compass_points.set_name("node_compass_points");
+    _off_center_compass_points.set_name("node_off_center_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
     _basis_bb.set_name("node_basis_bb");
@@ -37,6 +39,7 @@ void node::initialize(){
     _basis_vectors.set_name("node_basis_vectors");
     _basis_ddsq.set_name("node_basis_ddsq");
     _basis_vv.set_name("node_basis_vv");
+    _basis_lengths.set_name("node_basis_lengths");
     _max_found.set_name("node_max_found");
     _min_found.set_name("node_min_found");
     _ricochet_particles.set_name("node_ricochet_particles");
@@ -51,6 +54,7 @@ void node::copy(const node &in){
     _active=in._active;
     _found_bases=in._found_bases;
     _ct_ricochet=in._ct_ricochet;
+    _calls_to_ricochet=in._calls_to_ricochet;
     
     
     int i,j;
@@ -60,6 +64,11 @@ void node::copy(const node &in){
     _compass_points.reset();
     for(i=0;i<in._compass_points.get_dim();i++){
         _compass_points.set(i,in._compass_points.get_data(i));
+    }
+    
+    _off_center_compass_points.reset();
+    for(i=0;i<in._off_center_compass_points.get_dim();i++){
+        _off_center_compass_points.set(i,in._off_center_compass_points.get_data(i));
     }
     
     _basis_associates.reset();
@@ -80,6 +89,11 @@ void node::copy(const node &in){
     _basis_model.reset();
     for(i=0;i<in._basis_model.get_dim();i++){
         _basis_model.set(i,in._basis_model.get_data(i));
+    }
+    
+    _basis_lengths.reset();
+    for(i=0;i<in._basis_lengths.get_dim();i++){
+        _basis_lengths.set(i,in._basis_lengths.get_data(i));
     }
     
     _basis_vectors.reset();
@@ -110,6 +124,7 @@ void node::copy(const node &in){
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
         }
     }
+    
 }
 
 int node::get_activity(){
@@ -192,6 +207,16 @@ void node::is_it_safe(char *word){
         _basis_vectors.get_cols());
         
         printf("but dim should be %d\n",_chisquared->get_dim());
+        
+        exit(1);
+    
+    }
+    
+    if(_ricochet_particles.get_rows()!=_ricochet_velocities.get_rows()){
+    
+        printf("WARNING in node::%s\n",word);
+        printf("ricochet particles %d\n",_ricochet_particles.get_rows());
+        printf("ricochet velocities %d\n",_ricochet_velocities.get_rows());
         
         exit(1);
     
@@ -465,6 +490,7 @@ void node::compass_search(){
     
     int ix,i,j,iFound;
     double sgn,flow,fhigh,dx,ftrial,step;
+    double blength;
     array_1d<double> lowball,highball,trial;
     
     lowball.set_name("node_compass_search_lowball");
@@ -472,6 +498,7 @@ void node::compass_search(){
     
     dx=0.0;
     for(ix=0;ix<_chisquared->get_dim();ix++){
+        blength=0.0;
         for(sgn=-1.0;sgn<1.5;sgn+=2.0){
             flow=2.0*exception_value;
             fhigh=-2.0*exception_value;
@@ -529,6 +556,20 @@ void node::compass_search(){
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
                 dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i));
+                if(sgn<0.0){
+                    if(dx<0.0){
+                        printf("WARNING dx is %e when should be positive for blength\n",dx);
+                        exit(1);
+                    }
+                    blength=dx;
+                }
+                else{
+                    if(dx>0.0){
+                        printf("WARNING dx is %e when should be negative for blength\n",dx);
+                        exit(1);
+                    }
+                    if(-1.0*dx<blength)blength=-1.0*dx;
+                }
             }
             
             if(iFound>=0){
@@ -552,6 +593,7 @@ void node::compass_search(){
             }
             
         }
+        _basis_lengths.set(ix,blength);
     }
     
     printf("before off_diag %d\n",_chisquared->get_called()-ibefore);
@@ -740,6 +782,7 @@ void node::find_bases(){
         compass_search();
     }
     
+    _ellipse_center=_centerdex;
     _min_changed=0;
     
     int i,j;
@@ -835,6 +878,189 @@ void node::find_bases(){
     printf("done finding bases\n");
 }
 
+void node::off_center_compass(int iStart){
+    
+    _off_center_compass_points.reset();
+    int ibefore=_chisquared->get_called();
+    
+    array_1d<double> lowball,highball,trial;
+    double flow,fhigh,ftrial,dx;
+    int iFound;
+    
+    lowball.set_name("node_off_center_compass_lowball");
+    highball.set_name("node_off_center_compass_highball");
+    trial.set_name("node_off_center_compass_trial");
+    
+    int ix,i;
+    double sgn;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        dx=1.0;
+        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            flow=2.0*exception_value;
+            fhigh=-2.0*exception_value;
+            
+            if(sgn>0.0){
+                for(i=0;i<_chisquared->get_dim();i++){
+                   trial.set(i,_chisquared->get_pt(iStart,i)+dx*sgn*_basis_vectors.get_data(ix,i));
+                }
+                evaluate(trial,&ftrial,&iFound);
+                
+                if(ftrial<_chisquared->target()){
+                    flow=ftrial;
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        lowball.set(i,trial.get_data(i));
+                    }
+                }
+                else if(ftrial>_chisquared->target()){
+                    fhigh=ftrial;
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        highball.set(i,trial.get_data(i));
+                    }
+                }
+            }
+            
+            if(flow>_chisquared->target()){
+                flow=_chisquared->get_fn(iStart);
+                for(i=0;i<_chisquared->get_dim();i++){
+                    lowball.set(i,_chisquared->get_pt(iStart,i));
+                }
+            }
+            
+            while(fhigh<_chisquared->target()){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    highball.set(i,lowball.get_data(i)+dx*sgn*_basis_vectors.get_data(ix,i));
+                }
+                evaluate(highball,&fhigh,&iFound);
+                dx*=2.0;
+            }
+            
+            iFound=bisection(lowball,flow,highball,fhigh,1);
+            
+            if(iFound>=0){
+                _off_center_compass_points.add(iFound);
+            }
+            
+            if(sgn<0.0){
+                dx=0.0;
+                for(i=0;i<_chisquared->get_dim();i++){
+                    dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                }
+                if(dx<0.0){
+                    dx*=-1.0;
+                }
+            }
+        }
+    }
+    
+    printf("done with off-center compass %d -- %d %d\n",_chisquared->get_called()-ibefore,iStart,_centerdex);
+
+}
+
+double node::apply_quadratic_model(array_1d<double> &pt){
+    is_it_safe("apply_quadratic_model");
+    int ix,j;
+    double ans,mu;
+    ans=_chimin;
+    for(ix=0;ix<_basis_vectors.get_rows();ix++){
+        mu=0.0;
+        for(j=0;j<_chisquared->get_dim();j++){
+            mu+=(pt.get_data(j)-_chisquared->get_pt(_ellipse_center,j))*_basis_vectors.get_data(ix,j);
+        }
+        ans+=_basis_model.get_data(ix)*mu*mu;
+    }
+    return ans;
+    
+}
+
+double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
+    is_it_safe("ricochet_model");
+
+    int npts=5;
+    double ell;
+    array_2d<double> covar,covarin;
+    array_1d<int> neigh;
+    array_1d<double> dd;
+    
+    covar.set_name("node_ricochet_model_covar");
+    covarin.set_name("node_ricochet_model_covarin");
+    neigh.set_name("node_ricochet_model_neigh");
+    dd.set_name("node_ricochet_model_dd");
+    
+    tree.nn_srch(pt,npts,neigh,dd);
+    ell=dd.get_data(npts/2);
+    
+    covar.set_dim(npts,npts);
+    covarin.set_dim(npts,npts);
+    
+    double mu,nugget;
+    int i,j,k;
+    nugget=1.0e-4;
+    for(i=0;i<npts;i++){
+        covar.set(i,i,1.0+nugget);
+        for(j=i+1;j<npts;j++){
+            mu=tree.distance(neigh.get_data(i),neigh.get_data(j));
+            covar.set(i,j,exp(-0.5*power(mu/ell,2)));
+            covar.set(j,i,covar.get_data(i,j));
+        }
+    }
+    invert_lapack(covar,covarin,0);
+    
+    array_1d<double> qq;
+    qq.set_name("node_ricochet_model_qq");
+    for(i=0;i<npts;i++){
+        mu=tree.distance(pt,neigh.get_data(i));
+        qq.set(i,exp(-0.5*power(mu/ell,2)));
+    }
+    
+    double fbar;
+    fbar=apply_quadratic_model(pt);
+    
+    
+    array_1d<double> qbar;
+    qbar.set_name("node_ricochet_model_qbar");
+    for(i=0;i<npts;i++){
+        qbar.set(i,apply_quadratic_model(tree.get_pt(neigh.get_data(i))[0]));
+    }
+    
+    mu=fbar;
+    for(i=0;i<npts;i++){
+        for(j=0;j<npts;j++){
+            mu+=qq.get_data(i)*covarin.get_data(i,j)*(_chisquared->get_fn(neigh.get_data(j))-qbar.get_data(j));
+        }
+    }
+    
+    return mu;
+}
+
+double node::ricochet_distance(int i1, int i2){
+    is_it_safe("ricochet_distance");
+    
+    if(_basis_lengths.get_dim()!=_chisquared->get_dim()){
+        printf("WARNING in node::ricochet_distance basis_lengths.dim %d need %d\n",
+        _basis_lengths.get_dim(),_chisquared->get_dim());
+        
+        exit(1);
+    }
+    
+    double mu,ell,dd=0.0;
+    int ix,i;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        mu=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            mu+=(_chisquared->get_pt(i1,i)-_chisquared->get_pt(i2,i))*_basis_vectors.get_data(ix,i);
+        }
+        
+        if(_basis_lengths.get_data(ix)>1.0e-10){
+            dd+=power(mu/_basis_lengths.get_data(ix),2);
+        }
+        else{
+            dd+=mu*mu;
+        }
+        
+    }
+    return sqrt(dd);
+}
+
 void node::initialize_ricochet(){
     is_it_safe("initialize_ricochet");
     
@@ -899,11 +1125,14 @@ void node::ricochet(){
    }
    
    _chisquared->set_iWhere(iRicochet);
+   _calls_to_ricochet++;
    
    int ibefore=_chisquared->get_called();
    double volume0=volume();
    
-   printf("    starting ricochet with volume %e\n",volume0);
+   printf("    starting ricochet with volume %e and pts %d\n",volume0,
+   _ricochet_particles.get_rows());
+   
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir;
    
@@ -912,11 +1141,33 @@ void node::ricochet(){
    elowball.set_name("node_ricochet_elowball");
    ehighball.set_name("node_ricochet_ehighball"); 
    edir.set_name("node_ricochet_edir");
+   
+   kd_tree kd_copy(_chisquared->get_tree()[0]);
     
    int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component;
    array_1d<double> gradient,trial,dir;
+   array_1d<int> end_pts;
    
+   array_2d<double> start_pts;
+   array_1d<double> ricochet_max,ricochet_min;
+   
+   ricochet_max.set_name("node_ricochet_max");
+   ricochet_min.set_name("node_ricochet_min");
+   
+   for(i=0;i<_compass_points.get_dim();i++){
+       for(j=0;j<_chisquared->get_dim();j++){
+           if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)<ricochet_min.get_data(j)){
+               ricochet_min.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
+           }
+           if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)>ricochet_max.get_data(j)){
+               ricochet_max.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
+           }
+       }
+   }
+   
+   start_pts.set_name("node_ricochet_start_pts");
+   end_pts.set_name("node_ricochet_end_pts");
    gradient.set_name("node_ricochet_gradient");
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
@@ -1005,12 +1256,78 @@ void node::ricochet(){
            exit(1);
        }
        
+       start_pts.add_row(lowball);
        iFound=bisection(lowball,flow,highball,fhigh,0);
+       end_pts.add(iFound);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
            _ricochet_velocities.set(ix,i,dir.get_data(i));
        }
        
+   }
+     
+   double ricochet_dd,ddmax;
+   int iChosen;
+
+   if(end_pts.get_dim()!=_ricochet_particles.get_rows() || end_pts.get_dim()!=start_pts.get_rows()){
+       printf("WARNING end_pts.dim %d number of ricochet particles %d\n",
+       end_pts.get_dim(),_ricochet_particles.get_rows());
+       printf("start pts %d\n",start_pts.get_rows());
+       
+       exit(1);
+   }
+
+   iChosen=-1;
+   double mu;
+   for(i=0;i<_ricochet_particles.get_rows();i++){
+       mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
+       if(mu<_chisquared->target() && mu>0.0){
+           _ricochet_particles.remove_row(i);
+           _ricochet_velocities.remove_row(i);
+           end_pts.remove(i);
+           start_pts.remove_row(i);
+           i--;
+       }
+       else{
+           if(iChosen<0 || mu>ddmax){
+               iChosen=i;
+               ddmax=mu;
+               for(j=0;j<_chisquared->get_dim();j++){
+                   trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
+               }
+           }
+       }
+   }
+   
+   
+   double ftrial;
+   int iMove=-1;
+   if(iChosen>=0){
+       ddmax=_chisquared->distance(_centerdex,end_pts.get_data(iChosen));
+       evaluate(trial,&ftrial,&iFound);
+       if(iFound>=0){
+           off_center_compass(iFound);
+           
+           for(i=0;i<_off_center_compass_points.get_dim();i++){
+               ricochet_dd=_chisquared->distance(_off_center_compass_points.get_data(i),_centerdex);
+               if(ricochet_dd>ddmax){
+                   ddmax=ricochet_dd;
+                   iMove=_off_center_compass_points.get_data(i);
+               }
+           }
+           
+           if(iMove>=0){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   _ricochet_particles.set(iChosen,i,_chisquared->get_pt(iMove,i));
+                   _ricochet_velocities.set(iChosen,i,_chisquared->get_pt(iMove,i)-_chisquared->get_pt(end_pts.get_data(iChosen),i));
+               }
+           }
+       }
+   }
+   
+   if(_ricochet_particles.get_rows()==0){
+       printf("deactivating because no particles are worth it\n");
+       _active=0;
    }
    
    double volume1=volume();
@@ -1025,16 +1342,17 @@ void node::ricochet(){
        _ricochet_since_expansion++;
    }
    
-   if(_ricochet_since_expansion>3){
-       if(_found_bases<2){
-           find_bases();
-       }
-       else{
-           _active=0;
-       }
+   if(_ricochet_since_expansion>2){
+       printf("deactivating because volume did not increase\n");
+       _active=0;
    }
    
-   printf("    ending ricochet with volume %e -- %d\n\n",volume1,r_called);
+   if(_active==0 && _found_bases<2){
+       find_bases();
+   }
+   
+   printf("    ending ricochet with volume %e -- %d -- %d\n\n",
+   volume1,r_called,_ricochet_particles.get_rows());
 }
 
 ///////////////arrayOfNodes code below//////////

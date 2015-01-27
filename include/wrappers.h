@@ -66,6 +66,8 @@ public:
     int get_ct_where(int);
     int get_where_log(int);
 
+    kd_tree* get_tree();
+
 private:
     double _chimin,_deltachi,_target,_ddmin;
     int _adaptive_target,_seed,_called,_mindex,_iWhere;
