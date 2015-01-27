@@ -69,12 +69,17 @@ likelihoods/wmap_likelihood_function.cpp include/wmap_likelihood_function.h
 	$(gg) -c -o object/wmap_likelihood_function.o likelihoods/wmap_likelihood_function.cpp \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE)
 
-object/aps_extractor.o: src/analysis/aps_extractor.cpp include/aps_extractor.h object/goto_tools.o
+object/aps_extractor.o: src/analysis/aps_extractor.cpp include/aps_extractor.h object/kd.o object/goto_tools.o
 	$(gg) -c -o object/aps_extractor.o src/analysis/aps_extractor.cpp
 
 s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_extractor.o
 	$(gg) -o bin/s_curve_analysis src/analysis/s_curve_analyzer.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o object/chisq.o \
+	$(LIBRARIES)
+
+analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
+	$(gg) -o bin/analysis src/analysis/generic_analyzer.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o \
 	$(LIBRARIES)
 
 object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
