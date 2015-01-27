@@ -31,6 +31,7 @@ void node::initialize(){
     _calls_to_ricochet=0;
     
     _compass_points.set_name("node_compass_points");
+    _off_center_compass_points.set_name("node_off_center_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
     _basis_bb.set_name("node_basis_bb");
@@ -63,6 +64,11 @@ void node::copy(const node &in){
     _compass_points.reset();
     for(i=0;i<in._compass_points.get_dim();i++){
         _compass_points.set(i,in._compass_points.get_data(i));
+    }
+    
+    _off_center_compass_points.reset();
+    for(i=0;i<in._off_center_compass_points.get_dim();i++){
+        _off_center_compass_points.set(i,in._off_center_compass_points.get_data(i));
     }
     
     _basis_associates.reset();
@@ -874,6 +880,7 @@ void node::find_bases(){
 
 void node::off_center_compass(int iStart){
     
+    _off_center_compass_points.reset();
     int ibefore=_chisquared->get_called();
     
     array_1d<double> lowball,highball,trial;
@@ -928,6 +935,10 @@ void node::off_center_compass(int iStart){
             }
             
             iFound=bisection(lowball,flow,highball,fhigh,1);
+            
+            if(iFound>=0){
+                _off_center_compass_points.add(iFound);
+            }
             
             if(sgn<0.0){
                 dx=0.0;
@@ -1288,10 +1299,27 @@ void node::ricochet(){
    
    
    double ftrial;
+   int iMove=-1;
    if(iChosen>=0){
+       ddmax=_chisquared->distance(_centerdex,end_pts.get_data(iChosen));
        evaluate(trial,&ftrial,&iFound);
        if(iFound>=0){
            off_center_compass(iFound);
+           
+           for(i=0;i<_off_center_compass_points.get_dim();i++){
+               ricochet_dd=_chisquared->distance(_off_center_compass_points.get_data(i),_centerdex);
+               if(ricochet_dd>ddmax){
+                   ddmax=ricochet_dd;
+                   iMove=_off_center_compass_points.get_data(i);
+               }
+           }
+           
+           if(iMove>=0){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   _ricochet_particles.set(iChosen,i,_chisquared->get_pt(iMove,i));
+                   _ricochet_velocities.set(iChosen,i,_chisquared->get_pt(iMove,i)-_chisquared->get_pt(end_pts.get_data(iChosen),i));
+               }
+           }
        }
    }
    
