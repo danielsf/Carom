@@ -556,21 +556,22 @@ void node::compass_search(){
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
                 dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i));
-                if(sgn<0.0){
-                    if(dx<0.0){
-                        printf("WARNING dx is %e when should be positive for blength\n",dx);
-                        exit(1);
-                    }
-                    blength=dx;
+            }   
+            if(sgn<0.0){
+                if(dx<0.0){
+                    printf("WARNING dx is %e when should be positive for blength\n",dx);
+                    exit(1);
                 }
-                else{
-                    if(dx>0.0){
-                        printf("WARNING dx is %e when should be negative for blength\n",dx);
-                        exit(1);
-                    }
-                    if(-1.0*dx<blength)blength=-1.0*dx;
-                }
+                 blength=dx;
             }
+            else{
+                if(dx>0.0){
+                    printf("WARNING dx is %e when should be negative for blength\n",dx);
+                    exit(1);
+                }
+                if(-1.0*dx<blength)blength=-1.0*dx;
+            }
+            
             
             if(iFound>=0){
                 _compass_points.add(iFound);
