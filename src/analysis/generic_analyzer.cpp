@@ -69,6 +69,33 @@ FILE *input,*output;
 
 double maxerr=-1.0;
 
+double chi_min=2.0*exception_value;
+
+input=fopen(inputName,"r");
+for(i=0;i<dim+5;i++){
+    fscanf(input,"%s",word);
+}
+while(fscanf(input,"%le",&nn)>0){
+    vv.set(0,nn);
+    for(i=1;i<dim;i++){
+        fscanf(input,"%le",&nn);
+        vv.set(i,nn);
+    }
+    
+    fscanf(input,"%le",&chival);
+    if(chival<chi_min)chi_min=chival;
+
+    
+    fscanf(input,"%le",&nn);
+
+    fscanf(input,"%le",&nn);
+
+    fscanf(input,"%d",&j);
+
+}    
+fclose(input);
+printf("chimin %e\n",chi_min);
+
 input=fopen(inputName,"r");
 for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
@@ -92,7 +119,7 @@ while(fscanf(input,"%le",&nn)>0){
     fscanf(input,"%d",&j);
     ling.add(j);
     
-    hdex=get_dex(lnchi_hist,log(chival));
+    hdex=get_dex(lnchi_hist,log(chival-chi_min)+1.0e-6);
 
     if(j==iSimplex){
         hptr=&simplexHist;
@@ -118,7 +145,7 @@ while(fscanf(input,"%le",&nn)>0){
         totalDistLnChi.add_val(hdex,1);
     }
     if(chival<chi_hist.get_data(chi_hist.get_dim()-1)+0.5){
-        hdex=get_dex(chi_hist,chival);
+        hdex=get_dex(chi_hist,chival-chi_min);
         totalDistChi.add_val(hdex,1);
     }
     
