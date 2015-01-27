@@ -341,7 +341,7 @@
       
      
       else
-       write(*,*)'your parameters make no sense, but I do not care'
+       !write(*,*)'your parameters make no sense, but I do not care'
        !write(*,*)lmin,CP%Max_l
        do i=1,3000
          !write(*,*)'i ',i

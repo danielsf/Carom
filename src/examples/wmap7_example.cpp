@@ -74,6 +74,10 @@ max.set(4,1.3);
 min.set(5,2.0);
 max.set(5,4.0);
 
+for(i=0;i<6;i++){
+    chisq.set_max(i,max.get_data(i));
+    chisq.set_min(i,min.get_data(i));
+}
 
 carom_test.set_timingname(timingname);
 carom_test.set_outname(outname);
