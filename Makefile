@@ -5,7 +5,7 @@ BLAS_LIB =-L/Users/noldor/physics/BLAS/ -lblas
 
 ARPACK_LIB = -L/Users/noldor/physics/ARPACK/ -larpack
 
-FORTRAN_LIB = -L/opt/local/lib/ -lf95 -lgfortran
+FORTRAN_LIB = -lgfortran
 
 CAMB_LIB = -L/Users/noldor/physics/CAMB_110419/camb/ -lcamb
 CAMB_INCLUDE = -I/Users/noldor/physics/CAMB_110419/camb/
