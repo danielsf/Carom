@@ -141,10 +141,10 @@ while(fscanf(input,"%le",&nn)>0){
         totalHist.add_val(i,1);
     }
     
-    if(log(chival)<lnchi_hist.get_data(lnchi_hist.get_dim()-1)+0.1){
+    if(log(chival-chi_min)+1.0e-6<lnchi_hist.get_data(lnchi_hist.get_dim()-1)+0.1){
         totalDistLnChi.add_val(hdex,1);
     }
-    if(chival<chi_hist.get_data(chi_hist.get_dim()-1)+0.5){
+    if(chival-chi_min<chi_hist.get_data(chi_hist.get_dim()-1)+0.5){
         hdex=get_dex(chi_hist,chival-chi_min);
         totalDistChi.add_val(hdex,1);
     }
