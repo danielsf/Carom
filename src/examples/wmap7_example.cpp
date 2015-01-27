@@ -49,7 +49,7 @@ carom_test.set_seed(seed);
 carom_test.set_chisquared(&chisq);
 
 //how often will APS stop and write its output
-carom_test.set_write_every(1000);
+carom_test.set_write_every(100);
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;
@@ -83,7 +83,7 @@ carom_test.set_max(max);
 //initialize aps with 1000 random samples
 printf("time to initialize\n");
 chisq.reset_timer();
-carom_test.initialize(1000);
+carom_test.initialize(100);
 while(carom_test.get_called()<nsamples){
     carom_test.search();
 }
