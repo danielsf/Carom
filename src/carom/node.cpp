@@ -865,7 +865,6 @@ void node::find_bases(){
     }
     
     if(changed_bases==1){
-        _ellipse_center=_centerdex;
         compass_search();
     }
     
@@ -946,6 +945,22 @@ void node::off_center_compass(int iStart){
 
 }
 
+double node::apply_quadratic_model(array_1d<double> &pt){
+    is_it_safe("apply_quadratic_model");
+    int ix,j;
+    double ans,mu;
+    ans=_chimin;
+    for(ix=0;ix<_basis_vectors.get_rows();ix++){
+        mu=0.0;
+        for(j=0;j<_chisquared->get_dim();j++){
+            mu+=(pt.get_data(j)-_chisquared->get_pt(_ellipse_center,j))*_basis_vectors.get_data(ix,j);
+        }
+        ans+=_basis_model.get_data(ix)*mu*mu;
+    }
+    return ans;
+    
+}
+
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     is_it_safe("ricochet_model");
 
@@ -986,16 +1001,20 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
         qq.set(i,exp(-0.5*power(mu/ell,2)));
     }
     
-    double fbar=0.0;
+    double fbar;
+    fbar=apply_quadratic_model(pt);
+    
+    
+    array_1d<double> qbar;
+    qbar.set_name("node_ricochet_model_qbar");
     for(i=0;i<npts;i++){
-        fbar+=_chisquared->get_fn(neigh.get_data(i));
+        qbar.set(i,apply_quadratic_model(tree.get_pt(neigh.get_data(i))[0]));
     }
-    fbar=fbar/double(npts);
     
     mu=fbar;
     for(i=0;i<npts;i++){
         for(j=0;j<npts;j++){
-            mu+=qq.get_data(i)*covarin.get_data(i,j)*(_chisquared->get_fn(neigh.get_data(j))-fbar);
+            mu+=qq.get_data(i)*covarin.get_data(i,j)*(_chisquared->get_fn(neigh.get_data(j))-qbar.get_data(j));
         }
     }
     

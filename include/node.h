@@ -55,6 +55,7 @@ private:
     void initialize_ricochet();
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&, kd_tree&);
+    double apply_quadratic_model(array_1d<double>&);
 };
 
 class arrayOfNodes{
