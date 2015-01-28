@@ -33,6 +33,7 @@ public:
     void write_pts();
     
     int get_called();
+    int active_nodes();
     
 private:
 

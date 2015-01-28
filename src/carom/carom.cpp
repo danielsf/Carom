@@ -52,6 +52,15 @@ int carom::get_called(){
     return _chifn.get_called();
 }
 
+int carom::active_nodes(){
+    int ix,i=0;
+    for(ix=0;ix<_nodes.get_dim();ix++){
+        if(_nodes(ix)->get_activity()==1)i++;
+    }
+    
+    return i;
+}
+
 void carom::set_outname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
