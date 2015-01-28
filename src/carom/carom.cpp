@@ -258,7 +258,7 @@ void carom::assess_node(int dex){
             }
         }
 
-        if(so_far_so_good==0){
+        if(so_far_so_good==0 && _chifn.get_fn(dex)>=_chifn.get_fn(_nodes(ix)->get_center())){
             keep_it=0;
         } 
     }
