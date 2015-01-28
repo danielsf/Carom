@@ -941,7 +941,7 @@ void node::off_center_compass(int iStart){
                 _off_center_compass_points.add(iFound);
             }
             
-            if(sgn<0.0){
+            if(sgn<0.0 && iFound>=0){
                 dx=0.0;
                 for(i=0;i<_chisquared->get_dim();i++){
                     dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
@@ -949,6 +949,9 @@ void node::off_center_compass(int iStart){
                 if(dx<0.0){
                     dx*=-1.0;
                 }
+            }
+            else{
+                dx=1.0;
             }
         }
     }
