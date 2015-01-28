@@ -900,6 +900,19 @@ void node::off_center_compass(int iStart){
             flow=2.0*exception_value;
             fhigh=-2.0*exception_value;
             
+            if(_chisquared->get_fn(iStart)>_chisquared->target()){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iStart,i)));
+                }
+                evaluate(trial,&ftrial,&iFound);
+                if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
+                    iStart=iFound;
+                }
+                else{
+                    return;
+                }
+            }
+            
             if(sgn>0.0){
                 for(i=0;i<_chisquared->get_dim();i++){
                    trial.set(i,_chisquared->get_pt(iStart,i)+dx*sgn*_basis_vectors.get_data(ix,i));
