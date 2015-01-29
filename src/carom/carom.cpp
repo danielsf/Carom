@@ -311,7 +311,7 @@ double gp_cost::operator()(array_1d<double> &pt){
     
     int npts,dosrch=0;
     
-    npts=5;
+    npts=_chifn->get_dim();
     _chifn->nn_srch(pt,npts,_neigh_buff,_dd);
     
     if(_ell<=0.0){
@@ -330,8 +330,6 @@ double gp_cost::operator()(array_1d<double> &pt){
         dosrch=1;
     }
     
-    dosrch=1;
-    
     int i,j;
     double nugget=1.0e-4;
     if(dosrch==0){
@@ -345,8 +343,23 @@ double gp_cost::operator()(array_1d<double> &pt){
        }
     }
     
+    array_1d<double> dd,dd_sorted;
+    array_1d<int> dexes;
+    int ct;
+    
     if(dosrch==1){
-        _ell=_dd.get_data(2);
+        ct=0;
+        for(i=0;i<_neigh_buff.get_dim();i++){
+            for(j=i+1;j<_neigh_buff.get_dim();j++){
+                dd.set(ct,_chifn->distance(_neigh_buff.get_data(i),_neigh_buff.get_data(j)));
+                dexes.set(ct,ct);
+                ct++;
+            }
+        }
+        
+        sort_and_check(dd,dd_sorted,dexes);
+        _ell=dd.get_data(ct/2);
+        
         _fbar=0.0;
         for(i=0;i<_neigh_buff.get_dim();i++){
             _neigh.set(i,_neigh_buff.get_data(i));
