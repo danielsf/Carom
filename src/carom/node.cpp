@@ -1007,6 +1007,7 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
         for(j=i+1;j<npts;j++){
             mutual_dd.set(k,_chisquared->distance(neigh.get_data(i),neigh.get_data(j)));
             mutual_dexes.set(k,k);
+            k++;
         }
     }
     
