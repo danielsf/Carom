@@ -323,7 +323,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     
     int abort_max=_abort_max_factor*seed.get_cols();
     int dim=seed.get_cols();
-    double spread;
+    double spread,gradient_threshold;
     
     array_1d<double> pbar;
     pbar.set_name("simplex_pbar");
@@ -407,7 +407,11 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        
        find_il();
        spread=_ff.get_data(_ih)-_ff.get_data(_il);
-       if(spread<0.1*_min_ff && 
+       
+       if(_temp>_min_temp)gradient_threshold=0.1*_min_ff;
+       else gradient_threshold=1.0e-4;
+       
+       if(spread<gradient_threshold && 
            _use_gradient==1 && 
            _called_evaluate>abort_max/2+_last_called_gradient){
            
