@@ -389,14 +389,14 @@ double gp_cost::operator()(array_1d<double> &pt){
         invert_lapack(_covar,_covarin,0);
     }
     
-    for(i=0;i<_neigh_buff.get_dim();i++){
-        _qq.set(i,exp(-0.5*power(_chifn->distance(pt,_neigh_buff.get_data(i))/_ell,2)));
+    for(i=0;i<_neigh.get_dim();i++){
+        _qq.set(i,exp(-0.5*power(_chifn->distance(pt,_neigh.get_data(i))/_ell,2)));
     }
     
     double mu=-1.0*_fbar;
-    for(i=0;i<_neigh_buff.get_dim();i++){
-        for(j=0;j<_neigh_buff.get_dim();j++){
-            mu-=_qq.get_data(i)*_covarin.get_data(i,j)*(_chifn->get_fn(_neigh_buff.get_data(i))-_fbar);
+    for(i=0;i<_neigh.get_dim();i++){
+        for(j=0;j<_neigh.get_dim();j++){
+            mu-=_qq.get_data(i)*_covarin.get_data(i,j)*(_chifn->get_fn(_neigh.get_data(i))-_fbar);
         }
     }
     
