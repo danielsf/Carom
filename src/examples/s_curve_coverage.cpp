@@ -126,8 +126,14 @@ carom_test.set_max(max);
 printf("time to initialize\n");
 chisq.reset_timer();
 carom_test.initialize(1000);
-while(carom_test.get_called()<nsamples){
+int active_nodes=1;
+while(carom_test.get_called()<nsamples && active_nodes>0){
     carom_test.search();
+    active_nodes=carom_test.active_nodes();
+    if(active_nodes==0){
+        carom_test.simplex_search();
+        active_nodes=carom_test.active_nodes();
+    }
 }
 
 /*
