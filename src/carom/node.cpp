@@ -557,21 +557,8 @@ void node::compass_search(){
             for(i=0;i<_chisquared->get_dim();i++){
                 dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i));
             }   
-            if(sgn<0.0){
-                if(dx<0.0){
-                    printf("WARNING dx is %e when should be positive for blength\n",dx);
-                    exit(1);
-                }
-                 blength=dx;
-            }
-            else{
-                if(dx>0.0){
-                    printf("WARNING dx is %e when should be negative for blength\n",dx);
-                    exit(1);
-                }
-                if(-1.0*dx<blength)blength=-1.0*dx;
-            }
             
+            dx=fabs(dx);
             
             if(iFound>=0){
                 _compass_points.add(iFound);
@@ -945,6 +932,7 @@ void node::off_center_compass(int iStart){
                     highball.set(i,lowball.get_data(i)+dx*sgn*_basis_vectors.get_data(ix,i));
                 }
                 evaluate(highball,&fhigh,&iFound);
+                dx+=1.0;
                 dx*=2.0;
             }
             
@@ -954,7 +942,7 @@ void node::off_center_compass(int iStart){
                 _off_center_compass_points.add(iFound);
             }
             
-            if(sgn<0.0 && iFound>=0){
+            if(sgn<0.0 && iFound>=0 && iFound!=iStart){
                 dx=0.0;
                 for(i=0;i<_chisquared->get_dim();i++){
                     dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
