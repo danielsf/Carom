@@ -1013,7 +1013,7 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     
     sort_and_check(mutual_dd,mutual_dd_sorted,mutual_dexes);
     
-    ell=mutual_dd_sorted.get_data(npts/2);
+    ell=mutual_dd_sorted.get_data(k/2);
     
     
     
