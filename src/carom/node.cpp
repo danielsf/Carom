@@ -980,7 +980,7 @@ double node::apply_quadratic_model(array_1d<double> &pt){
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     is_it_safe("ricochet_model");
 
-    int npts=5;
+    int npts=_chisquared->get_dim();
     double ell;
     array_2d<double> covar,covarin;
     array_1d<int> neigh;
