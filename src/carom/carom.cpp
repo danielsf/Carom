@@ -362,7 +362,7 @@ double gp_cost::operator()(array_1d<double> &pt){
         }
         
         sort_and_check(dd,dd_sorted,dexes);
-        _ell=dd.get_data(ct/2);
+        _ell=dd_sorted.get_data(ct/2);
         
         _fbar=0.0;
         for(i=0;i<_neigh_buff.get_dim();i++){
