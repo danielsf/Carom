@@ -350,7 +350,7 @@ double gp_cost::operator()(array_1d<double> &pt){
     dd.set_name("gp_cost_operator_dd");
     dd_sorted.set_name("gp_cost_operator_dd_sorted");
     dexes.set_name("gp_cost_operator_dexes");
-    dosrch=1;
+
     if(dosrch==1){
         ct=0;
         for(i=0;i<_neigh_buff.get_dim();i++){
