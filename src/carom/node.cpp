@@ -992,13 +992,34 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     dd.set_name("node_ricochet_model_dd");
     
     tree.nn_srch(pt,npts,neigh,dd);
-    ell=dd.get_data(npts/2);
+    
+    array_1d<double> mutual_dd,mutual_dd_sorted;
+    array_1d<int> mutual_dexes;
+    
+    mutual_dd.set_name("node_ricochet_model_mutual_dd");
+    mutual_dd_sorted.set_name("node_ricochet_mutual_dd_sorted");
+    mutual_dexes.set_name("node_ricochet_mutual_dexes");
+    
+    int i,j,k;
+    
+    k=0;
+    for(i=0;i<npts;i++){
+        for(j=i+1;j<npts;j++){
+            mutual_dd.set(k,_chisquared->distance(neigh.get_data(i),neigh.get_data(j)));
+            mutual_dexes.set(k,k);
+        }
+    }
+    
+    sort_and_check(mutual_dd,mutual_dd_sorted,mutual_dexes);
+    
+    ell=mutual_dd_sorted.get_data(npts/2);
+    
+    
     
     covar.set_dim(npts,npts);
     covarin.set_dim(npts,npts);
     
     double mu,nugget;
-    int i,j,k;
     nugget=1.0e-4;
     for(i=0;i<npts;i++){
         covar.set(i,i,1.0+nugget);
