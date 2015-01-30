@@ -327,8 +327,9 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     int dim=seed.get_cols();
     double spread,gradient_threshold;
     
-    array_1d<double> pbar;
+    array_1d<double> pbar,buffer;
     pbar.set_name("simplex_pbar");
+    buffer.set_name("simplex_buffer");
     
     while(_called_evaluate-_last_found<abort_max){
        
@@ -397,11 +398,13 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
                for(i=0;i<dim+1;i++){
                    if(i!=_il){
                        for(j=0;j<dim;j++){
-                           mu=0.5*(_pts.get_data(i,j)+_pts.get_data(_il,j));
-                           _pts.set(i,j,mu);
+                           buffer.set(j,0.5*(_pts.get_data(i,j)+_pts.get_data(_il,j)));
                        }
-                       mu=evaluate(_pts(i)[0]);
+                       mu=evaluate(buffer);
                        _ff.set(i,mu);
+                       for(j=0;j<dim;j++){
+                           _pts.set(i,j,buffer.get_data(j));
+                       }
                    }
                }
            }
