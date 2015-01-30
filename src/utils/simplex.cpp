@@ -263,6 +263,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
         _temp=-1000.0;
     }
     
+    int ibefore=_chisquared->get_called();
+    
     if(_freeze_temp<0)_freeze_temp=0;
     
     _freeze_called=0;
@@ -323,10 +325,11 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     
     int abort_max=_abort_max_factor*seed.get_cols();
     int dim=seed.get_cols();
-    double spread;
+    double spread,gradient_threshold;
     
-    array_1d<double> pbar;
+    array_1d<double> pbar,buffer;
     pbar.set_name("simplex_pbar");
+    buffer.set_name("simplex_buffer");
     
     while(_called_evaluate-_last_found<abort_max){
        
@@ -395,11 +398,13 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
                for(i=0;i<dim+1;i++){
                    if(i!=_il){
                        for(j=0;j<dim;j++){
-                           mu=0.5*(_pts.get_data(i,j)+_pts.get_data(_il,j));
-                           _pts.set(i,j,mu);
+                           buffer.set(j,0.5*(_pts.get_data(i,j)+_pts.get_data(_il,j)));
                        }
-                       mu=evaluate(_pts(i)[0]);
+                       mu=evaluate(buffer);
                        _ff.set(i,mu);
+                       for(j=0;j<dim;j++){
+                           _pts.set(i,j,buffer.get_data(j));
+                       }
                    }
                }
            }
@@ -407,7 +412,11 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        
        find_il();
        spread=_ff.get_data(_ih)-_ff.get_data(_il);
-       if(spread<0.1*_min_ff && 
+       
+       if(_temp<_min_temp)gradient_threshold=1.0e-4;
+       else gradient_threshold=0.1*_min_ff;
+       
+       if(spread<gradient_threshold && 
            _use_gradient==1 && 
            _called_evaluate>abort_max/2+_last_called_gradient){
            
@@ -428,6 +437,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
     printf("    leaving simplex %d %d %d\n",_called_evaluate,_last_found,abort_max);
     printf("    temp %e\n",_temp);
+    printf("    actually called %d\n",_chisquared->get_called()-ibefore);
     printf("    _true_min_ff %e\n",_true_min_ff);
     
     _freeze_temp=-1;

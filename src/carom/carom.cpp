@@ -52,6 +52,15 @@ int carom::get_called(){
     return _chifn.get_called();
 }
 
+int carom::active_nodes(){
+    int ix,i=0;
+    for(ix=0;ix<_nodes.get_dim();ix++){
+        if(_nodes(ix)->get_activity()==1)i++;
+    }
+    
+    return i;
+}
+
 void carom::set_outname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
@@ -249,7 +258,7 @@ void carom::assess_node(int dex){
             }
         }
 
-        if(so_far_so_good==0){
+        if(so_far_so_good==0 && _chifn.get_fn(dex)>=_chifn.get_fn(_nodes(ix)->get_center())){
             keep_it=0;
         } 
     }
@@ -302,7 +311,7 @@ double gp_cost::operator()(array_1d<double> &pt){
     
     int npts,dosrch=0;
     
-    npts=5;
+    npts=_chifn->get_dim();
     _chifn->nn_srch(pt,npts,_neigh_buff,_dd);
     
     if(_ell<=0.0){
@@ -321,8 +330,6 @@ double gp_cost::operator()(array_1d<double> &pt){
         dosrch=1;
     }
     
-    dosrch=1;
-    
     int i,j;
     double nugget=1.0e-4;
     if(dosrch==0){
@@ -336,8 +343,27 @@ double gp_cost::operator()(array_1d<double> &pt){
        }
     }
     
+    array_1d<double> dd,dd_sorted;
+    array_1d<int> dexes;
+    int ct;
+    
+    dd.set_name("gp_cost_operator_dd");
+    dd_sorted.set_name("gp_cost_operator_dd_sorted");
+    dexes.set_name("gp_cost_operator_dexes");
+
     if(dosrch==1){
-        _ell=_dd.get_data(2);
+        ct=0;
+        for(i=0;i<_neigh_buff.get_dim();i++){
+            for(j=i+1;j<_neigh_buff.get_dim();j++){
+                dd.set(ct,_chifn->distance(_neigh_buff.get_data(i),_neigh_buff.get_data(j)));
+                dexes.set(ct,ct);
+                ct++;
+            }
+        }
+        
+        sort_and_check(dd,dd_sorted,dexes);
+        _ell=dd_sorted.get_data(ct/2);
+        
         _fbar=0.0;
         for(i=0;i<_neigh_buff.get_dim();i++){
             _neigh.set(i,_neigh_buff.get_data(i));
@@ -363,14 +389,14 @@ double gp_cost::operator()(array_1d<double> &pt){
         invert_lapack(_covar,_covarin,0);
     }
     
-    for(i=0;i<_neigh_buff.get_dim();i++){
-        _qq.set(i,exp(-0.5*power(_chifn->distance(pt,_neigh_buff.get_data(i))/_ell,2)));
+    for(i=0;i<_neigh.get_dim();i++){
+        _qq.set(i,exp(-0.5*power(_chifn->distance(pt,_neigh.get_data(i))/_ell,2)));
     }
     
     double mu=-1.0*_fbar;
-    for(i=0;i<_neigh_buff.get_dim();i++){
-        for(j=0;j<_neigh_buff.get_dim();j++){
-            mu-=_qq.get_data(i)*_covarin.get_data(i,j)*(_chifn->get_fn(_neigh_buff.get_data(i))-_fbar);
+    for(i=0;i<_neigh.get_dim();i++){
+        for(j=0;j<_neigh.get_dim();j++){
+            mu-=_qq.get_data(i)*_covarin.get_data(i,j)*(_chifn->get_fn(_neigh.get_data(i))-_fbar);
         }
     }
     

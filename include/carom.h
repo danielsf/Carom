@@ -30,9 +30,11 @@ public:
     void set_chisquared(chisquared*);
 
     void search();
+    void simplex_search();
     void write_pts();
     
     int get_called();
+    int active_nodes();
     
 private:
 
@@ -44,7 +46,6 @@ private:
     
     char _outname[letters],_timingname[letters];
 
-    void simplex_search();
     void assess_node(int);
 
 };
