@@ -28,6 +28,7 @@ public:
 private:
     int _centerdex,_active,_found_bases,_ellipse_center;
     int _ricochet_since_expansion,_min_changed;
+    int _allowed_ricochet_strikes;
     int _ct_ricochet,_calls_to_ricochet;
     double _chimin,_bisection_tolerance;
     
@@ -38,6 +39,7 @@ private:
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
+    array_1d<int> _ricochet_strikes;
     
     chisq_wrapper *_chisquared;
     

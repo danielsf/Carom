@@ -29,6 +29,7 @@ void node::initialize(){
     _found_bases=0;
     _ct_ricochet=0;
     _calls_to_ricochet=0;
+    _allowed_ricochet_strikes=3;
     
     _compass_points.set_name("node_compass_points");
     _off_center_compass_points.set_name("node_off_center_compass_points");
@@ -44,6 +45,7 @@ void node::initialize(){
     _min_found.set_name("node_min_found");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_velocities.set_name("node_ricochet_velocities");
+    _ricochet_strikes.set_name("node_ricochet_strikes");
 }
 
 void node::copy(const node &in){
@@ -55,6 +57,7 @@ void node::copy(const node &in){
     _found_bases=in._found_bases;
     _ct_ricochet=in._ct_ricochet;
     _calls_to_ricochet=in._calls_to_ricochet;
+    _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     
     
     int i,j;
@@ -123,6 +126,11 @@ void node::copy(const node &in){
             _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
         }
+    }
+    
+    _ricochet_strikes.reset();
+    for(i=0;i<in._ricochet_strikes.get_dim();i++){
+        _ricochet_strikes.set(i,in._ricochet_strikes.get_data(i));
     }
     
 }
@@ -217,9 +225,17 @@ void node::is_it_safe(char *word){
         printf("WARNING in node::%s\n",word);
         printf("ricochet particles %d\n",_ricochet_particles.get_rows());
         printf("ricochet velocities %d\n",_ricochet_velocities.get_rows());
+        printf("ricochet strikes %d\n",_ricochet_strikes.get_dim());
         
         exit(1);
     
+    }
+    
+    if(_ricochet_particles.get_rows()!=_ricochet_strikes.get_dim()){
+        printf("WARNING in node::%s\n",word);
+        printf("ricochet particles %d\n",_ricochet_particles.get_rows());
+        printf("ricochet strikes %d\n",_ricochet_strikes.get_dim());
+        exit(1);
     }
 }
 
@@ -1098,6 +1114,7 @@ void node::initialize_ricochet(){
     _ricochet_since_expansion=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
+    _ricochet_strikes.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     
@@ -1122,6 +1139,10 @@ void node::initialize_ricochet(){
             _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
             _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
         }
+    }
+    
+    for(i=0;i<_ricochet_particles.get_rows();i++){
+        _ricochet_strikes.set(i,0);
     }
 
 }
@@ -1309,8 +1330,13 @@ void node::ricochet(){
    for(i=0;i<_ricochet_particles.get_rows();i++){
        mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
        if(mu<_chisquared->target() && mu>0.0){
+           _ricochet_strikes.add_val(i,1);
+       }
+       
+       if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
            _ricochet_particles.remove_row(i);
            _ricochet_velocities.remove_row(i);
+           _ricochet_strikes.remove(i);
            end_pts.remove(i);
            start_pts.remove_row(i);
            i--;
