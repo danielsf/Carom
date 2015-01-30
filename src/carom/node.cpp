@@ -1332,6 +1332,9 @@ void node::ricochet(){
        if(mu<_chisquared->target() && mu>0.0){
            _ricochet_strikes.add_val(i,1);
        }
+       else{
+           _ricochet_strikes.set(i,0);
+       }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
            _ricochet_particles.remove_row(i);
