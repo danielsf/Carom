@@ -23,7 +23,6 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _bisection_tolerance=0.01;
-    _ricochet_since_expansion=0;
     _min_changed=0;
     _active=1;
     _found_bases=0;
@@ -51,7 +50,6 @@ void node::initialize(){
 void node::copy(const node &in){
     _centerdex=in._centerdex;
     _chimin=in._chimin;
-    _ricochet_since_expansion=in._ricochet_since_expansion;
     _min_changed=in._min_changed;
     _active=in._active;
     _found_bases=in._found_bases;
@@ -1111,7 +1109,6 @@ void node::initialize_ricochet(){
         find_bases();
     }
     
-    _ricochet_since_expansion=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_strikes.reset();
@@ -1390,18 +1387,6 @@ void node::ricochet(){
    
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
-   
-   if(volume1>1.001*volume0){
-       _ricochet_since_expansion=0;
-   }
-   else{
-       _ricochet_since_expansion++;
-   }
-   
-   if(_ricochet_since_expansion>2){
-       printf("deactivating because volume did not increase\n");
-       _active=0;
-   }
    
    if(_active==0 && _found_bases<2){
        find_bases();
