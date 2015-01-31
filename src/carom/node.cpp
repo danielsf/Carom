@@ -1117,14 +1117,15 @@ void node::initialize_ricochet(){
     
     array_1d<int> dexes;
     array_1d<double> dd,ddsorted;
-    int i,j;
+    int i,j,ix;
     dexes.set_name("node_initialize_ricochet_dexes");
     dd.set_name("node_initialize_ricochet_dd");
     ddsorted.set_name("node_initialize_ricochet_ddsorted");
     
     for(i=0;i<_compass_points.get_dim();i++){
-        dd.set(i,_chisquared->distance(_centerdex,_compass_points.get_data(i)));
-        dexes.set(i,_compass_points.get_data(i));
+        ix=_compass_points.get_data(i);
+        dd.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
+        dexes.set(i,ix);
     }
     
     sort_and_check(dd,ddsorted,dexes);

@@ -399,6 +399,17 @@ double chisq_wrapper::get_pt(int dex, int idim){
     return _kptr->get_pt(dex,idim);
 }
 
+array_1d<double>* chisq_wrapper::get_pt(int dex){
+    is_it_safe("get_pt(dex)");
+    if(dex<0 || dex>=_fn.get_dim()){
+        printf("WARNING asking wrapper for pt %d but only have %d\n",
+        dex,_fn.get_dim());
+        exit(1);
+    }
+    
+    return _kptr->get_pt(dex);
+}
+
 void chisq_wrapper::nn_srch(array_1d<double> &vv, int kk, array_1d<int> &neigh, array_1d<double> &dd){
     is_it_safe("nn_srch");
     _kptr->nn_srch(vv,kk,neigh,dd);
