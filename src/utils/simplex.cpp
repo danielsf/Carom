@@ -624,7 +624,7 @@ void simplex_minimizer::expand(){
         mu=evaluate(_pts(i)[0]);
         if(i==_il && fabs(mu-_ff.get_data(_il))>1.0e-2){
             printf("WARNING at _il %e %e -- %e\n",mu,_ff.get_data(_il),_temp);
-            exit(1);
+            //exit(1);
         }        
         _ff.set(i,mu);
     }
