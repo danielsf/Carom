@@ -117,12 +117,16 @@ void node::copy(const node &in){
     
     _ricochet_particles.reset();
     _ricochet_velocities.reset();
-    _ricochet_particles.set_cols(in._ricochet_velocities.get_cols());
+    _ricochet_particles.set_cols(in._ricochet_particles.get_cols());
     _ricochet_velocities.set_cols(in._ricochet_velocities.get_cols());
     for(i=0;i<in._ricochet_velocities.get_rows();i++){
         for(j=0;j<in._ricochet_velocities.get_cols();i++){
-            _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
+        }
+    }
+    for(i=0;i<in._ricochet_particles.get_rows();i++){
+        for(j=0;j<in._ricochet_particles.get_cols();j++){
+            _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
         }
     }
     
