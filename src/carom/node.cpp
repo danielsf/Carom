@@ -1331,7 +1331,7 @@ void node::ricochet(){
    double mu;
    for(i=0;i<_ricochet_particles.get_rows();i++){
        mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
-       if(mu<_chisquared->target() && mu>0.0){
+       if(mu<0.9*_chisquared->target()+0.1*_chisquared->chimin() && mu>0.0){
            _ricochet_strikes.add_val(i,1);
        }
        else{

@@ -38,6 +38,7 @@ public:
     void set_ddmin(double);
     
     double target();
+    double chimin();
     double get_deltachi();
     int get_pts();
     int get_dim();

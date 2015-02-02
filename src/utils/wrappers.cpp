@@ -245,6 +245,10 @@ double chisq_wrapper::target(){
     return _target;
 }
 
+double chisq_wrapper::chimin(){
+    return _chimin;
+}
+
 double chisq_wrapper::get_deltachi(){
     return _deltachi;
 }
