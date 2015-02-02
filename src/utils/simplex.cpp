@@ -413,7 +413,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        find_il();
        spread=_ff.get_data(_ih)-_ff.get_data(_il);
        
-       if(_temp<_min_temp)gradient_threshold=1.0e-4;
+       if(_temp<_min_temp)gradient_threshold=1.0e-1;
        else gradient_threshold=0.1*_min_ff;
        
        if(spread<gradient_threshold && 
