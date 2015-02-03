@@ -38,6 +38,7 @@ public:
     void set_ddmin(double);
     
     double target();
+    double chimin();
     double get_deltachi();
     int get_pts();
     int get_dim();
@@ -50,6 +51,7 @@ public:
     virtual double operator()(array_1d<double>&);
     double get_fn(int);
     double get_pt(int,int);
+    array_1d<double>* get_pt(int);
     
     double distance(array_1d<double>&,int);
     double distance(int,int);

@@ -23,12 +23,12 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _bisection_tolerance=0.01;
-    _ricochet_since_expansion=0;
     _min_changed=0;
     _active=1;
     _found_bases=0;
     _ct_ricochet=0;
     _calls_to_ricochet=0;
+    _allowed_ricochet_strikes=3;
     
     _compass_points.set_name("node_compass_points");
     _off_center_compass_points.set_name("node_off_center_compass_points");
@@ -44,17 +44,18 @@ void node::initialize(){
     _min_found.set_name("node_min_found");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_velocities.set_name("node_ricochet_velocities");
+    _ricochet_strikes.set_name("node_ricochet_strikes");
 }
 
 void node::copy(const node &in){
     _centerdex=in._centerdex;
     _chimin=in._chimin;
-    _ricochet_since_expansion=in._ricochet_since_expansion;
     _min_changed=in._min_changed;
     _active=in._active;
     _found_bases=in._found_bases;
     _ct_ricochet=in._ct_ricochet;
     _calls_to_ricochet=in._calls_to_ricochet;
+    _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     
     
     int i,j;
@@ -116,13 +117,22 @@ void node::copy(const node &in){
     
     _ricochet_particles.reset();
     _ricochet_velocities.reset();
-    _ricochet_particles.set_cols(in._ricochet_velocities.get_cols());
+    _ricochet_particles.set_cols(in._ricochet_particles.get_cols());
     _ricochet_velocities.set_cols(in._ricochet_velocities.get_cols());
     for(i=0;i<in._ricochet_velocities.get_rows();i++){
         for(j=0;j<in._ricochet_velocities.get_cols();i++){
-            _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
             _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
         }
+    }
+    for(i=0;i<in._ricochet_particles.get_rows();i++){
+        for(j=0;j<in._ricochet_particles.get_cols();j++){
+            _ricochet_particles.set(i,j,in._ricochet_particles.get_data(i,j));
+        }
+    }
+    
+    _ricochet_strikes.reset();
+    for(i=0;i<in._ricochet_strikes.get_dim();i++){
+        _ricochet_strikes.set(i,in._ricochet_strikes.get_data(i));
     }
     
 }
@@ -217,9 +227,17 @@ void node::is_it_safe(char *word){
         printf("WARNING in node::%s\n",word);
         printf("ricochet particles %d\n",_ricochet_particles.get_rows());
         printf("ricochet velocities %d\n",_ricochet_velocities.get_rows());
+        printf("ricochet strikes %d\n",_ricochet_strikes.get_dim());
         
         exit(1);
     
+    }
+    
+    if(_ricochet_particles.get_rows()!=_ricochet_strikes.get_dim()){
+        printf("WARNING in node::%s\n",word);
+        printf("ricochet particles %d\n",_ricochet_particles.get_rows());
+        printf("ricochet strikes %d\n",_ricochet_strikes.get_dim());
+        exit(1);
     }
 }
 
@@ -1095,22 +1113,23 @@ void node::initialize_ricochet(){
         find_bases();
     }
     
-    _ricochet_since_expansion=0;
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
+    _ricochet_strikes.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     
     array_1d<int> dexes;
     array_1d<double> dd,ddsorted;
-    int i,j;
+    int i,j,ix;
     dexes.set_name("node_initialize_ricochet_dexes");
     dd.set_name("node_initialize_ricochet_dd");
     ddsorted.set_name("node_initialize_ricochet_ddsorted");
     
     for(i=0;i<_compass_points.get_dim();i++){
-        dd.set(i,_chisquared->distance(_centerdex,_compass_points.get_data(i)));
-        dexes.set(i,_compass_points.get_data(i));
+        ix=_compass_points.get_data(i);
+        dd.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
+        dexes.set(i,ix);
     }
     
     sort_and_check(dd,ddsorted,dexes);
@@ -1122,6 +1141,10 @@ void node::initialize_ricochet(){
             _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
             _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
         }
+    }
+    
+    for(i=0;i<_ricochet_particles.get_rows();i++){
+        _ricochet_strikes.set(i,0);
     }
 
 }
@@ -1308,9 +1331,17 @@ void node::ricochet(){
    double mu;
    for(i=0;i<_ricochet_particles.get_rows();i++){
        mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
-       if(mu<_chisquared->target() && mu>0.0){
+       if(mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() && mu>0.0){
+           _ricochet_strikes.add_val(i,1);
+       }
+       else{
+           _ricochet_strikes.set(i,0);
+       }
+       
+       if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
            _ricochet_particles.remove_row(i);
            _ricochet_velocities.remove_row(i);
+           _ricochet_strikes.remove(i);
            end_pts.remove(i);
            start_pts.remove_row(i);
            i--;
@@ -1361,18 +1392,6 @@ void node::ricochet(){
    
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
-   
-   if(volume1>1.001*volume0){
-       _ricochet_since_expansion=0;
-   }
-   else{
-       _ricochet_since_expansion++;
-   }
-   
-   if(_ricochet_since_expansion>2){
-       printf("deactivating because volume did not increase\n");
-       _active=0;
-   }
    
    if(_active==0 && _found_bases<2){
        find_bases();
