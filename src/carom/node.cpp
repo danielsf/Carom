@@ -1184,13 +1184,14 @@ void node::ricochet(){
    _ricochet_particles.get_rows());
    
    double flow,fhigh,eflow,efhigh;
-   array_1d<double> lowball,highball,elowball,ehighball,edir;
+   array_1d<double> lowball,highball,elowball,ehighball,edir,kick;
    
    lowball.set_name("node_ricochet_lowball");
    highball.set_name("node_ricochet_highball");
    elowball.set_name("node_ricochet_elowball");
    ehighball.set_name("node_ricochet_ehighball"); 
    edir.set_name("node_ricochet_edir");
+   kick.set_name("node_ricochet_kick");
    
    kd_tree kd_copy(_chisquared->get_tree()[0]);
     
@@ -1243,6 +1244,25 @@ void node::ricochet(){
        for(i=0;i<_chisquared->get_dim();i++){
            dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
        }
+       
+       if(_ricochet_strikes.get_data(ix)>0){
+           dir.normalize();
+           for(i=0;i<_chisquared->get_dim();i++){
+               kick.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+           }
+           component=0.0;
+           for(i=0;i<_chisquared->get_dim();i++){
+               component+=kick.get_data(i)*gradient.get_data(i);
+           }
+           for(i=0;i<_chisquared->get_dim();i++){
+               kick.subtract_val(i,component*gradient.get_data(i));
+           }
+           kick.normalize();
+           component=0.1*_chisquared->random_double();
+           for(i=0;i<_chisquared->get_dim();i++){
+               dir.add_val(i,component*kick.get_data(i));
+           }
+       } 
        
        _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
        for(i=0;i<_chisquared->get_dim();i++){
