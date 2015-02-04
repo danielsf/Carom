@@ -1262,7 +1262,7 @@ void node::ricochet(){
        if(_ricochet_strikes.get_data(ix)>0){
            dir.normalize();
            for(i=0;i<_chisquared->get_dim();i++){
-               kick.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+               kick.set(i,_ricochet_particles.get_data(ix,i)-_chisquared->get_pt(_centerdex,i));
            }
            component=0.0;
            for(i=0;i<_chisquared->get_dim();i++){
