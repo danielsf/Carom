@@ -1363,9 +1363,16 @@ void node::ricochet(){
        exit(1);
    }
 
+   array_1d<int> rejectThis;
+   rejectThis.set_name("node_ricochet_rejectThis");
+   for(i=0;i<_ricochet_particles.get_rows();i++){
+       rejectThis.set(i,0);
+   }
+
    iChosen=-1;
    double mu;
    for(i=0;i<_ricochet_particles.get_rows();i++){
+       mu=-2.0*exception_value;
        if(boundsChanged.get_data(i)==0){
            mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
        }
@@ -1378,22 +1385,17 @@ void node::ricochet(){
        }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-           _ricochet_particles.remove_row(i);
-           _ricochet_velocities.remove_row(i);
-           _ricochet_strikes.remove(i);
-           end_pts.remove(i);
-           start_pts.remove_row(i);
-           i--;
+           rejectThis.set(i,1); 
        }
-       else{
-           if(iChosen<0 || mu>ddmax){
-               iChosen=i;
-               ddmax=mu;
-               for(j=0;j<_chisquared->get_dim();j++){
-                   trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
-               }
+       
+       if(iChosen<0 || mu>ddmax){
+           iChosen=i;
+           ddmax=mu;
+           for(j=0;j<_chisquared->get_dim();j++){
+               trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
            }
        }
+       
    }
    
    
@@ -1418,7 +1420,32 @@ void node::ricochet(){
                    _ricochet_particles.set(iChosen,i,_chisquared->get_pt(iMove,i));
                    _ricochet_velocities.set(iChosen,i,_chisquared->get_pt(iMove,i)-_chisquared->get_pt(end_pts.get_data(iChosen),i));
                }
+               if(rejectThis.get_data(iChosen)==1){
+                   for(i=0;i<_chisquared->get_dim();i++){
+                       if(_ricochet_particles.get_data(iChosen,i)>max0.get_data(i) || _ricochet_particles.get_data(iChosen,i)<min0.get_data(i)){
+                           rejectThis.set(iChosen,0);
+                       }
+                   }
+               }
+ 
+               if(rejectThis.get_data(iChosen)==1){
+                   
+                   mu=ricochet_model(_ricochet_particles(iChosen)[0],kd_copy);
+                   if(mu<0.0 || mu>1.1*_chisquared->target()-0.1*_chisquared->chimin()){
+                       rejectThis.set(iChosen,0);
+                   }
+               }
            }
+       }
+   }
+   
+   for(i=0;i<_ricochet_particles.get_rows();i++){
+       if(rejectThis.get_data(i)==1){
+           _ricochet_particles.remove_row(i);
+           _ricochet_velocities.remove_row(i);
+           _ricochet_strikes.remove(i);
+           rejectThis.remove(i);
+           i--;
        }
    }
    
