@@ -1198,13 +1198,16 @@ void node::ricochet(){
    int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component;
    array_1d<double> gradient,trial,dir;
-   array_1d<int> end_pts;
+   array_1d<int> end_pts,boundsChanged;
    
    array_2d<double> start_pts;
-   array_1d<double> ricochet_max,ricochet_min;
+   array_1d<double> ricochet_max,ricochet_min,min0,max0;
    
    ricochet_max.set_name("node_ricochet_max");
    ricochet_min.set_name("node_ricochet_min");
+   min0.set_name("node_ricochet_min0");
+   max0.set_name("node_ricochet_max0");
+   boundsChanged.set_name("node_ricochet_boundsChanges");
    
    for(i=0;i<_compass_points.get_dim();i++){
        for(j=0;j<_chisquared->get_dim();j++){
@@ -1215,6 +1218,15 @@ void node::ricochet(){
                ricochet_max.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
            }
        }
+   }
+   
+   for(i=0;i<_chisquared->get_dim();i++){
+       min0.set(i,_min_found.get_data(i));
+       max0.set(i,_max_found.get_data(i));
+   }
+   
+   for(i=0;i<_ricochet_particles.get_rows();i++){
+       boundsChanged.set(i,0);
    }
    
    start_pts.set_name("node_ricochet_start_pts");
@@ -1332,6 +1344,10 @@ void node::ricochet(){
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
            _ricochet_velocities.set(ix,i,dir.get_data(i));
+           
+           if(_chisquared->get_pt(iFound,i)>max0.get_data(i) || _chisquared->get_pt(iFound,i)<min0.get_data(i)){
+               boundsChanged.set(ix,1);
+           }
        }
        
    }
@@ -1350,8 +1366,11 @@ void node::ricochet(){
    iChosen=-1;
    double mu;
    for(i=0;i<_ricochet_particles.get_rows();i++){
-       mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
-       if(mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() && mu>0.0){
+       if(boundsChanged.get_data(i)==0){
+           mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
+       }
+
+       if(boundsChanged.get_data(i)==0 && mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() && mu>0.0){
            _ricochet_strikes.add_val(i,1);
        }
        else{
