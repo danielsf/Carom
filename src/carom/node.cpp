@@ -57,7 +57,6 @@ void node::copy(const node &in){
     _calls_to_ricochet=in._calls_to_ricochet;
     _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     _ellipse_center=in._ellipse_center;
-    _fit_center=in._fit_center;
     
     int i,j;
     
@@ -881,7 +880,6 @@ void node::find_bases(){
         compass_search();
     }
    
-    _fit_center=_centerdex; 
     _found_bases++;
     printf("done finding bases\n");
 }
@@ -1460,10 +1458,8 @@ void node::ricochet(){
    
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
-   int center0;
 
    if(_active==0 && _found_bases<2){
-       center0=_fit_center;
        find_bases();
    }
    
