@@ -1257,24 +1257,22 @@ void node::ricochet(){
            dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
        }
        
-       if(_ricochet_strikes.get_data(ix)>0){
-           dir.normalize();
-           for(i=0;i<_chisquared->get_dim();i++){
-               kick.set(i,_ricochet_particles.get_data(ix,i)-_chisquared->get_pt(_centerdex,i));
-           }
-           component=0.0;
-           for(i=0;i<_chisquared->get_dim();i++){
-               component+=kick.get_data(i)*gradient.get_data(i);
-           }
-           for(i=0;i<_chisquared->get_dim();i++){
-               kick.subtract_val(i,component*gradient.get_data(i));
-           }
-           kick.normalize();
-           component=0.1*_chisquared->random_double();
-           for(i=0;i<_chisquared->get_dim();i++){
-               dir.add_val(i,component*kick.get_data(i));
-           }
-       } 
+       dir.normalize();
+       for(i=0;i<_chisquared->get_dim();i++){
+           kick.set(i,_ricochet_particles.get_data(ix,i)-_chisquared->get_pt(_centerdex,i));
+       }
+       component=0.0;
+       for(i=0;i<_chisquared->get_dim();i++){
+           component+=kick.get_data(i)*gradient.get_data(i);
+       }
+       for(i=0;i<_chisquared->get_dim();i++){
+           kick.subtract_val(i,component*gradient.get_data(i));
+       }
+       kick.normalize();
+       component=0.1*_chisquared->random_double();
+       for(i=0;i<_chisquared->get_dim();i++){
+           dir.add_val(i,component*kick.get_data(i));
+       }
        
        _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
        for(i=0;i<_chisquared->get_dim();i++){
