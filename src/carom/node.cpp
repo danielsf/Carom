@@ -1119,27 +1119,48 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     
-    array_1d<int> dexes;
+    array_1d<int> dexes,chosen_particles,candidates;
     array_1d<double> dd,ddsorted;
     int i,j,ix;
+    double dist,dist_best;
     dexes.set_name("node_initialize_ricochet_dexes");
     dd.set_name("node_initialize_ricochet_dd");
     ddsorted.set_name("node_initialize_ricochet_ddsorted");
+    chosen_particles.set_name("node_initialize_ricochet_chosen_particles");
+    candidates.set_name("node_initialize_ricochet_candidates");
     
-    for(i=0;i<_compass_points.get_dim();i++){
-        ix=_compass_points.get_data(i);
-        dd.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
-        dexes.set(i,ix);
+    if(_compass_points.get_dim()<2*_chisquared->get_dim()){
+        for(i=0;i<_compass_points.get_dim();i++){
+            chosen_particles.set(i,_compass_points.get_data(i));
+        }
+    }
+    else{
+        for(i=0;i<_compass_points.get_dim();i++){
+            candidates.set(i,_compass_points.get_data(i));
+        }
+        while(chosen_particles.get_dim()<2*_chisquared->get_dim()){
+            dd.set_dim(0);
+            ddsorted.set_dim(0);
+            dexes.set_dim(0);
+            for(i=0;i<candidates.get_dim();i++){
+                dist_best=_chisquared->distance(_centerdex,candidates.get_data(i));
+                for(j=0;j<chosen_particles.get_dim();j++){
+                    dist=_chisquared->distance(candidates.get_data(i),chosen_particles.get_data(j));
+                    if(dist<dist_best)dist_best=dist;
+                }
+                dd.set(i,dist_best);
+                dexes.set(i,i);
+            }
+            sort_and_check(dd,ddsorted,dexes);
+            chosen_particles.add(candidates.get_data(dexes.get_data(dexes.get_dim()-1)));
+            candidates.remove(dexes.get_data(dexes.get_dim()-1));
+        }
     }
     
-    sort_and_check(dd,ddsorted,dexes);
-    
-    int iUse;
-    for(i=0;i<dexes.get_dim() && i<2*_chisquared->get_dim();i++){
-        iUse=dexes.get_data(dexes.get_dim()-1-i);
+    for(i=0;i<chosen_particles.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_particles.set(i,j,_chisquared->get_pt(iUse,j));
-            _ricochet_velocities.set(i,j,_chisquared->get_pt(iUse,j)-_chisquared->get_pt(_centerdex,j));
+            _ricochet_particles.set(i,j,_chisquared->get_pt(chosen_particles.get_data(i),j));
+            _ricochet_velocities.set(i,j,_chisquared->get_pt(chosen_particles.get_data(i),j)-_chisquared->get_pt(_centerdex,j));
         }
     }
     
