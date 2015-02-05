@@ -1168,6 +1168,23 @@ void node::initialize_ricochet(){
         _ricochet_strikes.set(i,0);
     }
 
+    FILE *output;
+    output=fopen("ricochet_particles.sav","w");
+    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
+        for(i=0;i<_chisquared->get_dim();i++){
+            fprintf(output,"%e ",_ricochet_particles.get_data(ix,i));
+        }
+        fprintf(output,"\n");
+    }
+    fclose(output);
+    output=fopen("compass_points.sav","w");
+    for(ix=0;ix<_compass_points.get_dim();ix++){
+        for(i=0;i<_chisquared->get_dim();i++){
+            fprintf(output,"%e ",_chisquared->get_pt(_compass_points.get_data(ix),i));
+        }
+        fprintf(output,"\n");
+    }
+    fclose(output);
 }
 
 void node::ricochet(){
