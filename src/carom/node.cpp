@@ -1465,10 +1465,6 @@ void node::ricochet(){
    if(_active==0 && _found_bases<2){
        center0=_fit_center;
        find_bases();
-       if(_chisquared->get_fn(center0)-_chisquared->get_fn(_centerdex)>0.99){
-           _active=1;
-           initialize_ricochet();
-       }
    }
    
    printf("    ending ricochet with volume %e -- %d -- %d\n\n",
