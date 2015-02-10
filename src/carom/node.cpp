@@ -1160,10 +1160,34 @@ void node::initialize_ricochet(){
     for(i=0;i<chosen_particles.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(chosen_particles.get_data(i),j));
-            _ricochet_velocities.set(i,j,_chisquared->get_pt(chosen_particles.get_data(i),j)-_chisquared->get_pt(_centerdex,j));
         }
     }
-    
+
+   int iOrigin;
+   
+   for(i=0;i<_ricochet_particles.get_rows();i++){
+      iOrigin=-1;
+      dist_best=2.0*exception_value;
+      for(j=0;j<candidates.get_dim();j++){
+           dist=_chisquared->distance(_ricochet_particles(i)[0],candidates.get_data(j));
+           if(dist<dist_best){
+              dist_best=dist;
+              iOrigin=candidates.get_data(j);
+           }
+       }
+       if(iOrigin<0){
+           for(j=0;j<_chisquared->get_dim();j++){
+               _ricochet_velocities.set(i,j,_ricochet_particles.get_data(i,j)-_chisquared->get_pt(_centerdex,j));
+           }
+       }
+       else{
+           for(j=0;j<_chisquared->get_dim();j++){
+               _ricochet_velocities.set(i,j,_ricochet_particles.get_data(i,j)-_chisquared->get_pt(iOrigin,j));
+           }
+       }
+   }
+   
+ 
     for(i=0;i<_ricochet_particles.get_rows();i++){
         _ricochet_strikes.set(i,0);
     }
