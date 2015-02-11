@@ -1331,7 +1331,7 @@ void node::ricochet(){
            kick.subtract_val(i,component*gradient.get_data(i));
        }
        kick.normalize();
-       component=0.1*_chisquared->random_double();
+       component=0.1;
        for(i=0;i<_chisquared->get_dim();i++){
            dir.add_val(i,component*kick.get_data(i));
        }
