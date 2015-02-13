@@ -1296,12 +1296,12 @@ void asymm_array_2d<T>::set_name(char *word){
 }
 
 template <typename T>
-int asymm_array_2d<T>::get_rows(){
+int asymm_array_2d<T>::get_rows() const{
     return rows;
 }
 
 template <typename T>
-int asymm_array_2d<T>::get_cols(int dex){
+int asymm_array_2d<T>::get_cols(int dex) const{
     
     if(data==NULL){
         return 0;
@@ -1420,7 +1420,7 @@ void asymm_array_2d<T>::set_row(int ir, const array_1d<T> &vv){
 }
 
 template <typename T>
-T asymm_array_2d<T>::get_data(int ir, int ic){
+T asymm_array_2d<T>::get_data(int ir, int ic) const{
     
     if(ir<0 || ir>=rows){
         printf("WARNING asking for asymm 2d data %d %d but rows %d\n",

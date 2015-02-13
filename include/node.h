@@ -25,6 +25,8 @@ public:
     int get_activity();
     int get_ct_ricochet();
     
+    void print_ricochet_discoveries(char*);
+    
 private:
     int _centerdex,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes;
@@ -39,6 +41,9 @@ private:
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
     array_1d<int> _ricochet_strikes;
+    
+    asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
+    array_1d<int> _ricochet_discovery_dexes;
     
     chisq_wrapper *_chisquared;
     

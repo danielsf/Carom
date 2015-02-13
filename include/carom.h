@@ -29,7 +29,7 @@ public:
     
     void set_chisquared(chisquared*);
 
-    void search();
+    void search(int);
     void simplex_search();
     void write_pts();
     

@@ -402,7 +402,7 @@ public:
     /*
     Return the indexed element
     */
-    T get_data(int,int);
+    T get_data(int,int) const;
     
     /*add T to the end of the row specified by int*/
     void add(int,T);
@@ -425,10 +425,10 @@ public:
     void replace_row(int,array_1d<T>&);
     
     /*return the number of rows*/
-    int get_rows();
+    int get_rows() const;
     
     /*return the number of columns in the row indexed by int*/
-    int get_cols(int);
+    int get_cols(int) const;
     
     /*throw an exception; the argument indicates the row index being
     called for when the exception was thrown*/
