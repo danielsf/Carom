@@ -118,8 +118,11 @@ void carom::write_pts(){
 
     _last_written=_chifn.get_called();
     
+    char nodeName[letters];
+    
     for(i=0;i<_nodes.get_dim();i++){
-        _nodes(i)->print_ricochet_discoveries(_outname);
+        sprintf("%s_node_%d",_outname,i);
+        _nodes(i)->print_ricochet_discoveries(nodeName);
     }
     
 }
