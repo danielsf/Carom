@@ -194,31 +194,57 @@ void carom::simplex_search(){
     write_pts();
 }
 
-void carom::search(){
+void carom::search(int limit){
     int before,i;
-    int active_nodes=0;
+    int active_nodes=0,goon=1,dosimplex;
     
-    _ct_node=0;
-    for(i=0;i<_nodes.get_dim();i++){
-        if(_nodes(i)->get_activity()==1){
-            active_nodes++;
+    while(goon==1){        
+        if(_calls_to_simplex>2*_nodes.get_dim() && _calls_to_simplex>_nodes.get_dim()+1){
+            dosimplex=0;
         }
-        _ct_node+=_nodes(i)->get_ct_ricochet();
-    }
-    
-    if(active_nodes==0 || _ct_node>_ct_simplex){
-        simplex_search();
-    }
-    else{
-        for(i=0;i<_nodes.get_dim();i++){
-            if(_nodes(i)->get_activity()==1){
-                _nodes(i)->ricochet();
+        else{
+            if(active_nodes==0 || _ct_node>_ct_simplex){
+                dosimplex=1;
+            }
+            else{
+                dosimplex=0;
             }
         }
-    }
+        
+        if(dosimplex==1){
+            simplex_search();
+        }
+        else{
+            for(i=0;i<_nodes.get_dim();i++){
+                if(_nodes(i)->get_activity()==1){
+                    _nodes(i)->ricochet();
+                }
+            }
+        }
     
-    if(_chifn.get_called()-_last_written>_write_every){
-        write_pts();
+        if(_chifn.get_called()-_last_written>_write_every){
+            write_pts();
+        }
+        
+        active_nodes=0;
+        _ct_node=0;
+        for(i=0;i<_nodes.get_dim();i++){
+            if(_nodes(i)->get_activity()==1){
+                active_nodes++;
+            }
+            _ct_node+=_nodes(i)->get_ct_ricochet();
+        }
+        
+        if(active_nodes==0 && _calls_to_simplex>2*_nodes.get_dim() && _calls_to_simplex>_nodes.get_dim()+1){
+            goon=0;
+            write_pts();
+        }
+        
+        if(limit>0 && _chifn.get_called()>limit){
+            goon=0;
+            write_pts();
+        }
+        
     }
 }
 
