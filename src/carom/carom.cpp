@@ -117,6 +117,11 @@ void carom::write_pts(){
     }
 
     _last_written=_chifn.get_called();
+    
+    for(i=0;i<_nodes.get_dim();i++){
+        _nodes(i)->print_ricochet_discoveries(_outname);
+    }
+    
 }
 
 void carom::simplex_search(){
