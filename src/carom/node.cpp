@@ -1429,7 +1429,7 @@ void node::ricochet(){
        start_pts.add_row(lowball);
        iFound=bisection(lowball,flow,highball,fhigh,0);
        _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iFound);
-       _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
+       _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
        end_pts.add(iFound);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_particles.set(ix,i,_chisquared->get_pt(iFound,i));
