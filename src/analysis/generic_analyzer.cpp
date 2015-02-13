@@ -22,7 +22,7 @@ for(i=0;i<120;i++){
 
 char inputName[letters],word[letters],outputRoot[letters];
 
-int dim,ncenters;
+int dim,ncenters,limit=-1;
 double delta_chi;
 
 dim=22;
@@ -42,6 +42,7 @@ outputRoot[i]=0;
 
 if(iargc>3)dim=atoi(argv[3]);
 if(iargc>4)delta_chi=atof(argv[4]);
+if(iargc>5)limit=atoi(argv[5]);
 
 
 array_2d<double> data;
@@ -167,6 +168,7 @@ fclose(input);
 aps_extractor apsExtractor;
 apsExtractor.set_filename(inputName);
 apsExtractor.set_delta_chi(delta_chi);
+if(limit>0)apsExtractor.set_cutoff(limit);
 
 char outname[letters];
 int ix,iy;
