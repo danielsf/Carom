@@ -1155,7 +1155,9 @@ void node::initialize_ricochet(){
     projected_chosen.set_name("node_initialize_ricochet_projected_chosen");
     
     for(i=0;i<_compass_points.get_dim();i++){
-        candidates.set(i,_compass_points.get_data(i));
+        if(_chisquared->get_fn(_compass_points.get_data(i))>0.5*_chisquared->target()+_chisquared->chimin()){
+            candidates.set(i,_compass_points.get_data(i));
+        }
     }
     
     if(candidates.get_dim()<2*_chisquared->get_dim()){
