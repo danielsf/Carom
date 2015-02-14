@@ -1156,7 +1156,7 @@ void node::initialize_ricochet(){
     
     for(i=0;i<_compass_points.get_dim();i++){
         if(_chisquared->get_fn(_compass_points.get_data(i))>0.5*_chisquared->target()+_chisquared->chimin()){
-            candidates.set(i,_compass_points.get_data(i));
+            candidates.add(_compass_points.get_data(i));
         }
     }
     
