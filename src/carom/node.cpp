@@ -1434,7 +1434,7 @@ void node::ricochet(){
        if(flow>=_chisquared->target()){
            for(i=0;i<_chisquared->get_dim();i++){
                elowball.set(i,_chisquared->get_pt(_centerdex,i));
-               ehighball.set(i,elowball.get_data(i));
+               ehighball.set(i,lowball.get_data(i));
                edir.set(i,lowball.get_data(i)-elowball.get_data(i));
            }
            edir.normalize();
