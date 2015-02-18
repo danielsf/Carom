@@ -40,7 +40,7 @@ private:
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
-    array_1d<int> _ricochet_strikes;
+    array_1d<int> _ricochet_strikes,_needs_kick;
     
     asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
     array_1d<int> _ricochet_discovery_dexes;

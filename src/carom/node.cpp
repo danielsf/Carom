@@ -49,6 +49,7 @@ void node::initialize(){
     _ricochet_discovery_time.set_name("node_ricochet_discovery_time");
     _ricochet_discovery_dexes.set_name("node_ricochet_discovery_dexes");
     _ricochet_distances.set_name("node_ricochet_distances");
+    _needs_kick.set_name("node_needs_kick");
 }
 
 void node::copy(const node &in){
@@ -137,6 +138,11 @@ void node::copy(const node &in){
     _ricochet_strikes.reset();
     for(i=0;i<in._ricochet_strikes.get_dim();i++){
         _ricochet_strikes.set(i,in._ricochet_strikes.get_data(i));
+    }
+
+    _needs_kick.reset();
+    for(i=0;i<in._needs_kick.get_dim();i++){
+        _needs_kick.set(i,in._needs_kick.get_data(i));
     }
     
     _ricochet_discoveries.reset();
@@ -1421,22 +1427,25 @@ void node::ricochet(){
        }
        
        dir.normalize();
-       for(i=0;i<_chisquared->get_dim();i++){
-           kick.set(i,_ricochet_particles.get_data(ix,i)-_chisquared->get_pt(_centerdex,i));
+       if(ix<_needs_kick.get_dim() && _needs_kick.get_data(ix)==1){
+           for(i=0;i<_chisquared->get_dim();i++){
+               kick.set(i,_ricochet_particles.get_data(ix,i)-_chisquared->get_pt(_centerdex,i));
+           }
+           component=0.0;
+           for(i=0;i<_chisquared->get_dim();i++){
+               component+=kick.get_data(i)*gradient.get_data(i);
+           }
+           for(i=0;i<_chisquared->get_dim();i++){
+               kick.subtract_val(i,component*gradient.get_data(i));
+           }
+           kick.normalize();
+           component=0.1;
+           for(i=0;i<_chisquared->get_dim();i++){
+               dir.add_val(i,component*kick.get_data(i));
+           }
+           _needs_kick.set(ix,0);
        }
-       component=0.0;
-       for(i=0;i<_chisquared->get_dim();i++){
-           component+=kick.get_data(i)*gradient.get_data(i);
-       }
-       for(i=0;i<_chisquared->get_dim();i++){
-           kick.subtract_val(i,component*gradient.get_data(i));
-       }
-       kick.normalize();
-       component=0.1;
-       for(i=0;i<_chisquared->get_dim();i++){
-           dir.add_val(i,component*kick.get_data(i));
-       }
-       
+ 
        _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
        for(i=0;i<_chisquared->get_dim();i++){
            lowball.set(i,_ricochet_particles.get_data(ix,i));
@@ -1515,7 +1524,7 @@ void node::ricochet(){
        }
        
    }
-     
+  
    double ricochet_dd,ddmax;
    int iChosen;
 
@@ -1543,6 +1552,7 @@ void node::ricochet(){
 
        if(boundsChanged.get_data(i)==0 && mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() && mu>0.0){
            _ricochet_strikes.add_val(i,1);
+           _needs_kick.set(i,1);
        }
        else{
            _ricochet_strikes.set(i,0);
