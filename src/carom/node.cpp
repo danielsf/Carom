@@ -1291,10 +1291,19 @@ void node::initialize_ricochet(){
     }
 
    int iOrigin;
+   array_1d<double> grazing,radial;
+   grazing.set_name("node_initialize_ricochet_grazing");
+   radial.set_name("node_initialize_ricochet_radial");
    
    for(i=0;i<_ricochet_particles.get_rows();i++){
       iOrigin=-1;
       dist_best=2.0*exception_value;
+      
+      for(j=0;j<_chisquared->get_dim();j++){
+          radial.set(j,_ricochet_particles.get_data(i,j)-_chisquared->get_pt(_centerdex,j));
+      }
+      radial.normalize();
+      
       for(j=0;j<candidates.get_dim();j++){
            dist=_chisquared->distance(_ricochet_particles(i)[0],candidates.get_data(j));
            if(dist<dist_best){
@@ -1304,13 +1313,18 @@ void node::initialize_ricochet(){
        }
        if(iOrigin<0){
            for(j=0;j<_chisquared->get_dim();j++){
-               _ricochet_velocities.set(i,j,_ricochet_particles.get_data(i,j)-_chisquared->get_pt(_centerdex,j));
+               grazing.set(j,_ricochet_particles.get_data(i,j)-_chisquared->get_pt(_centerdex,j));
            }
        }
        else{
            for(j=0;j<_chisquared->get_dim();j++){
-               _ricochet_velocities.set(i,j,_ricochet_particles.get_data(i,j)-_chisquared->get_pt(iOrigin,j));
+               grazing.set(j,radial.get_data(j));
            }
+       }
+       grazing.normalize();
+       
+       for(j=0;j<_chisquared->get_dim();j++){
+           _ricochet_velocities.set(i,j,0.5*(grazing.get_data(j)+radial.get_data(j)));
        }
    }
    
