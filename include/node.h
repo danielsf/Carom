@@ -44,7 +44,8 @@ private:
     
     asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
     array_1d<int> _ricochet_discovery_dexes;
-    asymm_array_2d<double> _ricochet_distances;
+    asymm_array_2d<double> _ricochet_distances,_ricochet_grad_norm;
+    asymm_array_2d<double> _ricochet_dir_norm;
     
     chisq_wrapper *_chisquared;
     

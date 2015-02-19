@@ -48,6 +48,8 @@ void node::initialize(){
     _ricochet_discoveries.set_name("node_ricochet_discoveries");
     _ricochet_discovery_time.set_name("node_ricochet_discovery_time");
     _ricochet_discovery_dexes.set_name("node_ricochet_discovery_dexes");
+    _ricochet_grad_norm.set_name("node_ricochet_grad_norm");
+    _ricochet_dir_norm.set_name("node_ricochet_dir_norm");
     _ricochet_distances.set_name("node_ricochet_distances");
     _needs_kick.set_name("node_needs_kick");
 }
@@ -156,6 +158,20 @@ void node::copy(const node &in){
     for(i=0;i<in._ricochet_discovery_time.get_rows();i++){
         for(j=0;j<in._ricochet_discovery_time.get_cols(i);j++){
             _ricochet_discovery_time.set(i,j,in._ricochet_discovery_time.get_data(i,j));
+        }
+    }
+    
+    _ricochet_grad_norm.reset();
+    for(i=0;i<in._ricochet_grad_norm.get_rows();i++){
+        for(j=0;j<in._ricochet_dir_norm.get_cols(i);j++){
+            _ricochet_grad_norm.set(i,j,in._ricochet_grad_norm.get_data(i,j));
+        }
+    }
+    
+    _ricochet_dir_norm.reset();
+    for(i=0;i<in._ricochet_dir_norm.get_rows();i++){
+        for(j=0;j<in._ricochet_dir_norm.get_cols(i);j++){
+            _ricochet_dir_norm.set(i,j,in._ricochet_dir_norm.get_data(i,j));
         }
     }
     
@@ -1366,6 +1382,7 @@ void node::ricochet(){
     
    int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component;
+   double gnorm,dirnorm;
    array_1d<double> gradient,trial,dir;
    array_1d<int> end_pts,boundsChanged;
    
@@ -1416,7 +1433,7 @@ void node::ricochet(){
            //code to do a brute force gradient if necessary
        }
        
-       gradient.normalize();
+       gnorm=gradient.normalize();
        component=0.0;
        for(i=0;i<_chisquared->get_dim();i++){
            component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
@@ -1426,7 +1443,7 @@ void node::ricochet(){
            dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
        }
        
-       dir.normalize();
+       dirnorm=dir.normalize();
       
        if(ix>=_needs_kick.get_dim() || _needs_kick.get_data(ix)==0){
            _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
@@ -1502,6 +1519,8 @@ void node::ricochet(){
        
        start_pts.add_row(lowball);
        iFound=bisection(lowball,flow,highball,fhigh,0);
+       _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),gnorm);
+       _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),dirnorm);
        _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iFound);
        _ricochet_distances.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->distance(start_pts(start_pts.get_rows()-1)[0],iFound));
        _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
@@ -1589,6 +1608,8 @@ void node::ricochet(){
                    _ricochet_particles.set(iChosen,i,_chisquared->get_pt(iMove,i));
                    _ricochet_velocities.set(iChosen,i,_chisquared->get_pt(iMove,i)-_chisquared->get_pt(end_pts.get_data(iChosen),i));
                }
+               _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(iChosen),-1.0);
+               _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(iChosen),-1.0);
                _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(iChosen),iMove);
                _ricochet_distances.add(_ricochet_discovery_dexes.get_data(iChosen),_chisquared->distance(old_start,iMove));
                _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(iChosen),_chisquared->get_called());
@@ -1652,9 +1673,13 @@ void node::print_ricochet_discoveries(char *nameRoot){
             for(j=0;j<_chisquared->get_dim();j++){
                 fprintf(output,"%le ",_chisquared->get_pt(_ricochet_discoveries.get_data(ix,i),j));
             }
-            fprintf(output,"%le -- %e %d\n",
+            fprintf(output,"%le -- %e %d ",
                 _chisquared->get_fn(_ricochet_discoveries.get_data(ix,i)),
                 _ricochet_distances.get_data(ix,i),_ricochet_discovery_time.get_data(ix,i));
+            fprintf(output,"-- grad %e dir %e ",
+                _ricochet_grad_norm.get_data(ix,i),
+                _ricochet_dir_norm.get_data(ix,i));
+            fprintf(output,"\n");
         }
         fclose(output);
     }
