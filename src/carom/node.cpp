@@ -1276,6 +1276,8 @@ void node::initialize_ricochet(){
     _ricochet_discoveries.reset();
     _ricochet_discovery_time.reset();
     _ricochet_distances.reset();
+    _ricochet_grad_norm.reset();
+    _ricochet_dir_norm.reset();
     for(i=0;i<chosen_particles.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(chosen_particles.get_data(i),j));
@@ -1283,6 +1285,8 @@ void node::initialize_ricochet(){
         _ricochet_discovery_dexes.set(i,i);
         _ricochet_discoveries.set(i,0,chosen_particles.get_data(i));
         _ricochet_discovery_time.set(i,0,_chisquared->get_called());
+        _ricochet_grad_norm.set(i,0,0.0);
+        _ricochet_dir_norm.set(i,0,0.0);
         _ricochet_distances.set(i,0,0.0);
     }
 
