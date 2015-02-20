@@ -51,6 +51,8 @@ void node::initialize(){
     _ricochet_grad_norm.set_name("node_ricochet_grad_norm");
     _ricochet_dir_norm.set_name("node_ricochet_dir_norm");
     _ricochet_distances.set_name("node_ricochet_distances");
+    _ricochet_mu.set_name("node_ricochet_mu");
+    _ricochet_strike_log.set_name("node_ricochet_strike_log");
     _needs_kick.set_name("node_needs_kick");
 }
 
@@ -172,6 +174,20 @@ void node::copy(const node &in){
     for(i=0;i<in._ricochet_dir_norm.get_rows();i++){
         for(j=0;j<in._ricochet_dir_norm.get_cols(i);j++){
             _ricochet_dir_norm.set(i,j,in._ricochet_dir_norm.get_data(i,j));
+        }
+    }
+    
+    _ricochet_mu.reset();
+    for(i=0;i<in._ricochet_mu.get_rows();i++){
+        for(j=0;j<in._ricochet_mu.get_cols(i);j++){
+            _ricochet_mu.set(i,j,in._ricochet_mu.get_data(i,j));
+        }
+    }
+    
+    _ricochet_strike_log.reset();
+    for(i=0;i<in._ricochet_strike_log.get_rows();i++){
+        for(j=0;j<in._ricochet_strike_log.get_cols(i);j++){
+            _ricochet_strike_log.set(i,j,in._ricochet_strike_log.get_data(i,j));
         }
     }
     
@@ -1278,6 +1294,8 @@ void node::initialize_ricochet(){
     _ricochet_distances.reset();
     _ricochet_grad_norm.reset();
     _ricochet_dir_norm.reset();
+    _ricochet_mu.reset();
+    _ricochet_strike_log.reset();
     for(i=0;i<chosen_particles.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_particles.set(i,j,_chisquared->get_pt(chosen_particles.get_data(i),j));
@@ -1288,6 +1306,8 @@ void node::initialize_ricochet(){
         _ricochet_grad_norm.set(i,0,0.0);
         _ricochet_dir_norm.set(i,0,0.0);
         _ricochet_distances.set(i,0,0.0);
+        _ricochet_mu.set(i,0,0.0);
+        _ricochet_strike_log.set(i,0,0);
     }
 
    int iOrigin;
@@ -1581,13 +1601,16 @@ void node::ricochet(){
        if(boundsChanged.get_data(i)==0){
            mu=ricochet_model(_ricochet_particles(i)[0],kd_copy);
        }
+       _ricochet_mu.add(_ricochet_discovery_dexes.get_data(i),mu);
 
        if(boundsChanged.get_data(i)==0 && mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() && mu>0.0){
            _ricochet_strikes.add_val(i,1);
            _needs_kick.set(i,1);
+           _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),1);
        }
        else{
            _ricochet_strikes.set(i,0);
+           _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),0);
        }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
@@ -1634,6 +1657,8 @@ void node::ricochet(){
                _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(iChosen),iMove);
                _ricochet_distances.add(_ricochet_discovery_dexes.get_data(iChosen),_chisquared->distance(old_start,iMove));
                _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(iChosen),_chisquared->get_called());
+               _ricochet_mu.add(_ricochet_discovery_dexes.get_data(iChosen),-2.0*exception_value);
+               _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(iChosen),-1);
                if(rejectThis.get_data(iChosen)==1){
                    for(i=0;i<_chisquared->get_dim();i++){
                        if(_ricochet_particles.get_data(iChosen,i)>max0.get_data(i) || _ricochet_particles.get_data(iChosen,i)<min0.get_data(i)){
@@ -1704,8 +1729,10 @@ void node::print_ricochet_discoveries(char *nameRoot){
             for(j=0;j<_chisquared->get_dim();j++){
                 fprintf(output,"%le ",_chisquared->get_pt(_ricochet_discoveries.get_data(ix,i),j));
             }
-            fprintf(output,"%le -- %e %d ",
+            fprintf(output,"%le %le %d -- %e %d ",
                 _chisquared->get_fn(_ricochet_discoveries.get_data(ix,i)),
+                _ricochet_mu.get_data(ix,i),
+                _ricochet_strike_log.get_data(ix,i),
                 _ricochet_distances.get_data(ix,i),_ricochet_discovery_time.get_data(ix,i));
             fprintf(output,"-- grad %e dir %e ",
                 _ricochet_grad_norm.get_data(ix,i),
