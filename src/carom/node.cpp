@@ -1687,6 +1687,10 @@ void node::ricochet(){
    volume1,r_called,_ricochet_particles.get_rows(),totalNeedKick);
 }
 
+int node::get_n_particles(){
+    return _ricochet_particles.get_rows();
+}
+
 void node::print_ricochet_discoveries(char *nameRoot){
     char outname[letters];
     int i,j,ix;
