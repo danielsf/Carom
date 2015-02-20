@@ -1678,8 +1678,13 @@ void node::ricochet(){
        find_bases();
    }
    
-   printf("    ending ricochet with volume %e -- %d -- %d\n\n",
-   volume1,r_called,_ricochet_particles.get_rows());
+   int totalNeedKick=0;
+   for(i=0;i<_needs_kick.get_dim();i++){
+       if(_needs_kick.get_data(i)==1)totalNeedKick++;
+   }
+   
+   printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
+   volume1,r_called,_ricochet_particles.get_rows(),totalNeedKick);
 }
 
 void node::print_ricochet_discoveries(char *nameRoot){
