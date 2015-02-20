@@ -1603,7 +1603,11 @@ void node::ricochet(){
        }
        _ricochet_mu.add(_ricochet_discovery_dexes.get_data(i),mu);
 
-       if(boundsChanged.get_data(i)==0 && mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() && mu>0.0){
+       if(boundsChanged.get_data(i)==0 &&
+           mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
+           mu>0.9*_chisquared->target()+0.1*_chisquared->chimin() &&
+           mu>0.0){
+
            _ricochet_strikes.add_val(i,1);
            _needs_kick.set(i,1);
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),1);
