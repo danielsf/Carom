@@ -1462,21 +1462,24 @@ void node::ricochet(){
        }
        
        dirnorm=dir.normalize();
-      
-       if(ix>=_needs_kick.get_dim() || _needs_kick.get_data(ix)==0){
-           _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
+       
+       if(ix<_needs_kick.get_dim() && _needs_kick.get_data(ix)==1){
            for(i=0;i<_chisquared->get_dim();i++){
-               lowball.set(i,_ricochet_particles.get_data(ix,i));
+               kick.set(i,_chisquared->get_pt(_centerdex,i)-_ricochet_particles.get_data(ix,i));
            }
-       }
-       else{
+           kick.normalize();
            for(i=0;i<_chisquared->get_dim();i++){
-               lowball.set(i,0.9*_ricochet_particles.get_data(ix,i)+0.1*_chisquared->get_pt(_centerdex,i));
+               dir.add_val(i,kick.get_data(i));
            }
-           evaluate(lowball,&flow,&iFound);
+           dir.normalize();
            _needs_kick.set(ix,0);
        }
-       
+
+       _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
+       for(i=0;i<_chisquared->get_dim();i++){
+           lowball.set(i,_ricochet_particles.get_data(ix,i));
+       }
+
        if(flow>=_chisquared->target()){
            for(i=0;i<_chisquared->get_dim();i++){
                elowball.set(i,_chisquared->get_pt(_centerdex,i));
