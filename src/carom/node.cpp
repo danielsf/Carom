@@ -1659,6 +1659,7 @@ void node::ricochet(){
            _ricochet_velocities.remove_row(i);
            _ricochet_strikes.remove(i);
            _ricochet_discovery_dexes.remove(i);
+           _needs_kick.remove(i);
            rejectThis.remove(i);
            i--;
        }
