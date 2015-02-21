@@ -1522,9 +1522,6 @@ void node::ricochet(){
                dir.subtract_val(j,1.0);
            }
            
-           for(i=0;i<_chisquared->get_dim();i++){
-               dir.add_val(i,kick.get_data(i));
-           }
            dir.normalize();
            _needs_kick.set(ix,0);
        }
