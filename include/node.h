@@ -37,7 +37,7 @@ private:
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
-    array_1d<double> _max_found,_min_found;
+    array_1d<double> _max_found,_min_found,_distance_traveled;
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
