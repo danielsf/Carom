@@ -1442,7 +1442,7 @@ void node::ricochet(){
    
    kd_tree kd_copy(_chisquared->get_tree()[0]);
     
-   int ix,i,j,iFound;
+   int ix,i,j,iFound,nearestParticle;
    double dx,x1,x2,y1,y2,component;
    double gnorm,dirnorm;
    array_1d<double> gradient,trial,dir;
@@ -1456,24 +1456,6 @@ void node::ricochet(){
    min0.set_name("node_ricochet_min0");
    max0.set_name("node_ricochet_max0");
    boundsChanged.set_name("node_ricochet_boundsChanges");
-   
-   ix=0;
-   for(j=0;j<_needs_kick.get_dim();j++){
-       if(_needs_kick.get_data(j)==1)ix++;
-   }
-   
-   array_1d<double> distance_sorted;
-   array_1d<int> distance_dex;
-   distance_sorted.set_name("node_ricochet_distance_sorted");
-   distance_dex.set_name("node_ricochet_distance_dex");
-   
-   if(ix>0){
-       for(i=0;i<_distance_traveled.get_dim();i++){
-           distance_dex.set(i,i);
-       }
-       sort_and_check(_distance_traveled,distance_sorted,distance_dex);
-   }
-   
    
    for(i=0;i<_compass_points.get_dim();i++){
        for(j=0;j<_chisquared->get_dim();j++){
@@ -1526,13 +1508,32 @@ void node::ricochet(){
        dirnorm=dir.normalize();
        
        if(ix<_needs_kick.get_dim() && _needs_kick.get_data(ix)==1){
-           j=distance_dex.get_data(0);
+           nearestParticle=-1;
+           for(i=0;i<_ricochet_particles.get_rows();i++){
+               if(i!=ix){
+                   x1=_chisquared->distance(_ricochet_particles(ix)[0],_ricochet_particles(i)[0]);
+                   if(nearestParticle<0 || x1<x2){
+                       nearestParticle=i;
+                       x2=x1;
+                   }
+               }
+           }
            
-           if(_chisquared->get_pt(_centerdex,j)>_ricochet_particles.get_data(ix,j)){
-               dir.add_val(j,1.0);
+           if(nearestParticle>=0){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   kick.set(i,_ricochet_particles.get_data(ix,i)-_ricochet_particles.get_data(nearestParticle,i));
+               }
            }
            else{
-               dir.subtract_val(j,1.0);
+               for(i=0;i<_chisquared->get_dim();i++){
+                   kick.set(i,_chisquared->get_pt(_centerdex,i)-_ricochet_particles.get_data(ix,i));
+               }
+           }
+           kick.normalize();
+           for(i=0;i<_chisquared->get_dim();i++){
+               dir.add_val(i,kick.get_data(i));
+               x1=_ricochet_particles.get_data(ix,i);
+               _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
            }
            
            dir.normalize();
