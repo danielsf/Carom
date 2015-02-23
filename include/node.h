@@ -22,6 +22,7 @@ public:
     void find_bases();
     void ricochet();
     double volume();
+    double distance_traveled(int);
     int get_activity();
     int get_ct_ricochet();
     int get_n_particles();

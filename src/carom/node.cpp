@@ -226,6 +226,19 @@ void node::set_center(int ix){
     }
 }
 
+double node::distance_traveled(int ix){
+    if(ix<0 || ix>=_chisquared->get_dim()){
+        printf("WARNING asked for distance_traveled %d but %d\n",
+        ix,_chisquared->get_dim());
+    }
+    
+    if(ix>=_distance_traveled.get_dim()){
+        return 0.0;
+    }
+    
+    return _distance_traveled.get_data(ix);
+}
+
 void node::set_chisquared(chisq_wrapper *cc){
     _chisquared=cc;
     if(_centerdex>=0){

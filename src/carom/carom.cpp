@@ -110,8 +110,12 @@ void carom::write_pts(){
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim());
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%e %d ",
+        fprintf(output,"%e %d -- dd ",
         _nodes(i)->volume(),_nodes(i)->get_n_particles());
+        for(j=0;j<_chifn.get_dim();j++){
+            fprintf(output,"%e ",_nodes(i)->distance_traveled(j));
+        }
+        fprintf(output,"; ");
     }
     
     fprintf(output,"\n");
