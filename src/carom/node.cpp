@@ -1531,7 +1531,7 @@ void node::ricochet(){
            }
            kick.normalize();
            for(i=0;i<_chisquared->get_dim();i++){
-               dir.add_val(i,kick.get_data(i));
+               dir.set(i,kick.get_data(i));
                x1=_ricochet_particles.get_data(ix,i);
                _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
            }
