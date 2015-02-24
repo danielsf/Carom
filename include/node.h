@@ -35,6 +35,9 @@ private:
     int _ct_ricochet,_calls_to_ricochet;
     double _chimin,_bisection_tolerance;
     
+    double _volume;
+    int _since_expansion;
+    
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;

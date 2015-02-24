@@ -29,6 +29,8 @@ void node::initialize(){
     _ct_ricochet=0;
     _calls_to_ricochet=0;
     _allowed_ricochet_strikes=3;
+    _volume=0.0;
+    _since_expansion=0;
     
     _compass_points.set_name("node_compass_points");
     _off_center_compass_points.set_name("node_off_center_compass_points");
@@ -67,6 +69,8 @@ void node::copy(const node &in){
     _calls_to_ricochet=in._calls_to_ricochet;
     _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     _ellipse_center=in._ellipse_center;
+    _volume=in._volume;
+    _since_expansion=in._since_expansion;
     
     int i,j;
     
@@ -1427,9 +1431,8 @@ void node::ricochet(){
    _calls_to_ricochet++;
    
    int ibefore=_chisquared->get_called();
-   double volume0=volume();
    
-   printf("    starting ricochet with volume %e and pts %d\n",volume0,
+   printf("    starting ricochet with volume %e and pts %d\n",_volume,
    _ricochet_particles.get_rows());
    
    double flow,fhigh,eflow,efhigh;
@@ -1761,7 +1764,20 @@ void node::ricochet(){
    }
    
    double volume1=volume();
-   
+
+   if(volume1>_volume){
+       _volume=volume1;
+       _since_expansion=0;
+   }
+   else{
+       _since_expansion+=_chisquared->get_called()-ibefore;
+   }
+ 
+   if(_since_expansion>1000){
+       printf("deactivating because we have not expanded\n");
+       _active=0;
+   }
+ 
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
 
