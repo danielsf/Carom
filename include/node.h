@@ -22,8 +22,10 @@ public:
     void find_bases();
     void ricochet();
     double volume();
+    double distance_traveled(int);
     int get_activity();
     int get_ct_ricochet();
+    int get_n_particles();
     
     void print_ricochet_discoveries(char*);
     
@@ -33,17 +35,23 @@ private:
     int _ct_ricochet,_calls_to_ricochet;
     double _chimin,_bisection_tolerance;
     
+    double _volume;
+    int _since_expansion;
+    
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
-    array_1d<double> _max_found,_min_found;
+    array_1d<double> _max_found,_min_found,_distance_traveled;
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_particles,_ricochet_velocities;
-    array_1d<int> _ricochet_strikes;
+    array_1d<int> _ricochet_strikes,_needs_kick;
     
     asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
     array_1d<int> _ricochet_discovery_dexes;
+    asymm_array_2d<double> _ricochet_distances,_ricochet_grad_norm;
+    asymm_array_2d<double> _ricochet_dir_norm,_ricochet_mu;
+    asymm_array_2d<int> _ricochet_strike_log;
     
     chisq_wrapper *_chisquared;
     

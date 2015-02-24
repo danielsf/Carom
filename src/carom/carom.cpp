@@ -101,7 +101,7 @@ void carom::write_pts(){
     fclose(output);
     
     output=fopen(_timingname,"a");
-    fprintf(output,"%d %e %e -- %d %d %d -- %d %d\n",
+    fprintf(output,"%d %e %e -- %d %d %d -- %d %d -- ",
         _chifn.get_called(),
         double(time(NULL))-_time_started,
         (double(time(NULL))-_time_started)/double(_chifn.get_called()),
@@ -109,6 +109,16 @@ void carom::write_pts(){
         _chifn.get_ct_where(iRicochet),
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim());
+    for(i=0;i<_nodes.get_dim();i++){
+        fprintf(output,"%e %d -- dd ",
+        _nodes(i)->volume(),_nodes(i)->get_n_particles());
+        for(j=0;j<_chifn.get_dim();j++){
+            fprintf(output,"%e ",_nodes(i)->distance_traveled(j));
+        }
+        fprintf(output,"; ");
+    }
+    
+    fprintf(output,"\n");
     fclose(output);
     
     printf("\nNODE CENTERS\n");

@@ -54,6 +54,7 @@ public:
     array_1d<double>* get_pt(int);
     
     double distance(array_1d<double>&,int);
+    double distance(array_1d<double>&,array_1d<double>&);
     double distance(int,int);
     
     void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
