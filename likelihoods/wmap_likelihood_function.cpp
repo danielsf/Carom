@@ -112,9 +112,8 @@ double wmap_2d_likelihood::operator()(array_1d<double> &pt) const{
     vv.set(2, 6.871984247221720743e-01);
     vv.set(3, 1.015650744398735594e-02);
     vv.set(4, 9.590415377620740145e-01);
-    vv.set(5, 3.070865283499835119e+00);
-    //vv.set(6, 1.270673925518048918e+03);
-    vv.set(6, pt.get_data(1));
+    //vv.set(5, 3.070865283499835119e+00);
+    vv.set(5, pt.get_data(1));
 
     called++;
     time_spent+=double(time(NULL))-before;
