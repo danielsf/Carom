@@ -10,7 +10,7 @@ void bisect(array_1d<double> &lowball, double flow,
             array_1d<double> &best){
 
     int i;
-    double ftest,dfbest;
+    double ftest,dfbest,distance;
     array_1d<double> trial;
     trial.set_name("trial");
     distance=10.0;
@@ -21,7 +21,7 @@ void bisect(array_1d<double> &lowball, double flow,
         best.set(1,lowball.get_data(1));
     }
     else{
-        dfbset=fabs(fhigh-target);
+        dfbest=fabs(fhigh-target);
         best.set(0,highball.get_data(0));
         best.set(1,highball.get_data(1));
     }
@@ -32,7 +32,7 @@ void bisect(array_1d<double> &lowball, double flow,
         }
         ftest=chisq(trial);
         
-        if(trial<target){
+        if(ftest<target){
             lowball.set(0,trial.get_data(0));
             lowball.set(1,trial.get_data(1));
         }
@@ -56,7 +56,7 @@ void bisect(array_1d<double> &lowball, double flow,
 
 }
 
-main(){
+int main(){
 
 array_1d<double> center;
 center.set_name("center");
@@ -96,7 +96,7 @@ for(theta=0.0;theta<2.0*pi;theta+=0.1*pi){
     bisect(lowball,flow,highball,fhigh,best);
     fbest=chisq(best);
     output=fopen("output/wmap2d_control_output.sav","a");
-    fprintf(output,"%e %e %e\n",best.get_data(0),best.get_data(1),fbest)
+    fprintf(output,"%e %e %e\n",best.get_data(0),best.get_data(1),fbest);
     fclose(output);
     
 }
