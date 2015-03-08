@@ -124,7 +124,13 @@ object/wmap_likelihood_function.o
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES) \
 	$(WMAP_LIBRARIES)
 
-
+wmap7_2d_control: src/examples/wmap7_2d_control.cpp \
+object/wmap_likelihood_function.o
+	$(gg) -o bin/wmap7_2d_control src/examples/wmap7_2d_control.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
+	object/wmap_likelihood_function.o \
+	$(WMAP_LIBRARIES) $(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES) 
 
 all:
 	make test_containers
