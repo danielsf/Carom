@@ -1515,6 +1515,12 @@ void node::ricochet(){
        dirnorm=dir.normalize();
        
        if(ix<_needs_kick.get_dim() && _needs_kick.get_data(ix)==1){
+ 
+           for(i=0;i<_chisquared->get_dim();i++){
+               x1=_ricochet_particles.get_data(ix,i);
+               _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
+           }
+           
            nearestParticle=-1;
            for(i=0;i<_ricochet_particles.get_rows();i++){
                if(i!=ix){
@@ -1539,8 +1545,6 @@ void node::ricochet(){
            kick.normalize();
            for(i=0;i<_chisquared->get_dim();i++){
                dir.set(i,kick.get_data(i));
-               x1=_ricochet_particles.get_data(ix,i);
-               _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
            }
            
            dir.normalize();
