@@ -1510,7 +1510,12 @@ void node::ricochet(){
  
            for(i=0;i<_chisquared->get_dim();i++){
                x1=_ricochet_particles.get_data(ix,i);
-               _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
+               if(_ricochet_strikes.get_data(ix)==1){
+                   _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
+               }
+               else{
+                   _ricochet_particles.set(ix,i,0.5*x1+0.5*_chisquared->get_pt(_centerdex,i));
+               }
            }
            
            nearestParticle=-1;
