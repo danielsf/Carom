@@ -1449,7 +1449,7 @@ void node::ricochet(){
     
    int ix,i,j,iFound,nearestParticle;
    double dx,x1,x2,y1,y2,component,distanceMoved,distanceMin;
-   double gnorm,dirnorm;
+   double gnorm,dirnorm,chiFound;
    array_1d<double> gradient,trial,dir;
    array_1d<int> end_pts,boundsChanged;
    
@@ -1615,8 +1615,16 @@ void node::ricochet(){
        }
        
        iFound=bisection(lowball,flow,highball,fhigh,0);
-       distanceMoved=_chisquared->distance(start_pts(start_pts.get_rows()-1)[0],iFound);
-       if(distanceMoved<distanceMin){
+       if(iFound>=0){
+           distanceMoved=_chisquared->distance(start_pts(start_pts.get_rows()-1)[0],iFound);
+           chiFound=_chisquared->get_fn(iFound);
+       }
+       else{
+           distanceMoved =0.0;
+           chiFound=_chisquared->chimin();
+       }
+
+       if(distanceMoved<distanceMin || chiFound<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
            _ricochet_strikes.add_val(ix,1);
            _needs_kick.set(ix,1);
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),1);
