@@ -1664,6 +1664,7 @@ void node::ricochet(){
 
    iChosen=-1;
    double mu;
+   int isAStrike;
    for(i=0;i<_ricochet_particles.get_rows();i++){
        mu=-2.0*exception_value;
        if(boundsChanged.get_data(i)==0){
@@ -1671,12 +1672,23 @@ void node::ricochet(){
        }
        _ricochet_mu.add(_ricochet_discovery_dexes.get_data(i),mu);
 
+       isAStrike=0;
+
        if(boundsChanged.get_data(i)==0 &&
            mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
            mu>0.9*_chisquared->target()+0.1*_chisquared->chimin() &&
-           mu>0.0 && distanceMoved.get_data(i)>distanceMin &&
-           chiFound.get_data(i)>0.1*_chisquared->chimin()+0.9*_chisquared->target()){
-
+           mu>0.0 ){
+           
+           isAStrike=1;
+       }
+       
+       if(distanceMoved.get_data(ix)<distanceMin ||
+          chiFound.get_data(ix)<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
+          
+          isAStrike=1;   
+       }
+       
+       if(isAStrike==1){
            _ricochet_strikes.add_val(i,1);
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),1);
        }
