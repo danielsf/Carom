@@ -1440,10 +1440,10 @@ void node::ricochet(){
    kd_tree kd_copy(_chisquared->get_tree()[0]);
     
    int ix,i,j,iFound,nearestParticle;
-   double dx,x1,x2,y1,y2,component,distanceMoved,distanceMin;
-   double gnorm,dirnorm,chiFound;
-   array_1d<double> gradient,trial,dir;
-   array_1d<int> end_pts,boundsChanged,alreadyMissed;
+   double dx,x1,x2,y1,y2,component,distanceMin;
+   double gnorm,dirnorm;
+   array_1d<double> gradient,trial,dir,distanceMoved,chiFound;
+   array_1d<int> end_pts,boundsChanged;
    
    array_2d<double> start_pts;
    array_1d<double> ricochet_max,ricochet_min,min0,max0;
@@ -1453,6 +1453,8 @@ void node::ricochet(){
    min0.set_name("node_ricochet_min0");
    max0.set_name("node_ricochet_max0");
    boundsChanged.set_name("node_ricochet_boundsChanges");
+   distanceMoved.set_name("node_ricochet_distanceMoved");
+   chiFound.set_name("node_ricochet_chiFound");
    
    for(i=0;i<_compass_points.get_dim();i++){
        for(j=0;j<_chisquared->get_dim();j++){
@@ -1612,27 +1614,18 @@ void node::ricochet(){
        
        iFound=bisection(lowball,flow,highball,fhigh,0);
        if(iFound>=0){
-           distanceMoved=_chisquared->distance(start_pts(start_pts.get_rows()-1)[0],iFound);
-           chiFound=_chisquared->get_fn(iFound);
+           distanceMoved.set(ix,_chisquared->distance(start_pts(start_pts.get_rows()-1)[0],iFound));
+           chiFound.set(ix,_chisquared->get_fn(iFound));
        }
        else{
-           distanceMoved =0.0;
-           chiFound=_chisquared->chimin();
+           distanceMoved.set(ix,0.0);
+           chiFound.set(ix,_chisquared->chimin());
        }
 
-       if(distanceMoved<distanceMin || chiFound<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
-           _ricochet_strikes.add_val(ix,1);
-           _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),1);
-           alreadyMissed.set(ix,1);
-       }
-       else{
-           alreadyMissed.set(ix,0);
-       }
-       
        _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),gnorm);
        _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),dirnorm);
        _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iFound);
-       _ricochet_distances.add(_ricochet_discovery_dexes.get_data(ix),distanceMoved);
+       _ricochet_distances.add(_ricochet_discovery_dexes.get_data(ix),distanceMoved.get_data(ix));
        _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
        end_pts.add(iFound);
        for(i=0;i<_chisquared->get_dim();i++){
@@ -1681,7 +1674,8 @@ void node::ricochet(){
        if(boundsChanged.get_data(i)==0 &&
            mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
            mu>0.9*_chisquared->target()+0.1*_chisquared->chimin() &&
-           mu>0.0 && alreadyMissed.get_data(i)==0){
+           mu>0.0 && distanceMoved.get_data(i)>distanceMin &&
+           chiFound.get_data(i)>0.1*_chisquared->chimin()+0.9*_chisquared->target()){
 
            _ricochet_strikes.add_val(i,1);
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),1);
