@@ -1682,8 +1682,8 @@ void node::ricochet(){
            isAStrike=1;
        }
        
-       if(distanceMoved.get_data(ix)<distanceMin ||
-          chiFound.get_data(ix)<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
+       if(distanceMoved.get_data(i)<distanceMin ||
+          chiFound.get_data(i)<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
           
           isAStrike=1;   
        }
