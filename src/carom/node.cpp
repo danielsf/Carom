@@ -1482,7 +1482,7 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
    
-   distanceMin=1.0e-3;
+   distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
        start_pts.add_row(_ricochet_particles(ix)[0]);
        flow=2.0*exception_value;
