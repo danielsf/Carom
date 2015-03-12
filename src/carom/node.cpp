@@ -1482,7 +1482,7 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
    
-   distanceMin=1.0e-10;
+   distanceMin=1.0e-3;
    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
        start_pts.add_row(_ricochet_particles(ix)[0]);
        flow=2.0*exception_value;
@@ -1614,7 +1614,14 @@ void node::ricochet(){
        
        iFound=bisection(lowball,flow,highball,fhigh,0);
        if(iFound>=0){
-           distanceMoved.set(ix,_chisquared->distance(start_pts(start_pts.get_rows()-1)[0],iFound));
+           x1=0.0;
+           for(i=0;i<_chisquared->get_dim();i++){
+               if(_max_found.get_data(i)-_min_found.get_data(i)>0.0){
+                   x1+=power((start_pts.get_data(start_pts.get_rows()-1,i)-_chisquared->get_pt(iFound,i))/(_max_found.get_data(i)-_min_found.get_data(i)),2);
+               }
+               x1=sqrt(x1);
+           }
+           distanceMoved.set(ix,x1);
            chiFound.set(ix,_chisquared->get_fn(iFound));
        }
        else{
