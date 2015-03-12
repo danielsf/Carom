@@ -1619,8 +1619,8 @@ void node::ricochet(){
                if(_max_found.get_data(i)-_min_found.get_data(i)>0.0){
                    x1+=power((start_pts.get_data(start_pts.get_rows()-1,i)-_chisquared->get_pt(iFound,i))/(_max_found.get_data(i)-_min_found.get_data(i)),2);
                }
-               x1=sqrt(x1);
            }
+           x1=sqrt(x1);
            distanceMoved.set(ix,x1);
            chiFound.set(ix,_chisquared->get_fn(iFound));
        }
