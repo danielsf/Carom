@@ -111,7 +111,7 @@ object/wmap_likelihood_function.o
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
-	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES) \
+	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 
 wmap7_2d: src/examples/wmap7_2d_example.cpp object/carom.o \
 object/wmap_likelihood_function.o
@@ -122,7 +122,7 @@ object/wmap_likelihood_function.o
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
-	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES) \
+	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 
 wmap7_2d_control: src/examples/wmap7_2d_control.cpp \
 object/wmap_likelihood_function.o
@@ -130,7 +130,8 @@ object/wmap_likelihood_function.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
 	object/wmap_likelihood_function.o \
-	$(WMAP_LIBRARIES) $(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES) 
+	$(WMAP_LIBRARIES) \
+	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 
 all:
 	make test_containers
