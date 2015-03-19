@@ -33,6 +33,7 @@ void node::initialize(){
     _since_expansion=0;
     
     _compass_points.set_name("node_compass_points");
+    _ricochet_candidates.set_name("node_ricochet_candidates");
     _off_center_compass_points.set_name("node_off_center_compass_points");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
@@ -78,6 +79,11 @@ void node::copy(const node &in){
     _compass_points.reset();
     for(i=0;i<in._compass_points.get_dim();i++){
         _compass_points.set(i,in._compass_points.get_data(i));
+    }
+    
+    _ricochet_candidates.reset();
+    for(i=0;i<in._ricochet_candidates.get_dim();i++){
+        _ricochet_candidates.set(i,in._ricochet_candidates.get_data(i));
     }
     
     _off_center_compass_points.reset();
@@ -1204,8 +1210,9 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _ricochet_particles.set_cols(_chisquared->get_dim());
     _distance_traveled.reset();
+    _ricochet_candidates.reset();
     
-    array_1d<int> dexes,chosen_particles,candidates;
+    array_1d<int> dexes,chosen_particles;
     array_1d<double> dd,ddsorted;
     array_2d<double> projected_candidates,projected_chosen;
     int i,j,ix,iChosen;
@@ -1214,27 +1221,28 @@ void node::initialize_ricochet(){
     dd.set_name("node_initialize_ricochet_dd");
     ddsorted.set_name("node_initialize_ricochet_ddsorted");
     chosen_particles.set_name("node_initialize_ricochet_chosen_particles");
-    candidates.set_name("node_initialize_ricochet_candidates");
     projected_candidates.set_name("node_initialize_ricochet_projected_candidates");
     projected_chosen.set_name("node_initialize_ricochet_projected_chosen");
-    
+
     for(i=0;i<_compass_points.get_dim();i++){
         if(_chisquared->get_fn(_compass_points.get_data(i))>0.5*(_chisquared->target()+_chisquared->chimin())){
-            candidates.add(_compass_points.get_data(i));
+            _ricochet_candidates.add(_compass_points.get_data(i));
         }
     }
     
-    if(candidates.get_dim()<2*_chisquared->get_dim()){
+    if(_ricochet_candidates.get_dim()<2*_chisquared->get_dim()){
         printf("\nBY THE WAY: JUST USING ALL OF THE CANDIDATES FOR RICOCHET\n\n");
-        for(i=0;i<candidates.get_dim();i++){
-            chosen_particles.add(candidates.get_data(i));
+        for(i=0;i<_ricochet_candidates.get_dim();i++){
+            chosen_particles.add(_ricochet_candidates.get_data(i));
+            _ricochet_candidates.remove(i);
+            i--;
         }
     }
     else{
         iChosen=-1;
         dist_best=-2.0*exception_value;
-        for(i=0;i<candidates.get_dim();i++){
-            dist=fabs(apply_quadratic_model(_chisquared->get_pt(candidates.get_data(i))[0])-_chisquared->get_fn(candidates.get_data(i)));
+        for(i=0;i<_ricochet_candidates.get_dim();i++){
+            dist=fabs(apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0])-_chisquared->get_fn(_ricochet_candidates.get_data(i)));
             if(iChosen<0 || dist>dist_best){
                 iChosen=i;
                 dist_best=dist;
@@ -1244,10 +1252,10 @@ void node::initialize_ricochet(){
             printf("WARNING could not choose a first ricochet particle\n");
             exit(1);
         }
-        chosen_particles.add(candidates.get_data(iChosen));
+        chosen_particles.add(_ricochet_candidates.get_data(iChosen));
         dd.reset();
         for(i=0;i<_chisquared->get_dim();i++){
-            dd.set(i,_chisquared->get_pt(candidates.get_data(iChosen),i)-_chisquared->get_pt(_centerdex,i));
+            dd.set(i,_chisquared->get_pt(_ricochet_candidates.get_data(iChosen),i)-_chisquared->get_pt(_centerdex,i));
         }
         dist=dd.normalize();
         if(dist<1.0e-20){
@@ -1255,15 +1263,16 @@ void node::initialize_ricochet(){
             exit(1);
         }
         projected_chosen.add_row(dd);
-        candidates.remove(iChosen);
+        _ricochet_candidates.remove(iChosen);
         
-        for(ix=0;ix<candidates.get_dim();ix++){
+        for(ix=0;ix<_ricochet_candidates.get_dim();ix++){
             for(i=0;i<_chisquared->get_dim();i++){
-                dd.set(i,_chisquared->get_pt(candidates.get_data(ix),i)-_chisquared->get_pt(_centerdex,i));
+                dd.set(i,_chisquared->get_pt(_ricochet_candidates.get_data(ix),i)-_chisquared->get_pt(_centerdex,i));
             }
             dist=dd.normalize();
             if(dist<1.0e-20){
-                candidates.remove(ix);
+                _ricochet_candidates.remove(ix);
+                ix--;
             }
             else{
                 projected_candidates.add_row(dd);
@@ -1271,16 +1280,16 @@ void node::initialize_ricochet(){
             
         }
         
-        while(chosen_particles.get_dim()<2*_chisquared->get_dim() && candidates.get_dim()>0){
-            if(candidates.get_dim()!=projected_candidates.get_rows()){
+        while(chosen_particles.get_dim()<2*_chisquared->get_dim() && _ricochet_candidates.get_dim()>0){
+            if(_ricochet_candidates.get_dim()!=projected_candidates.get_rows()){
                 printf("WARNING candidates %d projected %d\n",
-                candidates.get_dim(), projected_candidates.get_rows());
+                _ricochet_candidates.get_dim(), projected_candidates.get_rows());
                 printf("chosen %d\n",chosen_particles.get_dim());
                 exit(1);
             }
             
             iChosen=-1;
-            for(ix=0;ix<candidates.get_dim();ix++){
+            for(ix=0;ix<_ricochet_candidates.get_dim();ix++){
                 dist_local_best=-2.0*exception_value;
                 for(i=0;i<chosen_particles.get_dim();i++){
                     dist=0.0;
@@ -1297,10 +1306,10 @@ void node::initialize_ricochet(){
                 }
             }
             
-            chosen_particles.add(candidates.get_data(iChosen));
+            chosen_particles.add(_ricochet_candidates.get_data(iChosen));
             projected_chosen.add_row(projected_candidates(iChosen)[0]);
             projected_candidates.remove_row(iChosen);
-            candidates.remove(iChosen);
+            _ricochet_candidates.remove(iChosen);
         
  
         }
@@ -1346,11 +1355,11 @@ void node::initialize_ricochet(){
       }
       radial.normalize();
       
-      for(j=0;j<candidates.get_dim();j++){
-           dist=_chisquared->distance(_ricochet_particles(i)[0],candidates.get_data(j));
+      for(j=0;j<_ricochet_candidates.get_dim();j++){
+           dist=_chisquared->distance(_ricochet_particles(i)[0],_ricochet_candidates.get_data(j));
            if(dist<dist_best){
               dist_best=dist;
-              iOrigin=candidates.get_data(j);
+              iOrigin=_ricochet_candidates.get_data(j);
            }
        }
        if(iOrigin<0){
