@@ -29,21 +29,20 @@ if(seed<0){
 char timingname[letters],outname[letters];
 
 //what is the name of the file where APS will store its timing information
-sprintf(timingname,"output/wmap7_s%d_timing.sav",seed);
+sprintf(timingname,"output/wmap7_2d_s%d_timing.sav",seed);
 
 //what is the name of the file where APS will output the points it sampled
-sprintf(outname,"output/wmap7_s%d_output.sav",seed);
+sprintf(outname,"output/wmap7_2d_s%d_output.sav",seed);
 
 printf("seed %d\n",seed);
 
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-wmap_likelihood chisq;
+wmap_2d_likelihood chisq;
 
 carom carom_test;
-//carom_test.set_deltachi(12.6);
-carom_test.set_target(1280.7);
+carom_test.set_deltachi(12.6);
 carom_test.set_seed(seed);
 
 //pass chisq to the aps object
@@ -60,22 +59,10 @@ min.set_name("driver_min");
 min.set(0,0.01);
 max.set(0,0.04);
 
-min.set(1,0.01);
-max.set(1,0.3);
+min.set(1,2.0);
+max.set(1,4.0);
 
-min.set(2,0.4);
-max.set(2,1.0);
-
-min.set(3,0.005);
-max.set(3,0.15);
-
-min.set(4,0.7);
-max.set(4,1.3);
-
-min.set(5,2.0);
-max.set(5,4.0);
-
-for(i=0;i<6;i++){
+for(i=0;i<2;i++){
     chisq.set_max(i,max.get_data(i));
     chisq.set_min(i,min.get_data(i));
 }
@@ -88,7 +75,7 @@ carom_test.set_max(max);
 //initialize aps with 1000 random samples
 printf("time to initialize\n");
 chisq.reset_timer();
-carom_test.initialize(100);
+carom_test.initialize(10);
 int active_nodes=1;
 carom_test.search(nsamples);
 

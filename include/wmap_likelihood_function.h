@@ -36,4 +36,16 @@ public:
 };
 
 
+class wmap_2d_likelihood : public chisquared{
+
+public:
+    wmap_2d_likelihood();
+    ~wmap_2d_likelihood();
+    virtual double operator()(array_1d<double>&) const;
+
+private:
+    wmap_likelihood _wmap;
+
+};
+
 #endif
