@@ -1737,14 +1737,7 @@ void node::ricochet(){
        
        iFound=bisection(lowball,flow,highball,fhigh,0);
        if(iFound>=0){
-           x1=0.0;
-           for(i=0;i<_chisquared->get_dim();i++){
-               if(_max_found.get_data(i)-_min_found.get_data(i)>0.0){
-                   x1+=power((start_pts.get_data(start_pts.get_rows()-1,i)-_chisquared->get_pt(iFound,i))/(_max_found.get_data(i)-_min_found.get_data(i)),2);
-               }
-           }
-           x1=sqrt(x1);
-           distanceMoved.set(ix,x1);
+           distanceMoved.set(ix,node_distance(start_pts(start_pts.get_rows()-1)[0],_chisquared->get_pt(iFound)[0]));
            chiFound.set(ix,_chisquared->get_fn(iFound));
        }
        else{
@@ -1861,18 +1854,13 @@ void node::ricochet(){
            }
            
            if(iMove>=0){
-               x1=0.0;
+               x1=node_distance(old_start, _chisquared->get_pt(iMove)[0]);
                for(i=0;i<_chisquared->get_dim();i++){
                    old_start.set(i,_ricochet_particles.get_data(iChosen,i));
                    _ricochet_particles.set(iChosen,i,_chisquared->get_pt(iMove,i));
                    _ricochet_velocities.set(iChosen,i,_chisquared->get_pt(iMove,i)-_chisquared->get_pt(end_pts.get_data(iChosen),i));
                    
-                   if(_max_found.get_data(i)-_min_found.get_data(i)>0.0){
-                       x1+=power((old_start.get_data(i)-_chisquared->get_pt(iMove,i))/(_max_found.get_data(i)-_min_found.get_data(i)),2);
-                   }
-                   
                }
-               x1=sqrt(x1);
                
                _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(iChosen),-1.0);
                _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(iChosen),-1.0);
