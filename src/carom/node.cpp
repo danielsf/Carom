@@ -361,6 +361,28 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
     }
 }
 
+double node::node_distance(array_1d<double> &p1, array_1d<double> &p2){
+    int i;
+    double norm,ans;
+    ans=0.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        norm=_max_found.get_data(i)-_min_found.get_data(i);
+        if(norm>0.0){
+            ans+=power((p1.get_data(i)-p2.get_data(i))/norm,2);
+        }
+    }
+    return sqrt(ans);
+
+}
+
+double node::node_distance(int i1, int i2){
+    return node_distance(_chisquared->get_pt(i1)[0], _chisquared->get_pt(i2)[0]);
+}
+
+double node::node_distance(int i1, array_1d<double> &p2){
+    return node_distance(p2, _chisquared->get_pt(i1)[0]);
+}
+
 int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh, int doSlope){
 
     is_it_safe("bisection");
@@ -1403,6 +1425,134 @@ void node::initialize_ricochet(){
     fclose(output);
 }
 
+void node::step_kick(int ix, double ratio, array_1d<double> &dir){
+
+    int i,nearestParticle;
+    double x1,x2;
+
+    for(i=0;i<_chisquared->get_dim();i++){
+           x1=_ricochet_particles.get_data(ix,i);
+           _ricochet_particles.set(ix,i,ratio*x1+(1.0-ratio)*_chisquared->get_pt(_centerdex,i));
+
+     }
+           
+     nearestParticle=-1;
+     for(i=0;i<_ricochet_particles.get_rows();i++){
+         if(i!=ix){
+             x1=_chisquared->distance(_ricochet_particles(ix)[0],_ricochet_particles(i)[0]);
+             if(nearestParticle<0 || x1<x2){
+                 nearestParticle=i;
+                 x2=x1;
+             }
+         }
+     }
+           
+     if(nearestParticle>=0){
+         for(i=0;i<_chisquared->get_dim();i++){
+             dir.set(i,_ricochet_particles.get_data(ix,i)-_ricochet_particles.get_data(nearestParticle,i));
+         }
+     }
+     else{
+         for(i=0;i<_chisquared->get_dim();i++){
+             dir.set(i,_chisquared->get_pt(_centerdex,i)-_ricochet_particles.get_data(ix,i));
+         }
+     }
+     dir.normalize();
+}
+
+
+void node::origin_kick(int ix, array_1d<double> &dir){
+
+    //choose new origin
+    int i,j,iChosen;
+    
+    double dmu,dmubest,mu,chitruth;
+    
+    iChosen=-1;
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
+        chitruth=_chisquared->get_fn(_ricochet_candidates.get_data(i));
+        dmu=fabs(mu-chitruth);
+        if(iChosen<0 || dmu>dmubest){
+            iChosen=i;
+            dmubest=dmu;
+        }
+    }
+    
+    int iNewOrigin=_ricochet_candidates.get_data(iChosen);
+    _ricochet_candidates.remove(iChosen);
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        _ricochet_particles.set(ix,i,_chisquared->get_pt(iNewOrigin,i));
+    }
+    
+    array_1d<double> gradient;
+    gradient.set_name("node_origin_kick_gradient");
+    _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
+    gradient.normalize();
+    
+    //find nearest other particle
+    double ddbest,ddmin,dd;
+    array_1d<double> chosenParticle;
+    ddbest=-1.0;
+    ddmin=1.0e-10;
+    iChosen=-1;
+    
+    chosenParticle.set_name("node_origin_kick_chosenParticle");
+    
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_particles(ix)[0]);
+        if(dd>ddmin && dd>ddbest){
+            for(j=0;j<_chisquared->get_dim();j++){
+                chosenParticle.set(j,_chisquared->get_pt(_ricochet_candidates.get_data(i),j));
+            }
+            
+            ddbest=dd;
+        }
+    }
+    
+    for(i=0;i<_ricochet_particles.get_rows();i++){
+        if(i!=ix){
+            dd=node_distance(_ricochet_particles(i)[0],_ricochet_particles(ix)[0]);
+            if(dd>ddmin && (iChosen<0 || dd>ddbest)){
+                for(j=0;j<_chisquared->get_dim();j++){
+                    chosenParticle.set(j,_ricochet_particles.get_data(i,j));
+                }
+                ddbest=dd;
+            }
+        }
+    }
+    
+    if(chosenParticle.get_dim()==0){
+        printf("WARNING chosenParticle has no points; going to assign the radius");
+        for(j=0;j<_chisquared->get_dim();j++){
+            chosenParticle.set(j,_chisquared->get_pt(_centerdex,j));
+        }
+    }
+    
+    double component=0.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,_ricochet_particles.get_data(ix,i)-chosenParticle.get_data(i));
+        component+=dir.get_data(i)*gradient.get_data(i);
+    }
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.subtract_val(i,2.0*component*gradient.get_data(i));
+    }
+
+    
+
+}
+
+void node::kick_particle(int ix, array_1d<double> &dir){
+    if(_ricochet_strikes.get_data(ix)==1 || _ricochet_candidates.get_dim()==0){
+        step_kick(ix,0.9,dir);
+    }
+    else{
+        origin_kick(ix,dir);
+    }
+}
+
 void node::ricochet(){
     is_it_safe("ricochet");
     
@@ -1448,7 +1598,7 @@ void node::ricochet(){
    
    kd_tree kd_copy(_chisquared->get_tree()[0]);
     
-   int ix,i,j,iFound,nearestParticle;
+   int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component,distanceMin;
    double gnorm,dirnorm;
    array_1d<double> gradient,trial,dir,distanceMoved,chiFound;
@@ -1496,66 +1646,30 @@ void node::ricochet(){
        start_pts.add_row(_ricochet_particles(ix)[0]);
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
-       try{
-           _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
-       }
-       catch(int iex){
-           printf("ricochet failed to get gradient\n");
-           exit(1);
-           //code to do a brute force gradient if necessary
-       }
+       if(_ricochet_strikes.get_data(ix)==0){
+           try{
+               _chisquared->find_gradient(_ricochet_particles(ix)[0],gradient);
+           }
+           catch(int iex){
+               printf("ricochet failed to get gradient\n");
+               exit(1);
+               //code to do a brute force gradient if necessary
+           }
        
-       gnorm=gradient.normalize();
-       component=0.0;
-       for(i=0;i<_chisquared->get_dim();i++){
-           component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
-       }
-       
-       for(i=0;i<_chisquared->get_dim();i++){
-           dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
-       }
-       
-       dirnorm=dir.normalize();
-       
-       if(_ricochet_strikes.get_data(ix)>0){
- 
+           gnorm=gradient.normalize();
+           component=0.0;
            for(i=0;i<_chisquared->get_dim();i++){
-               x1=_ricochet_particles.get_data(ix,i);
-               if(_ricochet_strikes.get_data(ix)==1){
-                   _ricochet_particles.set(ix,i,0.9*x1+0.1*_chisquared->get_pt(_centerdex,i));
-               }
-               else{
-                   _ricochet_particles.set(ix,i,0.5*x1+0.5*_chisquared->get_pt(_centerdex,i));
-               }
+               component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
            }
-           
-           nearestParticle=-1;
-           for(i=0;i<_ricochet_particles.get_rows();i++){
-               if(i!=ix){
-                   x1=_chisquared->distance(_ricochet_particles(ix)[0],_ricochet_particles(i)[0]);
-                   if(nearestParticle<0 || x1<x2){
-                       nearestParticle=i;
-                       x2=x1;
-                   }
-               }
-           }
-           
-           if(nearestParticle>=0){
-               for(i=0;i<_chisquared->get_dim();i++){
-                   kick.set(i,_ricochet_particles.get_data(ix,i)-_ricochet_particles.get_data(nearestParticle,i));
-               }
-           }
-           else{
-               for(i=0;i<_chisquared->get_dim();i++){
-                   kick.set(i,_chisquared->get_pt(_centerdex,i)-_ricochet_particles.get_data(ix,i));
-               }
-           }
-           kick.normalize();
+       
            for(i=0;i<_chisquared->get_dim();i++){
-               dir.set(i,kick.get_data(i));
+               dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
            }
-           
-           dir.normalize();
+       
+           dirnorm=dir.normalize();
+       }
+       else{
+           kick_particle(ix,dir);
        }
 
        _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
