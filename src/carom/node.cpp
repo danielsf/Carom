@@ -1854,13 +1854,13 @@ void node::ricochet(){
            }
            
            if(iMove>=0){
-               x1=node_distance(old_start, _chisquared->get_pt(iMove)[0]);
                for(i=0;i<_chisquared->get_dim();i++){
                    old_start.set(i,_ricochet_particles.get_data(iChosen,i));
                    _ricochet_particles.set(iChosen,i,_chisquared->get_pt(iMove,i));
                    _ricochet_velocities.set(iChosen,i,_chisquared->get_pt(iMove,i)-_chisquared->get_pt(end_pts.get_data(iChosen),i));
                    
                }
+               x1=node_distance(old_start, _chisquared->get_pt(iMove)[0]);
                
                _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(iChosen),-1.0);
                _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(iChosen),-1.0);
