@@ -1464,23 +1464,50 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
 void node::origin_kick(int ix, array_1d<double> &dir){
 
     //choose new origin
-    int i,j,iChosen;
+    int i,j,k,irow,iChosen;
     
-    double dmu,dmubest,mu,chitruth;
-    
+    double ddbest,ddmin,dd,ddChosen;
+
     iChosen=-1;
     for(i=0;i<_ricochet_candidates.get_dim();i++){
-        mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
-        chitruth=_chisquared->get_fn(_ricochet_candidates.get_data(i));
-        dmu=fabs(mu-chitruth);
-        if(iChosen<0 || dmu>dmubest){
-            iChosen=i;
-            dmubest=dmu;
+        ddbest=-1.0;
+        for(j=0;j<_ricochet_candidates.get_dim();j++){
+            if(j!=i){
+                dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_candidates.get_data(j));
+                if(ddbest<0.0 || dd<ddbest){
+                    ddbest=dd;
+                }
+            }
         }
+        for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
+            for(j=0;j<_ricochet_discoveries.get_cols(irow);j++){
+                dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_discoveries.get_data(irow,j));
+                if(ddbest<0.0 || dd<ddbest){
+                    ddbest=dd;
+                }
+            }
+        }
+        
+        if(iChosen<0 || ddbest>ddChosen){
+            ddChosen=ddbest;
+            iChosen=i;
+        }
+    }
+    
+    if(ddChosen<1.0e-20){
+        printf("\nWARNING ddChosen %e\n",ddChosen);
     }
     
     int iNewOrigin=_ricochet_candidates.get_data(iChosen);
     _ricochet_candidates.remove(iChosen);
+    
+    _ricochet_grad_norm.add(ix,-1.0);
+    _ricochet_dir_norm.add(ix,-1.0);
+    _ricochet_discoveries.add(ix,iNewOrigin);
+    _ricochet_distances.add(ix,-1.0);
+    _ricochet_discovery_time.add(ix,_chisquared->get_called());
+    _ricochet_mu.add(ix,-2.0*exception_value);
+    _ricochet_strike_log.add(ix,-1);
     
     for(i=0;i<_chisquared->get_dim();i++){
         _ricochet_particles.set(ix,i,_chisquared->get_pt(iNewOrigin,i));
@@ -1492,7 +1519,6 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     gradient.normalize();
     
     //find nearest other particle
-    double ddbest,ddmin,dd;
     array_1d<double> chosenParticle;
     ddbest=-1.0;
     ddmin=1.0e-10;
