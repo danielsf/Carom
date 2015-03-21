@@ -1468,15 +1468,22 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     
     double dmu,dmubest,mu,chitruth;
     
+    array_1d<int> neigh;
+    array_1d<double> ddvec;
+    
+    neigh.set_name("node_origin_kick_neigh");
+    ddvec.set_name("node_origin_kick_ddvec");
+    
     iChosen=-1;
     for(i=0;i<_ricochet_candidates.get_dim();i++){
-        mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
-        chitruth=_chisquared->get_fn(_ricochet_candidates.get_data(i));
-        dmu=fabs(mu-chitruth);
+        
+        _chisquared->nn_srch(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0],2,neigh,ddvec);
+        dmu=node_distance(neigh.get_data(1),_ricochet_candidates.get_data(i));
         if(iChosen<0 || dmu>dmubest){
             iChosen=i;
             dmubest=dmu;
         }
+        
     }
     
     int iNewOrigin=_ricochet_candidates.get_data(iChosen);
