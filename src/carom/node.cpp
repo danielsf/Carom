@@ -1428,7 +1428,32 @@ void node::initialize_ricochet(){
 void node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
     int i,nearestParticle;
-    double x1,x2;
+    double x1,x2,ddbest,ddmin,dd;
+    nearestParticle=-1;
+    ddmin=1.0e-10;
+    
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        dd=node_distance(_ricochet_candidates.get_data(i), _ricochet_particles(ix)[0]);
+        if(dd>ddmin){
+            if(nearestParticle<0 || dd<ddbest){
+                ddbest=dd;
+                nearestParticle=_ricochet_candidates.get_data(i);
+            }
+        }
+    }
+    
+    int irow;
+    for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
+        for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
+            dd=node_distance(_ricochet_discoveries.get_data(irow, i), _ricochet_particles(ix)[0]);
+            if(dd>ddmin){
+                if(nearestParticle<0 || dd<ddbest){
+                    ddbest=dd;
+                    nearestParticle=_ricochet_discoveries.get_data(irow,i);
+                }
+            }
+        }
+    }
 
     for(i=0;i<_chisquared->get_dim();i++){
            x1=_ricochet_particles.get_data(ix,i);
@@ -1436,16 +1461,6 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
      }
            
-     nearestParticle=-1;
-     for(i=0;i<_ricochet_particles.get_rows();i++){
-         if(i!=ix){
-             x1=_chisquared->distance(_ricochet_particles(ix)[0],_ricochet_particles(i)[0]);
-             if(nearestParticle<0 || x1<x2){
-                 nearestParticle=i;
-                 x2=x1;
-             }
-         }
-     }
            
      if(nearestParticle>=0){
          for(i=0;i<_chisquared->get_dim();i++){
@@ -1458,6 +1473,8 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
          }
      }
      dir.normalize();
+     
+     //maybe should try reflecting about the gradient...
 }
 
 
