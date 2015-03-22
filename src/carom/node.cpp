@@ -1464,7 +1464,7 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
 void node::origin_kick(int ix, array_1d<double> &dir){
 
     //choose new origin
-    int i,j,k,irow,iChosen;
+    int i,j,k,irow,iChosen,iStart,iPossibleStart;
     
     double ddbest,ddmin,dd,ddChosen;
 
@@ -1476,6 +1476,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
                 dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_candidates.get_data(j));
                 if(ddbest<0.0 || dd<ddbest){
                     ddbest=dd;
+                    iPossibleStart=_ricochet_candidates.get_data(j);
                 }
             }
         }
@@ -1484,6 +1485,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
                 dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_discoveries.get_data(irow,j));
                 if(ddbest<0.0 || dd<ddbest){
                     ddbest=dd;
+                    iPossibleStart=_ricochet_discoveries.get_data(irow,j);
                 }
             }
         }
@@ -1491,6 +1493,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
         if(iChosen<0 || ddbest>ddChosen){
             ddChosen=ddbest;
             iChosen=i;
+            iStart=iPossibleStart;
         }
     }
     
@@ -1526,30 +1529,12 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     
     chosenParticle.set_name("node_origin_kick_chosenParticle");
     
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_particles(ix)[0]);
-        if(dd>ddmin && dd>ddbest){
-            for(j=0;j<_chisquared->get_dim();j++){
-                chosenParticle.set(j,_chisquared->get_pt(_ricochet_candidates.get_data(i),j));
-            }
-            
-            ddbest=dd;
+    if(iStart!=iNewOrigin){
+        for(i=0;i<_chisquared->get_dim();i++){
+            chosenParticle.set(i,_chisquared->get_pt(iStart,j));
         }
     }
-    
-    for(i=0;i<_ricochet_particles.get_rows();i++){
-        if(i!=ix){
-            dd=node_distance(_ricochet_particles(i)[0],_ricochet_particles(ix)[0]);
-            if(dd>ddmin && (iChosen<0 || dd>ddbest)){
-                for(j=0;j<_chisquared->get_dim();j++){
-                    chosenParticle.set(j,_ricochet_particles.get_data(i,j));
-                }
-                ddbest=dd;
-            }
-        }
-    }
-    
-    if(chosenParticle.get_dim()==0){
+    else{
         printf("WARNING chosenParticle has no points; going to assign the radius");
         for(j=0;j<_chisquared->get_dim();j++){
             chosenParticle.set(j,_chisquared->get_pt(_centerdex,j));
