@@ -1464,7 +1464,7 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
            
      if(nearestParticle>=0){
          for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_ricochet_particles.get_data(ix,i)-_ricochet_particles.get_data(nearestParticle,i));
+             dir.set(i,_ricochet_particles.get_data(ix,i)-_chisquared->get_pt(nearestParticle,i));
          }
      }
      else{
