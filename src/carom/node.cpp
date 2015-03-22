@@ -1531,7 +1531,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     
     if(iStart!=iNewOrigin){
         for(i=0;i<_chisquared->get_dim();i++){
-            chosenParticle.set(i,_chisquared->get_pt(iStart,j));
+            chosenParticle.set(i,_chisquared->get_pt(iStart,i));
         }
     }
     else{
