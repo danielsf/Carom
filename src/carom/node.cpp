@@ -1823,7 +1823,7 @@ void node::ricochet(){
        
        if(isAStrike==1){
            _ricochet_strikes.add_val(i,1);
-           _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),1);
+           _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),_ricochet_strikes.get_data(i));
        }
        else{
            _ricochet_strikes.set(i,0);
