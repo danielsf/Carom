@@ -1653,8 +1653,8 @@ void node::ricochet(){
    
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
-       if(_ricochet_discovery.dexes.get_data(ix)==6){
-           prinf("moving particle 6 -- strikes: %d\n",_ricochet_strikes.get_data(ix));
+       if(_ricochet_discovery_dexes.get_data(ix)==6){
+           printf("moving particle 6 -- strikes: %d\n",_ricochet_strikes.get_data(ix));
        }
        start_pts.add_row(_ricochet_particles(ix)[0]);
        flow=2.0*exception_value;
