@@ -1444,12 +1444,14 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
     
     int irow;
     for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
-        for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
-            dd=node_distance(_ricochet_discoveries.get_data(irow, i), _ricochet_particles(ix)[0]);
-            if(dd>ddmin){
-                if(nearestParticle<0 || dd<ddbest){
-                    ddbest=dd;
-                    nearestParticle=_ricochet_discoveries.get_data(irow,i);
+        if(irow!=_ricochet_discovery_dexes.get_data(ix)){
+            for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
+                dd=node_distance(_ricochet_discoveries.get_data(irow, i), _ricochet_particles(ix)[0]);
+                if(dd>ddmin){
+                    if(nearestParticle<0 || dd<ddbest){
+                        ddbest=dd;
+                        nearestParticle=_ricochet_discoveries.get_data(irow,i);
+                    }
                 }
             }
         }
