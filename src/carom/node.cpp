@@ -1535,7 +1535,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     _ricochet_distances.add(ix,-1.0);
     _ricochet_discovery_time.add(ix,_chisquared->get_called());
     _ricochet_mu.add(ix,-2.0*exception_value);
-    _ricochet_strike_log.add(ix,-1);
+    _ricochet_strike_log.add(ix,-2);
 
     array_1d<double> gradient;
     gradient.set_name("node_origin_kick_gradient");
@@ -1653,6 +1653,9 @@ void node::ricochet(){
    
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_rows();ix++){
+       if(_ricochet_discovery.dexes.get_data(ix)==6){
+           prinf("moving particle 6 -- strikes: %d\n",_ricochet_strikes.get_data(ix));
+       }
        start_pts.add_row(_ricochet_particles(ix)[0]);
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
@@ -1679,6 +1682,9 @@ void node::ricochet(){
            dirnorm=dir.normalize();
        }
        else{
+           if(_ricochet_discovery_dexes.get_data(ix)==6){
+               printf("kicking particle 6\n");
+           }
            kick_particle(ix,dir);
        }
 
@@ -1961,11 +1967,13 @@ void node::print_ricochet_discoveries(char *nameRoot){
             for(j=0;j<_chisquared->get_dim();j++){
                 fprintf(output,"%le ",_chisquared->get_pt(_ricochet_discoveries.get_data(ix,i),j));
             }
-            fprintf(output,"%le %le %d -- %e %d ",
+            fprintf(output,"%le %le %d -- %e %d %d ",
                 _chisquared->get_fn(_ricochet_discoveries.get_data(ix,i)),
                 _ricochet_mu.get_data(ix,i),
                 _ricochet_strike_log.get_data(ix,i),
-                _ricochet_distances.get_data(ix,i),_ricochet_discovery_time.get_data(ix,i));
+                _ricochet_distances.get_data(ix,i),
+                _ricochet_discovery_time.get_data(ix,i),
+                _ricochet_candidates.get_dim());
             fprintf(output,"-- grad %e dir %e ",
                 _ricochet_grad_norm.get_data(ix,i),
                 _ricochet_dir_norm.get_data(ix,i));
