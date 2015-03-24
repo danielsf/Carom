@@ -1535,7 +1535,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     _ricochet_distances.add(ix,-1.0);
     _ricochet_discovery_time.add(ix,_chisquared->get_called());
     _ricochet_mu.add(ix,-2.0*exception_value);
-    _ricochet_strike_log.add(ix,-1);
+    _ricochet_strike_log.add(ix,-2);
 
     array_1d<double> gradient;
     gradient.set_name("node_origin_kick_gradient");
