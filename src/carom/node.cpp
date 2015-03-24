@@ -28,7 +28,7 @@ void node::initialize(){
     _found_bases=0;
     _ct_ricochet=0;
     _calls_to_ricochet=0;
-    _allowed_ricochet_strikes=3;
+    _allowed_ricochet_strikes=4;
     _volume=0.0;
     _since_expansion=0;
     
@@ -1555,12 +1555,13 @@ void node::origin_kick(int ix, array_1d<double> &dir){
 }
 
 void node::kick_particle(int ix, array_1d<double> &dir){
-    if(_ricochet_strikes.get_data(ix)==1 || _ricochet_candidates.get_dim()==0){
+    /*if(_ricochet_strikes.get_data(ix)==1 || _ricochet_candidates.get_dim()==0){
         step_kick(ix,0.9,dir);
     }
     else{
         origin_kick(ix,dir);
-    }
+    }*/
+    step_kick(ix,0.9,dir);
 }
 
 void node::ricochet(){
