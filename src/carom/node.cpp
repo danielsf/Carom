@@ -1529,13 +1529,13 @@ void node::origin_kick(int ix, array_1d<double> &dir){
         }
     }
 
-    _ricochet_grad_norm.add(ix,-1.0);
-    _ricochet_dir_norm.add(ix,-1.0);
-    _ricochet_discoveries.add(ix,iChosen);
-    _ricochet_distances.add(ix,-1.0);
-    _ricochet_discovery_time.add(ix,_chisquared->get_called());
-    _ricochet_mu.add(ix,-2.0*exception_value);
-    _ricochet_strike_log.add(ix,-2);
+    _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
+    _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
+    _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iChosen);
+    _ricochet_distances.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
+    _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
+    _ricochet_mu.add(_ricochet_discovery_dexes.get_data(ix),-2.0*exception_value);
+    _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),-2);
 
     array_1d<double> gradient;
     gradient.set_name("node_origin_kick_gradient");
