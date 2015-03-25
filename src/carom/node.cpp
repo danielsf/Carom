@@ -1561,7 +1561,7 @@ void node::kick_particle(int ix, array_1d<double> &dir){
     else{
         origin_kick(ix,dir);
     }*/
-    step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
+    step_kick(ix,0.9,dir);
 }
 
 void node::ricochet(){
