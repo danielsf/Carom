@@ -284,7 +284,7 @@ void carom::assess_node(int dex){
     }
     
     int keep_it,i,ix,iFound;
-    double ftrial,dx;
+    double ftrial;
     array_1d<double> trial;
     trial.set_name("carom_assess_node_trial");
     
