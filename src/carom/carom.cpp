@@ -283,28 +283,20 @@ void carom::assess_node(int dex){
         return;
     }
     
-    int keep_it,i,ix,so_far_so_good,iFound;
+    int keep_it,i,ix,iFound;
     double ftrial,dx;
     array_1d<double> trial;
     trial.set_name("carom_assess_node_trial");
     
     keep_it=1;
     for(ix=0;ix<_nodes.get_dim() && keep_it==1;ix++){
-        so_far_so_good=0;
-        for(dx=0.5;dx<0.8 && so_far_so_good==0;dx+=0.5){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,dx*_chifn.get_pt(dex,i)+(1.0-dx)*_chifn.get_pt(_nodes(ix)->get_center(),i));
-            }
-            _chifn.evaluate(trial,&ftrial,&iFound);
-            
-            if(ftrial>_chifn.target()){
-                so_far_so_good=1;
-            }
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,0.5*_chifn.get_pt(dex,i)+_chifn.get_pt(_nodes(ix)->get_center(),i));
         }
-
-        if(so_far_so_good==0){
+        _chifn.evaluate(trial,&ftrial,&iFound);
+        if(ftrial<_chifn.target()){
             keep_it=0;
-        } 
+        }
     }
     
     if(keep_it==1){

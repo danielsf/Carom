@@ -225,6 +225,7 @@ int node::get_ct_ricochet(){
 
 void node::set_center(int ix){
     _centerdex=ix;
+    _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
     }
