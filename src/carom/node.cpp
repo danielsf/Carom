@@ -35,6 +35,7 @@ void node::initialize(){
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
     _off_center_compass_points.set_name("node_off_center_compass_points");
+    _off_center_origins.set_name("node_off_center_origins");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
     _basis_bb.set_name("node_basis_bb");
@@ -89,6 +90,11 @@ void node::copy(const node &in){
     _off_center_compass_points.reset();
     for(i=0;i<in._off_center_compass_points.get_dim();i++){
         _off_center_compass_points.set(i,in._off_center_compass_points.get_data(i));
+    }
+    
+    _off_center_origins.reset();
+    for(i=0;i<in._off_center_origins.get_dim();i++){
+        _off_center_origins.set(i,in._off_center_origins.get_data(i));
     }
     
     _basis_associates.reset();
@@ -1000,6 +1006,31 @@ void node::find_bases(){
 
 void node::off_center_compass(int iStart){
     
+    if(iStart<0){
+        return;
+    }
+    
+    int i,goAhead;
+    double dd,ddmin;
+    
+    ddmin=1.0e-3;
+    goAhead=1;
+    for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
+        dd=node_distance(iStart,_off_center_origins.get_data(i));
+        if(dd<ddmin){
+            goAhead=0;
+        }
+    }
+    
+    if(node_distance(iStart,_centerdex)<ddmin){
+        goAhead=0;
+    }
+    
+    if(goAhead==0){
+        return;
+    }
+    
+    _off_center_origins.add(iStart); 
     _off_center_compass_points.reset();
     int ibefore=_chisquared->get_called();
     
@@ -1011,7 +1042,7 @@ void node::off_center_compass(int iStart){
     highball.set_name("node_off_center_compass_highball");
     trial.set_name("node_off_center_compass_trial");
     
-    int ix,i;
+    int ix;
     double sgn;
     for(ix=0;ix<_chisquared->get_dim();ix++){
         dx=1.0;
@@ -1598,6 +1629,24 @@ void node::ricochet(){
    printf("    starting ricochet with volume %e and pts %d\n",_volume,
    _ricochet_particles.get_rows());
    
+   int ix,i,j,iFound;
+   double fmid;
+   array_1d<double> midpt;
+   midpt.set_name("node_ricochet_midpt");
+   if(_ricochet_particles.get_rows()>1){
+      for(i=0;i<_chisquared->get_dim();i++){
+          midpt.set(i,0.0);
+          for(ix=0;ix<_ricochet_particles.get_rows();ix++){
+              midpt.add_val(i,_ricochet_particles.get_data(ix,i));
+          }
+          midpt.divide_val(i,double(_ricochet_particles.get_rows()));
+      }
+      evaluate(midpt,&fmid,&iFound);
+      printf("    fmid %e\n",fmid);
+      off_center_compass(iFound);
+      
+   }
+   
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir,kick;
    
@@ -1610,7 +1659,6 @@ void node::ricochet(){
    
    kd_tree kd_copy(_chisquared->get_tree()[0]);
     
-   int ix,i,j,iFound;
    double dx,x1,x2,y1,y2,component,distanceMin;
    double gnorm,dirnorm;
    array_1d<double> gradient,trial,dir,distanceMoved,chiFound;
