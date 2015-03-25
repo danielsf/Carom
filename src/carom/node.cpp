@@ -1089,7 +1089,7 @@ void node::off_center_compass(int iStart){
         }
     }
     
-    printf("done with off-center compass %d -- %d %d\n",_chisquared->get_called()-ibefore,iStart,_centerdex);
+    printf("    done with off-center compass %d -- %d %d\n",_chisquared->get_called()-ibefore,iStart,_centerdex);
 
 }
 
@@ -1684,7 +1684,7 @@ void node::ricochet(){
            kick_particle(ix,dir);
        }
 
-       _chisquared->evaluate(_ricochet_particles(ix)[0],&flow,&i);
+       evaluate(_ricochet_particles(ix)[0],&flow,&i);
        for(i=0;i<_chisquared->get_dim();i++){
            lowball.set(i,_ricochet_particles.get_data(ix,i));
        }
