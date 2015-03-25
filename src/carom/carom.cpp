@@ -296,6 +296,10 @@ void carom::assess_node(int dex){
         _chifn.evaluate(trial,&ftrial,&iFound);
         if(ftrial<_chifn.target()){
             keep_it=0;
+            
+            if(_chifn.get_fn(dex)<_chifn.get_fn(_nodes(ix)->get_center())){
+                _nodes(ix)->set_center(dex);
+            }
         }
     }
     
