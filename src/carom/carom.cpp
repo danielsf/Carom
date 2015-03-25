@@ -305,9 +305,6 @@ void carom::assess_node(int dex){
     
     if(keep_it==1){
         _nodes.add(dex,&_chifn);
-        
-        i=_nodes.get_dim()-1;
-        
     }
     
 }
