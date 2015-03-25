@@ -291,7 +291,7 @@ void carom::assess_node(int dex){
     keep_it=1;
     for(ix=0;ix<_nodes.get_dim() && keep_it==1;ix++){
         for(i=0;i<_chifn.get_dim();i++){
-            trial.set(i,0.5*_chifn.get_pt(dex,i)+_chifn.get_pt(_nodes(ix)->get_center(),i));
+            trial.set(i,0.5*_chifn.get_pt(dex,i)+0.5*_chifn.get_pt(_nodes(ix)->get_center(),i));
         }
         _chifn.evaluate(trial,&ftrial,&iFound);
         if(ftrial<_chifn.target()){
