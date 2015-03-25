@@ -1642,7 +1642,7 @@ void node::ricochet(){
           midpt.divide_val(i,double(_ricochet_particles.get_rows()));
       }
       evaluate(midpt,&fmid,&iFound);
-      printf("    fmid %e\n",fmid);
+      printf("    fmid %e iFound %d\n",fmid,iFound);
       off_center_compass(iFound);
       
    }
