@@ -1438,6 +1438,8 @@ void node::initialize_ricochet(){
         _ricochet_strikes.set(i,0);
     }
 
+    _volume=volume();
+
     FILE *output;
     output=fopen("ricochet_particles.sav","w");
     for(ix=0;ix<_ricochet_particles.get_rows();ix++){
