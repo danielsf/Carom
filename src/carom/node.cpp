@@ -63,6 +63,7 @@ void node::initialize(){
 void node::copy(const node &in){
     _centerdex=in._centerdex;
     _chimin=in._chimin;
+    _chimin_bases=in._chimin_bases;
     _min_changed=in._min_changed;
     _active=in._active;
     _found_bases=in._found_bases;
@@ -908,6 +909,7 @@ void node::find_bases(){
         compass_search();
     }
     
+    _chimin_bases=_chimin;
     _ellipse_center=_centerdex;
     
     int i,j;
@@ -1602,12 +1604,20 @@ void node::kick_particle(int ix, array_1d<double> &dir){
 void node::ricochet(){
     is_it_safe("ricochet");
     
+    int doInitialization=0;
+    
     if(_ricochet_velocities.get_rows()==0){
-        initialize_ricochet();
+        doInitialization=1;
     }
     
-    if(_min_changed==1){
+    if(_chimin_bases-_chimin>0.1*(_chisquared->target()-_chimin_bases)){
+        doInitialization=1;
+        compass_search();
         find_bases();
+    }
+    
+    if(doInitialization==1){
+        initialize_ricochet();
     }
     
     if(_ricochet_velocities.get_rows()!=_ricochet_particles.get_rows()){

@@ -33,7 +33,7 @@ private:
     int _centerdex,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes;
     int _ct_ricochet,_calls_to_ricochet;
-    double _chimin,_bisection_tolerance;
+    double _chimin,_chimin_bases,_bisection_tolerance;
     
     double _volume;
     int _since_expansion;
