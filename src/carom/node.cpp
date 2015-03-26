@@ -234,6 +234,7 @@ void node::set_center(int ix){
     _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
+        compass_search();
     }
 }
 
@@ -351,6 +352,7 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
             _chimin=value[0];
             _centerdex=dex[0];
             _min_changed=1;
+            compass_search();
         }
         
         if(value[0]<=_chisquared->target()){
