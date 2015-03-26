@@ -1120,7 +1120,8 @@ void node::off_center_compass(int iStart){
         }
     }
     
-    printf("    done with off-center compass %d -- %d %d\n",_chisquared->get_called()-ibefore,iStart,_centerdex);
+    printf("    done with off-center compass %d -- %d %d -- volume %e\n",
+    _chisquared->get_called()-ibefore,iStart,_centerdex,volume());
 
 }
 
@@ -1833,7 +1834,9 @@ void node::ricochet(){
        }
        
    }
-  
+   
+   printf("    done with actual ricochet: volume %e\n",volume());
+   
    double ricochet_dd,ddmax;
    int iChosen;
 
