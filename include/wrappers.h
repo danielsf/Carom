@@ -43,6 +43,7 @@ public:
     int get_pts();
     int get_dim();
     virtual int get_called();
+    double get_time_spent();
     
     double random_double();
     int random_int();

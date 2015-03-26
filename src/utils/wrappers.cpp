@@ -346,6 +346,11 @@ int chisq_wrapper::get_called(){
     return _chifn->get_called();
 }
 
+double chisq_wrapper::get_time_spent(){
+    is_it_safe("get_time_spent");
+    return _chifn->get_time_spent();
+}
+
 int chisq_wrapper::get_pts(){
     is_it_safe("get_pts");
     return _kptr->get_pts();

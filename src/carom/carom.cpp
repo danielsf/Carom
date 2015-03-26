@@ -101,10 +101,13 @@ void carom::write_pts(){
     fclose(output);
     
     output=fopen(_timingname,"a");
-    fprintf(output,"%d %e %e -- %d %d %d -- %d %d -- ",
+    fprintf(output,"%d %e %e -- %e %e -- overhead %e -- %d %d %d -- %d %d -- ",
         _chifn.get_called(),
         double(time(NULL))-_time_started,
         (double(time(NULL))-_time_started)/double(_chifn.get_called()),
+        _chifn.get_time_spent(),
+        _chifn.get_time_spent()/double(_chifn.get_called()),
+        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_called()),
         _chifn.get_ct_where(iSimplex),
         _chifn.get_ct_where(iRicochet),
         _chifn.get_ct_where(iCompass),
