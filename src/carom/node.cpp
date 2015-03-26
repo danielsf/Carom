@@ -234,7 +234,6 @@ void node::set_center(int ix){
     _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
-        compass_search();
     }
 }
 
@@ -352,7 +351,6 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
             _chimin=value[0];
             _centerdex=dex[0];
             _min_changed=1;
-            compass_search();
         }
         
         if(value[0]<=_chisquared->target()){
@@ -911,7 +909,6 @@ void node::find_bases(){
     }
     
     _ellipse_center=_centerdex;
-    _min_changed=0;
     
     int i,j;
     for(i=0;i<_basis_associates.get_dim();i++){
@@ -1003,6 +1000,7 @@ void node::find_bases(){
     }
    
     _found_bases++;
+    _min_changed=0;
     printf("done finding bases\n");
 }
 
@@ -1605,6 +1603,10 @@ void node::ricochet(){
     
     if(_ricochet_velocities.get_rows()==0){
         initialize_ricochet();
+    }
+    
+    if(_min_changed==1){
+        find_bases();
     }
     
     if(_ricochet_velocities.get_rows()!=_ricochet_particles.get_rows()){
