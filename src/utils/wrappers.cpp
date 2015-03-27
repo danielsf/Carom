@@ -222,7 +222,7 @@ void chisq_wrapper::is_it_safe(char *word){
         exit(1);
     }
     
-    if(_adaptive_target==1 && _deltachi<0){
+    if(_adaptive_target==1 && _deltachi<0.0){
         printf("WARNING in chisq_wrapper::%s\n",word);
         printf("adaptive target but deltachi %e\n",_deltachi);
         exit(1);
