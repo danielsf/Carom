@@ -2042,6 +2042,8 @@ void node::ricochet(){
    array_1d<double> old_start;
    old_start.set_name("node_ricochet_old_start");
    int iMove=-1;
+   
+   /*
    if(iChosen>=0){
        ddmax=_chisquared->distance(_centerdex,end_pts.get_data(iChosen));
        evaluate(trial,&ftrial,&iFound);
@@ -2090,6 +2092,7 @@ void node::ricochet(){
            }
        }
    }
+   */
    
    for(i=0;i<_ricochet_particles.get_rows();i++){
        if(rejectThis.get_data(i)==1){
