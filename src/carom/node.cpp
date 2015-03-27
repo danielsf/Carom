@@ -1683,9 +1683,6 @@ void node::simplex_search(){
     
     int ibefore=_chisquared->get_called();
     
-    simplex_minimizer ffmin;
-    ffmin.set_minmax(_min_found,_max_found);
-    
     array_1d<int> dexes;
     array_1d<double> minpt,dmu,dmusorted;
     array_2d<double> seed;
@@ -1737,8 +1734,9 @@ void node::simplex_search(){
         
         exit(1);
     }
-
     
+    simplex_minimizer ffmin;
+    ffmin.set_minmax(_min_found,_max_found);
     ffmin.set_chisquared(_chisquared);
     ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,minpt);
