@@ -1659,11 +1659,22 @@ void node::kick_particle(int ix, array_1d<double> &dir){
 
 void node::search(){
 
+    ricochet();
+
     if(_ct_simplex<_ct_ricochet){
         simplex_search();
     }
-    ricochet();
     
+    int ibefore;
+    if(_chimin_bases-_chimin>0.5*(_chisquared->target()-_chimin_bases)){
+        ibefore=_chisquared->get_called();
+        compass_search();
+        find_bases();
+        initialize_ricochet();
+        _active=1;
+        _ct_simplex+=_chisquared->get_called()-ibefore;
+    }
+
     if(_active==0){
         find_bases();
     }
@@ -1752,19 +1763,7 @@ void node::simplex_search(){
 void node::ricochet(){
     is_it_safe("ricochet");
     
-    int doInitialization=0;
-    
     if(_ricochet_velocities.get_rows()==0){
-        doInitialization=1;
-    }
-    
-    if(_chimin_bases-_chimin>0.1*(_chisquared->target()-_chimin_bases)){
-        doInitialization=1;
-        compass_search();
-        find_bases();
-    }
-    
-    if(doInitialization==1){
         initialize_ricochet();
     }
     
