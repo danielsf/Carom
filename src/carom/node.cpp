@@ -1696,7 +1696,9 @@ void node::simplex_search(){
     int i,j;
     double mu;
     
-    if(_ricochet_particles.get_rows()<=_chisquared->get_dim()+1){
+    seed.add_row(_chisquared->get_pt(_centerdex)[0]);
+    
+    if(_ricochet_particles.get_rows()<=_chisquared->get_dim()){
         for(i=0;i<_ricochet_particles.get_rows();i++){
             seed.add_row(_ricochet_particles(i)[0]);
         }
