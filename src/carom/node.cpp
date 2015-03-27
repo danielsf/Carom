@@ -1788,23 +1788,6 @@ void node::ricochet(){
    _ricochet_particles.get_rows());
    
    int ix,i,j,iFound;
-   double fmid;
-   array_1d<double> midpt;
-   midpt.set_name("node_ricochet_midpt");
-   if(_ricochet_particles.get_rows()>1){
-      for(i=0;i<_chisquared->get_dim();i++){
-          midpt.set(i,0.0);
-          for(ix=0;ix<_ricochet_particles.get_rows();ix++){
-              midpt.add_val(i,_ricochet_particles.get_data(ix,i));
-          }
-          midpt.divide_val(i,double(_ricochet_particles.get_rows()));
-      }
-      evaluate(midpt,&fmid,&iFound);
-      printf("    fmid %e iFound %d\n",fmid,iFound);
-      off_center_compass(iFound);
-      
-   }
-   
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir,kick;
    
