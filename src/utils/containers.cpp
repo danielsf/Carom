@@ -1166,6 +1166,7 @@ array_1d<T>* array_2d<T>::operator()(int dex){
     
     if(dex<0 || dex>=rows){
         printf("WARNING asked for row %d but only have %d\n",dex,rows);
+        die(-1,-1);
     }
     
     return &data[dex];
