@@ -1740,6 +1740,9 @@ void node::simplex_search(){
     ffmin.set_chisquared(_chisquared);
     ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,minpt);
+
+    evaluate(minpt,&mu,&i);
+
     _ct_simplex+=_chisquared->get_called()-ibefore;
     
 }
