@@ -42,6 +42,8 @@ private:
     
     void initialize();
     
+    void is_it_safe(char*);
+    
     double _temp,_min_ff,_true_min_ff,_fstar,_fstarstar,_min_temp;
     double _alpha,_beta,_gamma;
     int _il,_ih,_called_cost,_freeze_temp,_use_gradient;

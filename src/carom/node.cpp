@@ -1700,11 +1700,9 @@ void node::simplex_search(){
     double mu;
     
     if(_ricochet_particles.get_rows()<=_chisquared->get_dim()+1){
-        printf("    setting seed from combination\n");
         for(i=0;i<_ricochet_particles.get_rows();i++){
             seed.add_row(_ricochet_particles(i)[0]);
         }
-        printf("    after ricochet particles %d rows\n",seed.get_rows());
         
         if(seed.get_rows()<_chisquared->get_dim()+1){
             for(i=0;i<_basis_associates.get_dim();i++){
@@ -1720,13 +1718,11 @@ void node::simplex_search(){
         
     }
     else{
-        printf("    setting seed from just ricochet particles\n");
         for(i=0;i<_ricochet_particles.get_rows();i++){
             dexes.set(i,i);
             evaluate(_ricochet_particles(i)[0],&mu,&j);
             dmu.set(i,fabs(mu-apply_quadratic_model(_ricochet_particles(i)[0])));
         }
-        printf("    sorting\n");
         sort_and_check(dmu,dmusorted,dexes);
         
         for(i=dexes.get_dim()-1;seed.get_rows()<_chisquared->get_dim()+1;i--){
@@ -1741,8 +1737,10 @@ void node::simplex_search(){
         
         exit(1);
     }
+
     
-    printf("    time to actually find min\n");
+    ffmin.set_chisquared(_chisquared);
+    ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,minpt);
     _ct_simplex+=_chisquared->get_called()-ibefore;
     
