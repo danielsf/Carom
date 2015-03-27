@@ -1706,10 +1706,8 @@ void node::simplex_search(){
     seed.set_cols(_chisquared->get_dim());
     int i,j;
     double mu;
-    
-    seed.add_row(_chisquared->get_pt(_centerdex)[0]);
-    
-    if(_ricochet_particles.get_rows()<=_chisquared->get_dim()){
+
+    if(_ricochet_particles.get_rows()<=_chisquared->get_dim()+1){
         for(i=0;i<_ricochet_particles.get_rows();i++){
             seed.add_row(_ricochet_particles(i)[0]);
         }
