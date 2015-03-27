@@ -21,6 +21,7 @@ public:
     int get_center();
     void find_bases();
     void ricochet();
+    void gradient_search();
     double volume();
     double distance_traveled(int);
     int get_activity();
@@ -30,7 +31,7 @@ public:
     void print_ricochet_discoveries(char*);
     
 private:
-    int _centerdex,_active,_found_bases,_ellipse_center;
+    int _centerdex,_gradient_dex,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes;
     int _ct_ricochet,_calls_to_ricochet;
     double _chimin,_chimin_bases,_bisection_tolerance;
@@ -79,6 +80,7 @@ private:
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);
     double node_distance(int, array_1d<double>&);
+    void node_gradient(int, array_1d<double>&);
 };
 
 class arrayOfNodes{

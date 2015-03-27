@@ -64,6 +64,8 @@ public:
     
     void get_min(array_1d<double>&);
     void get_max(array_1d<double>&);
+    double get_min(int);
+    double get_max(int);
     
     void find_gradient(array_1d<double>&,array_1d<double>&);
     void set_iWhere(int);

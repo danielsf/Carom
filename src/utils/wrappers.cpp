@@ -434,6 +434,28 @@ kd_tree* chisq_wrapper::get_tree(){
     return _kptr;
 }
 
+double chisq_wrapper::get_min(int dex){
+    if(dex<=0 or dex>=_range_min.get_dim()){
+        printf("WARNING asked chisq_wrapper for min %d of %d\n",
+        dex,_range_min.get_dim());
+
+        exit(1);
+    }
+    
+    return _range_min.get_data(dex);
+}
+
+double chisq_wrapper::get_max(int dex){
+    if(dex<=0 or dex>=_range_max.get_dim()){
+        printf("WARNING asked chisq_wrapper for max %d of %d\n",
+        dex,_range_max.get_dim());
+        
+        exit(1);
+    }
+    
+    return _range_max.get_data(dex);
+}
+
 void chisq_wrapper::get_min(array_1d<double> &vv){
     int i;
     vv.set_dim(_range_min.get_dim());

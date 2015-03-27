@@ -22,6 +22,7 @@ void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
     _centerdex=-1;
+    _gradient_dex=-1;
     _bisection_tolerance=0.01;
     _min_changed=0;
     _active=1;
@@ -62,6 +63,7 @@ void node::initialize(){
 
 void node::copy(const node &in){
     _centerdex=in._centerdex;
+    _gradient_dex=in._gradient_dex;
     _chimin=in._chimin;
     _chimin_bases=in._chimin_bases;
     _min_changed=in._min_changed;
@@ -232,6 +234,7 @@ int node::get_ct_ricochet(){
 
 void node::set_center(int ix){
     _centerdex=ix;
+    _gradient_dex=ix;
     _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
@@ -351,6 +354,7 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
         if(value[0]<_chimin){
             _chimin=value[0];
             _centerdex=dex[0];
+            _gradient_dex=dex[0];
             _min_changed=1;
         }
         
@@ -389,6 +393,56 @@ double node::node_distance(int i1, int i2){
 
 double node::node_distance(int i1, array_1d<double> &p2){
     return node_distance(p2, _chisquared->get_pt(i1)[0]);
+}
+
+void node::node_gradient(int dex, array_1d<double> &grad){
+    is_it_safe("node_gradient");
+
+    int i,j,if1,if2;
+    array_1d<double> trial;
+    double norm,x1,x2,y1,y2;
+    trial.set_name("node_node_gradient_trial");
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,_chisquared->get_pt(dex,i));
+    }
+    
+    double dx,dxstart;
+    dxstart=1.0e-4;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        norm=_max_found.get_data(i)-_min_found.get_data(i);
+        if(!(norm>0.0)){
+           norm = _chisquared->get_max(i)-_chisquared->get_min(i);
+        }
+        
+        dx=dxstart;
+        if1=-1;
+        if2=-1;
+        while(if1==if2){
+            x1=_chisquared->get_pt(dex,i)+dx*norm;
+            trial.set(i,x1);
+            evaluate(trial,&y1,&if1);
+            
+            x2=_chisquared->get_pt(dex,i)-dx*norm;
+            trial.set(i,x2);
+            evaluate(trial,&y2,&if2);
+            
+            if(if1!=if2 || (if1<0 && if2<0)){
+                grad.set(i,(y1-y2)/(x1-x2));
+                if(if1<0 && if2<0){
+                    if1=-1;
+                    if2=-2;
+                }
+            }
+            else{
+                dx*=2.0;
+            }
+        }
+        
+        trial.set(i,_chisquared->get_pt(dex,i));
+    }
+
 }
 
 int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh, int doSlope){
@@ -1599,6 +1653,79 @@ void node::kick_particle(int ix, array_1d<double> &dir){
         origin_kick(ix,dir);
     }*/
     step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
+}
+
+void node::gradient_search(){
+    is_it_safe("gradient_search");
+    
+    if(_max_found.get_dim()!=_chisquared->get_dim() || _min_found.get_dim()!=_chisquared->get_dim()){
+        return;
+    }
+    
+    if(_gradient_dex<0){
+        return;
+    }
+    
+    int i;
+    array_1d<double> gradient,trial;
+    node_gradient(_gradient_dex, gradient);
+
+    double gradnorm;
+    gradnorm=gradient.normalize();
+    
+    int imax;
+    double gmax;
+    
+    imax=-1;
+    for(i=0;i<gradient.get_dim();i++){
+        if(imax<0 || fabs(gradient.get_data(i))>gmax){
+            imax=i;
+            gmax=fabs(gradient.get_data(i));
+        }
+    }
+    
+    double norm;
+    norm=_max_found.get_data(imax)-_min_found.get_data(imax);
+    if(!(norm>0.0)){
+        norm=_chisquared->get_max(imax)-_chisquared->get_min(imax);
+    }
+    
+    int iTrial,iStart,iBest,ct;
+    double fBest,ftrial,fStart;
+    
+    ftrial=_chisquared->get_fn(_gradient_dex);
+    fBest=ftrial;
+    fStart=ftrial;
+    iBest=_gradient_dex;
+    iStart=_gradient_dex;
+    iTrial=_gradient_dex;
+    ct=0;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+       trial.set(i,_chisquared->get_pt(_gradient_dex,i));
+    }
+    
+    double dx=1.0e-2;
+    while(iTrial==iBest){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.subtract_val(i,gradient.get_data(i)*dx*norm);
+        }
+        evaluate(trial,&ftrial,&iTrial);
+        
+        if(ftrial<fBest){
+            fBest=ftrial;
+            iBest=iTrial;
+        }
+    }
+    
+    if(iBest!=iStart){
+        _gradient_dex=iBest;
+    }
+    else{
+        _gradient_dex=-1;
+    }
+    
+    printf("    gradient search found %e from %e\n",fBest,fStart);
 }
 
 void node::ricochet(){
