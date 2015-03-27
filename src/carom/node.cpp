@@ -28,6 +28,7 @@ void node::initialize(){
     _active=1;
     _found_bases=0;
     _ct_ricochet=0;
+    _ct_simplex=0;
     _calls_to_ricochet=0;
     _allowed_ricochet_strikes=4;
     _volume=0.0;
@@ -70,6 +71,7 @@ void node::copy(const node &in){
     _active=in._active;
     _found_bases=in._found_bases;
     _ct_ricochet=in._ct_ricochet;
+    _ct_simplex=in._ct_simplex;
     _calls_to_ricochet=in._calls_to_ricochet;
     _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     _ellipse_center=in._ellipse_center;
@@ -1655,91 +1657,87 @@ void node::kick_particle(int ix, array_1d<double> &dir){
     step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
 }
 
-void node::gradient_search(){
-    is_it_safe("gradient_search");
-    
-    if(_max_found.get_dim()!=_chisquared->get_dim() || _min_found.get_dim()!=_chisquared->get_dim()){
-        return;
-    }
-    
-    if(_gradient_dex<0){
-        return;
-    }
-    
-    int i;
-    array_1d<double> gradient,trial;
-    node_gradient(_gradient_dex, gradient);
+void node::search(){
 
-    double gradnorm;
-    gradnorm=gradient.normalize();
+    if(_ct_simplex<_ct_ricochet){
+        simplex_search();
+    }
+    ricochet();
     
-    int imax;
-    double gmax;
+    if(_active==0){
+        find_bases();
+    }
+
+}
+
+
+void node::simplex_search(){
+    is_it_safe("simplex_search");
     
-    imax=-1;
-    for(i=0;i<gradient.get_dim();i++){
-        if(imax<0 || fabs(gradient.get_data(i))>gmax){
-            imax=i;
-            gmax=fabs(gradient.get_data(i));
-        }
+    if(_min_found.get_dim()!=_chisquared->get_dim() || _max_found.get_dim()!=_chisquared->get_dim()){
+        return;
     }
     
-    double norm;
-    norm=_max_found.get_data(imax)-_min_found.get_data(imax);
-    if(!(norm>0.0)){
-        norm=_chisquared->get_max(imax)-_chisquared->get_min(imax);
-    }
+    int ibefore=_chisquared->get_called();
     
-    int iTrial,iStart,iBest,ct;
-    double fBest,ftrial,fStart;
+    simplex_minimizer ffmin;
+    ffmin.set_minmax(_min_found,_max_found);
     
-    ftrial=_chisquared->get_fn(_gradient_dex);
-    fBest=ftrial;
-    fStart=ftrial;
-    iBest=_gradient_dex;
-    iStart=_gradient_dex;
-    iTrial=_gradient_dex;
-    ct=0;
+    array_1d<int> dexes;
+    array_1d<double> minpt,dmu,dmusorted;
+    array_2d<double> seed;
+    minpt.set_name("node_simplex_search_minpt");
+    seed.set_name("node_simplex_search_minpt");
+    dexes.set_name("node_simplex_search_dexes");
+    dmu.set_name("node_simplex_search_dmu");
+    dmusorted.set_name("node_simplex_search_dmusorted");
     
-    for(i=0;i<_chisquared->get_dim();i++){
-       trial.set(i,_chisquared->get_pt(_gradient_dex,i));
-    }
+    seed.set_cols(_chisquared->get_dim());
+    int i,j;
+    double mu;
     
-    array_1d<int> iFound;
-    iFound.set_name("node_gradient_search_iFound");
-    
-    double dx=1.0e-2;
-    for(ct=0;ct<10;ct++){
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial.subtract_val(i,gradient.get_data(i)*dx*norm);
-        }
-        evaluate(trial,&ftrial,&iTrial);
-        iFound.add(iTrial);
-        
-        if(ftrial<fBest){
-            iBest=iTrial;
-            fBest=ftrial;
+    if(_ricochet_particles.get_rows()<=_chisquared->get_dim()+1){
+        for(i=0;i<_ricochet_particles.get_rows();i++){
+            seed.add_row(_ricochet_particles(i)[0]);
         }
         
-    }
-    
-    if(iBest!=iStart){
-        _gradient_dex=iBest;
-    }
-    else{
-        _gradient_dex=-1;
-        for(i=iFound.get_dim()-1;i>=0 && _gradient_dex<0;i--){
-            if(iFound.get_data(i)>=0){
-                _gradient_dex=iFound.get_data(i);
+        if(seed.get_rows()<_chisquared->get_dim()+1){
+            for(i=0;i<_basis_associates.get_dim();i++){
+                dexes.set(i,_basis_associates.get_data(i));
+                mu=_chisquared->get_fn(_basis_associates.get_data(i));
+                dmu.set(i,fabs(mu-apply_quadratic_model(_chisquared->get_pt(_basis_associates.get_data(i))[0])));
+            }
+            sort_and_check(dmu,dmusorted,dexes);
+            for(i=dexes.get_dim()-1;i>=0 && seed.get_rows()<_chisquared->get_dim()+1;i--){
+                seed.add_row(_chisquared->get_pt(dexes.get_data(i))[0]);
             }
         }
+        
+    }
+    else{
+        for(i=0;i<_ricochet_particles.get_rows();i++){
+            dexes.set(i,i);
+            evaluate(_ricochet_particles(i)[0],&mu,&j);
+            dmu.set(i,fabs(mu-apply_quadratic_model(_ricochet_particles(i)[0])));
+        }
+        sort_and_check(dmu,dmusorted,dexes);
+        
+        for(i=dexes.get_dim()-1;seed.get_rows()<_chisquared->get_dim()+1;i--){
+            seed.add_row(_ricochet_particles(dexes.get_data(i))[0]);
+        }
+        
     }
     
-    if(_gradient_dex==iStart){
-        _gradient_dex=-1;
+    if(seed.get_rows()!=_chisquared->get_dim()+1){
+        printf("WARNING in node_simplex_search seed has %d rows want %d\n",
+        seed.get_rows(),_chisquared->get_dim()+1);
+        
+        exit(1);
     }
     
-    printf("    gradient search found %e from %e -- %d\n",fBest,fStart,_gradient_dex);
+    ffmin.find_minimum(seed,minpt);
+    _ct_simplex+=_chisquared->get_called()-ibefore;
+    
 }
 
 void node::ricochet(){
@@ -2127,10 +2125,6 @@ void node::ricochet(){
  
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
-
-   if(_active==0 && _found_bases<2){
-       find_bases();
-   }
    
    int totalNeedKick=0;
    for(i=0;i<_ricochet_strikes.get_dim();i++){

@@ -3,6 +3,7 @@
 
 #include "wrappers.h"
 #include "eigen_wrapper.h"
+#include "simplex.h"
 
 class node{
 
@@ -20,8 +21,9 @@ public:
     void evaluate(array_1d<double>&, double*, int*);
     int get_center();
     void find_bases();
+    void search();
     void ricochet();
-    void gradient_search();
+    void simplex_search();
     double volume();
     double distance_traveled(int);
     int get_activity();
@@ -33,7 +35,7 @@ public:
 private:
     int _centerdex,_gradient_dex,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes;
-    int _ct_ricochet,_calls_to_ricochet;
+    int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
     double _chimin,_chimin_bases,_bisection_tolerance;
     
     double _volume;

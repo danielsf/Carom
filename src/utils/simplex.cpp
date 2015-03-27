@@ -42,6 +42,10 @@ void simplex_minimizer::initialize(){
     _last_improved_pts.set_name("simplex_last_improved_pts");
 }
 
+void simplex_minimizer::set_abort_max_factor(int ii){
+    _abort_max_factor=ii;
+}
+
 void simplex_minimizer::set_chisquared(function_wrapper *ff){
     _chisquared=ff;
 }

@@ -238,8 +238,7 @@ void carom::search(int limit){
         else{
             for(i=0;i<_nodes.get_dim();i++){
                 if(_nodes(i)->get_activity()==1){
-                    _nodes(i)->gradient_search();
-                    _nodes(i)->ricochet();
+                    _nodes(i)->search();
                 }
             }
         }
