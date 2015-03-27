@@ -1705,17 +1705,22 @@ void node::gradient_search(){
        trial.set(i,_chisquared->get_pt(_gradient_dex,i));
     }
     
+    array_1d<int> iFound;
+    iFound.set_name("node_gradient_search_iFound");
+    
     double dx=1.0e-2;
-    while(iTrial==iBest){
+    for(ct=0;ct<10;ct++){
         for(i=0;i<_chisquared->get_dim();i++){
             trial.subtract_val(i,gradient.get_data(i)*dx*norm);
         }
         evaluate(trial,&ftrial,&iTrial);
+        iFound.add(iTrial);
         
         if(ftrial<fBest){
-            fBest=ftrial;
             iBest=iTrial;
+            fBest=ftrial;
         }
+        
     }
     
     if(iBest!=iStart){
@@ -1723,9 +1728,18 @@ void node::gradient_search(){
     }
     else{
         _gradient_dex=-1;
+        for(i=iFound.get_dim()-1;i>=0 && _gradient_dex<0;i--){
+            if(iFound.get_data(i)>=0){
+                _gradient_dex=iFound.get_data(i);
+            }
+        }
     }
     
-    printf("    gradient search found %e from %e\n",fBest,fStart);
+    if(_gradient_dex==iStart){
+        _gradient_dex=-1;
+    }
+    
+    printf("    gradient search found %e from %e -- %d\n",fBest,fStart,_gradient_dex);
 }
 
 void node::ricochet(){
