@@ -1702,10 +1702,10 @@ void node::simplex_search(){
         }
         
         if(seed.get_rows()<_chisquared->get_dim()+1){
-            for(i=0;i<_basis_associates.get_dim();i++){
-                dexes.set(i,_basis_associates.get_data(i));
-                mu=_chisquared->get_fn(_basis_associates.get_data(i));
-                dmu.set(i,fabs(mu-apply_quadratic_model(_chisquared->get_pt(_basis_associates.get_data(i))[0])));
+            for(i=0;i<_compass_points.get_dim();i++){
+                dexes.set(i,_compass_points.get_data(i));
+                mu=_chisquared->get_fn(_compass_points.get_data(i));
+                dmu.set(i,fabs(mu-apply_quadratic_model(_chisquared->get_pt(_compass_points.get_data(i))[0])));
             }
             sort_and_check(dmu,dmusorted,dexes);
             for(i=dexes.get_dim()-1;i>=0 && seed.get_rows()<_chisquared->get_dim()+1;i--){
