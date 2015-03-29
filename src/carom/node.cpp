@@ -397,6 +397,152 @@ double node::node_distance(int i1, array_1d<double> &p2){
     return node_distance(p2, _chisquared->get_pt(i1)[0]);
 }
 
+double node::node_second_derivative_different(int center, int ix, int iy){
+    is_it_safe("node_second_derivative_different");
+    
+    double xnorm,ynorm;
+    xnorm=-1.0;
+    ynorm=-1.0;
+    if(_max_found.get_dim()>ix && _min_found.get_dim()>ix){
+        xnorm=_max_found.get_data(ix)-_min_found.get_data(ix);
+    }
+    if(!(xnorm>0.0)){
+        xnorm=_chisquared->get_max(ix)-_chisquared->get_min(ix);
+    }
+    
+    if(_max_found.get_dim()>iy && _min_found.get_dim()>iy){
+        ynorm=_max_found.get_data(iy)-_min_found.get_data(iy);
+    }
+    if(!(ynorm>0.0)){
+        ynorm=_chisquared->get_max(iy)-_chisquared->get_min(iy);
+    }
+    
+    int ifpp,ifpm,ifmp,ifmm;
+    ifpp=-1;
+    ifpm=-1;
+    ifmp=-1;
+    ifmm=-1;
+    
+    double mu;
+    array_1d<double> trial;
+    trial.set_name("node_second_derivative_different_trial");
+    
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,_chisquared->get_pt(center,i));
+    }
+    
+    double xp,xm,yp,ym,fpp,fmp,fpm,fmm;
+    double dx,dxstart;
+    
+    dxstart=1.0e-3;
+    while(ifpp==ifpm || ifpp==ifmp || ifpp==ifmm ||
+          ifpm==ifmp || ifpm==ifmm || ifmp==ifmm){
+         
+         xp=_chisquared->get_pt(center,ix)+dx*xnorm;
+         xm=_chisquared->get_pt(center,ix)-dx*xnorm;
+         
+         yp=_chisquared->get_pt(center,iy)+dx*ynorm;
+         ym=_chisquared->get_pt(center,iy)-dx*ynorm;
+         
+         trial.set(ix,xp);
+         trial.set(iy,yp);
+         evaluate(trial,&fpp,&ifpp);
+         
+         trial.set(iy,ym);
+         evaluate(trial,&fpm,&ifpm);
+         
+         trial.set(ix,xm);
+         evaluate(trial,&fmm,&ifmm);
+         
+         trial.set(iy,yp);
+         evaluate(trial,&fmp,&ifmp);
+         
+         if(ifpp<0 && ifpm<0 && ifmp<0 && ifmm<0){
+             ifpp=-1;
+             ifpm=-2;
+             ifmp=-3;
+             ifpm=-4;
+         }
+         
+         dx*=1.5;
+         
+    }
+    
+    double ans;
+    ans=(fpp+fmm-fmp-fpm)/((xp-xm)*(yp-ym));
+    
+    return ans;
+}
+
+double node::node_second_derivative_same(int center, int ix){
+    is_it_safe("node_second_derivative_same");
+    
+    double xnorm;
+    
+    xnorm=-1.0;
+    if(_max_found.get_dim()>ix && _min_found.get_dim()>ix){
+        xnorm=_max_found.get_data(ix)-_min_found.get_data(ix);
+    }
+    if(!(xnorm>0.0)){
+        xnorm=_chisquared->get_max(ix)-_chisquared->get_min(ix);
+    }
+    
+    double dx;
+    dx=1.0e-3;
+    
+    int ifpp,ifmm;
+    double fpp,fmm,xp,xpp,xm,xmm;
+    
+    ifpp=-1;
+    ifmm=-1;
+    
+    int i;
+    array_1d<double> trial;
+    trial.set_name("node_second_derivative_same_trial");
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,_chisquared->get_pt(center,i));
+    }
+    
+    while(ifpp==center || ifpp==ifmm || ifmm==center){
+        xp=_chisquared->get_pt(center,i)+dx*xnorm;
+        xm=_chisquared->get_pt(center,i)-dx*xnorm;
+        xpp=_chisquared->get_pt(center,i)+2.0*dx*xnorm;
+        xmm=_chisquared->get_pt(center,i)-2.0*dx*xnorm;
+        
+        trial.set(ix,xpp);
+        evaluate(trial,&fpp,&ifpp);
+        
+        trial.set(ix,xmm);
+        evaluate(trial,&fmm,&ifmm);
+        
+        if(ifpp<0 && ifmm<0){
+            ifpp=-1;
+            ifmm=-2;
+        }
+        
+        dx*=1.5;
+        
+    }
+    
+    double ans;
+    ans=(fpp+fmm-2.0*_chisquared->get_fn(center))/power(xp-xm,2);
+    return ans;
+}
+
+double node::node_second_derivative(int center, int ix, int iy){
+    if(center<0){
+        return 0.0;
+    }
+    
+    if(ix==iy){
+        return node_second_derivative_same(center,ix);
+    }
+    else{
+        return node_second_derivative_different(center,ix,iy);
+    }
+}
+
 void node::node_gradient(int dex, array_1d<double> &grad){
     is_it_safe("node_gradient");
 
