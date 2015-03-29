@@ -231,6 +231,11 @@ void invert_lapack(array_2d<double> &matin, array_2d<double> &min, int verb){
 }
 
 void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals, int nev, int n, int order){
+    eval_symm(m,vecs,vals,nev,n,order,-1.0);
+}
+
+void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals,
+int nev, int n, int order, double check){
 //this will use ARPACK to get nev eigenvalues and vectors of a symmetric
 // n-by-n matrix
 //order=1 looks for nev largest eigenvalues
@@ -388,6 +393,24 @@ void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &va
           }
       }
   }
+  
+  array_1d<double> trial;
+  double err;
+  trial.set_name("eval_symm_trial");
+  if(check>0.0){
+      for(i=0;i<nev;i++){
+          for(j=0;j<n;j++){
+              trial.set(j,vecs.get_data(j,i));
+          }
+          
+          err=eigen_check(m,trial,vals.get_data(i),n);
+          if(err>check){
+              throw -1;
+          }
+      }
+      
+  }
+  
 }
 
 
