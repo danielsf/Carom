@@ -40,7 +40,7 @@ void eval_symm(array_2d<double>&,array_2d<double>&,array_1d<double>&,int,int,int
 
 void eval_symm(array_2d<double>&,array_2d<double>&,array_1d<double>&,int,int,int,double);
 
-double eigen_check(array_2d<double>&,array_1d<double>&,double,int,double);
+double eigen_check(array_2d<double>&,array_1d<double>&,double,int);
 
 double eigen_check_open(double**,double*,int);
 

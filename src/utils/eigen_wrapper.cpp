@@ -403,7 +403,7 @@ int nev, int n, int order, double check){
               trial.set(j,vecs.get_data(j,i));
           }
           
-          err=eigen_check(m,trial,vals.get_data(i),n,check);
+          err=eigen_check(m,trial,vals.get_data(i),n);
           if(err>check){
               printf("err %e val %e\n",err,vals.get_data(i));
               throw -1;
@@ -416,12 +416,11 @@ int nev, int n, int order, double check){
 
 
 
-double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambda, int n, double tol){
+double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambda, int n){
  int i,j,k,l;
  double err,maxerr=-1.0,ans;
  
  double *vans;
- double maxControl,maxTest;
  
  //vans=new double[n];
  
@@ -439,11 +438,8 @@ double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambd
   err=fabs(ans-vec.get_data(i));
   if(vec.get_data(i)!=0.0)err=err/fabs(vec.get_data(i));
 
-  if(err>maxerr){
-      maxerr=err;
-      maxControl=vec.get_data(i);
-      maxTest=ans/lambda;
-  }
+  if(err>maxerr)maxerr=err;
+
   
   
  }
@@ -452,11 +448,6 @@ double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambd
  //if(maxerr<0)printf("lambda is %e\n",lambda);
  
  //delete [] vans;
- 
- if(maxerr>tol){
-     printf("maxControl %e maxTest %e err %e\n",
-     maxControl,maxTest,maxerr);
- }
  
  return maxerr;
 
