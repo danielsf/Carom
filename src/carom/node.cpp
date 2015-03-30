@@ -1134,6 +1134,8 @@ void node::guess_bases(array_2d<double> &bases){
         }
     }
     
+    printf("assembled covariance matrix\n");
+    
     array_2d<double> evecs;
     evecs.set_name("node_guess_bases_evecs");
     array_1d<double> evals;
@@ -1157,6 +1159,8 @@ void node::guess_bases(array_2d<double> &bases){
         bases(ix)->normalize();
     }
     
+    printf("got first batch of guessed bases\n");
+    
     try{
         eval_symm(covar,evecs,evals,_chisquared->get_dim()-i1,_chisquared->get_dim(),-1,0.001);
     }
@@ -1172,8 +1176,11 @@ void node::guess_bases(array_2d<double> &bases){
         bases(ix)->normalize();
     }
     
+    printf("got second batch of guessed bases\n");
     
     validate_bases(bases,"node_guess_bases");
+    
+    printf("validated guessed bases\n");
 }
 
 void node::find_bases(){
