@@ -1169,7 +1169,7 @@ void node::guess_bases(array_2d<double> &bases){
         for(iy=0;iy<_chisquared->get_dim();iy++){
             bases.set(ix,iy,evecs.get_data(iy,ix-i1));
         }
-        bases(iy)->normalize();
+        bases(ix)->normalize();
     }
     
     
