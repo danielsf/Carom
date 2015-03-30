@@ -442,7 +442,7 @@ double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambd
   if(err>maxerr){
       maxerr=err;
       maxControl=vec.get_data(i);
-      maxTest=ans;
+      maxTest=ans/lambda;
   }
   
   
