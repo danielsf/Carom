@@ -22,6 +22,7 @@ void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
     _centerdex=-1;
+    _centerdex_basis=-1;
     _gradient_dex=-1;
     _bisection_tolerance=0.01;
     _min_changed=0;
@@ -64,6 +65,7 @@ void node::initialize(){
 
 void node::copy(const node &in){
     _centerdex=in._centerdex;
+    _centerdex_basis=in._centerdex_basis;
     _gradient_dex=in._gradient_dex;
     _chimin=in._chimin;
     _chimin_bases=in._chimin_bases;
@@ -1104,6 +1106,62 @@ void node::compass_off_diagonal(){
 
 }
 
+void node::guess_bases(array_2d<double> &bases){
+    is_it_safe("guess_bases");
+    
+    array_2d<double> covar;
+    covar.set_name("node_guess_bases_covar");
+    covar.set_cols(_chisquared->get_dim());
+    bases.set_cols(_chisquared->get_dim());
+    
+    int ix,iy;
+    double mu;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        for(iy=ix;iy<_chisquared->get_dim();iy++){
+            mu=node_second_derivative(_centerdex,ix,iy);
+            covar.set(ix,iy,mu);
+            if(ix!=iy){
+                covar.set(iy,ix,mu);
+            }
+        }
+    }
+    
+    array_2d<double> evecs;
+    evecs.set_name("node_guess_bases_evecs");
+    array_1d<double> evals;
+    evals.set_name("node_guess_bases_evals");
+    
+    int i1=_chisquared->get_dim()/2;
+    try{
+        eval_symm(covar,evecs,evals,i1,_chisquared->get_dim(),1,0.001);
+    }
+    catch(int iex){
+        printf("Guess failed on first batch of eigen vectors\n");
+        throw -1;
+    }
+    
+    for(ix=0;ix<i1;ix++){
+        for(iy=0;iy<_chisquared->get_dim();iy++){
+            bases.set(ix,iy,evecs.get_data(iy,ix));
+        }
+    }
+    
+    try{
+        eval_symm(covar,evecs,evals,_chisquared->get_dim()-i1,_chisquared->get_dim(),-1,0.001);
+    }
+    catch(int iex){
+        printf("Guess failed on second batch of eigen vectors\n");
+        throw -1;
+    }
+    
+    for(ix=i1;ix<_chisquared->get_dim();ix++){
+        for(iy=0;iy<_chisquared->get_dim();iy++){
+            bases.set(ix,iy,evecs.get_data(iy,ix-i1));
+        }
+    }
+    
+}
+
 void node::find_bases(){
     is_it_safe("find_bases");
     
@@ -1151,6 +1209,30 @@ void node::find_bases(){
     ct=0;
     
     printf("error0 %e %d\n",error0,_basis_associates.get_dim());
+
+    if(_centerdex!=_centerdex_basis){
+        printf("guessing basis from second derivative\n");
+        try{
+            guess_bases(trial_bases);
+            error=basis_error(trial_bases,trial_model);
+            printf("guess got error %e\n",error);
+            if(error<error0){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    _basis_model.set(i,trial_model.get_data(i));
+                    for(j=0;j<_chisquared->get_dim();j++){
+                        _basis_vectors.set(i,j,trial_bases.get_data(i,j));
+                    }
+                }
+                error1=error;
+                errorBest=error;
+            }
+        }
+        catch(int iex){
+            printf("never mind; guess did not work\n");
+        }
+    }
+    
+    
     while(stdev>stdevlim && aborted<max_abort){
         ct++;
         idim=-1;
@@ -1205,6 +1287,7 @@ void node::find_bases(){
    
     _found_bases++;
     _min_changed=0;
+    _centerdex_basis=_centerdex;
     printf("done finding bases\n");
 }
 
