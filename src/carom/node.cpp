@@ -708,25 +708,33 @@ void node::perturb_bases(int idim, array_1d<double> &dx, array_2d<double> &bases
         
     }
     
+    validate_bases(bases_out,"node_perturb_bases");
+
+}
+ 
+ 
+void node::validate_bases(array_2d<double> &bases, char *whereami){ 
+    int ix,i,jx;
+    double mu;   
     /////////////////testing
     for(ix=0;ix<_chisquared->get_dim();ix++){
         mu=0.0;
         for(i=0;i<_chisquared->get_dim();i++){
-            mu+=bases_out.get_data(ix,i)*bases_out.get_data(ix,i);
+            mu+=bases.get_data(ix,i)*bases.get_data(ix,i);
         }
         if(fabs(mu-1.0)>1.0e-6){
-            printf("WARNING in node perturb bases, square norm %e\n",mu);
+            printf("WARNING in %s, square norm %e\n",whereami,mu);
             exit(1);
         }
         
         for(jx=ix+1;jx<_chisquared->get_dim();jx++){
             mu=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
-                mu+=bases_out.get_data(ix,i)*bases_out.get_data(jx,i);
+                mu+=bases.get_data(ix,i)*bases.get_data(jx,i);
             }
             
             if(fabs(mu)>1.0e-6){
-                printf("WARNING in node perturb bases, dot product %e\n",mu);
+                printf("WARNING in %s, dot product %e\n",whereami,mu);
                 exit(1);
             }
         }
@@ -1164,6 +1172,8 @@ void node::guess_bases(array_2d<double> &bases){
         bases(iy)->normalize();
     }
     
+    
+    validate_bases(bases,"node_guess_bases");
 }
 
 void node::find_bases(){
