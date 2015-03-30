@@ -405,6 +405,7 @@ int nev, int n, int order, double check){
           
           err=eigen_check(m,trial,vals.get_data(i),n);
           if(err>check){
+              printf("err %e val %e\n",err,vals.get_data(i));
               throw -1;
           }
       }
