@@ -394,16 +394,32 @@ int nev, int n, int order, double check){
       }
   }
   
-  array_1d<double> trial;
-  double err;
-  trial.set_name("eval_symm_trial");
+  array_1d<double> test,control;
+  double dotproduct,err;
+  test.set_name("eval_symm_test");
+  control.set_name("eval_symm_control");
   if(check>0.0){
       for(i=0;i<nev;i++){
           for(j=0;j<n;j++){
-              trial.set(j,vecs.get_data(j,i));
+              control.set(j,vecs.get_data(j,i));
           }
           
-          err=eigen_check(m,trial,vals.get_data(i),n);
+          for(j=0;j<n;j++){
+              test.set(j,0.0);
+              for(k=0;k<n;k++){
+                  test.add_val(j,m.get_data(j,k)*vecs.get_data(k,i));
+              }
+              test.divide_val(j,vals.get_data(i));
+          }
+          test.normalize();
+          control.normalize();
+          dotproduct=0.0;
+          for(j=0;j<n;j++){
+              dotproduct+=test.get_data(j)*control.get_data(j);
+          }
+          
+          err=fabs(fabs(dotproduct)-1.0);
+          
           if(err>check){
               printf("err %e val %e\n",err,vals.get_data(i));
               throw -1;
