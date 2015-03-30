@@ -1131,6 +1131,8 @@ void node::guess_bases(array_2d<double> &bases){
     array_1d<double> evals;
     evals.set_name("node_guess_bases_evals");
     
+    evecs.set_cols(_chisquared->get_dim());
+    
     int i1=_chisquared->get_dim()/2;
     try{
         eval_symm(covar,evecs,evals,i1,_chisquared->get_dim(),1,0.001);
