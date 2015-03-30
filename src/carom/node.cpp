@@ -507,10 +507,10 @@ double node::node_second_derivative_same(int center, int ix){
     }
     
     while(ifpp==center || ifpp==ifmm || ifmm==center){
-        xp=_chisquared->get_pt(center,i)+dx*xnorm;
-        xm=_chisquared->get_pt(center,i)-dx*xnorm;
-        xpp=_chisquared->get_pt(center,i)+2.0*dx*xnorm;
-        xmm=_chisquared->get_pt(center,i)-2.0*dx*xnorm;
+        xp=_chisquared->get_pt(center,ix)+dx*xnorm;
+        xm=_chisquared->get_pt(center,ix)-dx*xnorm;
+        xpp=_chisquared->get_pt(center,ix)+2.0*dx*xnorm;
+        xmm=_chisquared->get_pt(center,ix)-2.0*dx*xnorm;
         
         trial.set(ix,xpp);
         evaluate(trial,&fpp,&ifpp);
