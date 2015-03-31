@@ -468,33 +468,36 @@ double node::node_second_derivative_different(int center, int ix, int iy){
              
              proceed=1;
              if(xpBound==0){
-                 xcenter=trial.get_data(ix)-1.5*dx*xnorm;
+                 xcenter=_chisquared->get_pt(center,ix)-1.5*dx*xnorm;
                  proceed=0;
              }
              else if(xmBound==0){
-                 xcenter=trial.get_data(ix)+1.5*dx*xnorm;
+                 xcenter=_chisquared->get_pt(center,ix)+1.5*dx*xnorm;
                  proceed=0;
              }
              else{
-                 xcenter=trial.get_data(ix);
+                 xcenter=_chisquared->get_pt(center,ix);
              }
              
              if(ypBound==0){
-                 ycenter=trial.get_data(iy)-1.5*dx*ynorm;
+                 ycenter=_chisquared->get_pt(center,iy)-1.5*dx*ynorm;
                  proceed=0;
              }
              else if(ymBound==0){
-                 ycenter=trial.get_data(iy)+1.5*dx*ynorm;
+                 ycenter=_chisquared->get_pt(center,iy)+1.5*dx*ynorm;
                  proceed=0;
              }
              else{
-                 ycenter=trial.get_data(iy);
+                 ycenter=_chisquared->get_pt(center,iy);
              }
              
              if(proceed==0){
                  trial.set(ix,xcenter);
                  trial.set(iy,ycenter);
                  evaluate(trial,&mu,&center);
+                 if(center<0){
+                     throw -1;
+                 }
              }
              
          }
@@ -558,11 +561,44 @@ double node::node_second_derivative_same(int center, int ix){
         trial.set(i,_chisquared->get_pt(center,i));
     }
     
+    int proceed;
+    int xppBound,xmmBound;
+    double xcenter,ycenter,mu;
+    
     while(ifpp==center || ifpp==ifmm || ifmm==center){
-        xp=_chisquared->get_pt(center,ix)+dx*xnorm;
-        xm=_chisquared->get_pt(center,ix)-dx*xnorm;
-        xpp=_chisquared->get_pt(center,ix)+2.0*dx*xnorm;
-        xmm=_chisquared->get_pt(center,ix)-2.0*dx*xnorm;
+        proceed=0;
+        while(proceed==0){
+            xp=_chisquared->get_pt(center,ix)+dx*xnorm;
+            xm=_chisquared->get_pt(center,ix)-dx*xnorm;
+            xpp=_chisquared->get_pt(center,ix)+2.0*dx*xnorm;
+            xmm=_chisquared->get_pt(center,ix)-2.0*dx*xnorm;
+            
+            xppBound = _chisquared->in_bounds(ix,xpp);
+            xmmBound = _chisquared->in_bounds(ix,xmm);
+            
+            if(xppBound==0 && xmmBound==0){
+                throw -1;
+            }
+            
+            proceed=1;
+            if(xppBound==0){
+                xcenter=_chisquared->get_pt(center,ix)-2.5*dx*xnorm;
+                proceed=0;
+            }
+            else if(xmmBound==0){
+                xcenter=_chisquared->get_pt(center,ix)+2.5*dx*xnorm;
+                proceed=0;
+            }
+            
+            if(proceed==0){
+                trial.set(ix,xcenter);
+                evaluate(trial,&mu,&center);
+                if(center<0){
+                    throw -1;
+                }
+            }
+            
+        }
         
         trial.set(ix,xpp);
         evaluate(trial,&fpp,&ifpp);
