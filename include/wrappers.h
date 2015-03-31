@@ -72,6 +72,8 @@ public:
     int get_ct_where(int);
     int get_where_log(int);
 
+    int in_bounds(array_1d<double>&);
+
     kd_tree* get_tree();
 
 private:

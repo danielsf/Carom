@@ -253,11 +253,10 @@ double chisq_wrapper::get_deltachi(){
     return _deltachi;
 }
 
-int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
-    is_it_safe("is_valid");
+int chisq_wrapper::in_bounds(array_1d<double> &pt){
+    is_it_safe("in_bounds");
     
     int i;
-    neighdex[0]=-1;
     for(i=0;i<pt.get_dim();i++){
         if(_chifn->get_max(i)>-1.0*exception_value && pt.get_data(i)>_chifn->get_max(i)){
             return 0;
@@ -265,6 +264,18 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
         if(_chifn->get_min(i)<exception_value && pt.get_data(i)<_chifn->get_min(i)){
             return 0;
         }
+    }
+    return 1;
+    
+}
+
+int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
+    is_it_safe("is_valid");
+    
+    neighdex[0]=-1;
+    
+    if(in_bounds(pt)==0){
+        return 0;
     }
 
     _kptr->nn_srch(pt,1,_valid_neigh,_valid_dd);
