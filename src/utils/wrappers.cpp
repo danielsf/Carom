@@ -253,6 +253,23 @@ double chisq_wrapper::get_deltachi(){
     return _deltachi;
 }
 
+int chisq_wrapper::in_bounds(int dex, double val){
+    is_it_safe("in_bounds");
+    if(dex<0 || dex>_chifn->get_dim()){
+        printf("WARNING asked for in_bounds on dex %d but %d\n",dex,_chifn->get_dim());
+    }
+    
+    if(_chifn->get_max(dex)>-1.0*exception_value && val>_chifn->get_max(dex)){
+        return 0;
+    }
+    
+    if(_chifn->get_min(dex)<exception_value && val<_chifn->get_min(dex)){
+        return 0;
+    }
+    
+    return 1;
+}
+
 int chisq_wrapper::in_bounds(array_1d<double> &pt){
     is_it_safe("in_bounds");
     
