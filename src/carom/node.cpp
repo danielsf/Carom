@@ -435,17 +435,69 @@ double node::node_second_derivative_different(int center, int ix, int iy){
     }
     
     double xp,xm,yp,ym,fpp,fmp,fpm,fmm;
-    double dx,dxstart;
+    double dx,dxstart,xcenter,ycenter;
+    
+    int proceed,xpBound,xmBound,ypBound,ymBound;
     
     dxstart=1.0e-3;
     while(ifpp==ifpm || ifpp==ifmp || ifpp==ifmm ||
           ifpm==ifmp || ifpm==ifmm || ifmp==ifmm){
          
-         xp=_chisquared->get_pt(center,ix)+dx*xnorm;
-         xm=_chisquared->get_pt(center,ix)-dx*xnorm;
          
-         yp=_chisquared->get_pt(center,iy)+dx*ynorm;
-         ym=_chisquared->get_pt(center,iy)-dx*ynorm;
+         proceed=0;
+         
+         while(proceed==0){
+             xp=_chisquared->get_pt(center,ix)+dx*xnorm;
+             xm=_chisquared->get_pt(center,ix)-dx*xnorm;
+         
+             yp=_chisquared->get_pt(center,iy)+dx*ynorm;
+             ym=_chisquared->get_pt(center,iy)-dx*ynorm;
+             
+             xpBound=_chisquared->in_bounds(ix,xp);
+             xmBound=_chisquared->in_bounds(ix,xm);
+             ypBound=_chisquared->in_bounds(iy,yp);
+             ymBound=_chisquared->in_bounds(iy,ym);
+             
+             if(xpBound==0 && xmBound==0){
+                 throw -1;
+             }
+             
+             if(ypBound==0 && ymBound==0){
+                 throw -1;
+             }
+             
+             proceed=1;
+             if(xpBound==0){
+                 xcenter=trial.get_data(ix)-1.5*dx*xnorm;
+                 proceed=0;
+             }
+             else if(xmBound==0){
+                 xcenter=trial.get_data(ix)+1.5*dx*xnorm;
+                 proceed=0;
+             }
+             else{
+                 xcenter=trial.get_data(ix);
+             }
+             
+             if(ypBound==0){
+                 ycenter=trial.get_data(iy)-1.5*dx*ynorm;
+                 proceed=0;
+             }
+             else if(ymBound==0){
+                 ycenter=trial.get_data(iy)+1.5*dx*ynorm;
+                 proceed=0;
+             }
+             else{
+                 ycenter=trial.get_data(iy);
+             }
+             
+             if(proceed==0){
+                 trial.set(ix,xcenter);
+                 trial.set(iy,ycenter);
+                 evaluate(trial,&mu,&center);
+             }
+             
+         }
          
          trial.set(ix,xp);
          trial.set(iy,yp);
