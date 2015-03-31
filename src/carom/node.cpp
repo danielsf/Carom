@@ -435,11 +435,11 @@ double node::node_second_derivative_different(int center, int ix, int iy){
     }
     
     double xp,xm,yp,ym,fpp,fmp,fpm,fmm;
-    double dx,dxstart,xcenter,ycenter;
+    double dx,xcenter,ycenter;
     
     int proceed,xpBound,xmBound,ypBound,ymBound;
     
-    dxstart=1.0e-3;
+    dx=1.0e-3;
     while(ifpp==ifpm || ifpp==ifmp || ifpp==ifmm ||
           ifpm==ifmp || ifpm==ifmm || ifmp==ifmm){
          
