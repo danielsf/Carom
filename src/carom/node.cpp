@@ -1123,14 +1123,23 @@ void node::guess_bases(array_2d<double> &bases){
     bases.set_cols(_chisquared->get_dim());
     
     int ix,iy;
-    double mu;
+    double mu,covarmax=-1.0;
     for(ix=0;ix<_chisquared->get_dim();ix++){
         for(iy=ix;iy<_chisquared->get_dim();iy++){
             mu=node_second_derivative(_centerdex,ix,iy);
+            if(fabs(mu)>covarmax){
+                covarmax=fabs(mu);
+            }
             covar.set(ix,iy,mu);
             if(ix!=iy){
                 covar.set(iy,ix,mu);
             }
+        }
+    }
+    
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        for(iy=0;iy<_chisquared->get_dim();iy++){
+            covar.divide_val(ix,iy,covarmax);
         }
     }
     
