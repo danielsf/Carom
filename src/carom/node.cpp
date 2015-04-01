@@ -1202,6 +1202,89 @@ void node::compass_off_diagonal(){
 
 }
 
+int node::findAcceptableCenter(){
+    is_it_safe("findAcceptableCenter");
+
+    array_1d<double> step;
+    step.set_name("node_findAcceptableCenter_step");
+    double norm,dx;
+    
+    dx=1.0e-2;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        norm=-1.0;
+        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
+            norm=_max_found.get_data(i)-_min_found.get_data(i);
+        }
+        if(!(norm>0.0)){
+            norm=_chisquared->get_max(i)-_chisquared->get_min(i);
+        }
+        step.set(i,dx*norm);
+    }
+    
+    int ans=_centerdex;
+    
+    int ix,acceptable,ct,ctmax,locallyAcceptable,iFound;
+    double mu,xtrial;
+    array_1d<double> center;
+    array_1d<double> movement;
+    center.set_name("node_findAcceptableCenter_center");
+    movement.set_name("node_findAcceptableCenter_movement");
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        center.set(i,_chisquared->get_pt(ans,i));
+    }
+    
+    ct=0;
+    ctmax=100;
+    acceptable=0;
+    while(acceptable==0 && ct<ctmax){
+        ct++;
+        for(ix=0;ix<_chisquared->get_dim();ix++){
+            movement.set(ix,0.0);
+            xtrial=center.get_data(ix)+2.0*step.get_data(ix);
+            locallyAcceptable=_chisquared->in_bounds(ix, xtrial);
+            if(locallyAcceptable==0){
+                movement.set(ix,-2.5);
+            }
+            else{
+                xtrial=center.get_data(ix)-2.0*step.get_data(ix);
+                locallyAcceptable=_chisquared->in_bounds(ix,xtrial);
+                if(locallyAcceptable==0){
+                    movement.set(ix,2.5);
+                }
+            }
+        }
+        
+        norm=movement.normalize();
+        if(norm<1.0){
+            acceptable=1;
+        }
+        else{
+        
+            for(i=0;i<_chisquared->get_dim();i++){
+                center.add_val(i,movement.get_data(i)*step.get_data(i));
+            }
+            evaluate(center,&mu,&iFound);
+        
+            if(iFound>=0){
+                ans=iFound;
+            }
+            else{
+                printf("need to abort; new trial center was not in bounds\n");
+                ct=ctmax+1;
+            }
+        }
+        
+    }
+    
+    
+    if(ct>=ctmax){
+        printf("WARNING did not find acceptable center; had to abort because of ct\n");
+    }
+    return ans;
+}
+
 void node::guess_bases(array_2d<double> &bases){
     is_it_safe("guess_bases");
     
@@ -1209,12 +1292,14 @@ void node::guess_bases(array_2d<double> &bases){
     covar.set_name("node_guess_bases_covar");
     covar.set_cols(_chisquared->get_dim());
     bases.set_cols(_chisquared->get_dim());
-    
-    int ix,iy;
+    int ix,iy,localCenter;
     double mu,covarmax=-1.0;
+    
+    localCenter=findAcceptableCenter();
+    
     for(ix=0;ix<_chisquared->get_dim();ix++){
         for(iy=ix;iy<_chisquared->get_dim();iy++){
-            mu=node_second_derivative(_centerdex,ix,iy);
+            mu=node_second_derivative(localCenter,ix,iy);
             if(fabs(mu)>covarmax){
                 covarmax=fabs(mu);
             }
