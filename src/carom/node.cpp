@@ -1521,7 +1521,6 @@ void node::off_center_compass(int iStart){
     }
     
     _off_center_origins.add(iStart); 
-    _off_center_compass_points.reset();
     int ibefore=_chisquared->get_called();
     
     array_1d<double> lowball,highball,trial;
@@ -1772,6 +1771,12 @@ void node::initialize_ricochet(){
     for(i=0;i<_compass_points.get_dim();i++){
         if(_chisquared->get_fn(_compass_points.get_data(i))>0.5*(_chisquared->target()+_chisquared->chimin())){
             _ricochet_candidates.add(_compass_points.get_data(i));
+        }
+    }
+    
+    for(i=0;i<_off_center_compass_points.get_dim();i++){
+        if(_chisquared->get_fn(_off_center_compass_points.get_data(i))>0.5*(_chisquared->target()+_chisquared->chimin())){
+            _ricochet_candidates.add(_off_center_compass_points.get_data(i));
         }
     }
     
@@ -2092,16 +2097,31 @@ void node::kick_particle(int ix, array_1d<double> &dir){
 void node::search(){
 
     ricochet();
-
+    
     if(_ct_simplex<_ct_ricochet){
         simplex_search();
     }
+    
+    array_1d<double> geomCenter;
+    geomCenter.set_name("node_search_geomCenter");
+    int i,iGeom;
+    double mu;
     
     int ibefore;
     if(_chimin_bases-_chimin>0.5*(_chisquared->target()-_chimin_bases)){
         ibefore=_chisquared->get_called();
         compass_search();
         find_bases();
+        for(i=0;i<_chisquared->get_dim();i++){
+            geomCenter.set(i,0.5*(_max_found.get_data(i)+_min_found.get_data(i)));
+        }
+        evaluate(geomCenter,&mu,&iGeom);
+        
+        if(mu<_chisquared->target()){
+            off_center_compass(iGeom);
+        }
+        
+        
         initialize_ricochet();
         _active=1;
         _ct_simplex+=_chisquared->get_called()-ibefore;
