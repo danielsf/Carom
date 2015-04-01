@@ -439,7 +439,7 @@ double node::node_second_derivative_different(int center, int ix, int iy){
     
     int proceed,xpBound,xmBound,ypBound,ymBound;
     
-    dx=1.0e-3;
+    dx=1.0e-2;
     while(ifpp==ifpm || ifpp==ifmp || ifpp==ifmm ||
           ifpm==ifmp || ifpm==ifmm || ifmp==ifmm){
          
@@ -546,7 +546,7 @@ double node::node_second_derivative_same(int center, int ix){
     }
     
     double dx;
-    dx=1.0e-3;
+    dx=1.0e-2;
     
     int ifpp,ifmm;
     double fpp,fmm,xp,xpp,xm,xmm;
