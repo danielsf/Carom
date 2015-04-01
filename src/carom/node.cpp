@@ -1256,7 +1256,7 @@ int node::findAcceptableCenter(){
             }
         }
         
-        norm=movement.normalize();
+        norm=movement.get_square_norm();
         if(norm<1.0){
             acceptable=1;
         }
