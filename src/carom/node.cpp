@@ -34,6 +34,8 @@ void node::initialize(){
     _allowed_ricochet_strikes=4;
     _volume=0.0;
     _since_expansion=0;
+    _min_basis_error=exception_value;
+    _min_basis_error_changed=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -79,6 +81,8 @@ void node::copy(const node &in){
     _ellipse_center=in._ellipse_center;
     _volume=in._volume;
     _since_expansion=in._since_expansion;
+    _min_basis_error=in._min_basis_error;
+    _min_basis_error_changed=in._min_basis_error_changed;
     
     int i,j;
     
@@ -915,7 +919,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
         error+=power(_chisquared->get_fn(_basis_associates.get_data(i))-chi_model,2);
     }
 
-    return error;
+    return error/double(_basis_associates.get_dim());
     
 }
 
@@ -1738,6 +1742,10 @@ void node::find_bases(){
     _min_changed=0;
     _centerdex_basis=_centerdex;
     printf("done finding bases\n");
+    if(errorBest<_min_basis_error){
+        _min_basis_error=errorBest;
+        _min_basis_error_changed=1;
+    }
 }
 
 void node::off_center_compass(int iStart){
@@ -2181,6 +2189,7 @@ void node::initialize_ricochet(){
     }
 
     _volume=volume();
+    _min_basis_error_changed=0;
 
     FILE *output;
     output=fopen("ricochet_particles.sav","w");
@@ -2357,18 +2366,21 @@ void node::search(){
     if(_chimin_bases-_chimin>0.5*(_chisquared->target()-_chimin_bases)){
         ibefore=_chisquared->get_called();
         compass_search();
-        find_bases();
         for(i=0;i<_chisquared->get_dim();i++){
             geomCenter.set(i,0.5*(_max_found.get_data(i)+_min_found.get_data(i)));
         }
+        
         evaluate(geomCenter,&mu,&iGeom);
         
         if(mu<_chisquared->target()){
             off_center_compass(iGeom);
         }
         
+        find_bases();
         
-        initialize_ricochet();
+        if(_min_basis_error_changed==1){
+            initialize_ricochet();
+        }
         _active=1;
         _ct_simplex+=_chisquared->get_called()-ibefore;
     }

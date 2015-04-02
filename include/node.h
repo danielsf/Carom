@@ -38,8 +38,8 @@ private:
     int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
     double _chimin,_chimin_bases,_bisection_tolerance;
     
-    double _volume;
-    int _since_expansion;
+    double _volume,_min_basis_error;
+    int _since_expansion,_min_basis_error_changed;
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;
