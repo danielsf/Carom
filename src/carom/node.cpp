@@ -1259,7 +1259,10 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
     }
     
     for(ix=0;ix<_chisquared->get_dim();ix++){
-        trial.set(ix,center.get_data(ix));
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,center.get_data(i));
+        }
+
         if(_chisquared->get_called()-ibefore>calledMax ||
            ctAbort>=ctAbortMax){
                 printf("Could not find CoVar; aborting\n");
@@ -1316,10 +1319,10 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
             }
         }
         
-        trial.set(ix,center.get_data(ix));
-        
         for(iy=ix-1;iy>=0 && keepGoing==1;iy--){
-            trial.set(iy,center.get_data(iy));
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial.set(i,center.get_data(i));
+            }
             
             if(_chisquared->get_called()-ibefore>calledMax ||
                ctAbort>=ctAbortMax){
@@ -1424,9 +1427,7 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
                     ctAbort++;
                 }
             }
-            
-            trial.set(iy,center.get_data(iy));
-            trial.set(ix,center.get_data(ix));
+
         }
     }
     
