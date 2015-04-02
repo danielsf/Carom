@@ -1202,6 +1202,252 @@ void node::compass_off_diagonal(){
 
 }
 
+void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
+    is_it_safe("findCovarianceMatrix");
+
+
+    array_1d<double> trial,center,norm;
+    trial.set_name("node_findCovar_trial");
+    norm.set_name("node_findCovar_norm");
+    center.set_name("node_findCovar_center");
+    
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        center.set(i,_chisquared->get_pt(iCenter,i));
+        norm.set(i,-1.0);
+        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
+            norm.set(i,_max_found.get_data(i)-_min_found.get_data(i));
+        }
+        if(!(norm.get_data(i)>0.0)){
+            norm.set(i,_chisquared->get_max(i)-_chisquared->get_min(i));
+        }
+    }
+    
+    array_2d<double> fpp,fpm,fmp,fmm;
+    fpp.set_name("node_findCovar_fpp");
+    fpm.set_name("node_findCovar_fpm");
+    fmp.set_name("node_findCovar_fmp");
+    fmm.set_name("node_findCovar_fmm");
+    
+    fpp.set_cols(_chisquared->get_dim());
+    fpm.set_cols(_chisquared->get_dim());
+    fmp.set_cols(_chisquared->get_dim());
+    fmm.set_cols(_chisquared->get_dim());
+    
+    array_1d<double> f2p,f2m;
+    f2p.set_name("node_findCovar_f2p");
+    f2m.set_name("node_findCovar_f2m");
+    
+    int ifpp,ifpm,ifmp,ifmm,if2p,if2m;
+    
+    double mu,fcenter;
+    array_1d<double> dx;
+    dx.set_name("node_findCovar_dx");
+    for(i=0;i<_chisquared->get_dim();i++){
+        dx.set(i,1.0e-2);
+    }
+    
+    int ix,iy,keepGoing,ctAbort,ctAbortMax,calledMax;
+    int ibefore=_chisquared->get_called();
+    
+    ctAbort=0;
+    ctAbortMax=100;
+    calledMax = 10*_chisquared->get_dim()*_chisquared->get_dim();
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,center.get_data(i));
+    }
+    
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        trial.set(ix,center.get_data(ix));
+        if(_chisquared->get_called()-ibefore>calledMax ||
+           ctAbort>=ctAbortMax){
+                printf("Could not find CoVar; aborting\n");
+                printf("ctAbort %d\n",ctAbort);
+                printf("called %d\n",_chisquared->get_called()-ibefore);
+                throw -1;
+        }
+        
+        if(iCenter<0){
+            printf("Center is invalid; aborting\n");
+            throw -1;
+        }
+    
+        keepGoing=1;
+        trial.set(ix,center.get_data(ix)+2.0*dx.get_data(ix)*norm.get_data(ix));
+        evaluate(trial,&mu,&if2p);
+            
+        if(if2p>=0 && if2p!=iCenter){
+            f2p.set(ix,mu);
+        }
+        else if(if2p==iCenter){
+            dx.multiply_val(ix,1.5);
+            keepGoing=0;
+            ix--;
+            ctAbort++;
+        }
+        else if(if2p<0){
+            center.subtract_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
+            evaluate(center,&fcenter,&iCenter);
+            keepGoing=0;
+            ix--;
+            ctAbort++;
+        }
+            
+        if(keepGoing==1){
+            trial.set(ix,center.get_data(ix)-2.0*dx.get_data(ix)*norm.get_data(ix));
+            evaluate(trial,&mu,&if2m);
+        
+            if(if2m>=0 && if2m!=iCenter){
+                f2m.set(ix,mu);
+            }
+            else if(if2m==iCenter){
+                dx.multiply_val(ix,1.5);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+            else if(if2m<0){
+                center.add_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
+                evaluate(center,&fcenter,&iCenter);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+        }
+        
+        trial.set(ix,center.get_data(ix));
+        
+        for(iy=ix-1;iy>=0 && keepGoing==1;iy--){
+            trial.set(iy,center.get_data(iy));
+            
+            if(_chisquared->get_called()-ibefore>calledMax ||
+               ctAbort>=ctAbortMax){
+                printf("Could not find CoVar; aborting\n");
+                printf("ctAbort %d\n",ctAbort);
+                printf("called %d\n",_chisquared->get_called()-ibefore);
+                throw -1;
+            }
+            
+            if(iCenter<0){
+                printf("center is invalid; aborting\n");
+                throw -1;
+            }
+            
+            trial.set(ix,center.get_data(ix)+dx.get_data(ix)*norm.get_data(ix));
+            trial.set(iy,center.get_data(iy)+dx.get_data(iy)*norm.get_data(iy));
+            evaluate(trial,&mu,&ifpp);
+            if(ifpp>=0 && ifpp!=iCenter){
+                fpp.set(ix,iy,mu);
+            }
+            else if(ifpp==iCenter){
+                dx.multiply_val(ix,1.5);
+                dx.multiply_val(iy,1.5);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+            else if(ifpp<0){
+                center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                center.subtract_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                evaluate(center,&fcenter,&iCenter);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+            
+            if(keepGoing==1){
+               trial.set(iy,center.get_data(iy)-dx.get_data(iy)*norm.get_data(iy));
+               evaluate(trial,&mu,&ifpm);
+               if(ifpm>=0 && ifpm!=iCenter){
+                   fpm.set(ix,iy,mu);
+               }
+               else if(ifpm==iCenter){
+                   dx.multiply_val(ix,1.5);
+                   dx.multiply_val(iy,1.5);
+                   keepGoing=0;
+                   ix--;
+                   ctAbort++;
+               }
+               else if(ifpm<0){
+                   center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                   center.add_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                   evaluate(center,&fcenter,&iCenter);
+                   keepGoing=0;
+                   ix--;
+                   ctAbort++;
+               }
+            }
+            
+            if(keepGoing==1){
+                trial.set(ix,center.get_data(ix)-dx.get_data(ix)*norm.get_data(ix));
+                evaluate(trial,&mu,&ifmm);
+                if(ifmm>=0 && ifmm!=iCenter){
+                    fmm.set(ix,iy,mu);
+                }
+                else if(ifmm==iCenter){
+                    dx.multiply_val(ix,1.5);
+                    dx.multiply_val(iy,1.5);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+                else if(ifmm<0){
+                    center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                    center.add_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                    evaluate(center,&fcenter,&iCenter);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+            }
+            
+            if(keepGoing==1){
+                trial.set(iy,center.get_data(iy)+dx.get_data(iy)*norm.get_data(iy));
+                evaluate(trial,&mu,&ifmp);
+                if(ifmp>=0 && ifmp!=iCenter){
+                    fmp.set(ix,iy,mu);
+                }
+                else if(ifmp==iCenter){
+                    dx.multiply_val(ix,1.5);
+                    dx.multiply_val(iy,1.5);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+                else if(ifmp<0){
+                    center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                    center.subtract_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                    evaluate(center,&fcenter,&iCenter);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+            }
+            
+            trial.set(iy,center.get_data(iy));
+            trial.set(ix,center.get_data(ix));
+        }
+    }
+    
+    covar.set_cols(_chisquared->get_dim());
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        covar.set(ix,ix,0.25*(f2p.get_data(ix)+f2m.get_data(ix)-2.0*fcenter)/power(dx.get_data(ix)*norm.get_data(ix),2));
+    }
+    
+    double num,denom;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        for(iy=ix-1;iy>=0;iy--){
+            num=0.25*(fpp.get_data(ix,iy)+fmm.get_data(ix,iy)-fmp.get_data(ix,iy)-fpm.get_data(ix,iy));
+            denom=dx.get_data(ix)*norm.get_data(ix)*dx.get_data(iy)*norm.get_data(iy);
+            covar.set(ix,iy,num/denom);
+            covar.set(iy,ix,num/denom);
+        }
+    }
+    
+
+}
+
 int node::findAcceptableCenter(){
     is_it_safe("findAcceptableCenter");
 
@@ -1292,20 +1538,15 @@ void node::guess_bases(array_2d<double> &bases){
     covar.set_name("node_guess_bases_covar");
     covar.set_cols(_chisquared->get_dim());
     bases.set_cols(_chisquared->get_dim());
-    int ix,iy,localCenter;
-    double mu,covarmax=-1.0;
+    int ix,iy;
+    double covarmax=-1.0;
     
-    localCenter=findAcceptableCenter();
+    findCovarianceMatrix(_centerdex,covar);
     
     for(ix=0;ix<_chisquared->get_dim();ix++){
         for(iy=ix;iy<_chisquared->get_dim();iy++){
-            mu=node_second_derivative(localCenter,ix,iy);
-            if(fabs(mu)>covarmax){
-                covarmax=fabs(mu);
-            }
-            covar.set(ix,iy,mu);
-            if(ix!=iy){
-                covar.set(iy,ix,mu);
+            if(fabs(covar.get_data(ix,iy))>covarmax){
+                covarmax=fabs(covar.get_data(ix,iy));
             }
         }
     }

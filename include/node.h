@@ -64,6 +64,7 @@ private:
     void perturb_bases(int,array_1d<double>&,array_2d<double>&);
     double basis_error(array_2d<double>&,array_1d<double>&);
     int findAcceptableCenter();
+    void findCovarianceMatrix(int,array_2d<double>&);
     void guess_bases(array_2d<double>&);
     void validate_bases(array_2d<double>&, char*);
     void initialize();
