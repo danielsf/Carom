@@ -1211,7 +1211,11 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
     norm.set_name("node_findCovar_norm");
     center.set_name("node_findCovar_center");
     
+    double fcenter;
     int i;
+    
+    fcenter=_chisquared->get_fn(iCenter);
+    
     for(i=0;i<_chisquared->get_dim();i++){
         center.set(i,_chisquared->get_pt(iCenter,i));
         norm.set(i,-1.0);
@@ -1240,7 +1244,7 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
     
     int ifpp,ifpm,ifmp,ifmm,if2p,if2m;
     
-    double mu,fcenter;
+    double mu;
     array_1d<double> dx;
     dx.set_name("node_findCovar_dx");
     for(i=0;i<_chisquared->get_dim();i++){
