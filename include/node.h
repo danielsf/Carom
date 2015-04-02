@@ -48,7 +48,8 @@ private:
     array_1d<double> _max_found,_min_found,_distance_traveled;
     array_2d<double> _basis_vectors,_basis_ddsq;
     
-    array_2d<double> _ricochet_particles,_ricochet_velocities;
+    array_2d<double> _ricochet_velocities;
+    array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_strikes;
     
     asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
