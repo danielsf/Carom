@@ -32,7 +32,6 @@ void node::initialize(){
     _ct_simplex=0;
     _calls_to_ricochet=0;
     _allowed_ricochet_strikes=4;
-    _volume=0.0;
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
@@ -81,7 +80,6 @@ void node::copy(const node &in){
     _calls_to_ricochet=in._calls_to_ricochet;
     _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     _ellipse_center=in._ellipse_center;
-    _volume=in._volume;
     _since_expansion=in._since_expansion;
     _min_basis_error=in._min_basis_error;
     _min_basis_error_changed=in._min_basis_error_changed;
@@ -2200,7 +2198,6 @@ void node::initialize_ricochet(){
         _ricochet_strikes.set(i,0);
     }
 
-    _volume=volume();
     _min_basis_error_changed=0;
 
     FILE *output;
@@ -2382,8 +2379,25 @@ void node::kick_particle(int ix, array_1d<double> &dir){
 }
 
 void node::search(){
-
+    
+    double volume0=volume();
+    int ibefore=_chisquared->get_called();
+    
     ricochet();
+    
+    double volume1=volume();
+    
+    if(volume1>volume0){
+        _since_expansion=0;
+    }
+    else{
+        _since_expansion+=ibefore-_chisquared->get_called();
+    }
+    
+    if(_since_expansion>1000){
+        printf("deactivating because we did not expand\n");
+        _active=0;
+    }
     
     if(_ct_simplex<_ct_ricochet && _failed_simplexes<3){
         simplex_search();
@@ -2394,7 +2408,6 @@ void node::search(){
     int i,iGeom;
     double mu;
     
-    int ibefore;
     if(_chimin_bases-_chimin>0.5*(_chisquared->target()-_chimin_bases)){
         ibefore=_chisquared->get_called();
         compass_search();
@@ -2412,9 +2425,14 @@ void node::search(){
         
         if(_min_basis_error_changed==1){
             initialize_ricochet();
+            _active=1;
         }
-        _active=1;
         _ct_simplex+=_chisquared->get_called()-ibefore;
+    }
+
+    if(_ricochet_particles.get_dim()==0){
+        printf("deactivating because no particles are worth it\n");
+        _active=0;
     }
 
     if(_active==0){
@@ -2535,7 +2553,7 @@ void node::ricochet(){
    
    int ibefore=_chisquared->get_called();
    
-   printf("    starting ricochet with volume %e and pts %d\n",_volume,
+   printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
    
    int ix,i,j,iFound;
@@ -2791,27 +2809,7 @@ void node::ricochet(){
            i--;
        }
    }
-   
-   if(_ricochet_particles.get_dim()==0){
-       printf("deactivating because no particles are worth it\n");
-       _active=0;
-   }
-   
-   double volume1=volume();
 
-   if(volume1>_volume){
-       _volume=volume1;
-       _since_expansion=0;
-   }
-   else{
-       _since_expansion+=_chisquared->get_called()-ibefore;
-   }
- 
-   if(_since_expansion>1000){
-       printf("deactivating because we have not expanded\n");
-       _active=0;
-   }
- 
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
    
@@ -2821,7 +2819,7 @@ void node::ricochet(){
    }
    
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
-   volume1,r_called,_ricochet_particles.get_dim(),totalNeedKick);
+   volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
 }
 
 int node::get_n_particles(){
