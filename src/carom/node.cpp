@@ -647,10 +647,13 @@ void node::node_gradient(int dex, array_1d<double> &grad){
     }
     
     double dx,dxstart;
-    dxstart=1.0e-4;
+    dxstart=1.0e-2;
     
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=_max_found.get_data(i)-_min_found.get_data(i);
+        norm=-1.0;
+        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
+            norm=_max_found.get_data(i)-_min_found.get_data(i);
+        }
         if(!(norm>0.0)){
            norm = _chisquared->get_max(i)-_chisquared->get_min(i);
         }
@@ -667,6 +670,15 @@ void node::node_gradient(int dex, array_1d<double> &grad){
             trial.set(i,x2);
             evaluate(trial,&y2,&if2);
             
+            if(if1<0 && if2>=0){
+                x1=_chisquared->get_pt(dex,i);
+                y1=_chisquared->get_fn(dex);
+            }
+            else if(if2<0 && if1>=0){
+                x2=_chisquared->get_pt(dex,i);
+                y2=_chisquared->get_fn(dex);
+            }
+            
             if(if1!=if2 || (if1<0 && if2<0)){
                 grad.set(i,(y1-y2)/(x1-x2));
                 if(if1<0 && if2<0){
@@ -675,7 +687,7 @@ void node::node_gradient(int dex, array_1d<double> &grad){
                 }
             }
             else{
-                dx*=2.0;
+                dx*=1.5;
             }
         }
         
