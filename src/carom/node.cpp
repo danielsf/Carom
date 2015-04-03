@@ -36,6 +36,7 @@ void node::initialize(){
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
+    _failed_simplexes=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -73,6 +74,7 @@ void node::copy(const node &in){
     _chimin_bases=in._chimin_bases;
     _min_changed=in._min_changed;
     _active=in._active;
+    _failed_simplexes=in._failed_simplexes;
     _found_bases=in._found_bases;
     _ct_ricochet=in._ct_ricochet;
     _ct_simplex=in._ct_simplex;
@@ -2383,7 +2385,7 @@ void node::search(){
 
     ricochet();
     
-    if(_ct_simplex<_ct_ricochet){
+    if(_ct_simplex<_ct_ricochet && _failed_simplexes<3){
         simplex_search();
     }
     
@@ -2432,6 +2434,7 @@ void node::simplex_search(){
     
     printf("    node simplex search\n");
     
+    int center0 = _centerdex;
     int ibefore=_chisquared->get_called();
     
     array_1d<int> dexes;
@@ -2495,6 +2498,12 @@ void node::simplex_search(){
     evaluate(minpt,&mu,&i);
 
     _ct_simplex+=_chisquared->get_called()-ibefore;
+    if(_centerdex==center0){
+        _failed_simplexes++;
+    }
+    else{
+        _failed_simplexes=0;
+    }
     
 }
 
