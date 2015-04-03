@@ -670,13 +670,17 @@ void node::node_gradient(int dex, array_1d<double> &grad){
             trial.set(i,x2);
             evaluate(trial,&y2,&if2);
             
-            if(if1<0 && if2>=0){
-                x1=_chisquared->get_pt(dex,i);
-                y1=_chisquared->get_fn(dex);
-            }
-            else if(if2<0 && if1>=0){
-                x2=_chisquared->get_pt(dex,i);
-                y2=_chisquared->get_fn(dex);
+            if((if1<0 && if2>=0) or (if2<0 && if1>=0)){
+                if(if1<0){
+                    x1=_chisquared->get_pt(dex,i);
+                    y1=_chisquared->get_fn(dex);
+                    if1=dex;
+                }
+                else{
+                    x2=_chisquared->get_pt(dex,i);
+                    y2=_chisquared->get_fn(dex);
+                    if2=dex;
+                }
             }
             
             if(if1!=if2 || (if1<0 && if2<0)){
