@@ -2350,7 +2350,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
 
     array_1d<double> gradient;
     gradient.set_name("node_origin_kick_gradient");
-    _chisquared->find_gradient(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],gradient);
+    node_gradient(_ricochet_particles.get_data(ix),gradient);
     gradient.normalize();
 
     double component=0.0;
@@ -2586,14 +2586,7 @@ void node::ricochet(){
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
        if(_ricochet_strikes.get_data(ix)==0){
-           try{
-               _chisquared->find_gradient(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],gradient);
-           }
-           catch(int iex){
-               printf("ricochet failed to get gradient\n");
-               exit(1);
-               //code to do a brute force gradient if necessary
-           }
+           node_gradient(_ricochet_particles.get_data(ix),gradient);
        
            gnorm=gradient.normalize();
            component=0.0;
