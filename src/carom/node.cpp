@@ -23,7 +23,6 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _centerdex_basis=-1;
-    _gradient_dex=-1;
     _bisection_tolerance=0.01;
     _min_changed=0;
     _active=1;
@@ -68,7 +67,6 @@ void node::initialize(){
 void node::copy(const node &in){
     _centerdex=in._centerdex;
     _centerdex_basis=in._centerdex_basis;
-    _gradient_dex=in._gradient_dex;
     _chimin=in._chimin;
     _chimin_bases=in._chimin_bases;
     _min_changed=in._min_changed;
@@ -239,7 +237,6 @@ int node::get_ct_ricochet(){
 
 void node::set_center(int ix){
     _centerdex=ix;
-    _gradient_dex=ix;
     _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
@@ -359,7 +356,6 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
         if(value[0]<_chimin){
             _chimin=value[0];
             _centerdex=dex[0];
-            _gradient_dex=dex[0];
             _min_changed=1;
         }
         
