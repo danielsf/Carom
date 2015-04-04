@@ -2215,7 +2215,7 @@ void node::initialize_ricochet(){
     fclose(output);
 }
 
-void node::step_kick(int ix, double ratio, array_1d<double> &dir){
+int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
     int i,nearestParticle;
     double x1,x2,ddbest,ddmin,dd;
@@ -2258,8 +2258,7 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
     }
     evaluate(trial,&mu,&iFound);
     if(iFound<0){
-        printf("WARNING step_kick found bad trial\n");
-        exit(1);
+        return 0;
     }
     _ricochet_particles.set(ix,iFound);       
            
@@ -2274,7 +2273,7 @@ void node::step_kick(int ix, double ratio, array_1d<double> &dir){
          }
      }
      dir.normalize();
-     
+     return 1;
      //maybe should try reflecting about the gradient...
 }
 
@@ -2364,7 +2363,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
 
 }
 
-void node::kick_particle(int ix, array_1d<double> &dir){
+int node::kick_particle(int ix, array_1d<double> &dir){
     /*if(_ricochet_strikes.get_data(ix)==1 || _ricochet_candidates.get_dim()==0){
         step_kick(ix,0.9,dir);
     }
@@ -2381,7 +2380,7 @@ void node::kick_particle(int ix, array_1d<double> &dir){
         nSteps=_ricochet_strikes.get_data(ix);
     }
     
-    step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
+    return step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
 }
 
 void node::search(){
@@ -2617,12 +2616,20 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
    
+   int updated;
+   
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
        start_pts.add_row(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
-       if(_ricochet_strikes.get_data(ix)==0){
+       
+       updated=0;
+       if(_ricochet_strikes.get_data(ix)!=0){
+           updated=kick_particle(ix,dir);
+       }
+       
+       if(updated==0){
            node_gradient(_ricochet_particles.get_data(ix),gradient);
        
            gnorm=gradient.normalize();
@@ -2637,9 +2644,7 @@ void node::ricochet(){
        
            dirnorm=dir.normalize();
        }
-       else{
-           kick_particle(ix,dir);
-       }
+       
 
        flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
        for(i=0;i<_chisquared->get_dim();i++){

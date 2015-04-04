@@ -80,8 +80,8 @@ private:
     double ricochet_model(array_1d<double>&, kd_tree&);
     double apply_quadratic_model(array_1d<double>&);
     
-    void kick_particle(int, array_1d<double>&);
-    void step_kick(int, double, array_1d<double>&);
+    int kick_particle(int, array_1d<double>&);
+    int step_kick(int, double, array_1d<double>&);
     void origin_kick(int, array_1d<double>&);
     
     double node_distance(array_1d<double>&, array_1d<double>&);
