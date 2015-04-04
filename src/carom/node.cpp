@@ -2383,7 +2383,7 @@ void node::search(){
     
     double volume1=volume();
     
-    if(volume1>volume0){
+    if(volume1>volume0*1.001){
         _since_expansion=0;
     }
     else{
