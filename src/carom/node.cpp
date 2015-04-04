@@ -2371,15 +2371,6 @@ int node::kick_particle(int ix, array_1d<double> &dir){
         origin_kick(ix,dir);
     }*/
     
-    int nSteps;
-    
-    if(_ricochet_strikes.get_data(ix)>5){
-        nSteps=5;
-    }
-    else{
-        nSteps=_ricochet_strikes.get_data(ix);
-    }
-    
     return step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
 }
 
@@ -2396,10 +2387,10 @@ void node::search(){
         _since_expansion=0;
     }
     else{
-        _since_expansion+=1;
+        _since_expansion+=ibefore-_chisquared->get_called();
     }
     
-    if(_since_expansion>3){
+    if(_since_expansion>1000){
         printf("deactivating because we did not expand\n");
         _active=0;
     }
@@ -2810,7 +2801,7 @@ void node::ricochet(){
        
    }
    
-   /*for(i=0;i<_ricochet_particles.get_dim();i++){
+   for(i=0;i<_ricochet_particles.get_dim();i++){
        if(rejectThis.get_data(i)==1){
            _ricochet_particles.remove(i);
            _ricochet_velocities.remove_row(i);
@@ -2819,7 +2810,7 @@ void node::ricochet(){
            rejectThis.remove(i);
            i--;
        }
-   }*/
+   }
 
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
