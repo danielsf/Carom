@@ -2313,6 +2313,29 @@ int node::gradient_kick(int ix, array_1d<double> &dir){
 
 }
 
+int node::random_kick(int ix, array_1d<double> &dir){
+
+    int i;
+    array_1d<double> trial;
+    trial.set_name("node_random_kick_trial");
+    double ftrial;
+    int iFound;
+    ftrial=2.0*exception_value;
+    while(ftrial>_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+           trial.set(i,_min_found.get_data(i)+_chisquared->random_double()*(_max_found.get_data(i)-_min_found.get_data(i)));
+        }
+        evaluate(trial,&ftrial,&iFound);
+    }
+    _ricochet_particles.set(ix,iFound);
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,_ricochet_velocities.get_data(ix,i));
+    }
+    
+    return 1;
+
+}
+
 int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
     int i,nearestParticle;
@@ -2469,7 +2492,7 @@ int node::kick_particle(int ix, array_1d<double> &dir){
         origin_kick(ix,dir);
     }*/
     
-    return gradient_kick(ix,dir);
+    return random_kick(ix,dir);
 }
 
 void node::search(){
