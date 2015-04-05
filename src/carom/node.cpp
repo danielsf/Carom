@@ -2215,6 +2215,104 @@ void node::initialize_ricochet(){
     fclose(output);
 }
 
+int node::gradient_kick(int ix, array_1d<double> &dir){
+    is_it_safe("gradient_kick");
+
+    int i,nearestParticle;
+    double x1,x2,ddbest,ddmin,dd;
+    nearestParticle=-1;
+    ddmin=1.0e-10;
+    
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_particles.get_data(ix));
+        if(dd>ddmin){
+            if(nearestParticle<0 || dd<ddbest){
+                ddbest=dd;
+                nearestParticle=_ricochet_candidates.get_data(i);
+            }
+        }
+    }
+    
+    int irow;
+    for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
+        if(irow!=_ricochet_discovery_dexes.get_data(ix)){
+            for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
+                dd=node_distance(_ricochet_discoveries.get_data(irow, i),_ricochet_particles.get_data(ix));
+                if(dd>ddmin){
+                    if(nearestParticle<0 || dd<ddbest){
+                        ddbest=dd;
+                        nearestParticle=_ricochet_discoveries.get_data(irow,i);
+                    }
+                }
+            }
+        }
+    }
+
+    array_1d<double> gradient,lowball,highball;
+    gradient.set_name("node_gradient_kick_gradient");
+    lowball.set_name("node_gradient_kick_lowball");
+    highball.set_name("node_gradient_kick_highball");
+    
+    node_gradient(_ricochet_particles.get_data(ix),gradient);
+    double gnorm,flow,fhigh;
+    gnorm=gradient.normalize();
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+        highball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+    }
+    flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
+    
+    fhigh=-2.0*exception_value;
+    while(fhigh<_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.add_val(i,-1.0*gradient.get_data(i));
+        }
+        evaluate(highball,&fhigh,&i);
+        if(fhigh<_chisquared->target()){
+            flow=fhigh;
+            for(i=0;i<_chisquared->get_dim();i++){
+                lowball.set(i,highball.get_data(i));
+            }
+        }
+    }
+    
+    int iFound;
+    iFound=bisection(lowball,flow,highball,fhigh,1);
+    
+    if(iFound<0){
+        printf("WARNING in gradient kick intermediate found negative iFound\n");
+        exit(1);
+    }
+    
+    array_1d<double> trial;
+    trial.set_name("node_gradient_kick_trial");
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_chisquared->get_pt(_ricochet_particles.get_data(ix),i)+_chisquared->get_pt(iFound,i)));
+    }
+    evaluate(trial,&flow,&iFound);
+    
+    if(iFound<0){
+        return 0;
+    }
+    
+    _ricochet_particles.set(ix,iFound);
+    
+    if(nearestParticle>=0){
+         for(i=0;i<_chisquared->get_dim();i++){
+             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(nearestParticle,i));
+         }
+     }
+     else{
+         for(i=0;i<_chisquared->get_dim();i++){
+             dir.set(i,_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+         }
+     }
+     dir.normalize();
+     return 1;
+
+}
+
 int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
     int i,nearestParticle;
@@ -2371,7 +2469,7 @@ int node::kick_particle(int ix, array_1d<double> &dir){
         origin_kick(ix,dir);
     }*/
     
-    return step_kick(ix,(1.0-0.1*_ricochet_strikes.get_data(ix)),dir);
+    return gradient_kick(ix,dir);
 }
 
 void node::search(){
