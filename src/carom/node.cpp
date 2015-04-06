@@ -2416,20 +2416,7 @@ void node::origin_kick(int ix, array_1d<double> &dir){
         }
     }
     
-    array_1d<double> trial;
-    trial.set_name("node_origin_kick_trial");
-    int iFound;
-    
-    for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,_chisquared->get_pt(iChosen,i));
-    }
-    evaluate(trial,&mu,&iFound);
-
-    if(iFound<0){
-        printf("WARNING origin_kick found bad trial\n");
-        exit(1);
-    }
-    _ricochet_particles.set(ix,iFound);
+    _ricochet_particles.set(ix,iChosen);
     
     _ricochet_candidates.remove(iCandidate);
     
