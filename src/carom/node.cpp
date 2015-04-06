@@ -2454,20 +2454,11 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     _ricochet_mu.add(_ricochet_discovery_dexes.get_data(ix),-2.0*exception_value);
     _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),-2);
 
-    array_1d<double> gradient;
-    gradient.set_name("node_origin_kick_gradient");
-    node_gradient(_ricochet_particles.get_data(ix),gradient);
-    gradient.normalize();
-
     double component=0.0;
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(iOrigin,i));
-        component+=dir.get_data(i)*gradient.get_data(i);
     }
     
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.subtract_val(i,2.0*component*gradient.get_data(i));
-    }
 
 }
 
