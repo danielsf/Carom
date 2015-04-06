@@ -2495,10 +2495,10 @@ void node::search(){
         _since_expansion=0;
     }
     else{
-        _since_expansion+=ibefore-_chisquared->get_called();
+        _since_expansion+=_ricochet_particles.get_dim();
     }
     
-    if(_since_expansion>1000){
+    if(_since_expansion>6*_chisquared->get_dim()){
         printf("deactivating because we did not expand\n");
         _active=0;
     }
@@ -2896,7 +2896,12 @@ void node::ricochet(){
        }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-           rejectThis.set(i,1); 
+           if(_ricochet_candidates.get_dim()>0){
+               origin_kick(i,_ricochet_velocities(i)[0]);
+           }
+           else{
+               rejectThis.set(i,1);
+           }
        }
        
        if(iChosen<0 || mu>ddmax){
