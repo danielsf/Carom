@@ -2889,6 +2889,7 @@ void node::ricochet(){
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
            if(_ricochet_candidates.get_dim()>0){
                origin_kick(i,_ricochet_velocities(i)[0]);
+               _ricochet_strikes.set(i,0);
            }
            else{
                rejectThis.set(i,1);
