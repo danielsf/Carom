@@ -101,7 +101,7 @@ void carom::write_pts(){
     fclose(output);
     
     output=fopen(_timingname,"a");
-    fprintf(output,"%d min %e -- timing -- %e %e -- %e %e -- overhead %e -- %d %d %d -- %d %d -- ",
+    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d -- ",
         _chifn.get_called(),
         _chifn.chimin(),
         double(time(NULL))-_time_started,
@@ -114,10 +114,10 @@ void carom::write_pts(){
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim());
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%e %d -- dd ",
-        _nodes(i)->volume(),_nodes(i)->get_n_particles());
+        fprintf(output,"%.4e %d %d -- dd ",
+        _nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates());
         for(j=0;j<_chifn.get_dim();j++){
-            fprintf(output,"%e ",_nodes(i)->distance_traveled(j));
+            fprintf(output,"%.4e ",_nodes(i)->distance_traveled(j));
         }
         fprintf(output,"; ");
     }

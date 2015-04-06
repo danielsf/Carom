@@ -29,6 +29,7 @@ public:
     int get_activity();
     int get_ct_ricochet();
     int get_n_particles();
+    int get_n_candidates();
     
     void print_ricochet_discoveries(char*);
     

@@ -2930,6 +2930,10 @@ int node::get_n_particles(){
     return _ricochet_particles.get_dim();
 }
 
+int node::get_n_candidates(){
+    return _ricochet_candidates.get_dim();
+}
+
 void node::print_ricochet_discoveries(char *nameRoot){
     char outname[letters];
     int i,j,ix;
