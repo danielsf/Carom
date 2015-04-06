@@ -1014,6 +1014,7 @@ void node::compass_search(){
             
             if(iFound>=0){
                 _compass_points.add(iFound);
+                _ricochet_candidates.add(iFound);
                 j=iFound;
                 for(i=0;i<_chisquared->get_dim();i++){
                     trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
@@ -1185,6 +1186,7 @@ void node::compass_off_diagonal(){
                         if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
                         
                         _compass_points.add(iFound);
+                        _ricochet_candidates.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
                             trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
                         }
@@ -1855,6 +1857,7 @@ void node::off_center_compass(int iStart){
             
             if(iFound>=0){
                 _off_center_compass_points.add(iFound);
+                _ricochet_candidates.add(iFound);
             }
             
             if(sgn<0.0 && iFound>=0 && iFound!=iStart){
@@ -2007,7 +2010,7 @@ double node::ricochet_distance(int i1, int i2){
 void node::initialize_ricochet(){
     is_it_safe("initialize_ricochet");
     
-    if(_compass_points.get_dim()==0){
+    if(_ricochet_candidates.get_dim()==0){
         find_bases();
     }
     
@@ -2016,7 +2019,6 @@ void node::initialize_ricochet(){
     _ricochet_strikes.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _distance_traveled.reset();
-    _ricochet_candidates.reset();
     
     array_1d<int> dexes,chosen_particles;
     array_1d<double> dd,ddsorted;
@@ -2030,18 +2032,13 @@ void node::initialize_ricochet(){
     projected_candidates.set_name("node_initialize_ricochet_projected_candidates");
     projected_chosen.set_name("node_initialize_ricochet_projected_chosen");
 
-    for(i=0;i<_compass_points.get_dim();i++){
-        if(_chisquared->get_fn(_compass_points.get_data(i))>0.5*(_chisquared->target()+_chisquared->chimin())){
-            _ricochet_candidates.add(_compass_points.get_data(i));
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        if(_chisquared->get_fn(_ricochet_candidates.get_data(i))<0.5*(_chisquared->target()+_chisquared->chimin())){
+            _ricochet_candidates.remove(i);
+            i--;
         }
     }
-    
-    for(i=0;i<_off_center_compass_points.get_dim();i++){
-        if(_chisquared->get_fn(_off_center_compass_points.get_data(i))>0.5*(_chisquared->target()+_chisquared->chimin())){
-            _ricochet_candidates.add(_off_center_compass_points.get_data(i));
-        }
-    }
-    
+
     if(_ricochet_candidates.get_dim()<2*_chisquared->get_dim()){
         printf("\nBY THE WAY: JUST USING ALL OF THE CANDIDATES FOR RICOCHET\n\n");
         for(i=0;i<_ricochet_candidates.get_dim();i++){
