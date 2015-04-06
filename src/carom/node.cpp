@@ -2479,7 +2479,7 @@ int node::kick_particle(int ix, array_1d<double> &dir){
         origin_kick(ix,dir);
     }*/
     
-    return random_kick(ix,dir);
+    return step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
 }
 
 void node::search(){
