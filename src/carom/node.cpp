@@ -2020,7 +2020,7 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _distance_traveled.reset();
     
-    int nParticles=_chisquared->get_dim();
+    int nParticles=2*_chisquared->get_dim();
     
     array_1d<int> dexes;
     array_1d<double> dmu;
