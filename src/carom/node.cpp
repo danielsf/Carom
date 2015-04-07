@@ -2058,6 +2058,7 @@ void node::initialize_ricochet(){
             
             _ricochet_particles.add(_ricochet_candidates.get_data(iChosen));
             _ricochet_candidates.remove(iChosen);
+            dmu.remove(iChosen);
             i--;
         }
     }
