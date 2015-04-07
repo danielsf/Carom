@@ -30,7 +30,7 @@ void node::initialize(){
     _ct_ricochet=0;
     _ct_simplex=0;
     _calls_to_ricochet=0;
-    _allowed_ricochet_strikes=4;
+    _allowed_ricochet_strikes=3;
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
