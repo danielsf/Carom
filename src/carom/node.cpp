@@ -2020,6 +2020,8 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
     _distance_traveled.reset();
     
+    int nParticles=_chisquared->get_dim();
+    
     array_1d<int> dexes;
     array_1d<double> dmu;
     int i,j,ix,iChosen;
@@ -2034,7 +2036,7 @@ void node::initialize_ricochet(){
         }
     }
 
-    if(_ricochet_candidates.get_dim()<2*_chisquared->get_dim()){
+    if(_ricochet_candidates.get_dim()<nParticles){
         printf("\nBY THE WAY: JUST USING ALL OF THE CANDIDATES FOR RICOCHET\n\n");
         for(i=0;i<_ricochet_candidates.get_dim();i++){
             _ricochet_particles.add(_ricochet_candidates.get_data(i));
@@ -2047,7 +2049,7 @@ void node::initialize_ricochet(){
             ix=_ricochet_candidates.get_data(i);
             dmu.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
         }
-        while(_ricochet_particles.get_dim()<2*_chisquared->get_dim()){
+        while(_ricochet_particles.get_dim()<nParticles){
             iChosen=-1;
             for(i=0;i<_ricochet_candidates.get_dim();i++){
                 if(iChosen<0 || dmu.get_data(i)>dist_best){
