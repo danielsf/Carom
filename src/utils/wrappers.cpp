@@ -222,7 +222,7 @@ void chisq_wrapper::is_it_safe(char *word){
         exit(1);
     }
     
-    if(_adaptive_target==1 && _deltachi<0){
+    if(_adaptive_target==1 && _deltachi<0.0){
         printf("WARNING in chisq_wrapper::%s\n",word);
         printf("adaptive target but deltachi %e\n",_deltachi);
         exit(1);
@@ -253,11 +253,27 @@ double chisq_wrapper::get_deltachi(){
     return _deltachi;
 }
 
-int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
-    is_it_safe("is_valid");
+int chisq_wrapper::in_bounds(int dex, double val){
+    is_it_safe("in_bounds");
+    if(dex<0 || dex>_chifn->get_dim()){
+        printf("WARNING asked for in_bounds on dex %d but %d\n",dex,_chifn->get_dim());
+    }
+    
+    if(_chifn->get_max(dex)>-1.0*exception_value && val>_chifn->get_max(dex)){
+        return 0;
+    }
+    
+    if(_chifn->get_min(dex)<exception_value && val<_chifn->get_min(dex)){
+        return 0;
+    }
+    
+    return 1;
+}
+
+int chisq_wrapper::in_bounds(array_1d<double> &pt){
+    is_it_safe("in_bounds");
     
     int i;
-    neighdex[0]=-1;
     for(i=0;i<pt.get_dim();i++){
         if(_chifn->get_max(i)>-1.0*exception_value && pt.get_data(i)>_chifn->get_max(i)){
             return 0;
@@ -265,6 +281,18 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
         if(_chifn->get_min(i)<exception_value && pt.get_data(i)<_chifn->get_min(i)){
             return 0;
         }
+    }
+    return 1;
+    
+}
+
+int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
+    is_it_safe("is_valid");
+    
+    neighdex[0]=-1;
+    
+    if(in_bounds(pt)==0){
+        return 0;
     }
 
     _kptr->nn_srch(pt,1,_valid_neigh,_valid_dd);
@@ -344,6 +372,11 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
 int chisq_wrapper::get_called(){
     is_it_safe("get_called");
     return _chifn->get_called();
+}
+
+double chisq_wrapper::get_time_spent(){
+    is_it_safe("get_time_spent");
+    return _chifn->get_time_spent();
 }
 
 int chisq_wrapper::get_pts(){
@@ -427,6 +460,28 @@ Ran* chisq_wrapper::get_dice(){
 kd_tree* chisq_wrapper::get_tree(){
     is_it_safe("get_tree");
     return _kptr;
+}
+
+double chisq_wrapper::get_min(int dex){
+    if(dex<=0 or dex>=_range_min.get_dim()){
+        printf("WARNING asked chisq_wrapper for min %d of %d\n",
+        dex,_range_min.get_dim());
+
+        exit(1);
+    }
+    
+    return _range_min.get_data(dex);
+}
+
+double chisq_wrapper::get_max(int dex){
+    if(dex<=0 or dex>=_range_max.get_dim()){
+        printf("WARNING asked chisq_wrapper for max %d of %d\n",
+        dex,_range_max.get_dim());
+        
+        exit(1);
+    }
+    
+    return _range_max.get_data(dex);
 }
 
 void chisq_wrapper::get_min(array_1d<double> &vv){

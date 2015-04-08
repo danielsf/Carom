@@ -17,6 +17,7 @@ public:
     void set_cost(function_wrapper*);
     void set_dice(Ran*);
     void set_minmax(array_1d<double>&, array_1d<double>&);
+    void set_abort_max_factor(int);
     void use_gradient();
     void freeze_temp();
     void unfreeze_temp();
@@ -40,6 +41,8 @@ private:
     void find_il();
     
     void initialize();
+    
+    void is_it_safe(char*);
     
     double _temp,_min_ff,_true_min_ff,_fstar,_fstarstar,_min_temp;
     double _alpha,_beta,_gamma;

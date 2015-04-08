@@ -231,6 +231,11 @@ void invert_lapack(array_2d<double> &matin, array_2d<double> &min, int verb){
 }
 
 void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals, int nev, int n, int order){
+    eval_symm(m,vecs,vals,nev,n,order,-1.0);
+}
+
+void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals,
+int nev, int n, int order, double check){
 //this will use ARPACK to get nev eigenvalues and vectors of a symmetric
 // n-by-n matrix
 //order=1 looks for nev largest eigenvalues
@@ -388,6 +393,41 @@ void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &va
           }
       }
   }
+  
+  array_1d<double> test,control;
+  double dotproduct,err;
+  test.set_name("eval_symm_test");
+  control.set_name("eval_symm_control");
+  if(check>0.0){
+      for(i=0;i<nev;i++){
+          for(j=0;j<n;j++){
+              control.set(j,vecs.get_data(j,i));
+          }
+          
+          for(j=0;j<n;j++){
+              test.set(j,0.0);
+              for(k=0;k<n;k++){
+                  test.add_val(j,m.get_data(j,k)*vecs.get_data(k,i));
+              }
+              test.divide_val(j,vals.get_data(i));
+          }
+          test.normalize();
+          control.normalize();
+          dotproduct=0.0;
+          for(j=0;j<n;j++){
+              dotproduct+=test.get_data(j)*control.get_data(j);
+          }
+          
+          err=fabs(fabs(dotproduct)-1.0);
+          
+          if(err>check){
+              printf("err %e val %e\n",err,vals.get_data(i));
+              throw -1;
+          }
+      }
+      
+  }
+  
 }
 
 

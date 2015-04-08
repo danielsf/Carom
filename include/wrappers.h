@@ -43,6 +43,7 @@ public:
     int get_pts();
     int get_dim();
     virtual int get_called();
+    double get_time_spent();
     
     double random_double();
     int random_int();
@@ -63,11 +64,16 @@ public:
     
     void get_min(array_1d<double>&);
     void get_max(array_1d<double>&);
+    double get_min(int);
+    double get_max(int);
     
     void find_gradient(array_1d<double>&,array_1d<double>&);
     void set_iWhere(int);
     int get_ct_where(int);
     int get_where_log(int);
+
+    int in_bounds(array_1d<double>&);
+    int in_bounds(int, double);
 
     kd_tree* get_tree();
 

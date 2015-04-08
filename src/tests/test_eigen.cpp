@@ -132,8 +132,8 @@ for(iteration=0;iteration<10;iteration++){
     }
     
     try{
-        eval_symm(AA,evecs,evals,dim-2,dim,1);
-        eval_symm(AA,other_evecs,other_evals,2,dim,-1);
+        eval_symm(AA,evecs,evals,dim-2,dim,1,0.01);
+        eval_symm(AA,other_evecs,other_evals,2,dim,-1,0.01);
         
         evals.set(dim-2,other_evals.get_data(0));
         evals.set(dim-1,other_evals.get_data(1));

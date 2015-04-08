@@ -101,19 +101,23 @@ void carom::write_pts(){
     fclose(output);
     
     output=fopen(_timingname,"a");
-    fprintf(output,"%d %e %e -- %d %d %d -- %d %d -- ",
+    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d -- ",
         _chifn.get_called(),
+        _chifn.chimin(),
         double(time(NULL))-_time_started,
         (double(time(NULL))-_time_started)/double(_chifn.get_called()),
+        _chifn.get_time_spent(),
+        _chifn.get_time_spent()/double(_chifn.get_called()),
+        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_called()),
         _chifn.get_ct_where(iSimplex),
         _chifn.get_ct_where(iRicochet),
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim());
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%e %d -- dd ",
-        _nodes(i)->volume(),_nodes(i)->get_n_particles());
+        fprintf(output,"%.4e %d %d -- dd ",
+        _nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates());
         for(j=0;j<_chifn.get_dim();j++){
-            fprintf(output,"%e ",_nodes(i)->distance_traveled(j));
+            fprintf(output,"%.4e ",_nodes(i)->distance_traveled(j));
         }
         fprintf(output,"; ");
     }
@@ -235,7 +239,7 @@ void carom::search(int limit){
         else{
             for(i=0;i<_nodes.get_dim();i++){
                 if(_nodes(i)->get_activity()==1){
-                    _nodes(i)->ricochet();
+                    _nodes(i)->search();
                 }
             }
         }
@@ -283,35 +287,28 @@ void carom::assess_node(int dex){
         return;
     }
     
-    int keep_it,i,ix,so_far_so_good,iFound;
-    double ftrial,dx;
+    int keep_it,i,ix,iFound;
+    double ftrial;
     array_1d<double> trial;
     trial.set_name("carom_assess_node_trial");
     
     keep_it=1;
     for(ix=0;ix<_nodes.get_dim() && keep_it==1;ix++){
-        so_far_so_good=0;
-        for(dx=0.5;dx<0.8 && so_far_so_good==0;dx+=0.5){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,dx*_chifn.get_pt(dex,i)+(1.0-dx)*_chifn.get_pt(_nodes(ix)->get_center(),i));
-            }
-            _chifn.evaluate(trial,&ftrial,&iFound);
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,0.5*_chifn.get_pt(dex,i)+0.5*_chifn.get_pt(_nodes(ix)->get_center(),i));
+        }
+        _chifn.evaluate(trial,&ftrial,&iFound);
+        if(ftrial<_chifn.target()){
+            keep_it=0;
             
-            if(ftrial>_chifn.target()){
-                so_far_so_good=1;
+            if(_chifn.get_fn(dex)<_chifn.get_fn(_nodes(ix)->get_center())){
+                _nodes(ix)->set_center(dex);
             }
         }
-
-        if(so_far_so_good==0){
-            keep_it=0;
-        } 
     }
     
     if(keep_it==1){
         _nodes.add(dex,&_chifn);
-        
-        i=_nodes.get_dim()-1;
-        
     }
     
 }

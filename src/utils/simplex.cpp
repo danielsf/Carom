@@ -42,6 +42,10 @@ void simplex_minimizer::initialize(){
     _last_improved_pts.set_name("simplex_last_improved_pts");
 }
 
+void simplex_minimizer::set_abort_max_factor(int ii){
+    _abort_max_factor=ii;
+}
+
 void simplex_minimizer::set_chisquared(function_wrapper *ff){
     _chisquared=ff;
 }
@@ -246,7 +250,23 @@ double simplex_minimizer::evaluate_cost(array_1d<double> &vv){
     return exp(_temp)*cval;
 }
 
+void simplex_minimizer::is_it_safe(char *word){
+    
+    if(_chisquared==NULL){
+        printf("WARNING in simplex::%s -- _chisquared is NULL\n",word);
+        exit(1);
+    }
+    
+    if(_cost!=NULL){
+        if(_dice==NULL){
+            printf("WARNING in simplex::%s -- _cost is not NULL, but _chisquared is\n",word);
+            exit(1);
+        }
+    }
+}
+
 void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &min_pt){
+    is_it_safe("find_minimum");
 
     if(seed.get_rows()!=seed.get_cols()+1){
         printf("WARNING you gave simplex minimizer %d points of %d dim\n",
