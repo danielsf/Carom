@@ -23,10 +23,10 @@ for(i=0;i<120;i++){
 char inputName[letters],word[letters],outputRoot[letters];
 
 int dim,ncenters,limit=-1;
-double delta_chi;
+double target_chi;
 
 dim=22;
-delta_chi=33.93;
+target_chi=33.93;
 
 for(i=0;i<letters-1 && argv[1][i]!=0;i++){
     inputName[i]=argv[1][i];
@@ -41,7 +41,7 @@ for(i=0;i<letters-1 && argv[2][i]!=0;i++){
 outputRoot[i]=0;
 
 if(iargc>3)dim=atoi(argv[3]);
-if(iargc>4)delta_chi=atof(argv[4]);
+if(iargc>4)target_chi=atof(argv[4]);
 if(iargc>5)limit=atoi(argv[5]);
 
 
@@ -150,7 +150,7 @@ while(fscanf(input,"%le",&nn)>0){
         totalDistChi.add_val(hdex,1);
     }
     
-    if(chival<=delta_chi){
+    if(chival<=target_chi){
         for(i=0;i<dim;i++){
             if(vv.get_data(i)<xmin.get_data(i)){
                 xmin.set(i,vv.get_data(i));
@@ -167,7 +167,7 @@ fclose(input);
 
 aps_extractor apsExtractor;
 apsExtractor.set_filename(inputName);
-apsExtractor.set_delta_chi(delta_chi);
+apsExtractor.set_target(target_chi);
 if(limit>0)apsExtractor.set_cutoff(limit);
 
 char outname[letters];
