@@ -203,11 +203,11 @@ fclose(output);
 
 sprintf(outname,"%s_distributions.sav",outputRoot);
 output=fopen(outname,"w");
-fprintf(output,"#lnchi dN/dlnchi chi dN/dchi\n");
+fprintf(output,"#lnDeltachi dN/dlnchi chi dN/dchi\n");
 for(i=0;i<lnchi_hist.get_dim();i++){
     fprintf(output,"%le %d %le %d\n",
     lnchi_hist.get_data(i),totalDistLnChi.get_data(i),
-    chi_hist.get_data(i),totalDistChi.get_data(i));
+    chi_hist.get_data(i)+chi_min,totalDistChi.get_data(i));
 }
 fclose(output);
 
