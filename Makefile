@@ -1,21 +1,21 @@
-CAROM_HOME = /Users/noldor/physics/nonparametric_cosmology/code_sfd/GitDirectory/Carom/
+CAROM_HOME = /Users/danielsf/physics/Carom/
 
-LAPACK_LIB =-L/Users/noldor/physics/lapack-3.1.1/ -llapack
-BLAS_LIB =-L/Users/noldor/physics/BLAS/ -lblas
+LAPACK_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -llapack
+BLAS_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -lrefblas
 
-ARPACK_LIB = -L/Users/noldor/physics/ARPACK/ -larpack
+ARPACK_LIB = -L/Users/danielsf/physics/ARPACK/ -larpack_MACOSX
 
 FORTRAN_LIB = -lgfortran
 
-CAMB_LIB = -L/Users/noldor/physics/CAMB_110419/camb/ -lcamb
-CAMB_INCLUDE = -I/Users/noldor/physics/CAMB_110419/camb/
+CAMB_LIB = -L/Users/danielsf/physics/CAMB_110419/camb/ -lcamb
+CAMB_INCLUDE = -I/Users/danielsf/physics/CAMB_110419/camb/
 
-CFITSIO_LIB = -L/Users/noldor/physics/cfitsio/ -lcfitsio
+CFITSIO_LIB = -L/Users/danielsf/physics/cfitsio/ -lcfitsio
 
-WMAP_LIB = -L/Users/noldor/physics/WMAP7likelihood/ -lwmap7 -lpthread
-WMAP_INCLUDE = -I/Users/noldor/physics/WMAP7likelihood/
+WMAP_LIB = -L/Users/danielsf/physics/WMAP7likelihood/ -lwmap7 -lpthread
+WMAP_INCLUDE = -I/Users/danielsf/physics/WMAP7likelihood/
 
-R_PATH = /Users/noldor/physics/lib/
+R_PATH = /Users/danielsf/physics/lib/
 
 LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
