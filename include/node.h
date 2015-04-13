@@ -25,12 +25,14 @@ public:
     void ricochet();
     void simplex_search();
     double volume();
+    double projected_volume();
     double distance_traveled(int);
     int get_activity();
     int get_ct_ricochet();
     int get_n_particles();
     int get_n_candidates();
     
+    void project_to_bases(array_1d<double>&,array_1d<double>&);
     void print_ricochet_discoveries(char*);
     
 private:
@@ -47,6 +49,7 @@ private:
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
     array_1d<double> _max_found,_min_found,_distance_traveled;
+    array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
     
     array_2d<double> _ricochet_velocities;
