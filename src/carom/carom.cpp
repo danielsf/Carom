@@ -115,7 +115,7 @@ void carom::write_pts(){
         _calls_to_simplex,_nodes.get_dim());
     for(i=0;i<_nodes.get_dim();i++){
         fprintf(output,"%.4e %d %d -- dd ",
-        _nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates());
+        _nodes(i)->projected_volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates());
         for(j=0;j<_chifn.get_dim();j++){
             fprintf(output,"%.4e ",_nodes(i)->distance_traveled(j));
         }
