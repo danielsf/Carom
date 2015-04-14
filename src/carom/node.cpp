@@ -1695,6 +1695,7 @@ void node::recalibrate_projected_max_min(){
 
     _projected_max.reset();
     _projected_min.reset();
+    _since_expansion=0;
     
     array_1d<double> projected;
     projected.set_name("node_recalibrate_projected");
