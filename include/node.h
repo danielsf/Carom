@@ -33,6 +33,7 @@ public:
     int get_n_candidates();
     
     void project_to_bases(array_1d<double>&,array_1d<double>&);
+    void recalibrate_projected_max_min();
     void print_ricochet_discoveries(char*);
     
 private:

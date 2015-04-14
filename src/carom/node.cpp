@@ -1690,6 +1690,47 @@ void node::project_to_bases(array_1d<double> &in, array_1d<double> &out){
     }
 }
 
+void node::recalibrate_projected_max_min(){
+    is_it_safe("recalibrate_projected_max_min");
+
+    _projected_max.reset();
+    _projected_min.reset();
+    
+    array_1d<double> projected;
+    projected.set_name("node_recalibrate_projected");
+    int i,j;
+    
+    array_1d<int> to_use;
+    to_use.set_name("node_recalibrate_to_use");
+    
+    for(i=0;i<_compass_points.get_dim();i++){
+        to_use.add(_compass_points.get_data(i));
+    }
+    
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        to_use.add(_ricochet_candidates.get_data(i));
+    }
+    
+    for(i=0;i<_ricochet_discoveries.get_rows();i++){
+        for(j=0;j<_ricochet_discoveries.get_cols(i);j++){
+            to_use.add(_ricochet_discoveries.get_data(i,j));
+        }
+    }
+    
+    for(i=0;i<to_use.get_dim();i++){
+        project_to_bases(_chisquared->get_pt(to_use.get_data(i))[0],projected);
+        for(j=0;j<_chisquared->get_dim();j++){
+            if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
+                _projected_min.set(j,projected.get_data(j));
+            }
+            
+            if(j>=_projected_max.get_dim() || projected.get_data(j)>_projected_max.get_data(j)){
+                _projected_max.set(j,projected.get_data(j));
+            }
+        }
+    }
+}
+
 void node::find_bases(){
     is_it_safe("find_bases");
     
@@ -1818,20 +1859,7 @@ void node::find_bases(){
     projected.set_name("node_find_bases_projected");
     
     if(changed_bases==1){
-        _projected_min.reset();
-        _projected_max.reset();
-        for(i=0;i<_compass_points.get_dim();i++){
-            project_to_bases(_chisquared->get_pt(_compass_points.get_data(i))[0],projected);
-            for(j=0;j<_chisquared->get_dim();j++){
-                if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
-                    _projected_min.set(j,projected.get_data(j));
-                }
-            
-                if(j>=_projected_max.get_dim() || projected.get_data(j)>_projected_max.get_data(j)){
-                    _projected_max.set(j,projected.get_data(j));
-                }
-            }
-        }
+        recalibrate_projected_max_min();
     }
    
    
