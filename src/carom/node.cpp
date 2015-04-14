@@ -1827,7 +1827,7 @@ void node::find_bases(){
                     _projected_min.set(j,projected.get_data(j));
                 }
             
-                if(j>=_projected_max.get_dim() || projected.get_data(j)<_projected_max.get_data(j)){
+                if(j>=_projected_max.get_dim() || projected.get_data(j)>_projected_max.get_data(j)){
                     _projected_max.set(j,projected.get_data(j));
                 }
             }
