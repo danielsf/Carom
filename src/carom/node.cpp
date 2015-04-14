@@ -2512,7 +2512,7 @@ void node::search(){
         _since_expansion+=_ricochet_particles.get_dim();
     }
     
-    if(_since_expansion>6*_chisquared->get_dim() && _chisquared->get_called()>30000){
+    if(_since_expansion>6*_chisquared->get_dim()){
         printf("deactivating because we did not expand\n");
         _active=0;
     }
