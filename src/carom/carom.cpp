@@ -99,8 +99,14 @@ void carom::write_pts(){
         fprintf(output,"%.18e 0 0 %d\n",_chifn.get_fn(i),_chifn.get_where_log(i));
     }
     fclose(output);
-    
-    output=fopen(_timingname,"a");
+
+    if(_last_written==0){
+        output=fopen(_timingname,"w");
+    }
+    else{
+        output=fopen(_timingname,"a");
+    }
+
     fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d -- ",
         _chifn.get_called(),
         _chifn.chimin(),
