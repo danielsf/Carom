@@ -2587,7 +2587,19 @@ void node::search(){
     }
 
     if(_active==0){
+        volume0=volume();
+        projectedVolume0=projected_volume();
+
         find_bases();
+
+        volume1=volume();
+        projectedVolume1=projected_volume();
+
+        if(volume1>1.5*volume0 || projectedVolume1>1.5*projectedVolume0){
+            _active=1;
+            initialize_ricochet();
+        }
+
     }
 
 }
