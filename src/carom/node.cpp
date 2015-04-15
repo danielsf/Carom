@@ -2526,15 +2526,19 @@ int node::kick_particle(int ix, array_1d<double> &dir){
 }
 
 void node::search(){
-    
-    double volume0=projected_volume();
+
+    double minExpansionFactor=1.001;
+ 
+    double projectedVolume0=projected_volume(); 
+    double volume0=volume();
     int ibefore=_chisquared->get_called();
     
     ricochet();
     
-    double volume1=projected_volume();
+    double volume1=volume();
+    double projectedVolume1=projected_volume();
     
-    if(volume1>volume0*1.001){
+    if(volume1>volume0*minExpansionFactor || projectedVolume1>projectedVolume0*minExpansionFactor){
         _since_expansion=0;
     }
     else{
