@@ -2388,6 +2388,106 @@ int node::random_kick(int ix, array_1d<double> &dir){
 
 }
 
+int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
+    array_1d<double> radial;
+    radial.set_name("node_smart_step_kick_radial");
+    int i;
+    double mu;
+    for(i=0;i<_chisquared->get_dim();i++){
+        radial.set(i,_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+    }
+    mu=radial.normalize();
+    
+    if(mu<1.0e-20){
+        printf("radial norm in smart_step_kick is small\n");
+        return 0;
+    }
+
+    array_1d<double> trial;
+    trial.set_name("node_smart_step_trial");
+    int iFound;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,ratio*_chisquared->get_pt(_ricochet_particles.get_data(ix),i)+(1.0-ratio)*_chisquared->get_pt(_centerdex,i));
+    }
+    evaluate(trial,&mu,&iFound);
+    
+    if(iFound<0){
+        printf("smart step kick found bogus particle\n");
+        return 0;
+    }
+    
+    _ricochet_particles.set(ix,iFound);
+    
+    array_2d<double> unitSphere;
+    unitSphere.set_name("node_smart_step_kick_unitSphere");
+    int j,k;
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial.set(j,_chisquared->get_pt(_ricochet_candidates.get_data(i),j)-_chisquared->get_pt(_ricochet_particles.get_data(ix),j));
+        }
+        mu=trial.normalize();
+        if(mu>1.0e-20){
+            unitSphere.add_row(trial);
+        }
+    }
+    
+    for(i=0;i<_ricochet_discoveries.get_rows();i++){
+        for(j=0;j<_ricochet_discoveries.get_cols(i);j++){
+            for(k=0;k<_chisquared->get_dim();k++){
+                trial.set(k,_chisquared->get_pt(_ricochet_discoveries.get_data(i,j),k)-_chisquared->get_pt(_ricochet_particles.get_data(ix),k));
+            }
+            mu=trial.normalize();
+            if(mu>1.0e-20){
+                unitSphere.add_row(trial);
+            }
+        }
+    }
+    
+    int nAccepted,nCandidates=200;
+    double dot,dotmax,dotbest;
+    
+    dotbest=2.0*exception_value;
+    nAccepted=0;
+    while(nAccepted<nCandidates){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        trial.normalize();
+        dot=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            dot+=trial.get_data(i)*radial.get_data(i);
+        }
+        if(dot>1.0e-20){
+            nAccepted++;
+            
+            dotmax=-2.0*exception_value;
+            for(i=0;i<unitSphere.get_rows();i++){
+                dot=0.0;
+                for(j=0;j<_chisquared->get_dim();j++){
+                    dot+=trial.get_data(j)*unitSphere.get_data(i,j);
+                }
+                
+                if(dot>dotmax){
+                    dotmax=dot;
+                }
+            }
+            
+            if(dotmax<dotbest){
+                dotbest=dotmax;
+                for(i=0;i<_chisquared->get_dim();i++){
+                    dir.set(i,trial.get_data(i));
+                }
+            }
+            
+        }
+    }
+    
+    return 1;
+    
+
+}
+
 int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
     int i,nearestParticle;
@@ -2522,7 +2622,7 @@ int node::kick_particle(int ix, array_1d<double> &dir){
         origin_kick(ix,dir);
     }*/
     
-    return step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
+    return smart_step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
 }
 
 void node::search(){
