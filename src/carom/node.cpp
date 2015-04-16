@@ -50,6 +50,8 @@ void node::initialize(){
     _basis_lengths.set_name("node_basis_lengths");
     _max_found.set_name("node_max_found");
     _min_found.set_name("node_min_found");
+    _projected_min.set_name("node_projected_min");
+    _projected_max.set_name("node_projected_max");
     _distance_traveled.set_name("node_distance_traveled");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_velocities.set_name("node_ricochet_velocities");
@@ -147,6 +149,16 @@ void node::copy(const node &in){
     _max_found.reset();
     for(i=0;i<in._max_found.get_dim();i++){
         _max_found.set(i,in._max_found.get_data(i));
+    }
+    
+    _projected_min.reset();
+    for(i=0;i<in._projected_min.get_dim();i++){
+        _projected_min.set(i,in._projected_min.get_data(i));
+    }
+    
+    _projected_max.reset();
+    for(i=0;i<in._projected_max.get_dim();i++){
+        _projected_max.set(i,in._projected_max.get_data(i));
     }
     
     _distance_traveled.reset();
@@ -297,6 +309,22 @@ double node::volume(){
     return ans;
 }
 
+double node::projected_volume(){
+    is_it_safe("projected_volume");
+    if(_projected_min.get_dim()!=_chisquared->get_dim() || _projected_max.get_dim()!=_chisquared->get_dim()){
+        return 0.0;
+    }
+    
+    double ans;
+    int i;
+    ans=1.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        ans*=(_projected_max.get_data(i)-_projected_min.get_data(i));
+    }
+    
+    return ans;
+}
+
 void node::set_basis(int ii, int jj, double vv){
     if(_chisquared==NULL){
         printf("WARNING cannot set node basis before assigning _chisquared\n");
@@ -351,6 +379,8 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
     _chisquared->evaluate(pt,value,dex);
     
     int i;
+    array_1d<double> projected;
+    projected.set_name("node_evaluate_projected");
     
     if(dex>=0){
         if(value[0]<_chimin){
@@ -369,6 +399,19 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
                     _max_found.set(i,pt.get_data(i));
                 }
             }
+            
+            project_to_bases(pt,projected);
+            for(i=0;i<projected.get_dim();i++){
+                if(i>=_projected_min.get_dim() || projected.get_data(i)<_projected_min.get_data(i)){
+                    _projected_min.set(i,projected.get_data(i));
+                }
+                
+                if(i>=_projected_max.get_dim() || projected.get_data(i)>_projected_max.get_data(i)){
+                    _projected_max.set(i,projected.get_data(i));
+                }
+            }
+            
+            
         }
         
     }
@@ -819,6 +862,7 @@ void node::validate_bases(array_2d<double> &bases, char *whereami){
     double mu;   
     /////////////////testing
     for(ix=0;ix<_chisquared->get_dim();ix++){
+        bases(ix)->normalize();
         mu=0.0;
         for(i=0;i<_chisquared->get_dim();i++){
             mu+=bases.get_data(ix,i)*bases.get_data(ix,i);
@@ -1626,6 +1670,68 @@ void node::guess_bases(array_2d<double> &bases){
     printf("validated guessed bases\n");
 }
 
+void node::project_to_bases(array_1d<double> &in, array_1d<double> &out){
+    is_it_safe("project_to_bases");
+    int i;
+    
+    if(_basis_vectors.get_rows()!=_chisquared->get_dim()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            out.set(i,in.get_data(i));
+        }
+        return;
+    }
+    
+    int j;
+    for(i=0;i<_chisquared->get_dim();i++){
+        out.set(i,0.0);
+        for(j=0;j<_chisquared->get_dim();j++){
+            out.add_val(i,in.get_data(j)*_basis_vectors.get_data(i,j));
+        }
+    }
+}
+
+void node::recalibrate_projected_max_min(){
+    is_it_safe("recalibrate_projected_max_min");
+
+    _projected_max.reset();
+    _projected_min.reset();
+    _since_expansion=0;
+    
+    array_1d<double> projected;
+    projected.set_name("node_recalibrate_projected");
+    int i,j;
+    
+    array_1d<int> to_use;
+    to_use.set_name("node_recalibrate_to_use");
+    
+    for(i=0;i<_compass_points.get_dim();i++){
+        to_use.add(_compass_points.get_data(i));
+    }
+    
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        to_use.add(_ricochet_candidates.get_data(i));
+    }
+    
+    for(i=0;i<_ricochet_discoveries.get_rows();i++){
+        for(j=0;j<_ricochet_discoveries.get_cols(i);j++){
+            to_use.add(_ricochet_discoveries.get_data(i,j));
+        }
+    }
+    
+    for(i=0;i<to_use.get_dim();i++){
+        project_to_bases(_chisquared->get_pt(to_use.get_data(i))[0],projected);
+        for(j=0;j<_chisquared->get_dim();j++){
+            if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
+                _projected_min.set(j,projected.get_data(j));
+            }
+            
+            if(j>=_projected_max.get_dim() || projected.get_data(j)>_projected_max.get_data(j)){
+                _projected_max.set(j,projected.get_data(j));
+            }
+        }
+    }
+}
+
 void node::find_bases(){
     is_it_safe("find_bases");
     
@@ -1681,6 +1787,7 @@ void node::find_bases(){
             error=basis_error(trial_bases,trial_model);
             printf("guess got error %e\n",error);
             if(error<error0){
+                changed_bases=1;
                 for(i=0;i<_chisquared->get_dim();i++){
                     _basis_model.set(i,trial_model.get_data(i));
                     for(j=0;j<_chisquared->get_dim();j++){
@@ -1748,6 +1855,14 @@ void node::find_bases(){
     if(changed_bases==1){
         compass_search();
     }
+   
+    array_1d<double> projected;
+    projected.set_name("node_find_bases_projected");
+    
+    if(changed_bases==1){
+        recalibrate_projected_max_min();
+    }
+   
    
     _found_bases++;
     _min_changed=0;
@@ -2411,15 +2526,19 @@ int node::kick_particle(int ix, array_1d<double> &dir){
 }
 
 void node::search(){
-    
+
+    double minExpansionFactor=1.001;
+ 
+    double projectedVolume0=projected_volume(); 
     double volume0=volume();
     int ibefore=_chisquared->get_called();
     
     ricochet();
     
     double volume1=volume();
+    double projectedVolume1=projected_volume();
     
-    if(volume1>volume0*1.001){
+    if(volume1>volume0*minExpansionFactor || projectedVolume1>projectedVolume0*minExpansionFactor){
         _since_expansion=0;
     }
     else{
@@ -2468,7 +2587,19 @@ void node::search(){
     }
 
     if(_active==0){
+        volume0=volume();
+        projectedVolume0=projected_volume();
+
         find_bases();
+
+        volume1=volume();
+        projectedVolume1=projected_volume();
+
+        if(volume1>1.5*volume0 || projectedVolume1>1.5*projectedVolume0){
+            _active=1;
+            initialize_ricochet();
+        }
+
     }
 
 }
