@@ -2129,6 +2129,13 @@ void node::initialize_ricochet(){
         find_bases();
     }
     
+    int i;
+    if(_ricochet_particles.get_dim()>0){
+        for(i=0;i<_ricochet_particles.get_dim();i++){
+	    _ricochet_candidates.add(_ricochet_particles.get_data(i));
+	}
+    }
+    
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_strikes.reset();
@@ -2139,7 +2146,7 @@ void node::initialize_ricochet(){
     
     array_1d<int> dexes;
     array_1d<double> dmu;
-    int i,j,ix,iChosen;
+    int j,ix,iChosen;
     double dist,dist_best,dist_local_best;
     dexes.set_name("node_initialize_ricochet_dexes");
     dmu.set_name("node_initialize_ricochet_dmu");
