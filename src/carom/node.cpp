@@ -2704,6 +2704,7 @@ void node::search(){
 
         if(volume1>1.5*volume0 || projectedVolume1>1.5*projectedVolume0){
             _active=1;
+	    _since_expansion=0;
             initialize_ricochet();
         }
 
