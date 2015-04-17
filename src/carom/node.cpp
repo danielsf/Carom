@@ -2467,7 +2467,7 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
         for(i=0;i<_chisquared->get_dim();i++){
             dot+=trial.get_data(i)*radial.get_data(i);
         }
-        if(dot>1.0e-20){
+        if(dot<-1.0e-20){
             nAccepted++;
             
             dotmax=-2.0*exception_value;
