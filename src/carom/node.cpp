@@ -2624,13 +2624,6 @@ void node::origin_kick(int ix, array_1d<double> &dir){
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
-    /*if(_ricochet_strikes.get_data(ix)==1 || _ricochet_candidates.get_dim()==0){
-        step_kick(ix,0.9,dir);
-    }
-    else{
-        origin_kick(ix,dir);
-    }*/
-    
     return step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
 }
 
