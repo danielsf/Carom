@@ -2687,6 +2687,8 @@ void node::search(){
         _active=0;
     }
 
+    double maxDeltaFactor=0.1;
+
     if(_active==0){
         volume0=volume();
         projectedVolume0=projected_volume();
@@ -2696,11 +2698,14 @@ void node::search(){
         volume1=volume();
         projectedVolume1=projected_volume();
 
-        if(volume1>1.5*volume0 || projectedVolume1>1.5*projectedVolume0){
+        if(fabs(volume1-volume0)>maxDeltaFactor*volume0 ||
+           fabs(projectecVolume1-projectedVolume0)>maxDeltaFactor*projectedVolume0){
+           
             initialize_ricochet();
         }
 
     }
+    
 
 }
 
