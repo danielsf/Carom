@@ -30,7 +30,7 @@ void node::initialize(){
     _ct_ricochet=0;
     _ct_simplex=0;
     _calls_to_ricochet=0;
-    _allowed_ricochet_strikes=4;
+    _allowed_ricochet_strikes=3;
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
@@ -2687,23 +2687,8 @@ void node::search(){
         _active=0;
     }
 
-    double maxDeltaFactor=0.1;
-
     if(_active==0){
-        volume0=volume();
-        projectedVolume0=projected_volume();
-
         find_bases();
-
-        volume1=volume();
-        projectedVolume1=projected_volume();
-
-        if(fabs(volume1-volume0)>maxDeltaFactor*volume0 ||
-           fabs(projectedVolume1-projectedVolume0)>maxDeltaFactor*projectedVolume0){
-           
-            initialize_ricochet();
-        }
-
     }
     
 
