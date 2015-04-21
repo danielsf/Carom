@@ -2705,6 +2705,9 @@ void node::search(){
        }
     }
     
+    if(_ricochet_particles.get_dim()==0){
+        _active=0;
+    }
 
 }
 
