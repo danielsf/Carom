@@ -153,3 +153,17 @@ void chain::write_chain(){
     _degeneracy.reset_preserving_room();
     _chisquared.reset_preserving_room();
 }
+
+void chain::copy(const chain &in){
+
+    if(this==&in){
+        return;
+    }
+
+    _points.reset();
+    _degeneracy.reset()
+}
+
+////////////////////array of chains
+
+arrayOfChains::~

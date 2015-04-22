@@ -67,6 +67,9 @@ void node::initialize(){
 }
 
 void node::copy(const node &in){
+    if(this==&in){
+        return;
+    }
     _centerdex=in._centerdex;
     _centerdex_basis=in._centerdex_basis;
     _chimin=in._chimin;

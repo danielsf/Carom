@@ -29,6 +29,7 @@ public:
     void add_point(array_1d<double>&, double);
     
     void write_chain();
+    void copy(const chain&);
 
 private:
 
@@ -42,6 +43,23 @@ private:
     void initialize();
     void verify_dim(int,char*);
     void verify_points(int,char*);
+
+};
+
+class arrayOfChains{
+
+public:
+
+    ~arrayOfChains();
+    arrayOfChains(int,int);
+    void add(array_1d<double>&, mu)
+    void remove(int)
+    chain* operator()(int);
+
+private:
+    chain *_data
+    int _n_chains;
+    int _dim;
 
 };
 
