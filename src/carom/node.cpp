@@ -30,7 +30,7 @@ void node::initialize(){
     _ct_ricochet=0;
     _ct_simplex=0;
     _calls_to_ricochet=0;
-    _allowed_ricochet_strikes=4;
+    _allowed_ricochet_strikes=3;
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
@@ -2129,6 +2129,13 @@ void node::initialize_ricochet(){
         find_bases();
     }
     
+    int i;
+    if(_ricochet_particles.get_dim()>0){
+        for(i=0;i<_ricochet_particles.get_dim();i++){
+	    _ricochet_candidates.add(_ricochet_particles.get_data(i));
+	}
+    }
+    
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_strikes.reset();
@@ -2139,7 +2146,7 @@ void node::initialize_ricochet(){
     
     array_1d<int> dexes;
     array_1d<double> dmu;
-    int i,j,ix,iChosen;
+    int j,ix,iChosen;
     double dist,dist_best,dist_local_best;
     dexes.set_name("node_initialize_ricochet_dexes");
     dmu.set_name("node_initialize_ricochet_dmu");
@@ -2247,6 +2254,8 @@ void node::initialize_ricochet(){
     }
 
     _min_basis_error_changed=0;
+    _since_expansion=0;
+    _active=1;
 
     FILE *output;
     output=fopen("ricochet_particles.sav","w");
@@ -2388,6 +2397,106 @@ int node::random_kick(int ix, array_1d<double> &dir){
 
 }
 
+int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
+    array_1d<double> radial;
+    radial.set_name("node_smart_step_kick_radial");
+    int i;
+    double mu;
+    for(i=0;i<_chisquared->get_dim();i++){
+        radial.set(i,_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+    }
+    mu=radial.normalize();
+    
+    if(mu<1.0e-20){
+        printf("radial norm in smart_step_kick is small\n");
+        return 0;
+    }
+
+    array_1d<double> trial;
+    trial.set_name("node_smart_step_trial");
+    int iFound;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,ratio*_chisquared->get_pt(_ricochet_particles.get_data(ix),i)+(1.0-ratio)*_chisquared->get_pt(_centerdex,i));
+    }
+    evaluate(trial,&mu,&iFound);
+    
+    if(iFound<0){
+        printf("smart step kick found bogus particle\n");
+        return 0;
+    }
+    
+    _ricochet_particles.set(ix,iFound);
+    
+    array_2d<double> unitSphere;
+    unitSphere.set_name("node_smart_step_kick_unitSphere");
+    int j,k;
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial.set(j,_chisquared->get_pt(_ricochet_candidates.get_data(i),j)-_chisquared->get_pt(_ricochet_particles.get_data(ix),j));
+        }
+        mu=trial.normalize();
+        if(mu>1.0e-20){
+            unitSphere.add_row(trial);
+        }
+    }
+    
+    for(i=0;i<_ricochet_discoveries.get_rows();i++){
+        for(j=0;j<_ricochet_discoveries.get_cols(i);j++){
+            for(k=0;k<_chisquared->get_dim();k++){
+                trial.set(k,_chisquared->get_pt(_ricochet_discoveries.get_data(i,j),k)-_chisquared->get_pt(_ricochet_particles.get_data(ix),k));
+            }
+            mu=trial.normalize();
+            if(mu>1.0e-20){
+                unitSphere.add_row(trial);
+            }
+        }
+    }
+    
+    int nAccepted,nCandidates=200;
+    double dot,dotmax,dotbest;
+    
+    dotbest=2.0*exception_value;
+    nAccepted=0;
+    while(nAccepted<nCandidates){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        trial.normalize();
+        dot=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            dot+=trial.get_data(i)*radial.get_data(i);
+        }
+        if(dot<-1.0e-20){
+            nAccepted++;
+            
+            dotmax=-2.0*exception_value;
+            for(i=0;i<unitSphere.get_rows();i++){
+                dot=0.0;
+                for(j=0;j<_chisquared->get_dim();j++){
+                    dot+=trial.get_data(j)*unitSphere.get_data(i,j);
+                }
+                
+                if(dot>dotmax){
+                    dotmax=dot;
+                }
+            }
+            
+            if(dotmax<dotbest){
+                dotbest=dotmax;
+                for(i=0;i<_chisquared->get_dim();i++){
+                    dir.set(i,trial.get_data(i));
+                }
+            }
+            
+        }
+    }
+    
+    return 1;
+    
+
+}
+
 int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
     int i,nearestParticle;
@@ -2515,13 +2624,6 @@ void node::origin_kick(int ix, array_1d<double> &dir){
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
-    /*if(_ricochet_strikes.get_data(ix)==1 || _ricochet_candidates.get_dim()==0){
-        step_kick(ix,0.9,dir);
-    }
-    else{
-        origin_kick(ix,dir);
-    }*/
-    
     return step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
 }
 
@@ -2576,7 +2678,6 @@ void node::search(){
         
         if(_min_basis_error_changed==1){
             initialize_ricochet();
-            _active=1;
         }
         _ct_simplex+=_chisquared->get_called()-ibefore;
     }
@@ -2586,20 +2687,26 @@ void node::search(){
         _active=0;
     }
 
+    double maxDeltaV=0.1;
+
     if(_active==0){
         volume0=volume();
         projectedVolume0=projected_volume();
-
+        
         find_bases();
-
+        
         volume1=volume();
         projectedVolume1=projected_volume();
-
-        if(volume1>1.5*volume0 || projectedVolume1>1.5*projectedVolume0){
-            _active=1;
-            initialize_ricochet();
-        }
-
+        
+        if(fabs(volume0-volume1)>maxDeltaV*volume0 ||
+           fabs(projectedVolume0-projectedVolume1)>maxDeltaV*projectedVolume0){
+       
+           initialize_ricochet();
+       }
+    }
+    
+    if(_ricochet_particles.get_dim()==0){
+        _active=0;
     }
 
 }
@@ -2931,10 +3038,9 @@ void node::ricochet(){
 
        isAStrike=0;
 
-       if(boundsChanged.get_data(i)==0 &&
+       if(boundsChanged.get_data(i)==0 && mu>0.0 &&
            mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
-           mu>0.9*_chisquared->target()+0.1*_chisquared->chimin() &&
-           mu>0.0 ){
+           mu>_chisquared->chimin()){
            
            isAStrike=1;
        }

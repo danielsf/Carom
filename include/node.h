@@ -87,6 +87,7 @@ private:
     
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
+    int smart_step_kick(int, double, array_1d<double>&);
     int gradient_kick(int,array_1d<double>&);
     int random_kick(int,array_1d<double>&);
     void origin_kick(int, array_1d<double>&);
