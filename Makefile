@@ -58,6 +58,9 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
 	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
 
+object/chain.o: src/mcmc/chain.cpp include/mcmc/chain.h
+	$(gg) -c -o object/chain.o src/mcmc/chain.cpp
+
 object/camb_wrapper_wmap.o: likelihoods/camb_wrapper_wmap.F90
 	$(ff) -c -o object/camb_wrapper_wmap.o likelihoods/camb_wrapper_wmap.F90 $(CAMB_INCLUDE)
 

@@ -14,7 +14,7 @@ void chain::initialize(){
 void chain::set_dim(int ii){
     _dim=ii;
     _points.reset();
-    _degneracy.reset();
+    _degeneracy.reset();
     _chisquared.reset();
     
     _points.set_cols(_dim);
@@ -29,7 +29,7 @@ void chain::set_output_name(char *nn){
 }
 
 chain::chain(){
-    intialize();    
+    initialize();    
 }
 
 chain::chain(int ii){
@@ -161,9 +161,111 @@ void chain::copy(const chain &in){
     }
 
     _points.reset();
-    _degeneracy.reset()
+    _degeneracy.reset();
+    _chisquared.reset();
+    
+    _dim=in._dim;
+    _n_written=in._n_written;
+    int i,j;
+    for(i=0;i<letters;i++){
+        _output_name[i]=in._output_name[i];
+    }
+    
+    _points.set_cols(_dim);
+    for(i=0;i<in._points.get_rows();i++){
+        _degeneracy.set(i,in._degeneracy.get_data(i));
+        _chisquared.set(i,in._chisquared.get_data(i));
+        for(j=0;j<_dim;j++){
+            _points.set(i,j,in._points.get_data(i,j));
+        }
+    }
 }
 
 ////////////////////array of chains
 
-arrayOfChains::~
+arrayOfChains::~arrayOfChains(){
+    if(_data!=NULL){
+        delete [] _data;
+    }
+}
+
+void arrayOfChains::initialize(int nChains, int dim){
+    _dim=dim;
+    _n_chains=nChains;
+    
+    _data = new chain[_n_chains];
+    
+    int i;
+    for(i=0;i<_n_chains;i++){
+        _data[i].set_dim(_dim);
+    }
+    
+}
+
+arrayOfChains::arrayOfChains(int nChains, int dim){
+    initialize(nChains,dim);
+}
+
+arrayOfChains::arrayOfChains(array_2d<double> &pts, array_1d<double> &chisq){
+    initialize(pts.get_rows(),pts.get_cols());
+    
+    int i;
+    for(i=0;i<_n_chains;i++){
+        _data[i].add_point(pts(i)[0],chisq.get_data(i));
+    }
+}
+
+void arrayOfChains::verify_chains(int dex, char *routine){
+    if(dex<0 || dex>=_n_chains){
+        printf("WARNING arrayOfChains::%s",routine);
+        printf("asked for %d but _n_chains %d\n",dex,_n_chains);
+        exit(1);
+    }
+}
+
+chain* arrayOfChains::operator()(int dex){
+    verify_chains(dex,"operator");
+    return &_data[dex];
+}
+
+void arrayOfChains::add(array_1d<double> &pt, double mu){
+    chain *buffer;
+    buffer=new chain[_n_chains];
+    
+    int i;
+    for(i=0;i<_n_chains;i++){
+        buffer[i].copy(_data[i]);
+    }
+    delete [] _data;
+
+    _data=new chain[_n_chains+1];
+    for(i=0;i<_n_chains;i++){
+        _data[i].copy(buffer[i]);
+    }
+    delete [] buffer;
+    
+    _data[_n_chains].set_dim(_dim);
+    _data[_n_chains].add_point(pt,mu);
+    _n_chains++;
+}
+
+void arrayOfChains::remove(int dex){
+    verify_chains(dex,"remove");
+    chain *buffer;
+    buffer=new chain[_n_chains-1];
+    int i,j;
+    for(i=0,j=0;i<_n_chains;i++){
+        if(i!=dex){
+            buffer[j].copy(_data[i]);
+            j++;
+        }
+    }
+    delete [] _data;
+    _n_chains--;
+    _data=new chain[_n_chains];
+    for(i=0;i<_n_chains;i++){
+        _data[i].copy(buffer[i]);
+    }
+    delete [] buffer;
+    
+}

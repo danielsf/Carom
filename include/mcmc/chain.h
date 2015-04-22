@@ -52,14 +52,18 @@ public:
 
     ~arrayOfChains();
     arrayOfChains(int,int);
-    void add(array_1d<double>&, mu)
-    void remove(int)
+    arrayOfChains(array_2d<double>&, array_1d<double>&);
+    void add(array_1d<double>&, double);
+    void remove(int);
     chain* operator()(int);
 
 private:
-    chain *_data
-    int _n_chains;
+    chain *_data;
+    int _n_chains,_room;
     int _dim;
+
+    void initialize(int,int);
+    void verify_chains(int,char*);
 
 };
 
