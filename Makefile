@@ -61,7 +61,8 @@ object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/k
 object/chain.o: src/mcmc/chain.cpp include/mcmc/chain.h
 	$(gg) -c -o object/chain.o src/mcmc/chain.cpp
 
-object/mcmc.o: src/mcmc/mcmc.cpp include/mcmc/mcmc.h object/chisq.o object/simplex.o object/eigen_wrapper.o
+object/mcmc.o: src/mcmc/mcmc.cpp include/mcmc/mcmc.h object/chain.o object/chisq.o \
+object/simplex.o object/eigen_wrapper.o
 	$(gg) -c -o object/mcmc.o src/mcmc/mcmc.cpp
 
 object/camb_wrapper_wmap.o: likelihoods/camb_wrapper_wmap.F90
@@ -123,6 +124,18 @@ object/wmap_likelihood_function.o
 	object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
+
+wmap7mcmc: src/examples/wmap7_mcmc_example.cpp object/mcmc.o \
+object/wmap_likelihood_function.o
+	$(gg) -o bin/wmap7mcmc src/examples/wmap7_mcmc_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
+	object/wmap_likelihood_function.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/chain.o object/mcmc.o \
+	$(WMAP_LIBRARIES) \
+	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
+
 
 wmap7_2d: src/examples/wmap7_2d_example.cpp object/carom.o \
 object/wmap_likelihood_function.o

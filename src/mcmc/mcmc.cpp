@@ -113,6 +113,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     f_min.set_chisquared(_chisq);
     f_min.find_minimum(seed, center);
     fcenter=f_min.get_minimum();
+    _min_val=fcenter;
     
     for(i=0;i<_chisq->get_dim();i++){
         norm.set(i,max.get_data(i)-min.get_data(i));
@@ -355,7 +356,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
 }
 
 
-void mcmc::guess_bases(array_2d<double> &bases){
+void mcmc::find_fisher_eigen(array_2d<double> &bases){
     
     array_2d<double> covar;
     covar.set_name("mcmc_guess_bases_covar");
@@ -485,4 +486,50 @@ void mcmc::bisection(array_1d<double> &lowball_in, double flow, array_1d<double>
     }
 
 }
- 
+
+void mcmc::guess_bases(){
+
+    array_2d<double> temp_bases;
+    temp_bases.set_name("mcmc_guess_bases_temp_bases");
+    
+    int i,j;
+    
+    try{
+        find_fisher_eigen(temp_bases);
+        for(i=0;i<_chisq->get_dim();i++){
+            for(j=0;j<_chisq->get_dim();j++){
+                _bases.set(i,j,temp_bases.get_data(i,j));
+            }
+        }
+    }
+    catch(int iex){
+        printf("guessing bases failed %d\n",_chisq->get_called());
+        return;
+    }
+
+    array_1d<double> temp_dir,temp_pt;
+    temp_dir.set_name("mcmc_guess_bases_temp_dir");
+    temp_pt.set_name("mcmc_guess_bases_temp_pt");
+    
+    int ix;
+    double sgn,dd,d;
+    for(ix=0;ix<_chisq->get_dim();ix++){
+        dd=0.0;
+        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            for(i=0;i<_chisq->get_dim();i++){
+                temp_dir.set(i,sgn*_bases.get_data(ix,i));
+            }
+            bisection(_centerpt,_min_val,temp_dir,temp_pt);
+            
+            d=0.0;
+            for(i=0;i<_chisq->get_dim();i++){
+                d+=power(_centerpt.get_data(i)-temp_pt.get_data(i),2);
+            }
+            dd+=sqrt(d);
+            
+        }
+        _sigma.set(ix,dd/6.0);
+    }
+    
+    printf("finished guessing bases; %d\n",_chisq->get_called());
+} 

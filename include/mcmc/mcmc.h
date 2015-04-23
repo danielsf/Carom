@@ -17,6 +17,7 @@ public:
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
+    void guess_bases();
 
 private:
 
@@ -30,10 +31,10 @@ private:
     char _name_root[letters];
 
     int _burn_in,_last_set;
-    double _max_covar,_covar_lim;
+    double _max_covar,_covar_lim,_min_val;
 
     void initialize();
-    void guess_bases(array_2d<double>&);
+    void find_fisher_eigen(array_2d<double>&);
     void find_fisher_matrix(array_2d<double>&, array_1d<double>&);
     void bisection(array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
 
