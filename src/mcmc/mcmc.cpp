@@ -540,6 +540,7 @@ void mcmc::guess_bases(){
 
     array_2d<double> temp_bases;
     temp_bases.set_name("mcmc_guess_bases_temp_bases");
+    temp_bases.set_cols(_chisq->get_dim());
     
     int i,j;
     
