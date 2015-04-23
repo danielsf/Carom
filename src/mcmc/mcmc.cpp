@@ -147,6 +147,11 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     double tol=1.0e-10;
     double dCenter;
     
+    int abortValue,abortProx;
+    
+    abortValue=0;
+    abortProx=0;
+    
     ctAbort=0;
     ctAbortMax=100;
     calledMax = 10*_chisq->get_dim()*_chisq->get_dim();
@@ -163,7 +168,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
         if(_chisq->get_called()-ibefore>calledMax ||
            ctAbort>=ctAbortMax){
                 printf("Could not find CoVar; aborting\n");
-                printf("ctAbort %d\n",ctAbort);
+                printf("ctAbort %d -- %d %d\n",ctAbort,abortValue,abortProx);
                 printf("called %d\n",_chisq->get_called()-ibefore);
                 throw -1;
         }
@@ -186,6 +191,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
             keepGoing=0;
             ix--;
             ctAbort++;
+            abortValue++;
         }
         else{
             center.subtract_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
@@ -193,6 +199,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
             keepGoing=0;
             ix--;
             ctAbort++;
+            abortProx++;
         }
             
         if(keepGoing==1){
@@ -208,6 +215,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                 keepGoing=0;
                 ix--;
                 ctAbort++;
+                abortValue++;
             }
             else{
                 center.add_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
@@ -215,6 +223,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                 keepGoing=0;
                 ix--;
                 ctAbort++;
+                abortProx++;
             }
         }
         
@@ -226,7 +235,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
             if(_chisq->get_called()-ibefore>calledMax ||
                ctAbort>=ctAbortMax){
                 printf("Could not find CoVar; aborting\n");
-                printf("ctAbort %d\n",ctAbort);
+                printf("ctAbort %d -- %d %d\n",ctAbort,abortValue,abortProx);
                 printf("called %d\n",_chisq->get_called()-ibefore);
                 throw -1;
             }
@@ -249,6 +258,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                 keepGoing=0;
                 ix--;
                 ctAbort++;
+                abortValue++;
             }
             else{
                 center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
@@ -257,6 +267,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                 keepGoing=0;
                 ix--;
                 ctAbort++;
+                abortProx++;
             }
             
             if(keepGoing==1){
@@ -272,6 +283,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                    keepGoing=0;
                    ix--;
                    ctAbort++;
+                   abortValue++;
                }
                else{
                    center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
@@ -280,6 +292,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                    keepGoing=0;
                    ix--;
                    ctAbort++;
+                   abortProx++;
                }
             }
             
@@ -296,6 +309,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                     keepGoing=0;
                     ix--;
                     ctAbort++;
+                    abortValue++;
                 }
                 else{
                     center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
@@ -304,6 +318,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                     keepGoing=0;
                     ix--;
                     ctAbort++;
+                    abortProx++;
                 }
             }
             
@@ -320,6 +335,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                     keepGoing=0;
                     ix--;
                     ctAbort++;
+                    abortValue++;
                 }
                 else{
                     center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
@@ -328,6 +344,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
                     keepGoing=0;
                     ix--;
                     ctAbort++;
+                    abortProx++;
                 }
             }
 
