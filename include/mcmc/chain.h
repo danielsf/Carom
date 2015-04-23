@@ -23,6 +23,7 @@ public:
     int get_current_degeneracy();
     
     int get_points();
+    int get_rows();
     int get_dim();
     double get_point(int,int);
     double get_chisquared(int);
@@ -68,11 +69,16 @@ public:
     arrayOfChains();
     arrayOfChains(int,int,Ran*);
     arrayOfChains(array_2d<double>&, array_1d<double>&,Ran*);
+
     int get_n_chains();
+    void get_covariance_matrix(double,int,array_2d<double>&);
+
     void initialize(int,int,Ran*);
+
     void add(array_1d<double>&, double);
     void add(array_2d<double>&, array_1d<double>&);
     void remove(int);
+
     chain* operator()(int);
 
 private:

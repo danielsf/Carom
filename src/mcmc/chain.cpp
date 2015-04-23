@@ -108,6 +108,15 @@ int chain::get_current_degeneracy(){
 }
 
 int chain::get_points(){
+    int i,ans;
+    ans=0;
+    for(i=0;i<_degeneracy.get_dim();i++){
+        ans+=_degeneracy.get_data(i);
+    }
+    return ans;
+}
+
+int chain::get_rows(){
     return _points.get_rows();
 }
 
@@ -222,7 +231,7 @@ void chain::copy(const chain &in){
 }
 
 void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output){
-    output.reset();
+    output.reset_preserving_room();
     int ct,i,currentDegen,ctStart;
     
     ct=0;
@@ -500,4 +509,84 @@ void arrayOfChains::remove(int dex){
         delete [] buffer;
     }
     
+}
+
+void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, array_2d<double> &covar){
+
+    int i,j,thinby,thinbyMax,burnin;
+    
+    thinbyMax=-1;
+    for(i=0;i<_n_chains;i++){
+        if(burninDenom>1){
+            burnin=_data[i].get_points()/burninDenom;
+        }
+        else{
+            burnin=0;
+        }
+        thinby=_data[i].get_thinby(threshold,burnin,10);
+        
+        if(thinby>thinbyMax){
+            thinbyMax=thinby;
+        }
+    }
+
+    array_1d<int> dexes,tags,temp_dexes;
+    dexes.set_name("arrayOfChains_get_covar_dexes");
+    tags.set_name("arrayOfChains_get_covar_tags");
+    temp_dexes.set_name("arrayOfChains_get_covar_temp_dexes");
+    
+    for(i=0;i<_n_chains;i++){
+        if(burninDenom>1){
+            burnin=_data[i].get_points()/burninDenom;
+        }
+        else{
+            burnin=0;
+        }
+        _data[i].get_thinned_indices(thinbyMax,burnin,temp_dexes);
+        for(j=0;j<temp_dexes.get_dim();j++){
+            dexes.add(temp_dexes.get_data(j));
+            tags.add(i);
+        }
+    }
+    
+    array_1d<double> means;
+    means.set_name("arrayOfchains_get_covar_means");
+    means.set_dim(_dim);
+    means.zero();
+    for(i=0;i<dexes.get_dim();i++){
+        for(j=0;j<_dim;j++){
+            means.add_val(j,_data[tags.get_data(i)].get_point(dexes.get_data(i),j));
+        }
+    }
+    
+    for(i=0;i<_dim;i++){
+        means.divide_val(i,double(dexes.get_dim()));
+    }
+    
+    covar.reset();
+    covar.set_dim(_dim,_dim);
+    covar.zero();
+    
+    int iChain,iPt,ix,iy;
+    for(i=0;i<dexes.get_dim();i++){
+        iChain=tags.get_data(i);
+        iPt=dexes.get_data(i);
+        for(ix=0;ix<_dim;ix++){
+            for(iy=ix;iy<_dim;iy++){
+                covar.add_val(ix,iy,(means.get_data(ix)-_data[iChain].get_point(iPt,ix))*
+                                    (means.get_data(iy)-_data[iChain].get_point(iPt,iy)));
+            
+            }
+        }
+    }
+    
+    for(ix=0;ix<_dim;ix++){
+        for(iy=ix;iy<_dim;iy++){
+            covar.divide_val(ix,iy,double(dexes.get_dim()-1));
+            if(ix!=iy){
+                covar.set(iy,ix,covar.get_data(ix,iy));
+            }
+        }
+    }
+
 }

@@ -74,7 +74,7 @@ double mcmc::acceptance_rate(){
     ct=0;
     rows=0;
     for(ichain=0;ichain<_chains.get_n_chains();ichain++){
-        for(ipt=0;ipt<_chains(ichain)->get_points();ipt++){
+        for(ipt=0;ipt<_chains(ichain)->get_rows();ipt++){
             rows++;
             ct+=_chains(ichain)->get_degeneracy(ipt);
         }
