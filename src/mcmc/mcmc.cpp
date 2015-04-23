@@ -1,8 +1,8 @@
 #include "mcmc/mcmc.h"
 
 mcmc::~mcmc(){
-   if(dice!=NULL){
-       delete dice;
+   if(_dice!=NULL){
+       delete _dice;
    }
 }
 
@@ -33,14 +33,14 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
     initialize();
     
     if(seed<0){
-        dice=new Ran(int(time(NULL)));
+        _dice=new Ran(int(time(NULL)));
     }
     else{
-        dice=new Ran(seed);
+        _dice=new Ran(seed);
     }
     
     _chisq=fn;
-    _chains.initialize(nchains,_chisq->get_dim());
+    _chains.initialize(nchains,_chisq->get_dim(),_dice);
     
     _bases.set_cols(_chisq->get_dim());
     int i,j;
@@ -112,7 +112,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
         }
         
         for(j=0;j<_chisq->get_dim()+1;j++){
-            seed.set(j,i,min.get_data(i)+dice->doub()*(max.get_data(i)-min.get_data(i)));
+            seed.set(j,i,min.get_data(i)+_dice->doub()*(max.get_data(i)-min.get_data(i)));
         }
     }
     
@@ -542,10 +542,6 @@ void mcmc::bisection(array_1d<double> &lowball_in, double flow, array_1d<double>
 
 void mcmc::guess_bases(int seedPoints){
 
-    if(dice==NULL){
-        dice=new Ran(42);
-    }
-
     array_2d<double> temp_bases;
     temp_bases.set_name("mcmc_guess_bases_temp_bases");
     temp_bases.set_cols(_chisq->get_dim());
@@ -606,7 +602,7 @@ void mcmc::guess_bases(int seedPoints){
                 for(j=0;j<_chisq->get_dim();j++)temp_pt.set(j,center.get_data(j));
                 
                 for(j=0;j<_chisq->get_dim();j++){
-                    d=normal_deviate(dice,0.0,2.0*_sigma.get_data(j));
+                    d=normal_deviate(_dice,0.0,2.0*_sigma.get_data(j));
                     for(k=0;k<_chisq->get_dim();k++){
                         temp_pt.add_val(k,d*_bases.get_data(j,k));
                     }

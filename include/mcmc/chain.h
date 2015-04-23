@@ -14,6 +14,7 @@ public:
     chain(int, char*);
     
     void set_dim(int);
+    void set_dice(Ran*);
     void set_output_name(char*);
     
     double get_current_point(int);
@@ -37,6 +38,8 @@ private:
     array_2d<double> _points;
     array_1d<int> _degeneracy;
     array_1d<double> _chisquared;
+
+    Ran *_dice;
     
     char _output_name[letters];
 
@@ -55,7 +58,7 @@ public:
     arrayOfChains(int,int);
     arrayOfChains(array_2d<double>&, array_1d<double>&);
     int get_n_chains();
-    void initialize(int,int);
+    void initialize(int,int,Ran*);
     void add(array_1d<double>&, double);
     void add(array_2d<double>&, array_1d<double>&);
     void remove(int);
@@ -63,6 +66,7 @@ public:
 
 private:
     chain *_data;
+    Ran *_dice;
     int _n_chains;
     int _dim;
 

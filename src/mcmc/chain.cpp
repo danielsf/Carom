@@ -20,6 +20,10 @@ void chain::set_dim(int ii){
     _points.set_cols(_dim);
 }
 
+void chain::set_dice(Ran *dd){
+   _dice=dd;
+}
+
 void chain::set_output_name(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
@@ -163,6 +167,7 @@ void chain::copy(const chain &in){
     _points.reset();
     _degeneracy.reset();
     _chisquared.reset();
+    _dice=in._dice;
     
     _dim=in._dim;
     _n_written=in._n_written;
@@ -195,15 +200,17 @@ arrayOfChains::arrayOfChains(){
     _dim=0;
 }
 
-void arrayOfChains::initialize(int nChains, int dim){
+void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     _dim=dim;
     _n_chains=nChains;
+    _dice=dice;
     
     _data = new chain[_n_chains];
     
     int i;
     for(i=0;i<_n_chains;i++){
         _data[i].set_dim(_dim);
+        _data[i].set_dice(_dice);
     }
     
 }
@@ -270,6 +277,7 @@ void arrayOfChains::add(array_1d<double> &pt, double mu){
     }
     
     _data[_n_chains].set_dim(_dim);
+    _data[_n_chains].set_dice(_dice);
     _data[_n_chains].add_point(pt,mu);
     _n_chains++;
 }
@@ -309,6 +317,7 @@ void arrayOfChains::add(array_2d<double> &pts, array_1d<double> &mu){
     for(i=0;i<pts.get_rows();i++){
         j=_n_chains+i;
         _data[j].set_dim(_dim);
+        _data[j].set_dice(_dice);
         _data[j].add_point(pts(i)[0],mu.get_data(i));
     }
     
