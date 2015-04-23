@@ -138,7 +138,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     array_1d<double> dx;
     dx.set_name("mcmc_find_fisher_dx");
     for(i=0;i<_chisq->get_dim();i++){
-        dx.set(i,1.0e-2);
+        dx.set(i,1.0e-4);
     }
     
     int ix,iy,keepGoing,ctAbort,ctAbortMax,calledMax;
