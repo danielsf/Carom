@@ -22,8 +22,6 @@ void mcmc::initialize(){
     _chisq = NULL;
     _burn_in=1000;
     _last_set=0;
-    _max_covar=-2.0*exception_value;
-    _covar_lim=0.1;
     _dice=NULL;
     
     sprintf(_name_root,"chain");
@@ -63,12 +61,6 @@ void mcmc::set_burn_in(int ii){
     _burn_in=ii;
 }
 
-void mcmc::set_covar_lim(double dd){
-    //_covar_lim will be the value of _max_covar at which we are satisfied
-    //with the bases
-    _covar_lim=dd;
-}
-
 void mcmc::set_name_root(char *word){
     int i;
     for(i=0;i<letters-10 && word[i]!=0;i++){
@@ -76,6 +68,22 @@ void mcmc::set_name_root(char *word){
     }
     _name_root[i]=0;
 }
+
+double mcmc::acceptance_rate(){
+    int ichain,ipt,ct,rows;
+    ct=0;
+    rows=0;
+    for(ichain=0;ichain<_chains.get_n_chains();ichain++){
+        for(ipt=0;ipt<_chains(ichain)->get_points();ipt++){
+            rows++;
+            ct+=_chains(ichain)->get_degeneracy(ipt);
+        }
+    }
+    
+    return double(rows)/double(ct);
+    
+}
+
 
 void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut, double *minOut){
 

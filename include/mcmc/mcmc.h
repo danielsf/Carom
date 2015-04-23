@@ -18,6 +18,7 @@ public:
     void set_min(int,double);
     void set_max(int,double);
     void guess_bases(int);
+    double acceptance_rate();
 
 private:
 
@@ -31,7 +32,6 @@ private:
     char _name_root[letters];
 
     int _burn_in,_last_set;
-    double _max_covar,_covar_lim;
 
     void initialize();
     void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
