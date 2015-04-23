@@ -8,7 +8,7 @@ wmap_likelihood::wmap_likelihood() : chisquared(6){}
 
 wmap_likelihood::~wmap_likelihood(){}
 
-double wmap_likelihood::operator()(array_1d<double> &v) const{
+double wmap_likelihood::operator()(array_1d<double> &v){
 
   //this is the function that calls the likelihood function
   //to evaluate chi squared
@@ -90,7 +90,7 @@ wmap_2d_likelihood::wmap_2d_likelihood() : chisquared(2){}
 
 wmap_2d_likelihood::~wmap_2d_likelihood(){}
 
-double wmap_2d_likelihood::operator()(array_1d<double> &pt) const{
+double wmap_2d_likelihood::operator()(array_1d<double> &pt){
 
    double before=double(time(NULL));
    int i;

@@ -32,7 +32,7 @@ class wmap_likelihood : public chisquared{
 public:
     wmap_likelihood();
     ~wmap_likelihood();
-    virtual double operator()(array_1d<double>&) const;
+    virtual double operator()(array_1d<double>&);
 };
 
 
@@ -41,7 +41,7 @@ class wmap_2d_likelihood : public chisquared{
 public:
     wmap_2d_likelihood();
     ~wmap_2d_likelihood();
-    virtual double operator()(array_1d<double>&) const;
+    virtual double operator()(array_1d<double>&);
 
 private:
     wmap_likelihood _wmap;
