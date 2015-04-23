@@ -115,6 +115,33 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     fcenter=f_min.get_minimum();
     _min_val=fcenter;
     
+    
+    double sgn;
+    array_1d<double> temp_dir,temp_pt;
+    temp_dir.set_name("mcmc_find_fisher_temp_dir");
+    temp_pt.set_name("mcmc_find_fisher_temp_pt");
+    
+    for(i=0;i<_chisq->get_dim();i++){
+        temp_dir.set(i,0.0);
+    }
+    
+    for(i=0;i<_chisq->get_dim();i++){
+        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            temp_dir.set(i,sgn);
+            bisection(center,fcenter,temp_dir,temp_pt);
+            
+            if(sgn<0.0){
+                min.set(i,temp_pt.get_data(i));
+            }
+            else{
+                max.set(i,temp_pt.get_data(i));
+            }
+            
+        }
+        temp_dir.set(i,0.0);
+    }
+    
+    
     for(i=0;i<_chisq->get_dim();i++){
         norm.set(i,max.get_data(i)-min.get_data(i));
     }
@@ -138,7 +165,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     array_1d<double> dx;
     dx.set_name("mcmc_find_fisher_dx");
     for(i=0;i<_chisq->get_dim();i++){
-        dx.set(i,1.0e-4);
+        dx.set(i,1.0e-2);
     }
     
     int ix,iy,keepGoing,ctAbort,ctAbortMax,calledMax;
