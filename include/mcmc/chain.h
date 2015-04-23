@@ -30,6 +30,9 @@ public:
     
     void add_point(array_1d<double>&, double);
     
+    //write routine to get thinned dexes
+    
+    void get_thinned_indices(int,int,array_1d<int>&);
     int get_thinby(double, int, int);
     void get_thinned_samples(int,int,array_2d<double>&);
     

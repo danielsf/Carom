@@ -221,114 +221,16 @@ void chain::copy(const chain &in){
     }
 }
 
-int chain::get_thinby(double threshold, int burnin, int step){
-    ///find the amount to thinby to achieve the specified threshold
-    ///burnin is the number of points to discard
-    
-    array_1d<double> means;
-    int i,j,ix,kept,ct,total;
-    means.set_name("chain_get_thinby_means");
-    
-    total=0;
-    for(i=0;i<_degeneracy.get_dim();i++){
-        total+=_degeneracy.get_data(i);
-    }
-    
-    int thinby,thinbyBest,currentDegen,iStart,ctStart;
-    double covarMax,covarMaxBest,lastVal,covar;
-    
-    thinbyBest=-1;
-    covarMaxBest=2.0*exception_value;
-    
-    means.set_dim(_dim);
-    
-    for(thinby=step;covarMaxBest>threshold && thinby>(total-burnin)/10; thinby+=step){
-       ct=0;
-       for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
-           ct+=_degeneracy.get_data(i);
-       }
-       
-       iStart=i;
-       ctStart=ct;
-       ct=thinby-(burnin-ctStart);
-       ctStart=ct;
-       
-       means.zero();
-       for(;i<_points.get_rows();i++){
-           if(ct+_degeneracy.get_data(i)>=thinby){
-               currentDegen=_degeneracy.get_data(i);
-               while(ct+currentDegen>=thinby){
-                   for(j=0;j<_dim;j++){
-                       means.add_val(j,_points.get_data(i,j));
-                   }
-                   kept+=1;
-                   currentDegen-=(thinby-ct);
-                   ct=0;
-               }
-               ct=currentDegen;
-           }
-           else{
-               ct+=_degeneracy.get_data(i);
-           }
-       }
-       
-       for(i=0;i<_dim;i++){
-           means.divide_val(i,double(kept));
-       }
-       
-       covarMax=-1.0;
-       for(ix=0;ix<_dim;ix++){
-           covar=0.0;
-           kept=0;
-           i=iStart;
-           ct=ctStart;
-           lastVal=2.0*exception_value;
-           for(;i<_points.get_rows();i++){
-               if(ct+_degeneracy.get_data(i)>thinby){
-                   currentDegen=_degeneracy.get_data(i);
-                   while(ct+currentDegen>=thinby){
-                       if(lastVal<exception_value){
-                           covar+=(means.get_data(ix)-_points.get_data(i,ix))*lastVal;
-                           kept+=1;
-                       }
-                       lastVal=means.get_data(ix)-_points.get_data(i,ix);
-                       ct=0;
-                       currentDegen-=(thinby-ct);
-                   }
-                   ct=currentDegen;
-               }
-               else{
-                   ct+=_degeneracy.get_data(i);
-               }
-            }
-            
-            if(kept>1){
-                covar=covar/double(kept-1);
-            }
-            if(fabs(covar)>covarMax){
-                covarMax=fabs(covar);
-            }
-        }
-        if(thinbyBest<0 || covarMax<covarMaxBest){
-            covarMaxBest=covarMax;
-            thinbyBest=thinby;
-        }
-    }
-    printf("thinby %d %e\n",thinby,covarMaxBest);
-    return thinby;
-    
-}
-
-void chain::get_thinned_samples(int thinby, int burnin, array_2d<double> &samples){
-    samples.reset();
-    samples.set_cols(_dim);
-    int ct,i,ctStart,currentDegen;
+void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output){
+    output.reset();
+    int ct,i,currentDegen,ctStart;
     
     ct=0;
     for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
         ct+=_degeneracy.get_data(i);
     }
-    ctStart=ct;  
+       
+    ctStart=ct;
     ct=thinby-(burnin-ctStart);
     ctStart=ct;
        
@@ -336,7 +238,7 @@ void chain::get_thinned_samples(int thinby, int burnin, array_2d<double> &sample
         if(ct+_degeneracy.get_data(i)>=thinby){
             currentDegen=_degeneracy.get_data(i);
             while(ct+currentDegen>=thinby){
-                samples.add_row(_points(i)[0]);
+                output.add(i);
                 currentDegen-=(thinby-ct);
                 ct=0;
             }
@@ -345,6 +247,87 @@ void chain::get_thinned_samples(int thinby, int burnin, array_2d<double> &sample
         else{
             ct+=_degeneracy.get_data(i);
         }
+    }
+}
+
+int chain::get_thinby(double threshold, int burnin, int step){
+    ///find the amount to thinby to achieve the specified threshold
+    ///burnin is the number of points to discard
+    
+    array_1d<double> means,covars;
+    int i,j,ix,total;
+    means.set_name("chain_get_thinby_means");
+    covars.set_name("chain_get_thinby_covars");
+    
+    array_1d<int> dexes;
+    dexes.set_name("chain_get_thinby_dexes");
+    
+    total=0;
+    for(i=0;i<_degeneracy.get_dim();i++){
+        total+=_degeneracy.get_data(i);
+    }
+    
+    int thinby,thinbyBest,i1,i2;
+    double covarMax,covarMaxBest,lastVal;
+    
+    thinbyBest=-1;
+    covarMaxBest=2.0*exception_value;
+    
+    means.set_dim(_dim);
+    
+    for(thinby=step;covarMaxBest>threshold && thinby>(total-burnin)/10; thinby+=step){
+       get_thinned_indices(thinby,burnin,dexes);
+       means.zero();
+       for(i=0;i<dexes.get_dim();i++){
+           for(j=0;j<_dim;j++){
+               means.add_val(j,_points.get_data(dexes.get_data(i),j));
+           }
+       }
+       
+       for(i=0;i<_dim;i++){
+           means.divide_val(i,double(dexes.get_dim()));
+       }
+       
+       covars.zero();
+       for(i=0;i<dexes.get_dim()-1;i++){
+           i1=dexes.get_data(i);
+           i2=dexes.get_data(i+1);
+           for(j=0;j<_dim;j++){
+               covars.add_val(j,(means.get_data(j)-_points.get_data(i1,j))*(means.get_data(j)-_points.get_data(i2,j)));
+           }
+       }
+       
+       covarMax=-1.0;
+       for(i=0;i<_dim;i++){
+           if(dexes.get_dim()>2){
+               covars.divide_val(i,double(dexes.get_dim()-2));
+           }
+           
+           if(fabs(covars.get_data(i))>covarMax){
+               covarMax=fabs(covars.get_data(i));
+           }
+       }
+       
+       if(thinbyBest<0 || covarMax<covarMaxBest){
+           thinbyBest=thinby;
+           covarMaxBest=covarMax;
+       }
+       
+    }
+    printf("thinby %d %e\n",thinby,covarMaxBest);
+    return thinbyBest;
+    
+}
+
+void chain::get_thinned_samples(int thinby, int burnin, array_2d<double> &samples){
+    samples.reset();
+    samples.set_cols(_dim);
+    array_1d<int> dexes;
+    dexes.set_name("chain_get_thinned_samples_dexes");
+    get_thinned_indices(thinby,burnin,dexes);
+    int i;
+    for(i=0;i<dexes.get_dim();i++){
+        samples.add_row(_points(dexes.get_data(i))[0]);
     }
 }
 
