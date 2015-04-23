@@ -505,6 +505,7 @@ void mcmc::bisection(array_1d<double> &lowball_in, double flow, array_1d<double>
     }
     
     while(ct<20 && fabs(fbest-target)>tol){
+        ct++;
         for(i=0;i<_chisq->get_dim();i++){
             trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
         }
