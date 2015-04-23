@@ -171,7 +171,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     int ix,iy,keepGoing,ctAbort,ctAbortMax,calledMax;
     int ibefore=_chisq->get_called();
     
-    double tol=1.0e-10;
+    double tol=-1.0;
     double dCenter;
     
     int abortValue,abortProx;
