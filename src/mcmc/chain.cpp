@@ -2,9 +2,19 @@
 
 chain::~chain(){}
 
+void chain::is_it_safe(char *routine){
+    if(_dice==NULL){
+        printf("WARNING in chain::%s\n",routine);
+        printf("_dice is null\n");
+        exit(1);
+    }
+}
+
 void chain::initialize(){
+    _dice=NULL;
     _dim=0;
     _n_written=0;
+    _current_chi=2.0*exception_value;
     _output_name[0]=0;
     _points.set_name("chain_points");
     _degeneracy.set_name("chain_degeneracy");
@@ -122,9 +132,33 @@ int chain::get_degeneracy(int dex){
 }
 
 void chain::add_point(array_1d<double> &pt, double mu){
-    _points.add_row(pt);
-    _chisquared.add(mu);
-    _degeneracy.add(1);
+    is_it_safe("add_point");
+    
+    int add_it;
+    double roll,ratio;
+    
+    add_it=0;
+
+    if(mu<_current_chi){
+        add_it=1;
+    }
+    else{
+        roll=_dice->doub();
+        ratio=exp(-0.5*(mu-_current_chi));
+        if(ratio>roll){
+            add_it=1;
+        }
+    }
+    
+    if(add_it){
+        _points.add_row(pt);
+        _chisquared.add(mu);
+        _degeneracy.add(1);
+        _current_chi=mu;
+    }
+    else{
+        _degeneracy.add_val(_degeneracy.get_dim()-1,1);
+    }
 }
 
 void chain::write_chain(){
@@ -168,6 +202,7 @@ void chain::copy(const chain &in){
     _degeneracy.reset();
     _chisquared.reset();
     _dice=in._dice;
+    _current_chi=in._current_chi;
     
     _dim=in._dim;
     _n_written=in._n_written;
@@ -215,16 +250,16 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     
 }
 
-arrayOfChains::arrayOfChains(int nChains, int dim){
-    initialize(nChains,dim);
+arrayOfChains::arrayOfChains(int nChains, int dim, Ran *dice){
+    initialize(nChains,dim,dice);
 }
 
 int arrayOfChains::get_n_chains(){
     return _n_chains;
 }
 
-arrayOfChains::arrayOfChains(array_2d<double> &pts, array_1d<double> &chisq){
-    initialize(pts.get_rows(),pts.get_cols());
+arrayOfChains::arrayOfChains(array_2d<double> &pts, array_1d<double> &chisq, Ran *dice){
+    initialize(pts.get_rows(),pts.get_cols(),dice);
     
     int i;
     for(i=0;i<_n_chains;i++){

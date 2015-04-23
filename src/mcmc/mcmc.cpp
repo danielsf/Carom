@@ -24,7 +24,7 @@ void mcmc::initialize(){
     _last_set=0;
     _max_covar=-2.0*exception_value;
     _covar_lim=0.1;
-    dice=NULL;
+    _dice=NULL;
     
     sprintf(_name_root,"chain");
 }

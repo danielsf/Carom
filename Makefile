@@ -58,7 +58,8 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
 	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
 
-object/chain.o: src/mcmc/chain.cpp include/mcmc/chain.h
+object/chain.o: src/mcmc/chain.cpp include/mcmc/chain.h object/containers.o \
+object/goto_tools.o
 	$(gg) -c -o object/chain.o src/mcmc/chain.cpp
 
 object/mcmc.o: src/mcmc/mcmc.cpp include/mcmc/mcmc.h object/chain.o object/chisq.o \

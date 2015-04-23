@@ -2,6 +2,7 @@
 #define CHAIN_H
 
 #include "containers.h"
+#include "goto_tools.h"
 
 class chain{
 
@@ -35,6 +36,9 @@ public:
 private:
 
     int _dim,_n_written;
+    
+    double _current_chi;
+    
     array_2d<double> _points;
     array_1d<int> _degeneracy;
     array_1d<double> _chisquared;
@@ -46,6 +50,7 @@ private:
     void initialize();
     void verify_dim(int,char*);
     void verify_points(int,char*);
+    void is_it_safe(char*);
 
 };
 
@@ -55,8 +60,8 @@ public:
 
     ~arrayOfChains();
     arrayOfChains();
-    arrayOfChains(int,int);
-    arrayOfChains(array_2d<double>&, array_1d<double>&);
+    arrayOfChains(int,int,Ran*);
+    arrayOfChains(array_2d<double>&, array_1d<double>&,Ran*);
     int get_n_chains();
     void initialize(int,int,Ran*);
     void add(array_1d<double>&, double);
