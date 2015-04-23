@@ -489,6 +489,10 @@ void mcmc::bisection(array_1d<double> &lowball_in, double flow, array_1d<double>
 
 void mcmc::guess_bases(){
 
+    if(dice==NULL){
+        dice=new Ran(42);
+    }
+
     array_2d<double> temp_bases;
     temp_bases.set_name("mcmc_guess_bases_temp_bases");
     
