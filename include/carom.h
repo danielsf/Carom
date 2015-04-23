@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "eigen_wrapper.h"
-#include "wrappers.h"
+#include "chisq_wrapper.h"
 #include "simplex.h"
 #include "node.h"
 

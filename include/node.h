@@ -1,7 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "wrappers.h"
+#include "chisq_wrapper.h"
 #include "eigen_wrapper.h"
 #include "simplex.h"
 

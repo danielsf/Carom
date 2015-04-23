@@ -88,10 +88,14 @@ analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
 object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
 	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
 
-object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o
+object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
+	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
+
+
+object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o object/chisq_wrapper.o
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
-object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/eigen_wrapper.o \
+object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
 object/simplex.o
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
@@ -102,7 +106,7 @@ object/simplex.o object/node.o object/eigen_wrapper.o
 s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
 	$(LIBRARIES)
 
@@ -112,7 +116,7 @@ object/wmap_likelihood_function.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
 	object/wmap_likelihood_function.o \
-	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
@@ -123,7 +127,7 @@ object/wmap_likelihood_function.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
 	object/wmap_likelihood_function.o \
-	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)

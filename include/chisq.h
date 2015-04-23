@@ -48,10 +48,11 @@ classes, consult containers.h
 #include "goto_tools.h"
 #include "containers.h"
 #include "kd.h"
+#include "wrappers.h"
 #include <math.h>
 #include <stdio.h>
 
-class chisquared{
+class chisquared : public function_wrapper{
 
 public:
     /*
@@ -79,14 +80,14 @@ public:
     Return a double that is the chisquared value at that point in parameter
     space.
     */
-    virtual double operator()(array_1d<double>&) const;
+    virtual double operator()(array_1d<double>&);
     
     /*
     Return the number of times chisquared::operator() was called.
     This is important for APS in determining how to balance the 
     searches that it performs.
     */
-    int get_called();
+    virtual int get_called();
     void reset_timer();
     
     /*

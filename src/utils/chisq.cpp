@@ -511,7 +511,7 @@ void chisquared::decrement_called(){
     called--;
 }
 
-double chisquared::operator()(array_1d<double> &v)const{
+double chisquared::operator()(array_1d<double> &v){
     death_knell("meaningless operator");
     return -1.0;
 }
