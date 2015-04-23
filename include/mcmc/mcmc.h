@@ -26,16 +26,16 @@ private:
     Ran *dice;
 
     array_2d<double> _bases;
-    array_1d<double> _sigma,_centerpt,_guess_max,_guess_min;
+    array_1d<double> _sigma,_guess_max,_guess_min;
 
     char _name_root[letters];
 
     int _burn_in,_last_set;
-    double _max_covar,_covar_lim,_min_val;
+    double _max_covar,_covar_lim;
 
     void initialize();
-    void find_fisher_eigen(array_2d<double>&);
-    void find_fisher_matrix(array_2d<double>&, array_1d<double>&);
+    void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
+    void find_fisher_matrix(array_2d<double>&, array_1d<double>&, double*);
     void bisection(array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
 
 };

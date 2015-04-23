@@ -19,7 +19,6 @@ void mcmc::initialize(){
     _sigma.set_name("mcmc_sigma");
     _guess_min.set_name("mcmc_guess_min");
     _guess_max.set_name("mcmc_guess_max");
-    _centerpt.set_name("mcmc_centerpt");
     _chisq = NULL;
     _burn_in=1000;
     _last_set=0;
@@ -70,7 +69,7 @@ void mcmc::set_name_root(char *word){
     _name_root[i]=0;
 }
 
-void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut){
+void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut, double *minOut){
 
     array_1d<double> trial,norm;
     trial.set_name("node_findCovar_trial");
@@ -113,7 +112,10 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     f_min.set_chisquared(_chisq);
     f_min.find_minimum(seed, center);
     fcenter=f_min.get_minimum();
-    _min_val=fcenter;
+    minOut[0]=fcenter;
+    for(i=0;i<_chisq->get_dim();i++){
+        centerOut.set(i,center.get_data(i));
+    }
     
     
     double sgn;
@@ -394,13 +396,11 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     }
     
     printf("successfully got covar -- %e %d\n",fcenter,_chisq->get_called());
-    for(i=0;i<_chisq->get_dim();i++){
-        centerOut.set(i,center.get_data(i));
-    }
+
 }
 
 
-void mcmc::find_fisher_eigen(array_2d<double> &bases){
+void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOut, double *minVal){
     
     array_2d<double> covar;
     covar.set_name("mcmc_guess_bases_covar");
@@ -408,7 +408,7 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases){
     int ix,iy;
     double covarmax=-1.0;
     
-    find_fisher_matrix(covar,_centerpt);
+    find_fisher_matrix(covar,centerOut,minVal);
     
     for(ix=0;ix<_chisq->get_dim();ix++){
         for(iy=ix;iy<_chisq->get_dim();iy++){
@@ -543,9 +543,14 @@ void mcmc::guess_bases(){
     temp_bases.set_cols(_chisq->get_dim());
     
     int i,j;
+    array_1d<double> center;
+    double minVal;
+    
+    center.set_name("mcmc_guess_bases_center");
+    
     
     try{
-        find_fisher_eigen(temp_bases);
+        find_fisher_eigen(temp_bases,center,&minVal);
         for(i=0;i<_chisq->get_dim();i++){
             for(j=0;j<_chisq->get_dim();j++){
                 _bases.set(i,j,temp_bases.get_data(i,j));
@@ -569,11 +574,11 @@ void mcmc::guess_bases(){
             for(i=0;i<_chisq->get_dim();i++){
                 temp_dir.set(i,sgn*_bases.get_data(ix,i));
             }
-            bisection(_centerpt,_min_val,temp_dir,temp_pt);
+            bisection(center,minVal,temp_dir,temp_pt);
             
             d=0.0;
             for(i=0;i<_chisq->get_dim();i++){
-                d+=power(_centerpt.get_data(i)-temp_pt.get_data(i),2);
+                d+=power(center.get_data(i)-temp_pt.get_data(i),2);
             }
             dd+=sqrt(d);
             
