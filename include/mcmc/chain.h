@@ -31,6 +31,7 @@ public:
     void add_point(array_1d<double>&, double);
     
     int get_thinby(double, int, int);
+    void get_thinned_samples(int,int,array_2d<double>&);
     
     void write_chain();
     void copy(const chain&);

@@ -314,9 +314,40 @@ int chain::get_thinby(double threshold, int burnin, int step){
             thinbyBest=thinby;
         }
     }
+    printf("thinby %d %e\n",thinby,covarMaxBest);
     return thinby;
     
 }
+
+void chain::get_thinned_samples(int thinby, int burnin, array_2d<double> &samples){
+    samples.reset();
+    samples.set_cols(_dim);
+    int ct,i,ctStart,currentDegen;
+    
+    ct=0;
+    for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
+        ct+=_degeneracy.get_data(i);
+    }
+    ctStart=ct;  
+    ct=thinby-(burnin-ctStart);
+    ctStart=ct;
+       
+    for(;i<_points.get_rows();i++){
+        if(ct+_degeneracy.get_data(i)>=thinby){
+            currentDegen=_degeneracy.get_data(i);
+            while(ct+currentDegen>=thinby){
+                samples.add_row(_points(i)[0]);
+                currentDegen-=(thinby-ct);
+                ct=0;
+            }
+            ct=currentDegen;
+        }
+        else{
+            ct+=_degeneracy.get_data(i);
+        }
+    }
+}
+
 
 ////////////////////array of chains
 
