@@ -30,6 +30,8 @@ public:
     
     void add_point(array_1d<double>&, double);
     
+    int get_thinby(double, int, int);
+    
     void write_chain();
     void copy(const chain&);
 
@@ -50,7 +52,7 @@ private:
     void initialize();
     void verify_dim(int,char*);
     void verify_points(int,char*);
-    void is_it_safe(char*);
+    void is_dice_safe(char*);
 
 };
 

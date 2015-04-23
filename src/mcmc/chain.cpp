@@ -2,7 +2,7 @@
 
 chain::~chain(){}
 
-void chain::is_it_safe(char *routine){
+void chain::is_dice_safe(char *routine){
     if(_dice==NULL){
         printf("WARNING in chain::%s\n",routine);
         printf("_dice is null\n");
@@ -132,7 +132,7 @@ int chain::get_degeneracy(int dex){
 }
 
 void chain::add_point(array_1d<double> &pt, double mu){
-    is_it_safe("add_point");
+    is_dice_safe("add_point");
     
     int add_it;
     double roll,ratio;
@@ -219,6 +219,103 @@ void chain::copy(const chain &in){
             _points.set(i,j,in._points.get_data(i,j));
         }
     }
+}
+
+int chain::get_thinby(double threshold, int burnin, int step){
+    ///find the amount to thinby to achieve the specified threshold
+    ///burnin is the number of points to discard
+    
+    array_1d<double> means;
+    int i,j,ix,kept,ct,total;
+    means.set_name("chain_get_thinby_means");
+    
+    total=0;
+    for(i=0;i<_degeneracy.get_dim();i++){
+        total+=_degeneracy.get_data(i);
+    }
+    
+    int thinby,thinbyBest,currentDegen,iStart,ctStart;
+    double covarMax,covarMaxBest,lastVal,covar;
+    
+    thinbyBest=-1;
+    covarMaxBest=2.0*exception_value;
+    
+    means.set_dim(_dim);
+    
+    for(thinby=step;covarMaxBest>threshold && thinby>(total-burnin)/10; thinby+=step){
+       ct=0;
+       for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
+           ct+=_degeneracy.get_data(i);
+       }
+       
+       iStart=i;
+       ctStart=ct;
+       ct=thinby-(burnin-ctStart);
+       ctStart=ct;
+       
+       means.zero();
+       for(;i<_points.get_rows();i++){
+           if(ct+_degeneracy.get_data(i)>=thinby){
+               currentDegen=_degeneracy.get_data(i);
+               while(ct+currentDegen>=thinby){
+                   for(j=0;j<_dim;j++){
+                       means.add_val(j,_points.get_data(i,j));
+                   }
+                   kept+=1;
+                   currentDegen-=(thinby-ct);
+                   ct=0;
+               }
+               ct=currentDegen;
+           }
+           else{
+               ct+=_degeneracy.get_data(i);
+           }
+       }
+       
+       for(i=0;i<_dim;i++){
+           means.divide_val(i,double(kept));
+       }
+       
+       covarMax=-1.0;
+       for(ix=0;ix<_dim;ix++){
+           covar=0.0;
+           kept=0;
+           i=iStart;
+           ct=ctStart;
+           lastVal=2.0*exception_value;
+           for(;i<_points.get_rows();i++){
+               if(ct+_degeneracy.get_data(i)>thinby){
+                   currentDegen=_degeneracy.get_data(i);
+                   while(ct+currentDegen>=thinby){
+                       if(lastVal<exception_value){
+                           covar+=(means.get_data(ix)-_points.get_data(i,ix))*lastVal;
+                           kept+=1;
+                       }
+                       lastVal=means.get_data(ix)-_points.get_data(i,ix);
+                       ct=0;
+                       currentDegen-=(thinby-ct);
+                   }
+                   ct=currentDegen;
+               }
+               else{
+                   ct+=_degeneracy.get_data(i);
+               }
+            }
+            
+            if(kept>1){
+                covar=covar/double(kept-1);
+            }
+            if(fabs(covar)>covarMax){
+                covarMax=fabs(covar);
+            }
+        }
+        if(thinbyBest<0 || covarMax<covarMaxBest){
+            covarMaxBest=covarMax;
+            thinbyBest=thinby;
+        }
+    }
+    return thinby;
+    
 }
 
 ////////////////////array of chains
