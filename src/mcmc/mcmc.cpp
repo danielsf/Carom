@@ -511,7 +511,7 @@ void mcmc::bisection(array_1d<double> &lowball_in, double flow, array_1d<double>
         }
         ftrial=_chisq[0](trial);
         
-        if(ftrial<flow){
+        if(ftrial<target){
             for(i=0;i<_chisq->get_dim();i++){
                 lowball.set(i,trial.get_data(i));
             }
