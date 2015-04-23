@@ -104,7 +104,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
             max.set(i,_guess_max.get_data(i));
         }
         
-        for(j=0;j<_chisq->get_dim();j++){
+        for(j=0;j<_chisq->get_dim()+1;j++){
             seed.set(j,i,min.get_data(i)+dice->doub()*(max.get_data(i)-min.get_data(i)));
         }
     }
