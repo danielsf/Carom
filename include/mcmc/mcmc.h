@@ -11,13 +11,13 @@ class mcmc{
 public:
 
     ~mcmc();
-    mcmc(int, chisquared*);
+    mcmc(int, int, chisquared*);
     void set_burn_in(int);
     void set_covar_lim(double);
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
-    void guess_bases();
+    void guess_bases(int);
 
 private:
 
