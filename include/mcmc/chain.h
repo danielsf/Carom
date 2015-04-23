@@ -51,18 +51,21 @@ class arrayOfChains{
 public:
 
     ~arrayOfChains();
+    arrayOfChains();
     arrayOfChains(int,int);
     arrayOfChains(array_2d<double>&, array_1d<double>&);
+    int get_n_chains();
+    void initialize(int,int);
     void add(array_1d<double>&, double);
+    void add(array_2d<double>&, array_1d<double>&);
     void remove(int);
     chain* operator()(int);
 
 private:
     chain *_data;
-    int _n_chains,_room;
+    int _n_chains;
     int _dim;
 
-    void initialize(int,int);
     void verify_chains(int,char*);
 
 };

@@ -28,6 +28,7 @@ public:
     the array_1d will be the output minimum point
     */
     void find_minimum(array_2d<double>&, array_1d<double>&);
+    double get_minimum();
 
 private:
     
