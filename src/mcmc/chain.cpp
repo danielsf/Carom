@@ -348,17 +348,18 @@ int chain::get_thinby(double threshold, int burnin, int step){
         total+=_degeneracy.get_data(i);
     }
     
-    int thinby,thinbyBest,i1,i2;
+    int thinby,thinbyBest,i1,i2,bestPts;
     double covarMax,covarMaxBest,mu;
     
     thinbyBest=-1;
     covarMaxBest=2.0*exception_value;
+    bestPts=0;
     
     means.set_dim(_dim);
     vars.set_dim(_dim);
     covars.set_dim(_dim);
-    
-    for(thinby=step;covarMaxBest>threshold && thinby>(total-burnin)/10; thinby+=step){
+
+    for(thinby=step;covarMaxBest>threshold && thinby<(total-burnin)/10; thinby+=step){
        get_thinned_indices(thinby,burnin,dexes);
        means.zero();
        for(i=0;i<dexes.get_dim();i++){
@@ -409,10 +410,11 @@ int chain::get_thinby(double threshold, int burnin, int step){
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
            covarMaxBest=covarMax;
+           bestPts=dexes.get_dim();
        }
        
     }
-    printf("thinby %d %e\n",thinby,covarMaxBest);
+    printf("thinby %d best %e pts %d\n",thinby,covarMaxBest,bestPts);
     return thinbyBest;
     
 }

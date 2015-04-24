@@ -250,9 +250,9 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
     eval_symm_guts(matrix,buffer,temp_vals,batch1,matrix.get_cols(),1,-1.0);
     
     for(ix=0;ix<batch1;ix++){
-        values.set(ix,temp_vals.get_data(ix));
+        values.set(batch1-1-ix,temp_vals.get_data(ix));
         for(iy=0;iy<matrix.get_cols();iy++){
-            vectors.set(ix,iy,buffer.get_data(iy,ix));
+            vectors.set(batch1-1-ix,iy,buffer.get_data(iy,ix));
         }
     }
     
@@ -261,11 +261,12 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
     eval_symm_guts(matrix,buffer,temp_vals,batch2,matrix.get_cols(),-1,-1.0);
     
     for(ix=0;ix<batch2;ix++){
-        values.set(ix+batch1,temp_vals.get_data(ix));
+        values.set(matrix.get_cols()-1-ix,temp_vals.get_data(ix));
         for(iy=0;iy<matrix.get_cols();iy++){
-            vectors.set(ix+batch1,iy,buffer.get_data(iy,ix));
+            vectors.set(matrix.get_cols()-1-ix,iy,buffer.get_data(iy,ix));
         }
     }
+
     
     int i,j,k;
     array_1d<double> test,control;
@@ -293,9 +294,13 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
             }
           
             err=fabs(fabs(dotproduct)-1.0);
-          
+
             if(err>check){
+                printf("\nWARNING eigen decomposition failure -- %d of %d\n",i,matrix.get_cols());
                 printf("err %e val %e\n",err,values.get_data(i));
+                for(j=0;j<matrix.get_cols();j++){
+                    printf("%e\n",values.get_data(j));
+                }
                 throw -1;
             }
         }

@@ -31,7 +31,7 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-ellipses_integrable chisq(2,6);
+ellipses_integrable chisq(6,2);
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;

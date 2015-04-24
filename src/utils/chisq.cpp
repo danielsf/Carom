@@ -179,6 +179,7 @@ void chisquared::make_centersRandom(){
         
         if(iterations>5000){
             printf("WARNING; chisq was unable to construct an acceptable function\n");
+            printf("ncenters %d dim %d\n",ncenters,dim);
             
             exit(1);
         }

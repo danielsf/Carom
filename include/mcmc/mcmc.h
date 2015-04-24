@@ -30,6 +30,8 @@ private:
     chisquared *_chisq;
     Ran *_dice;
 
+    double _factor;
+
     array_2d<double> _bases;
     array_1d<double> _sigma,_guess_max,_guess_min;
 

@@ -23,6 +23,7 @@ void mcmc::initialize(){
     _check_every=0;
     _burn_in=0;
     _dice=NULL;
+    _factor=2.38;
     
     sprintf(_name_root,"chain");
 }
@@ -90,7 +91,7 @@ void mcmc::update_bases(){
     covar.set_name("mcmc_update_bases_covar");
     
     printf("updating basis -- acceptance %e\n",acceptance_rate());
-    _chains.get_covariance_matrix(0.1,2,covar);
+    _chains.get_covariance_matrix(0.1,0,covar);
     
     array_2d<double> old_basis,evecs;
     array_1d<double> evals;
@@ -99,7 +100,14 @@ void mcmc::update_bases(){
     evecs.set_name("mcmc_update_bases_evecs");
     evals.set_name("mcmc_update_bases_evals");
     
-    eval_symm(covar,evecs,evals,0.1);
+    try{
+        eval_symm(covar,evecs,evals,0.1);
+    }
+    catch(int iex){
+        return;
+    }
+    
+    old_basis.set_cols(_chisq->get_dim());
     
     int ix,iy;
     for(ix=0;ix<_chisq->get_dim();ix++){
@@ -128,11 +136,6 @@ void mcmc::update_bases(){
     }
     
     printf("dotMax %e\n",dotMax);
-    if(dotMax>0.1){
-        for(i=0;i<_chains.get_n_chains();i++){
-            _chains(i)->write_burnin();
-        }
-    }
 }
 
 void mcmc::sample(int nSamples){
@@ -144,8 +147,9 @@ void mcmc::sample(int nSamples){
     
     int iChain,ix,iy;
     int final_ct,burn_ct,total_ct,last_updated,last_wrote;
+    int update_ct;
     
-    double factor=2.38/sqrt(double(_chisq->get_dim()));
+    double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
     
     char word[2*letters];
@@ -170,11 +174,11 @@ void mcmc::sample(int nSamples){
                         dir.set(ix,normal_deviate(_dice,0.0,1.0));
                     }
                     dir.normalize();
-                    norm=factor*normal_deviate(_dice,0.0,1.0);
+                    norm=_factor*normal_deviate(_dice,0.0,1.0)/sqrtD;
             
                     for(ix=0;ix<_chisq->get_dim();ix++){
                         for(iy=0;iy<_chisq->get_dim();iy++){
-                            trial.add_val(iy,norm*_sigma.get_data(ix)*_bases.get_data(ix,iy));
+                            trial.add_val(iy,norm*dir.get_data(ix)*_sigma.get_data(ix)*_bases.get_data(ix,iy));
                         }
                     }
                 }
@@ -191,9 +195,10 @@ void mcmc::sample(int nSamples){
         }
         total_ct++;
         
-        if(total_ct>=_burn_in){
+        if(burn_ct>=_burn_in){
             final_ct++;
             if(final_ct>last_wrote+1000){
+                printf("writing chain -- acceptance %e\n",acceptance_rate());
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain();
                 }
@@ -202,18 +207,39 @@ void mcmc::sample(int nSamples){
         }
         else{
             burn_ct++;
-            if(burn_ct-last_updated>_check_every){
-                update_bases();
+            if(burn_ct-last_updated>=_check_every){
+                acceptance=acceptance_rate();
+                if(fabs(1.0/acceptance-4.0)>1.0){
+                    if(update_ct%2==0){
+                        update_bases();
+                    }
+                    else{
+                        if(acceptance<0.25){
+                            _factor*=0.8;
+                        }
+                        else{
+                            _factor*=1.25;
+                        }
+                    }
+                
+                    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                        _chains(iChain)->write_burnin();
+                    }
+                }
                 last_updated=burn_ct;
+                update_ct++;
             }
             
             if(burn_ct>=_burn_in){
+                printf("writing burnin\n");
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_burnin();
                 }
             }
         }
    }
+
+    printf("done %d %d -- %d\n",final_ct,nSamples,_chisq->get_called());
 
    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
        _chains(iChain)->write_chain();
@@ -714,24 +740,38 @@ void mcmc::guess_bases(int seedPoints){
             dd+=sqrt(d);
             
         }
-        _sigma.set(ix,dd/4.0);
+        _sigma.set(ix,dd);
     }
     
     printf("finished guessing bases; %d\n",_chisq->get_called());
+    for(i=0;i<_chisq->get_dim();i++){
+        printf("%.3e -- ",_sigma.get_data(i));
+        for(j=0;j<_chisq->get_dim();j++)printf("%.3e ",_bases.get_data(i,j));
+        printf("\n");
+    }
+    printf("\n");
+    
     int k;
-    double mu;
+    double mu,norm;
+    
+    array_1d<double> dir;
+    dir.set_name("mcmc_guess_bases_dir");
     
     if(seedPoints==1){
         temp_pt.reset();
         for(i=0;i<_chains.get_n_chains();i++){
             mu=2.0*exception_value;
             while(mu>exception_value){
-                for(j=0;j<_chisq->get_dim();j++)temp_pt.set(j,center.get_data(j));
+                norm=normal_deviate(_dice,0.0,2.0);
+                for(j=0;j<_chisq->get_dim();j++){
+                    temp_pt.set(j,center.get_data(j));
+                    dir.set(j,normal_deviate(_dice,0.0,1.0));
+                }
+                dir.normalize();
                 
                 for(j=0;j<_chisq->get_dim();j++){
-                    d=normal_deviate(_dice,0.0,2.0*_sigma.get_data(j));
                     for(k=0;k<_chisq->get_dim();k++){
-                        temp_pt.add_val(k,d*_bases.get_data(j,k));
+                        temp_pt.add_val(k,norm*dir.get_data(j)*_sigma.get_data(j)*_bases.get_data(j,k));
                     }
                 }
                 
