@@ -14,6 +14,7 @@ void chain::initialize(){
     _dice=NULL;
     _dim=0;
     _n_written=0;
+    _n_written_burnin=0;
     _current_chi=2.0*exception_value;
     _output_name[0]=0;
     _points.set_name("chain_points");
@@ -170,20 +171,60 @@ void chain::add_point(array_1d<double> &pt, double mu){
     }
 }
 
-void chain::write_chain(){
+void chain::write_burnin(){
     if(_output_name[0]==0){
         printf("WARNING asked to write chain but have no name\n");
         exit(1);
     }
     
-    FILE *output;
-    if(_n_written==0){
-        output=fopen(_output_name,"w");
+    char burninName[2*letters];
+    sprintf(burninName,"%s_burnin.txt",_output_name);
+    
+    if(_n_written_burnin==0){
+        write(burninName,0);
     }
     else{
-        output=fopen(_output_name,"a");
+        write(burninName,1);
     }
     
+    _n_written_burnin+=_points.get_rows();
+    
+    _points.reset_preserving_room();
+    _degeneracy.reset_preserving_room();
+    _chisquared.reset_preserving_room();
+}
+
+void chain::write_chain(){
+    if(_output_name[0]==0){
+        printf("WARNING asked to write chain but have no name\n");
+        exit(1);
+    }
+
+    if(_n_written==0){
+        write(_output_name,0);
+    }
+    else{
+        write(_output_name,1);
+    }
+
+    _n_written+=_points.get_rows();
+
+    _points.reset_preserving_room();
+    _degeneracy.reset_preserving_room();
+    _chisquared.reset_preserving_room();
+
+}    
+    
+
+void chain::write(char *name, int append){  
+    
+    FILE *output;
+    if(append==0){
+        output=fopen(name,"w");
+    }
+    else{
+        output=fopen(name,"a");
+    }  
     int i,j;
     for(i=0;i<_points.get_rows();i++){
         fprintf(output,"%d %e ",_degeneracy.get_data(i),_chisquared.get_data(i));
@@ -194,11 +235,6 @@ void chain::write_chain(){
     }
     fclose(output);
     
-    _n_written+=_points.get_rows();
-    
-    _points.reset_preserving_room();
-    _degeneracy.reset_preserving_room();
-    _chisquared.reset_preserving_room();
 }
 
 void chain::copy(const chain &in){
@@ -212,6 +248,8 @@ void chain::copy(const chain &in){
     _chisquared.reset();
     _dice=in._dice;
     _current_chi=in._current_chi;
+    _n_written=in._n_written;
+    _n_written_burnin=in._n_written_burnin;
     
     _dim=in._dim;
     _n_written=in._n_written;

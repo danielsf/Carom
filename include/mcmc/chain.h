@@ -38,11 +38,12 @@ public:
     void get_thinned_samples(int,int,array_2d<double>&);
     
     void write_chain();
+    void write_burnin();
     void copy(const chain&);
 
 private:
 
-    int _dim,_n_written;
+    int _dim,_n_written,_n_written_burnin;
     
     double _current_chi;
     
@@ -55,6 +56,7 @@ private:
     char _output_name[letters];
 
     void initialize();
+    void write(char*,int);
     void verify_dim(int,char*);
     void verify_points(int,char*);
     void is_dice_safe(char*);

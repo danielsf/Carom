@@ -238,6 +238,9 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
     int ix,iy;
     int batch1=matrix.get_rows()/2;
     
+    vectors.set_cols(matrix.get_cols());
+    values.set_dim(matrix.get_cols());
+    
     array_1d<double> temp_vals;
     temp_vals.set_name("eval_symm_temp_vals");
     array_2d<double> buffer;

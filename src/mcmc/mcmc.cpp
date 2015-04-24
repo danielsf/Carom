@@ -20,8 +20,9 @@ void mcmc::initialize(){
     _guess_min.set_name("mcmc_guess_min");
     _guess_max.set_name("mcmc_guess_max");
     _chisq = NULL;
-    _burn_in=1000;
+    _check_every=1000;
     _last_set=0;
+    _stable_bases=0;
     _dice=NULL;
     
     sprintf(_name_root,"chain");
@@ -56,9 +57,9 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
     
 }
 
-void mcmc::set_burn_in(int ii){
-    //_burn_in will be however often we assess bases
-    _burn_in=ii;
+void mcmc::set_check_every(int ii){
+    //_check_every will be however often we assess bases
+    _check_every=ii;
 }
 
 void mcmc::set_name_root(char *word){
@@ -81,6 +82,54 @@ double mcmc::acceptance_rate(){
     }
     
     return double(rows)/double(ct);
+    
+}
+
+void mcmc::update_bases(){
+    array_2d<double> covar;
+    covar.set_name("mcmc_update_bases_covar");
+    
+    printf("updating basis\n");
+    _chains.get_covariance_matrix(0.1,2,covar);
+    
+    array_2d<double> old_basis,evecs;
+    array_1d<double> evals;
+    
+    old_basis.set_name("mcmc_update_bases_old_basis");
+    evecs.set_name("mcmc_update_bases_evecs");
+    evals.set_name("mcmc_update_bases_evals");
+    
+    eval_symm(covar,evecs,evals,0.1);
+    
+    int ix,iy;
+    for(ix=0;ix<_chisq->get_dim();ix++){
+        for(iy=0;iy<_chisq->get_dim();iy++){
+            old_basis.set(ix,iy,_bases.get_data(ix,iy));
+            _bases.set(ix,iy,evecs.get_data(ix,iy));
+        }
+        _bases(ix)->normalize();
+        _sigma.set(ix,sqrt(fabs(evals.get_data(ix))));
+    }
+    
+    double dotMax,dot;
+    int i;
+    dotMax=-1.0;
+    for(ix=0;ix<_chisq->get_dim();ix++){
+        for(iy=0;iy<_chisq->get_dim();iy++){
+            dot=0.0;
+            for(i=0;i<_chisq->get_dim();i++){
+                dot+=old_basis.get_data(ix,i)*_bases.get_data(iy,i);
+            }
+            
+            if(fabs(1.0-dot)>dotMax){
+                dotMax=fabs(1.0-dot);
+            }
+        }
+    }
+    
+    for(i=0;i<_chains.get_n_chains();i++){
+        _chains(i)->write_burnin();
+    }
     
 }
 

@@ -12,14 +12,16 @@ public:
 
     ~mcmc();
     mcmc(int, int, chisquared*);
-    void set_burn_in(int);
-    void set_covar_lim(double);
+    void set_check_every(int);
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
     void guess_bases(int);
     double acceptance_rate();
     void update_bases();
+    void write_burnin();
+    void write_chains();
+
 
 private:
 
@@ -32,7 +34,7 @@ private:
 
     char _name_root[letters];
 
-    int _burn_in,_last_set;
+    int _check_every,_last_set,_stable_bases;
 
     void initialize();
     void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
