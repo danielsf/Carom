@@ -244,7 +244,7 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
     buffer.set_name("eval_symm_buffer");
     buffer.set_cols(matrix.get_cols());
     
-    eval_symm_guts(matrix,buffer,temp_vals,batch1,matrix.get_cols(),1,check);
+    eval_symm_guts(matrix,buffer,temp_vals,batch1,matrix.get_cols(),1,-1.0);
     
     for(ix=0;ix<batch1;ix++){
         values.set(ix,temp_vals.get_data(ix));
@@ -255,13 +255,48 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
     
     int batch2=matrix.get_cols()-batch1;
     
-    eval_symm_guts(matrix,buffer,temp_vals,batch2,matrix.get_cols(),-1,check);
+    eval_symm_guts(matrix,buffer,temp_vals,batch2,matrix.get_cols(),-1,-1.0);
     
     for(ix=0;ix<batch2;ix++){
         values.set(ix+batch1,temp_vals.get_data(ix));
         for(iy=0;iy<matrix.get_cols();iy++){
             vectors.set(ix+batch1,iy,buffer.get_data(iy,ix));
         }
+    }
+    
+    int i,j,k;
+    array_1d<double> test,control;
+    double dotproduct,err;
+    test.set_name("eval_symm(actual)_test");
+    control.set_name("eval_symm(actual)_control");
+    if(check>0.0){
+        for(i=0;i<matrix.get_cols();i++){
+            for(j=0;j<matrix.get_cols();j++){
+                control.set(j,vectors.get_data(i,j));
+            }
+          
+            for(j=0;j<matrix.get_cols();j++){
+                test.set(j,0.0);
+                for(k=0;k<matrix.get_cols();k++){
+                    test.add_val(j,matrix.get_data(j,k)*vectors.get_data(k,i));
+                }
+                test.divide_val(j,values.get_data(i));
+            }
+            test.normalize();
+            control.normalize();
+            dotproduct=0.0;
+            for(j=0;j<matrix.get_cols();j++){
+                dotproduct+=test.get_data(j)*control.get_data(j);
+            }
+          
+            err=fabs(fabs(dotproduct)-1.0);
+          
+            if(err>check){
+                printf("err %e val %e\n",err,values.get_data(i));
+                throw -1;
+            }
+        }
+      
     }
 }
 
