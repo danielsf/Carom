@@ -21,6 +21,7 @@ public:
     void update_bases();
     void write_burnin();
     void write_chains();
+    void write_timing(int);
 
     void sample(int);
 
@@ -30,7 +31,7 @@ private:
     chisquared *_chisq;
     Ran *_dice;
 
-    double _factor;
+    double _factor,_time_started;
 
     array_2d<double> _bases;
     array_1d<double> _sigma,_guess_max,_guess_min;

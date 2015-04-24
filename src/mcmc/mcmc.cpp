@@ -24,8 +24,10 @@ void mcmc::initialize(){
     _burn_in=0;
     _dice=NULL;
     _factor=2.38;
+    _time_started=double(time(NULL));
     
     sprintf(_name_root,"chain");
+    
 }
 
 mcmc::mcmc(int nchains, int seed, chisquared *fn){
@@ -57,6 +59,35 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
     
 }
 
+void mcmc::write_timing(int overwrite){
+    char name[2*letters];
+    sprintf(name,"%s_timing.txt",_name_root);
+
+    FILE *output;
+    
+    if(overwrite==1){
+        output=fopen(name,"w");
+        fprintf(output,"#calls time timeper timeperRaw overhead\n");
+    }
+    else{
+        output=fopen(name,"a");
+    }
+    
+    double overhead,timeSpent,timePer,timePerRaw;
+    
+    timeSpent=double(time(NULL))-_time_started;
+    timePer=timeSpent/double(_chisq->get_called());
+    
+    timePerRaw=_chisq->get_time_spent()/double(_chisq->get_called());
+    overhead = timePer-timePerRaw;
+    
+    fprintf(output,"%d %e %e %e %e\n",
+    _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead);
+    
+    fclose(output);
+
+}
+
 void mcmc::set_burnin(int bb, int cc){
     //_check_every will be however often we assess bases
     _burn_in=bb;
@@ -69,6 +100,7 @@ void mcmc::set_name_root(char *word){
         _name_root[i]=word[i];
     }
     _name_root[i]=0;
+    
 }
 
 double mcmc::acceptance_rate(){
@@ -140,6 +172,7 @@ void mcmc::update_bases(){
 
 void mcmc::sample(int nSamples){
 
+    write_timing(1);
     
     array_1d<double> trial,dir;
     trial.set_name("mcmc_sample_trial");
@@ -202,6 +235,7 @@ void mcmc::sample(int nSamples){
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain();
                 }
+                write_timing(0);
                 last_wrote=final_ct;
             }
         }
@@ -225,6 +259,7 @@ void mcmc::sample(int nSamples){
                     for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                         _chains(iChain)->write_burnin();
                     }
+                    write_timing(0);
                 }
                 last_updated=burn_ct;
                 update_ct++;
@@ -235,6 +270,7 @@ void mcmc::sample(int nSamples){
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_burnin();
                 }
+                write_timing(0);
             }
         }
    }
