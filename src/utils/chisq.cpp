@@ -1068,7 +1068,7 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     
 }
 
-double s_curve::operator()(array_1d<double> &in_pt) const{
+double s_curve::operator()(array_1d<double> &in_pt){
     
     if(dice==NULL){
          death_knell("you called operator before making bases");
@@ -1623,7 +1623,7 @@ void s_curve::build_boundary(double br){
     
 }
 
-double ellipses::operator()(array_1d<double> &in_pt) const{
+double ellipses::operator()(array_1d<double> &in_pt){
     
     if(dice==NULL){
          death_knell("you called operator before making bases");
@@ -1730,7 +1730,7 @@ void ellipses::build_boundary(double br){
     
 }
 
-double linear_ellipses::operator()(array_1d<double> &in_pt) const{
+double linear_ellipses::operator()(array_1d<double> &in_pt){
 
     if(dice==NULL){
          death_knell("you called operator before making bases");

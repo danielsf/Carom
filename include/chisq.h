@@ -335,7 +335,7 @@ public:
     s_curve();
     s_curve(int);
     s_curve(int,int);
-    virtual double operator()(array_1d<double>&) const;
+    virtual double operator()(array_1d<double>&);
     virtual void build_boundary(double);
     virtual double distance_to_center(int,array_1d<double>&);
     
@@ -358,7 +358,7 @@ public:
     ellipses();
     ellipses(int);
     ellipses(int,int);
-    virtual double operator()(array_1d<double>&) const;
+    virtual double operator()(array_1d<double>&);
     virtual void build_boundary(double);
 
 };
@@ -408,7 +408,7 @@ public:
 	linear_ellipses();
 	linear_ellipses(int);
 	linear_ellipses(int,int);
-	virtual double operator()(array_1d<double>&) const;
+	virtual double operator()(array_1d<double>&);
 	virtual void build_boundary(double);
 
 };
