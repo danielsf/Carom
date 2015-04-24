@@ -18,6 +18,7 @@ public:
     void set_dice(Ran*);
     void set_output_name(char*);
     
+    int is_current_point_valid();
     double get_current_point(int);
     double get_current_chisquared();
     int get_current_degeneracy();
@@ -44,12 +45,13 @@ public:
 private:
 
     int _dim,_n_written,_n_written_burnin;
+    int _current_degeneracy;
     
     double _current_chi;
     
     array_2d<double> _points;
     array_1d<int> _degeneracy;
-    array_1d<double> _chisquared;
+    array_1d<double> _chisquared,_current_point;
 
     Ran *_dice;
     

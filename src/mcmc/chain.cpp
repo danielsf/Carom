@@ -16,10 +16,12 @@ void chain::initialize(){
     _n_written=0;
     _n_written_burnin=0;
     _current_chi=2.0*exception_value;
+    _current_degeneracy=0;
     _output_name[0]=0;
     _points.set_name("chain_points");
     _degeneracy.set_name("chain_degeneracy");
     _chisquared.set_name("chain_chisquared");
+    _current_point.set_name("chain_current_point");
 }
 
 void chain::set_dim(int ii){
@@ -94,18 +96,26 @@ void chain::verify_points(int dex, char *routine){
     }
 }
 
+int chain::is_current_point_valid(){
+    if(_current_point.get_dim()==_dim){
+        return 1;
+    }
+    
+    return 0;
+}
+
 double chain::get_current_point(int dex){
     verify_dim(dex,"get_current_point");
     
-    return _points.get_data(_points.get_rows()-1,dex);
+    return _current_point.get_data(dex);
 }
 
 double chain::get_current_chisquared(){
-    return _chisquared.get_data(_chisquared.get_dim()-1);
+    return _current_chi;
 }
 
 int chain::get_current_degeneracy(){
-    return _degeneracy.get_data(_degeneracy.get_dim()-1);
+    return _current_degeneracy;
 }
 
 int chain::get_points(){
@@ -144,7 +154,7 @@ int chain::get_degeneracy(int dex){
 void chain::add_point(array_1d<double> &pt, double mu){
     is_dice_safe("add_point");
     
-    int add_it;
+    int i,add_it;
     double roll,ratio;
     
     add_it=0;
@@ -165,9 +175,25 @@ void chain::add_point(array_1d<double> &pt, double mu){
         _chisquared.add(mu);
         _degeneracy.add(1);
         _current_chi=mu;
+        _current_degeneracy=1;
+        for(i=0;i<_dim;i++){
+            _current_point.set(i,pt.get_data(i));
+        }
     }
     else{
-        _degeneracy.add_val(_degeneracy.get_dim()-1,1);
+        if(_degeneracy.get_dim()>0){
+            _degeneracy.add_val(_degeneracy.get_dim()-1,1);
+        }
+        else{
+            //This means that we recently wrote out the chain and all of the
+            //storage arrays are empty
+
+            _points.add_row(pt);
+            _chisquared.add(mu);
+            _degeneracy.add(1);
+        }
+        
+        _current_degeneracy++;
     }
 }
 
@@ -188,10 +214,11 @@ void chain::write_burnin(){
     }
     
     _n_written_burnin+=_points.get_rows();
-    
+
     _points.reset_preserving_room();
     _degeneracy.reset_preserving_room();
     _chisquared.reset_preserving_room();
+
 }
 
 void chain::write_chain(){
@@ -206,7 +233,7 @@ void chain::write_chain(){
     else{
         write(_output_name,1);
     }
-
+    
     _n_written+=_points.get_rows();
 
     _points.reset_preserving_room();
@@ -248,6 +275,7 @@ void chain::copy(const chain &in){
     _chisquared.reset();
     _dice=in._dice;
     _current_chi=in._current_chi;
+    _current_degeneracy=in._current_degeneracy;
     _n_written=in._n_written;
     _n_written_burnin=in._n_written_burnin;
     
@@ -256,6 +284,11 @@ void chain::copy(const chain &in){
     int i,j;
     for(i=0;i<letters;i++){
         _output_name[i]=in._output_name[i];
+    }
+    
+    _current_point.reset();
+    for(i=0;i<in._current_point.get_dim();i++){
+        _current_point.set(i,in._current_point.get_data(i));
     }
     
     _points.set_cols(_dim);

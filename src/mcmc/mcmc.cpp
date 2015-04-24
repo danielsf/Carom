@@ -20,9 +20,8 @@ void mcmc::initialize(){
     _guess_min.set_name("mcmc_guess_min");
     _guess_max.set_name("mcmc_guess_max");
     _chisq = NULL;
-    _check_every=1000;
-    _last_set=0;
-    _stable_bases=0;
+    _check_every=0;
+    _burn_in=0;
     _dice=NULL;
     
     sprintf(_name_root,"chain");
@@ -57,9 +56,10 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
     
 }
 
-void mcmc::set_check_every(int ii){
+void mcmc::set_burnin(int bb, int cc){
     //_check_every will be however often we assess bases
-    _check_every=ii;
+    _burn_in=bb;
+    _check_every=cc;
 }
 
 void mcmc::set_name_root(char *word){
@@ -85,11 +85,11 @@ double mcmc::acceptance_rate(){
     
 }
 
-int mcmc::update_bases(){
+void mcmc::update_bases(){
     array_2d<double> covar;
     covar.set_name("mcmc_update_bases_covar");
     
-    printf("updating basis\n");
+    printf("updating basis -- acceptance %e\n",acceptance_rate());
     _chains.get_covariance_matrix(0.1,2,covar);
     
     array_2d<double> old_basis,evecs;
@@ -127,17 +127,12 @@ int mcmc::update_bases(){
         }
     }
     
-    if(dotMax<0.1){
-        return 0;
-    }
-    else{
+    printf("dotMax %e\n",dotMax);
+    if(dotMax>0.1){
         for(i=0;i<_chains.get_n_chains();i++){
             _chains(i)->write_burnin();
         }
-        return 1;
     }
-    
-    
 }
 
 void mcmc::sample(int nSamples){
@@ -148,8 +143,7 @@ void mcmc::sample(int nSamples){
     dir.set_name("mcmc_sample_dir");
     
     int iChain,ix,iy;
-    int lastChecked,checkCt,keptBases;
-    int finalCt;
+    int final_ct,burn_ct,total_ct,last_updated,last_wrote;
     
     double factor=2.38/sqrt(double(_chisq->get_dim()));
     double mu,acceptance,norm;
@@ -160,24 +154,23 @@ void mcmc::sample(int nSamples){
         _chains(iChain)->set_output_name(word);
     }
     
-    finalCt=0;
-    checkCt=0;
-    lastChecked=0;
-    keptBases=0;
+    final_ct=0;
+    burn_ct=0;
+    total_ct=0;
+    last_updated=0;
+    last_wrote=0;
     
-    while(finalCt<nSamples){
+    while(final_ct<nSamples){
         for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-            
             mu=2.0*exception_value;
             while(mu>exception_value){
-                if(_chains(iChain)->get_points()>0){
+                if(_chains(iChain)->is_current_point_valid()==1){
                     for(ix=0;ix<_chisq->get_dim();ix++){
                         trial.set(ix,_chains(iChain)->get_current_point(ix));
                         dir.set(ix,normal_deviate(_dice,0.0,1.0));
                     }
                     dir.normalize();
                     norm=factor*normal_deviate(_dice,0.0,1.0);
-            
             
                     for(ix=0;ix<_chisq->get_dim();ix++){
                         for(iy=0;iy<_chisq->get_dim();iy++){
@@ -196,40 +189,34 @@ void mcmc::sample(int nSamples){
             _chains(iChain)->add_point(trial,mu);
             
         }
-        checkCt++;
+        total_ct++;
         
-        if(checkCt-lastChecked>_check_every && _stable_bases==0){
-            acceptance=acceptance_rate();
-           
-            if(acceptance>1.0/6.0 && acceptance<1.0/2.5){
-                keptBases++;
-            }
-            else{
-                ix=update_bases();
-                if(ix==0){
-                    keptBases++;
+        if(total_ct>=_burn_in){
+            final_ct++;
+            if(final_ct>last_wrote+1000){
+                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                    _chains(iChain)->write_chain();
                 }
-                else{
-                    keptBases=0;
-                    checkCt=0;
+                last_wrote=final_ct;
+            }
+        }
+        else{
+            burn_ct++;
+            if(burn_ct-last_updated>_check_every){
+                update_bases();
+                last_updated=burn_ct;
+            }
+            
+            if(burn_ct>=_burn_in){
+                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                    _chains(iChain)->write_burnin();
                 }
             }
-            lastChecked=checkCt;
         }
-        else if(checkCt-lastChecked>_check_every && _stable_bases==1){
-            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                _chains(iChain)->write_chain();
-            }
-            lastChecked=checkCt;
-        }
-        
-        if(keptBases>2){
-            _stable_bases=1;
-        }
-        
-        if(_stable_bases==1){
-            finalCt++;
-        }
+   }
+
+   for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+       _chains(iChain)->write_chain();
    }
 
 }
@@ -727,7 +714,7 @@ void mcmc::guess_bases(int seedPoints){
             dd+=sqrt(d);
             
         }
-        _sigma.set(ix,dd/6.0);
+        _sigma.set(ix,dd/4.0);
     }
     
     printf("finished guessing bases; %d\n",_chisq->get_called());
