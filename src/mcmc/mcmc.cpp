@@ -44,19 +44,7 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
     _chains.initialize(nchains,_chisq->get_dim(),_dice);
     
     _bases.set_cols(_chisq->get_dim());
-    int i,j;
-    for(i=0;i<_chisq->get_dim();i++){
-        _sigma.set(i,1.0);
-        for(j=0;j<_chisq->get_dim();j++){
-            if(i==j){
-                _bases.set(i,j,1.0);
-            }
-            else{
-               _bases.set(i,j,0.0);
-            }
-        }
-    }
-    
+
 }
 
 void mcmc::write_timing(int overwrite){
@@ -177,6 +165,21 @@ void mcmc::update_bases(){
 void mcmc::sample(int nSamples){
 
     write_timing(1);
+    
+    int i,j;
+    if(_bases.get_rows()==0){
+        for(i=0;i<_chisq->get_dim();i++){
+            _sigma.set(i,0.25*(_guess_max.get_data(i)-_guess_min.get_data(i)));
+            for(j=0;j<_chisq->get_dim();j++){
+                if(i==j){
+                    _bases.set(i,j,1.0);
+                }
+                else{
+                    _bases.set(i,j,0.0);
+                }
+            }
+        }
+    }
     
     array_1d<double> trial,dir;
     trial.set_name("mcmc_sample_trial");
