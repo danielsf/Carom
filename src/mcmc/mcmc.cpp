@@ -169,7 +169,7 @@ void mcmc::sample(int nSamples){
     int i,j;
     if(_bases.get_rows()==0){
         for(i=0;i<_chisq->get_dim();i++){
-            _sigma.set(i,0.25*(_guess_max.get_data(i)-_guess_min.get_data(i)));
+            _sigma.set(i,0.1*(_guess_max.get_data(i)-_guess_min.get_data(i)));
             for(j=0;j<_chisq->get_dim();j++){
                 if(i==j){
                     _bases.set(i,j,1.0);
