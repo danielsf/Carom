@@ -1634,7 +1634,7 @@ void node::guess_bases(array_2d<double> &bases){
     evecs.set_cols(_chisquared->get_dim());
     
     try{
-        eval_symm(covar,evecs,evals);
+        eval_symm(covar,evecs,evals,0.1);
     }
     catch(int iex){
         printf("Guess failed on of eigen vectors\n");

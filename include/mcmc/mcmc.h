@@ -19,6 +19,7 @@ public:
     void set_max(int,double);
     void guess_bases(int);
     double acceptance_rate();
+    void update_bases();
 
 private:
 

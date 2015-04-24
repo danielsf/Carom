@@ -263,10 +263,11 @@ int chain::get_thinby(double threshold, int burnin, int step){
     ///find the amount to thinby to achieve the specified threshold
     ///burnin is the number of points to discard
     
-    array_1d<double> means,covars;
+    array_1d<double> means,covars,vars;
     int i,j,ix,total;
     means.set_name("chain_get_thinby_means");
     covars.set_name("chain_get_thinby_covars");
+    vars.set_name("chain_get_thinby_vars");
     
     array_1d<int> dexes;
     dexes.set_name("chain_get_thinby_dexes");
@@ -277,12 +278,14 @@ int chain::get_thinby(double threshold, int burnin, int step){
     }
     
     int thinby,thinbyBest,i1,i2;
-    double covarMax,covarMaxBest,lastVal;
+    double covarMax,covarMaxBest,mu;
     
     thinbyBest=-1;
     covarMaxBest=2.0*exception_value;
     
     means.set_dim(_dim);
+    vars.set_dim(_dim);
+    covars.set_dim(_dim);
     
     for(thinby=step;covarMaxBest>threshold && thinby>(total-burnin)/10; thinby+=step){
        get_thinned_indices(thinby,burnin,dexes);
@@ -295,6 +298,17 @@ int chain::get_thinby(double threshold, int burnin, int step){
        
        for(i=0;i<_dim;i++){
            means.divide_val(i,double(dexes.get_dim()));
+       }
+       
+       vars.zero();
+       for(i=0;i<dexes.get_dim();i++){
+           for(j=0;j<_dim;j++){
+               vars.add_val(j,power(means.get_data(j)-_points.get_data(dexes.get_data(i),j),2));
+           }
+       }
+       
+       for(i=0;i<_dim;i++){
+           vars.divide_val(i,double(dexes.get_dim()-1));
        }
        
        covars.zero();
@@ -312,8 +326,12 @@ int chain::get_thinby(double threshold, int burnin, int step){
                covars.divide_val(i,double(dexes.get_dim()-2));
            }
            
-           if(fabs(covars.get_data(i))>covarMax){
-               covarMax=fabs(covars.get_data(i));
+           covars.divide_val(i,vars.get_data(i));
+           if(!isnan(covars.get_data(i))){
+               mu=sqrt(fabs(covars.get_data(i)));
+               if(mu>covarMax){
+                   covarMax=mu;
+               }
            }
        }
        

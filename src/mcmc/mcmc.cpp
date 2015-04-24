@@ -449,40 +449,22 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOu
     
     evecs.set_cols(_chisq->get_dim());
     
-    int i1=_chisq->get_dim()/2;
     try{
-        eval_symm(covar,evecs,evals,i1,_chisq->get_dim(),1,0.001);
+        eval_symm(covar,evecs,evals,0.001);
     }
     catch(int iex){
-        printf("Guess failed on first batch of eigen vectors\n");
+        printf("Guess failed on eigen vectors\n");
         throw -1;
     }
     
-    for(ix=0;ix<i1;ix++){
+    for(ix=0;ix<_chisq->get_dim();ix++){
         for(iy=0;iy<_chisq->get_dim();iy++){
-            bases.set(ix,iy,evecs.get_data(iy,ix));
+            bases.set(ix,iy,evecs.get_data(ix,iy));
         }
         bases(ix)->normalize();
     }
     
     printf("got first batch of guessed bases\n");
-    
-    try{
-        eval_symm(covar,evecs,evals,_chisq->get_dim()-i1,_chisq->get_dim(),-1,0.001);
-    }
-    catch(int iex){
-        printf("Guess failed on second batch of eigen vectors\n");
-        throw -1;
-    }
-    
-    for(ix=i1;ix<_chisq->get_dim();ix++){
-        for(iy=0;iy<_chisq->get_dim();iy++){
-            bases.set(ix,iy,evecs.get_data(iy,ix-i1));
-        }
-        bases(ix)->normalize();
-    }
-    
-    printf("got second batch of guessed bases\n");
     
 }
 
