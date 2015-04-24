@@ -278,7 +278,7 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
             for(j=0;j<matrix.get_cols();j++){
                 test.set(j,0.0);
                 for(k=0;k<matrix.get_cols();k++){
-                    test.add_val(j,matrix.get_data(j,k)*vectors.get_data(k,i));
+                    test.add_val(j,matrix.get_data(j,k)*vectors.get_data(i,k));
                 }
                 test.divide_val(j,values.get_data(i));
             }
