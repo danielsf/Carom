@@ -67,7 +67,7 @@ void mcmc::write_timing(int overwrite){
     
     if(overwrite==1){
         output=fopen(name,"w");
-        fprintf(output,"#calls time timeper timeperRaw overhead\n");
+        fprintf(output,"#calls time timeper timeperRaw overhead acceptance\n");
     }
     else{
         output=fopen(name,"a");
@@ -81,8 +81,8 @@ void mcmc::write_timing(int overwrite){
     timePerRaw=_chisq->get_time_spent()/double(_chisq->get_called());
     overhead = timePer-timePerRaw;
     
-    fprintf(output,"%d %e %e %e %e\n",
-    _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead);
+    fprintf(output,"%d %e %e %e %e %e\n",
+    _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead,acceptance_rate());
     
     fclose(output);
 
@@ -112,6 +112,10 @@ double mcmc::acceptance_rate(){
             rows++;
             ct+=_chains(ichain)->get_degeneracy(ipt);
         }
+    }
+    
+    if(ct==0){
+        return 0.0;
     }
     
     return double(rows)/double(ct);
@@ -231,11 +235,10 @@ void mcmc::sample(int nSamples){
         if(burn_ct>=_burn_in){
             final_ct++;
             if(final_ct>last_wrote+1000){
-                printf("writing chain -- acceptance %e\n",acceptance_rate());
+                write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain();
                 }
-                write_timing(0);
                 last_wrote=final_ct;
             }
         }
@@ -255,11 +258,11 @@ void mcmc::sample(int nSamples){
                             _factor*=1.25;
                         }
                     }
-                
+                    
+                    write_timing(0);
                     for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                         _chains(iChain)->write_burnin();
                     }
-                    write_timing(0);
                 }
                 last_updated=burn_ct;
                 update_ct++;
@@ -267,10 +270,10 @@ void mcmc::sample(int nSamples){
             
             if(burn_ct>=_burn_in){
                 printf("writing burnin\n");
+                write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_burnin();
                 }
-                write_timing(0);
             }
         }
    }
