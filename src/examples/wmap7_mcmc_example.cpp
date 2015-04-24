@@ -61,7 +61,7 @@ for(i=0;i<6;i++){
     chisq.set_min(i,min.get_data(i));
 }
 
-mcmc mcmc_test(6,seed,&chisq);
+mcmc mcmc_test(4,seed,&chisq);
 for(i=0;i<6;i++){
     mcmc_test.set_min(i,min.get_data(i));
     mcmc_test.set_max(i,max.get_data(i));
