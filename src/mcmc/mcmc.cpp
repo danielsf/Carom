@@ -85,7 +85,7 @@ double mcmc::acceptance_rate(){
     
 }
 
-void mcmc::update_bases(){
+int mcmc::update_bases(){
     array_2d<double> covar;
     covar.set_name("mcmc_update_bases_covar");
     
@@ -127,10 +127,111 @@ void mcmc::update_bases(){
         }
     }
     
-    for(i=0;i<_chains.get_n_chains();i++){
-        _chains(i)->write_burnin();
+    if(dotMax<0.1){
+        return 0;
+    }
+    else{
+        for(i=0;i<_chains.get_n_chains();i++){
+            _chains(i)->write_burnin();
+        }
+        return 1;
     }
     
+    
+}
+
+void mcmc::sample(int nSamples){
+
+    
+    array_1d<double> trial,dir;
+    trial.set_name("mcmc_sample_trial");
+    dir.set_name("mcmc_sample_dir");
+    
+    int iChain,ix,iy;
+    int lastChecked,checkCt,keptBases;
+    int finalCt;
+    
+    double factor=2.38/sqrt(double(_chisq->get_dim()));
+    double mu,acceptance,norm;
+    
+    char word[2*letters];
+    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+        sprintf(word,"%s_%d.txt",_name_root,iChain);
+        _chains(iChain)->set_output_name(word);
+    }
+    
+    finalCt=0;
+    checkCt=0;
+    lastChecked=0;
+    keptBases=0;
+    
+    while(finalCt<nSamples){
+        for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+            
+            mu=2.0*exception_value;
+            while(mu>exception_value){
+                if(_chains(iChain)->get_points()>0){
+                    for(ix=0;ix<_chisq->get_dim();ix++){
+                        trial.set(ix,_chains(iChain)->get_current_point(ix));
+                        dir.set(ix,normal_deviate(_dice,0.0,1.0));
+                    }
+                    dir.normalize();
+                    norm=factor*normal_deviate(_dice,0.0,1.0);
+            
+            
+                    for(ix=0;ix<_chisq->get_dim();ix++){
+                        for(iy=0;iy<_chisq->get_dim();iy++){
+                            trial.add_val(iy,norm*_sigma.get_data(ix)*_bases.get_data(ix,iy));
+                        }
+                    }
+                }
+                else{
+                    for(ix=0;ix<_chisq->get_dim();ix++){
+                        trial.set(ix,_guess_min.get_data(ix)+_dice->doub()*(_guess_max.get_data(ix)-_guess_min.get_data(ix)));
+                    }
+                }
+                
+                mu=_chisq[0](trial);
+            }
+            _chains(iChain)->add_point(trial,mu);
+            
+        }
+        checkCt++;
+        
+        if(checkCt-lastChecked>_check_every && _stable_bases==0){
+            acceptance=acceptance_rate();
+           
+            if(acceptance>1.0/6.0 && acceptance<1.0/2.5){
+                keptBases++;
+            }
+            else{
+                ix=update_bases();
+                if(ix==0){
+                    keptBases++;
+                }
+                else{
+                    keptBases=0;
+                    checkCt=0;
+                }
+            }
+            lastChecked=checkCt;
+        }
+        else if(checkCt-lastChecked>_check_every && _stable_bases==1){
+            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                _chains(iChain)->write_chain();
+            }
+            lastChecked=checkCt;
+        }
+        
+        if(keptBases>2){
+            _stable_bases=1;
+        }
+        
+        if(_stable_bases==1){
+            finalCt++;
+        }
+   }
+
 }
 
 

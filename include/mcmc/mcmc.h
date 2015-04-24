@@ -18,10 +18,11 @@ public:
     void set_max(int,double);
     void guess_bases(int);
     double acceptance_rate();
-    void update_bases();
+    int update_bases();
     void write_burnin();
     void write_chains();
 
+    void sample(int);
 
 private:
 
