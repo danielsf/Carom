@@ -1635,7 +1635,7 @@ void node::guess_bases(array_2d<double> &bases){
     
     int i1=_chisquared->get_dim()/2;
     try{
-        eval_symm(covar,evecs,evals,i1,_chisquared->get_dim(),1,0.001);
+        eval_symm_guts(covar,evecs,evals,i1,_chisquared->get_dim(),1,0.001);
     }
     catch(int iex){
         printf("Guess failed on first batch of eigen vectors\n");
@@ -1652,7 +1652,7 @@ void node::guess_bases(array_2d<double> &bases){
     printf("got first batch of guessed bases\n");
     
     try{
-        eval_symm(covar,evecs,evals,_chisquared->get_dim()-i1,_chisquared->get_dim(),-1,0.001);
+        eval_symm_guts(covar,evecs,evals,_chisquared->get_dim()-i1,_chisquared->get_dim(),-1,0.001);
     }
     catch(int iex){
         printf("Guess failed on second batch of eigen vectors\n");

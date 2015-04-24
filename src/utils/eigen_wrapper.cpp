@@ -230,11 +230,46 @@ void invert_lapack(array_2d<double> &matin, array_2d<double> &min, int verb){
 
 }
 
-void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals, int nev, int n, int order){
-    eval_symm(m,vecs,vals,nev,n,order,-1.0);
+void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<double> &values){
+    eval_symm(matrix,vectors,values,-1.0);
 }
 
-void eval_symm(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals,
+void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<double> &values, double check){
+    int ix,iy;
+    int batch1=matrix.get_rows()/2;
+    
+    array_1d<double> temp_vals;
+    temp_vals.set_name("eval_symm_temp_vals");
+    array_2d<double> buffer;
+    buffer.set_name("eval_symm_buffer");
+    buffer.set_cols(matrix.get_cols());
+    
+    eval_symm_guts(matrix,buffer,temp_vals,batch1,matrix.get_cols(),1,check);
+    
+    for(ix=0;ix<batch1;ix++){
+        values.set(ix,temp_vals.get_data(ix));
+        for(iy=0;iy<matrix.get_cols();iy++){
+            vectors.set(ix,iy,buffer.get_data(iy,ix));
+        }
+    }
+    
+    int batch2=matrix.get_cols()-batch1;
+    
+    eval_symm_guts(matrix,buffer,temp_vals,batch2,matrix.get_cols(),-1,check);
+    
+    for(ix=0;ix<batch2;ix++){
+        values.set(ix+batch1,temp_vals.get_data(ix));
+        for(iy=0;iy<matrix.get_cols();iy++){
+            vectors.set(ix+batch1,iy,buffer.get_data(iy,ix));
+        }
+    }
+}
+
+void eval_symm_guts(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals, int nev, int n, int order){
+    eval_symm_guts(m,vecs,vals,nev,n,order,-1.0);
+}
+
+void eval_symm_guts(array_2d<double> &m, array_2d<double> &vecs, array_1d<double> &vals,
 int nev, int n, int order, double check){
 //this will use ARPACK to get nev eigenvalues and vectors of a symmetric
 // n-by-n matrix

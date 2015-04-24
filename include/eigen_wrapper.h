@@ -36,9 +36,13 @@ void invert_lapack(array_2d<double>&,array_2d<double>&,int);
 
 void solve_lapack_nbyn(array_2d<double>&,array_1d<double>&,array_1d<double>&);
 
-void eval_symm(array_2d<double>&,array_2d<double>&,array_1d<double>&,int,int,int);
+void eval_symm(array_2d<double>&, array_2d<double>&, array_1d<double>&);
 
-void eval_symm(array_2d<double>&,array_2d<double>&,array_1d<double>&,int,int,int,double);
+void eval_symm(array_2d<double>&, array_2d<double>&, array_1d<double>&, double);
+
+void eval_symm_guts(array_2d<double>&,array_2d<double>&,array_1d<double>&,int,int,int);
+
+void eval_symm_guts(array_2d<double>&,array_2d<double>&,array_1d<double>&,int,int,int,double);
 
 double eigen_check(array_2d<double>&,array_1d<double>&,double,int);
 
