@@ -3,6 +3,7 @@
 
 #include "containers.h"
 #include "goto_tools.h"
+#include "kde.h"
 
 class chain{
 
@@ -99,7 +100,7 @@ private:
     int _n_chains;
     int _dim;
     
-    asymm_array_2d<int> _independent_samples;
+    asymm_array_2d<int> _independent_sample_dexes;
 
     void verify_chains(int,char*);
 

@@ -460,7 +460,7 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     
     _data = new chain[_n_chains];
     
-    _independent_samples.set_name("arrayOfChains_independent_samples");
+    _independent_sample_dexes.set_name("arrayOfChains_independent_sample_dexes");
     
     int i;
     for(i=0;i<_n_chains;i++){
@@ -693,7 +693,7 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
 
 void arrayOfChains::get_independent_samples(double threshold, int limit){
     
-    _independent_samples.reset();
+    _independent_sample_dexes.reset();
     
     int ic;
     int thinby,thinbyMax;
@@ -710,13 +710,13 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
     temp_dexes.set_name("arrayOfChains_temp_dexes");
     for(ic=0;ic<_n_chains;ic++){
         _data[ic].get_thinned_indices(thinbyMax, 0, temp_dexes, limit);
-        _independent_samples.add_row(temp_dexes);
+        _independent_sample_dexes.add_row(temp_dexes);
     }
     
 }
 
 void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_1d<double> &W){
-    if(_independent_samples.get_rows()==0){
+    if(_independent_sample_dexes.get_rows()==0){
         printf("WARNING cannot calculate R; you have no independent samples\n");
         exit(1);
     }
@@ -756,16 +756,16 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
     totalPts=0;
     
     for(ic=0;ic<_n_chains;ic++){
-        for(ip=0;ip<_independent_samples.get_cols(ic);ip++){
+        for(ip=0;ip<_independent_sample_dexes.get_cols(ic);ip++){
             totalPts++;
-            dex=_independent_samples.get_data(ic,ip);
+            dex=_independent_sample_dexes.get_data(ic,ip);
             for(ix=0;ix<_dim;ix++){
                 chainMean.add_val(ic,ix,_data[ic].get_point(dex,ix));
                 totalMean.add_val(ix,_data[ic].get_point(dex,ix));
             }
         }
         for(ix=0;ix<_dim;ix++){
-            chainMean.divide_val(ic,ix,double(_independent_samples.get_cols(ic)));
+            chainMean.divide_val(ic,ix,double(_independent_sample_dexes.get_cols(ic)));
         }
     }
     
@@ -784,11 +784,11 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
     for(ix=0;ix<_dim;ix++){
         for(ic=0;ic<_n_chains;ic++){
             mu=0.0;
-            for(ip=0;ip<_independent_samples.get_cols(ic);ip++){
-                dex=_independent_samples.get_data(ic,ip);
+            for(ip=0;ip<_independent_sample_dexes.get_cols(ic);ip++){
+                dex=_independent_sample_dexes.get_data(ic,ip);
                 mu+=power(_data[ic].get_point(dex,ix)-chainMean.get_data(ic,ix),2);
             }
-            mu=mu/double(_independent_samples.get_cols(ic)-1);
+            mu=mu/double(_independent_sample_dexes.get_cols(ic)-1);
             W.add_val(ix,mu);
         }
         W.divide_val(ix,double(_n_chains));
@@ -797,7 +797,7 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
     double nn;
     nn=0.0;
     for(ic=0;ic<_n_chains;ic++){
-        nn+=double(_independent_samples.get_cols(ic));
+        nn+=double(_independent_sample_dexes.get_cols(ic));
     }
     nn=nn/double(_n_chains);
     
@@ -810,8 +810,8 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
 
 }
 
-void plot_contours(int ix, int iy, char *nameRoot){
-    if(_independent_samples.get_rows()==0){
+void arrayOfChains::plot_contours(int ix, int iy, char *nameRoot){
+    if(_independent_sample_dexes.get_rows()==0){
         printf("WARNING cannot plot contours; no independent samples\n");
         exit(1);
     }
