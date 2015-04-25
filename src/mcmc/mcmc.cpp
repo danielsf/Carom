@@ -804,7 +804,7 @@ void mcmc::guess_bases(int seedPoints){
         for(i=0;i<_chains.get_n_chains();i++){
             mu=2.0*exception_value;
             while(mu>exception_value){
-                norm=normal_deviate(_dice,0.0,2.0);
+                norm=fabs(normal_deviate(_dice,0.0,2.0))+2.0;
                 for(j=0;j<_chisq->get_dim();j++){
                     temp_pt.set(j,center.get_data(j));
                     dir.set(j,normal_deviate(_dice,0.0,1.0));
