@@ -37,15 +37,15 @@ object/containers.o: src/utils/containers.cpp include/containers.h
 object/goto_tools.o: include/goto_tools.h src/utils/goto_tools.cpp object/containers.o
 	$(gg) -c -o object/goto_tools.o src/utils/goto_tools.cpp
 
-object/kde.o: include/kde.h src/utils/kde.cpp object/goto_tools.o
-	$(gg) -c -o object/kde.o src/utils/kde.cpp
-
 test_containers: object/containers.o src/tests/test_containers.cpp object/goto_tools.o
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
 
 object/kd.o: src/utils/kd.cpp include/kd.h object/containers.o object/goto_tools.o
 	$(gg) -c -o object/kd.o src/utils/kd.cpp
+
+object/kde.o: include/kde.h src/utils/kde.cpp object/goto_tools.o object/kd.o
+	$(gg) -c -o object/kde.o src/utils/kde.cpp
 
 test_kd: src/tests/test_kd.cpp object/kd.o
 	$(gg) -o bin/test_kd src/tests/test_kd.cpp object/containers.o object/goto_tools.o \
@@ -148,6 +148,11 @@ object/wmap_likelihood_function.o
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 
+wmap7reader: src/examples/wmap7_mcmc_reader_example.cpp object/chain.o
+	$(gg) -o bin/wmap7reader src/examples/wmap7_mcmc_reader_example.cpp \
+	object/containers.o object/goto_tools.o object/chain.o \
+	object/kde.o object/kd.o \
+	$(LIBRARIES)
 
 wmap7_2d: src/examples/wmap7_2d_example.cpp object/carom.o \
 object/wmap_likelihood_function.o
