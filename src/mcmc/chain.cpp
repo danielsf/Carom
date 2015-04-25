@@ -810,3 +810,9 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
 
 }
 
+void plot_contours(int ix, int iy, char *nameRoot){
+    if(_independent_samples.get_rows()==0){
+        printf("WARNING cannot plot contours; no independent samples\n");
+        exit(1);
+    }
+}

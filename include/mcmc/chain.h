@@ -91,6 +91,7 @@ public:
     
     void get_independent_samples(double,int);
     void calculate_R(array_1d<double>&, array_1d<double>&, array_1d<double>&);
+    void plot_contours(int,int,char*);
 
 private:
     chain *_data;
