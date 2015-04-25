@@ -57,6 +57,9 @@ chain::chain(int ii){
 chain::chain(int ii, char *input_name){
     initialize();
     set_dim(ii);
+}
+
+void chain::read_chain(char *input_name){
     
     int i,ct;
     double chisq,mu;

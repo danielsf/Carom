@@ -14,6 +14,8 @@ public:
     chain(int);
     chain(int, char*);
     
+    void read_chain(char*);
+    
     void set_dim(int);
     void set_dice(Ran*);
     void set_output_name(char*);
