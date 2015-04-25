@@ -37,6 +37,9 @@ object/containers.o: src/utils/containers.cpp include/containers.h
 object/goto_tools.o: include/goto_tools.h src/utils/goto_tools.cpp object/containers.o
 	$(gg) -c -o object/goto_tools.o src/utils/goto_tools.cpp
 
+object/kde.o: include/kde.h src/utils/kde.cpp object/goto_tools.o
+	$(gg) -c -o object/kde.o src/utils/kde.cpp
+
 test_containers: object/containers.o src/tests/test_containers.cpp object/goto_tools.o
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
