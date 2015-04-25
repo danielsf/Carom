@@ -708,7 +708,7 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
     
     thinbyMax=-1;
     for(ic=0;ic<_n_chains;ic++){
-        thinby=_data[ic].get_thinby(0.1,0,10,limit);
+        thinby=_data[ic].get_thinby(threshold,0,10,limit);
         if(thinby>thinbyMax){
             thinbyMax=thinby;
         }
@@ -899,4 +899,20 @@ int arrayOfChains::get_n_samples(){
 
 double arrayOfChains::get_sample(int dex, int ix){
     return _independent_samples.get_data(dex,ix);
+}
+
+double arrayOfChains::acceptance_rate(){
+    int ct,rows;
+    int i,j;
+    
+    ct=0;
+    rows=0;
+    for(i=0;i<_n_chains;i++){
+        for(j=0;j<_data[i].get_rows();j++){
+            rows++;
+            ct+=_data[i].get_degeneracy(j);
+        }
+    }
+    
+    return double(rows)/double(ct);
 }

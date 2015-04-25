@@ -97,6 +97,8 @@ public:
     int get_n_samples();
     double get_sample(int,int);
 
+    double acceptance_rate();
+
 private:
     chain *_data;
     Ran *_dice;
