@@ -419,7 +419,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
            
            covars.divide_val(i,vars.get_data(i));
            if(!isnan(covars.get_data(i))){
-               mu=sqrt(fabs(covars.get_data(i)));
+               mu=fabs(covars.get_data(i));
                if(mu>covarMax){
                    covarMax=mu;
                    maxDex=i;
@@ -435,7 +435,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
        }
        
     }
-    printf("thinby %d best %e pts %d dex %d\n",thinby,covarMaxBest,bestPts,bestDex);
+    printf("thinby %d best %e pts %d dex %d\n",thinbyBest,covarMaxBest,bestPts,bestDex);
     return thinbyBest;
     
 }
