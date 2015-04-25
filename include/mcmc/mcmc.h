@@ -16,7 +16,7 @@ public:
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
-    void guess_bases(int);
+    void guess_bases(double,int);
     double acceptance_rate();
     void update_bases();
     void write_burnin();
@@ -43,7 +43,7 @@ private:
     void initialize();
     void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
     void find_fisher_matrix(array_2d<double>&, array_1d<double>&, double*);
-    void bisection(array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
+    void bisection(double, array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
 
 };
 
