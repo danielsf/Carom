@@ -321,7 +321,7 @@ void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output, i
     ct=thinby-(burnin-ctStart);
     ctStart=ct;
     
-    total=0;   
+    total=ct;   
     for(;i<_points.get_rows() && (limit<=0 || total<limit);i++){
         if(ct+_degeneracy.get_data(i)>=thinby){
             currentDegen=_degeneracy.get_data(i);
@@ -689,6 +689,30 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
         }
     }
 
+}
+
+void arrayOfChains::get_independent_samples(double threshold, int limit){
+    
+    _independent_samples.reset();
+    
+    int ic;
+    int thinby,thinbyMax;
+    
+    thinbyMax=-1;
+    for(ic=0;ic<_n_chains;ic++){
+        thinby=_data[ic].get_thinby(0.1,0,10,limit);
+        if(thinby>thinbyMax){
+            thinbyMax=thinby;
+        }
+    }
+    
+    array_1d<int> temp_dexes;
+    temp_dexes.set_name("arrayOfChains_temp_dexes");
+    for(ic=0;ic<_n_chains;ic++){
+        _data[ic].get_thinned_indices(thinbyMax, 0, temp_dexes, limit);
+        _independent_samples.add_row(temp_dexes);
+    }
+    
 }
 
 void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_1d<double> &W){

@@ -89,6 +89,7 @@ public:
 
     chain* operator()(int);
     
+    void get_independent_samples(double,int);
     void calculate_R(array_1d<double>&, array_1d<double>&, array_1d<double>&);
 
 private:
