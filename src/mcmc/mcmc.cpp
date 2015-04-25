@@ -160,11 +160,14 @@ void mcmc::update_bases(){
     }
     
     printf("dotMax %e\n",dotMax);
+    validate_bases();
 }
 
 void mcmc::sample(int nSamples){
 
     write_timing(1);
+    
+    validate_bases();
     
     int i,j;
     if(_bases.get_rows()==0){
@@ -829,3 +832,46 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
     }
     
 } 
+
+void mcmc::validate_bases(){
+    array_1d<double> temp;
+    temp.set_name("mcmc_validate_bases");
+    
+    int ix,iy,i;
+    double err,maxerr,dot,tol=0.01;
+    int isOrth,maxIsOrth;
+    for(ix=0;ix<_chisq->get_dim();ix++){
+        _bases(ix)->normalize();
+    }
+    
+    maxerr=-1.0;
+    for(ix=0;ix<_chisq->get_dim();ix++){
+        for(iy=ix;iy<_chisq->get_dim();iy++){
+            dot=0.0;
+            for(i=0;i<_chisq->get_dim();i++){
+                dot+=_bases.get_data(ix,i)*_bases.get_data(iy,i);
+            }
+            
+            if(ix==iy){
+                isOrth=0;
+                err=fabs(1.0-sqrt(dot));
+            }
+            else{
+                isOrth=1;
+                err=sqrt(fabs(dot));
+            }
+            
+            if(err>maxerr){
+                maxIsOrth=isOrth;
+                maxerr=err;
+            }
+            
+        }
+    }
+    
+    if(maxerr>tol){
+        printf("WARNING bases max err %e\n",maxerr);
+        printf("isOrth %d\n",maxIsOrth);
+        exit(1);
+    }
+}

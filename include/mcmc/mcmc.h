@@ -41,6 +41,7 @@ private:
     int _check_every,_burn_in;
 
     void initialize();
+    void validate_bases();
     void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
     void find_fisher_matrix(array_2d<double>&, array_1d<double>&, double*);
     void bisection(double, array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
