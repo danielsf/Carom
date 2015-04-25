@@ -447,6 +447,7 @@ arrayOfChains::arrayOfChains(){
     _data=NULL;
     _n_chains=0;
     _dim=0;
+
 }
 
 void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
@@ -455,6 +456,8 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     _dice=dice;
     
     _data = new chain[_n_chains];
+    
+    _independent_samples.set_name("arrayOfChains_independent_samples");
     
     int i;
     for(i=0;i<_n_chains;i++){
@@ -644,7 +647,7 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
     }
     
     array_1d<double> means;
-    means.set_name("arrayOfchains_get_covar_means");
+    means.set_name("arrayOfChains_get_covar_means");
     means.set_dim(_dim);
     means.zero();
     for(i=0;i<dexes.get_dim();i++){
@@ -684,3 +687,99 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
     }
 
 }
+
+void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_1d<double> &W){
+    if(_independent_samples.get_rows()==0){
+        printf("WARNING cannot calculate R; you have no independent samples\n");
+        exit(1);
+    }
+
+    R.reset();
+    V.reset();
+    W.reset();
+    
+    R.set_dim(_dim);
+    V.set_dim(_dim);
+    W.set_dim(_dim);
+
+    array_1d<double> BoverN,totalMean;
+    BoverN.set_name("arrayOfChains_calculate_R_BoverN");
+    totalMean.set_name("arrayOfChains_calculate_R_totalMean");
+    
+    array_2d<double> chainMean;
+    chainMean.set_name("arrayOfChains_calculate_R_chainMean");
+    
+    int ix,ic,ip;
+    for(ix=0;ix<_dim;ix++){
+        BoverN.set(ix,0.0);
+        totalMean.set(ix,0.0);
+        W.set(ix,0.0);
+    }
+    
+    chainMean.set_dim(_n_chains,_dim);
+    for(ic=0;ic<_n_chains;ic++){
+        for(ix=0;ix<_dim;ix++){
+            chainMean.set(ic,ix,0.0);
+        }
+    }
+    
+    int totalPts,dex;
+    
+    
+    totalPts=0;
+    
+    for(ic=0;ic<_n_chains;ic++){
+        for(ip=0;ip<_independent_samples.get_cols(ic);ip++){
+            totalPts++;
+            dex=_independent_samples.get_data(ic,ip);
+            for(ix=0;ix<_dim;ix++){
+                chainMean.add_val(ic,ix,_data[ic].get_point(dex,ix));
+                totalMean.add_val(ix,_data[ic].get_point(dex,ix));
+            }
+        }
+        for(ix=0;ix<_dim;ix++){
+            chainMean.divide_val(ic,ix,double(_independent_samples.get_cols(ic)));
+        }
+    }
+    
+    for(ix=0;ix<_dim;ix++){
+        totalMean.divide_val(ix,double(totalPts));
+    }
+    
+    for(ix=0;ix<_dim;ix++){
+        for(ic=0;ic<_n_chains;ic++){
+            BoverN.add_val(ix,power(chainMean.get_data(ic,ix)-totalMean.get_data(ix),2));
+        }
+        BoverN.divide_val(ix,double(_n_chains-1));
+    }
+    
+    double mu;
+    for(ix=0;ix<_dim;ix++){
+        for(ic=0;ic<_n_chains;ic++){
+            mu=0.0;
+            for(ip=0;ip<_independent_samples.get_cols(ic);ip++){
+                dex=_independent_samples.get_data(ic,ip);
+                mu+=power(_data[ic].get_point(dex,ix)-chainMean.get_data(ic,ix),2);
+            }
+            mu=mu/double(_independent_samples.get_cols(ic)-1);
+            W.add_val(ix,mu);
+        }
+        W.divide_val(ix,double(_n_chains));
+    }
+    
+    double nn;
+    nn=0.0;
+    for(ic=0;ic<_n_chains;ic++){
+        nn+=double(_independent_samples.get_cols(ic));
+    }
+    nn=nn/double(_n_chains);
+    
+    double sigmaPlus;
+    for(ix=0;ix<_dim;ix++){
+        sigmaPlus=(nn-1.0)*W.get_data(ix)/nn + BoverN.get_data(ix);
+        V.set(ix,sigmaPlus+BoverN.get_data(ix)/double(_n_chains));
+        R.set(ix,V.get_data(ix)/W.get_data(ix));
+    }
+
+}
+

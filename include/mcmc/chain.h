@@ -86,12 +86,16 @@ public:
     void remove(int);
 
     chain* operator()(int);
+    
+    void calculate_R(array_1d<double>&, array_1d<double>&, array_1d<double>&);
 
 private:
     chain *_data;
     Ran *_dice;
     int _n_chains;
     int _dim;
+    
+    asymm_array_2d<int> _independent_samples;
 
     void verify_chains(int,char*);
 
