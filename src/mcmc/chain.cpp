@@ -305,8 +305,12 @@ void chain::copy(const chain &in){
 }
 
 void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output){
+    get_thinned_indices(thinby, burnin, output, -1);
+}
+
+void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output, int limit){
     output.reset_preserving_room();
-    int ct,i,currentDegen,ctStart;
+    int ct,i,currentDegen,ctStart,total;
     
     ct=0;
     for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
@@ -316,8 +320,9 @@ void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output){
     ctStart=ct;
     ct=thinby-(burnin-ctStart);
     ctStart=ct;
-       
-    for(;i<_points.get_rows();i++){
+    
+    total=0;   
+    for(;i<_points.get_rows() && (limit<=0 || total<limit);i++){
         if(ct+_degeneracy.get_data(i)>=thinby){
             currentDegen=_degeneracy.get_data(i);
             while(ct+currentDegen>=thinby){
@@ -330,10 +335,15 @@ void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output){
         else{
             ct+=_degeneracy.get_data(i);
         }
+        total+=_degeneracy.get_data(i);
     }
 }
 
 int chain::get_thinby(double threshold, int burnin, int step){
+    return get_thinby(threshold, burnin, step, -1);
+}
+
+int chain::get_thinby(double threshold, int burnin, int step, int limit){
     ///find the amount to thinby to achieve the specified threshold
     ///burnin is the number of points to discard
     
@@ -345,11 +355,15 @@ int chain::get_thinby(double threshold, int burnin, int step){
     
     array_1d<int> dexes;
     dexes.set_name("chain_get_thinby_dexes");
-    
+
     total=0;
     for(i=0;i<_degeneracy.get_dim();i++){
         total+=_degeneracy.get_data(i);
     }
+   
+    if(limit>0 && limit<total){
+        total=limit;
+    } 
     
     int thinby,thinbyBest,i1,i2,bestPts;
     double covarMax,covarMaxBest,mu;
@@ -363,7 +377,7 @@ int chain::get_thinby(double threshold, int burnin, int step){
     covars.set_dim(_dim);
 
     for(thinby=step;covarMaxBest>threshold && thinby<(total-burnin)/10; thinby+=step){
-       get_thinned_indices(thinby,burnin,dexes);
+       get_thinned_indices(thinby,burnin,dexes,limit);
        means.zero();
        for(i=0;i<dexes.get_dim();i++){
            for(j=0;j<_dim;j++){
@@ -422,17 +436,6 @@ int chain::get_thinby(double threshold, int burnin, int step){
     
 }
 
-void chain::get_thinned_samples(int thinby, int burnin, array_2d<double> &samples){
-    samples.reset();
-    samples.set_cols(_dim);
-    array_1d<int> dexes;
-    dexes.set_name("chain_get_thinned_samples_dexes");
-    get_thinned_indices(thinby,burnin,dexes);
-    int i;
-    for(i=0;i<dexes.get_dim();i++){
-        samples.add_row(_points(dexes.get_data(i))[0]);
-    }
-}
 
 
 ////////////////////array of chains
