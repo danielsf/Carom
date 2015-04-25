@@ -69,7 +69,7 @@ for(i=0;i<6;i++){
 
 mcmc_test.guess_bases(1);
 mcmc_test.set_burnin(2000,1000);
-mcmc_test.set_name_root("chains/mcmc_test_150424");
+mcmc_test.set_name_root("chains/mcmc_test_150425");
 mcmc_test.sample(20000);
 
 }
