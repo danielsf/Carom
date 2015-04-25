@@ -92,17 +92,20 @@ public:
     
     void get_independent_samples(double,int);
     void calculate_R(array_1d<double>&, array_1d<double>&, array_1d<double>&);
-    void plot_contours(int,int,char*);
+    void plot_contours(int,int,double,char*);
 
 private:
     chain *_data;
     Ran *_dice;
+    kde _density;
     int _n_chains;
     int _dim;
     
     asymm_array_2d<int> _independent_sample_dexes;
+    array_2d<double> _independent_samples;
 
     void verify_chains(int,char*);
+    void _get_full_independent_samples();
 
 };
 

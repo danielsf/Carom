@@ -461,6 +461,7 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     _data = new chain[_n_chains];
     
     _independent_sample_dexes.set_name("arrayOfChains_independent_sample_dexes");
+    _independent_samples.set_name("arrayOfChains_indepdendent_samples");
     
     int i;
     for(i=0;i<_n_chains;i++){
@@ -694,6 +695,7 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
 void arrayOfChains::get_independent_samples(double threshold, int limit){
     
     _independent_sample_dexes.reset();
+    _independent_samples.reset();
     
     int ic;
     int thinby,thinbyMax;
@@ -713,6 +715,29 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
         _independent_sample_dexes.add_row(temp_dexes);
     }
     
+}
+
+void arrayOfChains::_get_full_independent_samples(){
+    if(_independent_sample_dexes.get_rows()==0){
+        printf("WARNING cannot get full independent samples; there are no dexes\n");
+        exit(1);
+    }
+    
+    _independent_samples.set_cols(_dim);
+    
+    int ic,ip,ix,row,dex;
+    row=0;
+    for(ic=0;ic<_n_chains;ic++){
+        for(ip=0;ip<_independent_sample_dexes.get_cols(ic);ip++){
+            dex=_independent_sample_dexes.get_data(ic,ip);
+            for(ix=0;ix<_dim;ix++){
+                _independent_samples.set(row,ix,_data[ic].get_point(dex,ix));
+            }
+            row++;
+        }
+    }
+    
+    _density.set_data(&_independent_samples);
 }
 
 void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_1d<double> &W){
@@ -810,9 +835,48 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
 
 }
 
-void arrayOfChains::plot_contours(int ix, int iy, char *nameRoot){
+void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoot){
     if(_independent_sample_dexes.get_rows()==0){
         printf("WARNING cannot plot contours; no independent samples\n");
         exit(1);
     }
+    
+    if(_independent_samples.get_rows()==0){
+        _get_full_independent_samples();
+    }
+    
+    double dx,dy;
+    double xmax,xmin,ymax,ymin;
+    int i;
+    
+    for(i=0;i<_independent_samples.get_rows();i++){
+        if(i==0 || _independent_samples.get_data(ix,i)<xmin){
+            xmin=_independent_samples.get_data(ix,i);
+        }
+        
+        if(i==0 || _independent_samples.get_data(ix,i)>xmax){
+            xmax=_independent_samples.get_data(ix,i);
+        }
+        
+        if(i==0 || _independent_samples.get_data(iy,i)<ymin){
+            ymin=_independent_samples.get_data(iy,i);
+        }
+        
+        if(i==0 || _independent_samples.get_data(iy,i)>ymax){
+            ymax=_independent_samples.get_data(iy,i);
+        }
+    }
+    
+    dx=(xmax-xmin)/20.0;
+    dy=(ymax-ymin)/20.0;
+    
+    char boundaryName[2*letters],scatterName[2*letters];
+    sprintf(boundaryName,"%s_%d_%d_countour.txt",nameRoot,ix,iy);
+    sprintf(scatterName,"%s_%d_%d_scatter.txt",nameRoot,ix,iy);
+    
+    
+    
+    _density.plot_density(ix,dx,iy,dy,fraction,scatterName,3);
+    _density.plot_boundary(ix,dx,iy,dy,fraction,scatterName,3);
+    
 }
