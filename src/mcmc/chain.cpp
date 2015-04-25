@@ -61,6 +61,8 @@ chain::chain(int ii, char *input_name){
 
 void chain::read_chain(char *input_name){
     
+    printf("reading %s\n",input_name);
+    
     int i,ct;
     double chisq,mu;
     array_1d<double> vv;
@@ -68,7 +70,7 @@ void chain::read_chain(char *input_name){
     
     FILE *input;
     input=fopen(input_name,"r");
-    while(fscanf(input,"%d",&ct)){
+    while(fscanf(input,"%d",&ct)>0){
         _degeneracy.add(ct);
         fscanf(input,"%le",&chisq);
         _chisquared.add(chisq);
@@ -365,7 +367,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
         total=limit;
     } 
     
-    int thinby,thinbyBest,i1,i2,bestPts;
+    int thinby,thinbyBest,i1,i2,bestPts,maxDex,bestDex;
     double covarMax,covarMaxBest,mu;
     
     thinbyBest=-1;
@@ -420,6 +422,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                mu=sqrt(fabs(covars.get_data(i)));
                if(mu>covarMax){
                    covarMax=mu;
+                   maxDex=i;
                }
            }
        }
@@ -428,10 +431,11 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
            thinbyBest=thinby;
            covarMaxBest=covarMax;
            bestPts=dexes.get_dim();
+           bestDex=maxDex;
        }
        
     }
-    printf("thinby %d best %e pts %d\n",thinby,covarMaxBest,bestPts);
+    printf("thinby %d best %e pts %d dex %d\n",thinby,covarMaxBest,bestPts,bestDex);
     return thinbyBest;
     
 }
@@ -461,7 +465,7 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     _data = new chain[_n_chains];
     
     _independent_sample_dexes.set_name("arrayOfChains_independent_sample_dexes");
-    _independent_samples.set_name("arrayOfChains_indepdendent_samples");
+    _independent_samples.set_name("arrayOfChains_independent_samples");
     
     int i;
     for(i=0;i<_n_chains;i++){
@@ -697,6 +701,8 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
     _independent_sample_dexes.reset();
     _independent_samples.reset();
     
+    printf("getting independent samples\n");
+    
     int ic;
     int thinby,thinbyMax;
     
@@ -708,13 +714,18 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
         }
     }
     
+    printf("thinning by %d\n",thinbyMax);
+    
+    int total=0;
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_temp_dexes");
     for(ic=0;ic<_n_chains;ic++){
         _data[ic].get_thinned_indices(thinbyMax, 0, temp_dexes, limit);
         _independent_sample_dexes.add_row(temp_dexes);
+        total+=temp_dexes.get_dim();
     }
     
+    printf("%d independent samples\n",total);
 }
 
 void arrayOfChains::_get_full_independent_samples(){
@@ -737,6 +748,7 @@ void arrayOfChains::_get_full_independent_samples(){
         }
     }
     
+    printf("set row %d\n",row);
     _density.set_data(&_independent_samples);
 }
 
@@ -850,33 +862,41 @@ void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoo
     int i;
     
     for(i=0;i<_independent_samples.get_rows();i++){
-        if(i==0 || _independent_samples.get_data(ix,i)<xmin){
-            xmin=_independent_samples.get_data(ix,i);
+        if(i==0 || _independent_samples.get_data(i,ix)<xmin){
+            xmin=_independent_samples.get_data(i,ix);
         }
         
-        if(i==0 || _independent_samples.get_data(ix,i)>xmax){
-            xmax=_independent_samples.get_data(ix,i);
+        if(i==0 || _independent_samples.get_data(i,ix)>xmax){
+            xmax=_independent_samples.get_data(i,ix);
         }
         
-        if(i==0 || _independent_samples.get_data(iy,i)<ymin){
-            ymin=_independent_samples.get_data(iy,i);
+        if(i==0 || _independent_samples.get_data(i,iy)<ymin){
+            ymin=_independent_samples.get_data(i,iy);
         }
         
-        if(i==0 || _independent_samples.get_data(iy,i)>ymax){
-            ymax=_independent_samples.get_data(iy,i);
+        if(i==0 || _independent_samples.get_data(i,iy)>ymax){
+            ymax=_independent_samples.get_data(i,iy);
         }
     }
     
-    dx=(xmax-xmin)/20.0;
-    dy=(ymax-ymin)/20.0;
+    dx=(xmax-xmin)/100.0;
+    dy=(ymax-ymin)/100.0;
     
     char boundaryName[2*letters],scatterName[2*letters];
-    sprintf(boundaryName,"%s_%d_%d_countour.txt",nameRoot,ix,iy);
+    sprintf(boundaryName,"%s_%d_%d_contour.txt",nameRoot,ix,iy);
     sprintf(scatterName,"%s_%d_%d_scatter.txt",nameRoot,ix,iy);
     
     
     
     _density.plot_density(ix,dx,iy,dy,fraction,scatterName,3);
-    _density.plot_boundary(ix,dx,iy,dy,fraction,scatterName,3);
+    _density.plot_boundary(ix,dx,iy,dy,fraction,boundaryName,3);
     
+}
+
+int arrayOfChains::get_n_samples(){
+    return _independent_samples.get_rows();
+}
+
+double arrayOfChains::get_sample(int dex, int ix){
+    return _independent_samples.get_data(dex,ix);
 }

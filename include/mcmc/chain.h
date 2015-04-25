@@ -94,6 +94,9 @@ public:
     void calculate_R(array_1d<double>&, array_1d<double>&, array_1d<double>&);
     void plot_contours(int,int,double,char*);
 
+    int get_n_samples();
+    double get_sample(int,int);
+
 private:
     chain *_data;
     Ran *_dice;

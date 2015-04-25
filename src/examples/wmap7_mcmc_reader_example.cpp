@@ -27,10 +27,11 @@ W.set_name("W");
 
 chains.get_independent_samples(0.1,-1);
 chains.calculate_R(R,V,W);
+printf("got R,V,W\n");
 int ix,iy;
-for(ix=0;ix<6;ix++){
+for(ix=0;ix<dim;ix++){
     if(ix!=3){
-        for(iy=i+1;iy<6;iy++){
+        for(iy=ix+1;iy<dim;iy++){
             if(iy!=3){
                 chains.plot_contours(ix,iy,0.95,outNameRoot);
             }
@@ -38,5 +39,20 @@ for(ix=0;ix<6;ix++){
     }
 }
 
+for(i=0;i<dim;i++){
+    printf("%d %e %e %e\n",i,R.get_data(i),V.get_data(i),W.get_data(i));
+}
+
+int j;
+
+FILE *output;
+output=fopen("processedChains/independent_samples.txt","w");
+for(i=0;i<chains.get_n_samples();i++){
+    for(j=0;j<dim;j++){
+        fprintf(output,"%e ",chains.get_sample(i,j));
+    }
+    fprintf(output,"\n");
+}
+fclose(output);
 
 }
