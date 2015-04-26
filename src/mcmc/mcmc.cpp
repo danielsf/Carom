@@ -271,7 +271,7 @@ void mcmc::sample(int nSamples){
                 }
                 last_updated_factor=burn_ct;
             }
-            else{
+            else if(burn_ct>_burn_in){
                 
                 if(burn_ct-last_updated_factor>=100){
                     acceptance=acceptance_rate();

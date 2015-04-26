@@ -378,6 +378,8 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     vars.set_dim(_dim);
     covars.set_dim(_dim);
 
+    printf("in get thinby total %d\n",total);
+
     for(thinby=step;(fabs(threshold-covarMaxBest)>0.1*threshold && covarMaxBest>threshold)
                    && thinby<(total-burnin)/10; thinby+=step){
 
