@@ -126,6 +126,7 @@ void mcmc::update_bases(){
     covar.set_name("mcmc_update_bases_covar");
     
     printf("updating basis -- acceptance %e\n",acceptance_rate());
+
     _chains.get_covariance_matrix(0.1,0,covar);
     
     array_2d<double> old_basis,evecs;
