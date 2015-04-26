@@ -65,7 +65,7 @@ void mcmc::write_timing(int overwrite){
     
     if(overwrite==1){
         output=fopen(name,"w");
-        fprintf(output,"#calls time timeper timeperRaw overhead acceptance\n");
+        fprintf(output,"#calls time timeper timeperRaw overhead acceptance factor\n");
     }
     else{
         output=fopen(name,"a");
@@ -79,8 +79,9 @@ void mcmc::write_timing(int overwrite){
     timePerRaw=_chisq->get_time_spent()/double(_chisq->get_called());
     overhead = timePer-timePerRaw;
     
-    fprintf(output,"%d %e %e %e %e %e\n",
-    _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead,acceptance_rate());
+    fprintf(output,"%d %e %e %e %e %e %e\n",
+    _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead,acceptance_rate(),
+    _factor);
     
     fclose(output);
 
@@ -138,6 +139,7 @@ void mcmc::update_bases(){
         eval_symm(covar,evecs,evals,0.1);
     }
     catch(int iex){
+        printf("updating basis failed on eval\n");
         return;
     }
     
@@ -269,6 +271,7 @@ void mcmc::sample(int nSamples){
                 last_updated_factor=burn_ct;
             }
             else{
+                
                 if(burn_ct-last_updated_factor>=100){
                     acceptance=acceptance_rate();
                     if(fabs(1.0/acceptance-4.0)>1.0){
@@ -279,7 +282,7 @@ void mcmc::sample(int nSamples){
                             _factor*=0.9;
                         }
                     }
-                    
+                    write_timing(0);
                     for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                         _chains(iChain)->write_burnin();
                     }

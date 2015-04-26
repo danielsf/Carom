@@ -380,6 +380,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
 
     for(thinby=step;(fabs(threshold-covarMaxBest)>0.1*threshold && covarMaxBest>threshold)
                    && thinby<(total-burnin)/10; thinby+=step){
+
        get_thinned_indices(thinby,burnin,dexes,limit);
        means.zero();
        for(i=0;i<dexes.get_dim();i++){
@@ -427,9 +428,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                }
            }
        }
-       
-       //printf("    thinby %d covar %e\n",thinby,covarMax);
-       
+              
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
            covarMaxBest=covarMax;
@@ -438,7 +437,13 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
        }
        
     }
+    
     printf("thinby %d best %e pts %d dex %d\n",thinbyBest,covarMaxBest,bestPts,bestDex);
+    
+    if(thinbyBest<0){
+        thinbyBest = (total-burnin)/10;
+    }
+    
     return thinbyBest;
     
 }
@@ -622,6 +627,7 @@ void arrayOfChains::remove(int dex){
 void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, array_2d<double> &covar){
 
     int i,j,thinby,thinbyMax,burnin;
+    int step,total;
     
     thinbyMax=-1;
     for(i=0;i<_n_chains;i++){
@@ -631,7 +637,18 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
         else{
             burnin=0;
         }
-        thinby=_data[i].get_thinby(threshold,burnin,10);
+        
+        total=_data[i].get_points();
+        if(total-burnin<=100){
+            step=(total-burnin)/20;
+        }
+        else{
+            step=10;
+        }
+        
+        if(step==0)step=10;
+        
+        thinby=_data[i].get_thinby(threshold,burnin,step);
         
         if(thinby>thinbyMax){
             thinbyMax=thinby;
@@ -708,18 +725,31 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
     
     int ic;
     int thinby,thinbyMax;
+    int total, step;
     
     thinbyMax=-1;
     for(ic=0;ic<_n_chains;ic++){
-        thinby=_data[ic].get_thinby(threshold,0,10,limit);
+        total=_data[ic].get_points();
+        if(total<=100){
+           step=total/20;
+        }
+        else{
+            step=10;
+        }
+        
+        if(step==0){
+            step=10;
+        }
+    
+        thinby=_data[ic].get_thinby(threshold,0,step,limit);
         if(thinby>thinbyMax){
             thinbyMax=thinby;
         }
     }
     
     printf("thinning by %d\n",thinbyMax);
-    
-    int total=0;
+
+    total=0;    
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_temp_dexes");
     for(ic=0;ic<_n_chains;ic++){
