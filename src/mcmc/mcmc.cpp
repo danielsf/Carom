@@ -269,14 +269,14 @@ void mcmc::sample(int nSamples){
                 last_updated_factor=burn_ct;
             }
             else{
-                if(burn_ct-last_updated_factor>=(_set_factor/2)){
+                if(burn_ct-last_updated_factor>=100){
                     acceptance=acceptance_rate();
                     if(fabs(1.0/acceptance-4.0)>1.0){
                         if(acceptance>0.25){
                             _factor*=1.25;
                         }
                         else{
-                            _factor*=0.8;
+                            _factor*=0.9;
                         }
                     }
                     
