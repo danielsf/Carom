@@ -251,25 +251,12 @@ void mcmc::sample(int nSamples){
         else{
             burn_ct++;
             if(burn_ct-last_updated>=_check_every){
-                acceptance=acceptance_rate();
-                if(fabs(1.0/acceptance-4.0)>1.0){
-                    if(update_ct%2==0){
-                        update_bases();
-                    }
-                    else{
-                        if(acceptance<0.25){
-                            _factor*=0.8;
-                        }
-                        else{
-                            _factor*=1.25;
-                        }
-                    }
-                    
-                    write_timing(0);
-                    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                        _chains(iChain)->write_burnin();
-                    }
+                update_bases();
+                write_timing(0);
+                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                    _chains(iChain)->write_burnin();
                 }
+                
                 last_updated=burn_ct;
                 update_ct++;
             }
