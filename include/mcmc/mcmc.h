@@ -38,7 +38,7 @@ private:
 
     char _name_root[letters];
 
-    int _check_every,_burn_in;
+    int _set_factor,_burn_in;
 
     void initialize();
     void validate_bases();

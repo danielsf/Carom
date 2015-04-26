@@ -31,7 +31,6 @@ void mcmc::initialize(){
     _guess_min.set_name("mcmc_guess_min");
     _guess_max.set_name("mcmc_guess_max");
     _chisq = NULL;
-    _check_every=0;
     _burn_in=0;
     _dice=NULL;
     _factor=2.38;
@@ -87,10 +86,10 @@ void mcmc::write_timing(int overwrite){
 
 }
 
-void mcmc::set_burnin(int bb, int cc){
+void mcmc::set_burnin(int bb, int ff){
     //_check_every will be however often we assess bases
     _burn_in=bb;
-    _check_every=cc;
+    _set_factor=ff;
 }
 
 void mcmc::set_name_root(char *word){
@@ -200,8 +199,8 @@ void mcmc::sample(int nSamples){
     dir.set_name("mcmc_sample_dir");
     
     int iChain,ix,iy;
-    int final_ct,burn_ct,total_ct,last_updated,last_wrote;
-    int update_ct;
+    int final_ct,burn_ct,total_ct,last_wrote;
+    int last_updated_factor;
     
     double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
@@ -215,7 +214,7 @@ void mcmc::sample(int nSamples){
     final_ct=0;
     burn_ct=0;
     total_ct=0;
-    last_updated=0;
+    last_updated_factor=0;
     last_wrote=0;
     
     while(final_ct<nSamples){
@@ -249,7 +248,7 @@ void mcmc::sample(int nSamples){
         }
         total_ct++;
         
-        if(burn_ct>=_burn_in){
+        if(burn_ct>=_burn_in+_set_factor){
             final_ct++;
             if(final_ct>last_wrote+1000){
                 write_timing(0);
@@ -261,18 +260,34 @@ void mcmc::sample(int nSamples){
         }
         else{
             burn_ct++;
-            if(burn_ct-last_updated>=_check_every){
+            if(burn_ct==_burn_in){
                 update_bases();
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_burnin();
                 }
-                
-                last_updated=burn_ct;
-                update_ct++;
+                last_updated_factor=burn_ct;
+            }
+            else{
+                if(burn_ct-last_updated_factor>=(_set_factor/2)){
+                    acceptance=acceptance_rate();
+                    if(fabs(1.0/acceptance-4.0)>1.0){
+                        if(acceptance>0.25){
+                            _factor*=1.25;
+                        }
+                        else{
+                            _factor*=0.8;
+                        }
+                    }
+                    
+                    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                        _chains(iChain)->write_burnin();
+                    }
+                    last_updated_factor=burn_ct;
+                }
             }
             
-            if(burn_ct>=_burn_in){
+            if(burn_ct>=_burn_in+_set_factor){
                 printf("writing burnin\n");
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
