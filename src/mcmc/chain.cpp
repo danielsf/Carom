@@ -378,7 +378,8 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     vars.set_dim(_dim);
     covars.set_dim(_dim);
 
-    for(thinby=step;covarMaxBest>threshold && thinby<(total-burnin)/10; thinby+=step){
+    for(thinby=step;(fabs(threshold-covarMaxBest)>0.1*threshold && covarMaxBest>threshold)
+                   && thinby<(total-burnin)/10; thinby+=step){
        get_thinned_indices(thinby,burnin,dexes,limit);
        means.zero();
        for(i=0;i<dexes.get_dim();i++){
@@ -426,6 +427,8 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                }
            }
        }
+       
+       //printf("    thinby %d covar %e\n",thinby,covarMax);
        
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
