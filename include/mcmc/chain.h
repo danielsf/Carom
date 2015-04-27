@@ -43,7 +43,7 @@ public:
     void get_thinned_indices(int,int,array_1d<int>&);
     int get_thinby(double, int, int);
     
-    void write_chain();
+    void write_chain(int);
     void copy(const chain&);
     
     void increment_iteration();
@@ -51,7 +51,7 @@ public:
 
 private:
 
-    int _dim,_n_written,_iteration,_chain_label;
+    int _dim,_n_written,_total_written,_iteration,_chain_label;
     int _current_degeneracy;
     
     double _current_chi;

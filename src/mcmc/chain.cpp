@@ -15,6 +15,7 @@ void chain::initialize(){
     _dim=0;
     _iteration=0;
     _chain_label=0;
+    _total_written=0;
     _n_written=0;
     _current_chi=2.0*exception_value;
     _current_degeneracy=0;
@@ -205,14 +206,14 @@ void chain::add_point(array_1d<double> &pt, double mu){
 
 void chain::increment_iteration(){
     _iteration++;
-    _n_written=0;
+    _total_written=0;
 }
 
 void chain::set_chain_label(int ii){
     _chain_label=ii;
 }
 
-void chain::write_chain(){
+void chain::write_chain(int dump){
     if(_output_name_root[0]==0){
         printf("WARNING asked to write chain but have no name\n");
         exit(1);
@@ -221,19 +222,38 @@ void chain::write_chain(){
     char output_name[2*letters];
     sprintf(output_name,"%s_%d_%d.txt",_output_name_root,_iteration,_chain_label);
 
-    if(_n_written==0){
+    if(dump==0){
+        if(_degeneracy.get_data(_degeneracy.get_dim()-1)>0){
+            _degeneracy.subtract_val(_degeneracy.get_dim()-1,1);
+        }
+        else{
+            _degeneracy.remove(_degeneracy.get_dim()-1);
+            _chisquared.remove(_chisquared.get_dim()-1);
+            _points.remove_row(_points.get_rows()-1);
+        }
+    }
+
+    if(_total_written==0){
         write(output_name,0);
     }
     else{
         write(output_name,1);
     }
     
-    _n_written+=_points.get_rows();
-
-    _points.reset_preserving_room();
-    _degeneracy.reset_preserving_room();
-    _chisquared.reset_preserving_room();
-
+    _total_written+=_points.get_rows();
+    
+    if(dump==1){
+        _n_written=0;
+        _points.reset_preserving_room();
+        _degeneracy.reset_preserving_room();
+        _chisquared.reset_preserving_room();
+    }
+    else{
+        _n_written+=_points.get_rows();
+        _points.add_row(_current_point);
+        _chisquared.add(_current_chi);
+        _degeneracy.add(1);
+    }
 }    
     
 
@@ -247,7 +267,7 @@ void chain::write(char *name, int append){
         output=fopen(name,"a");
     }  
     int i,j;
-    for(i=0;i<_points.get_rows();i++){
+    for(i=_n_written;i<_points.get_rows();i++){
         fprintf(output,"%d %e ",_degeneracy.get_data(i),_chisquared.get_data(i));
         for(j=0;j<_dim;j++){
             fprintf(output,"%e ",_points.get_data(i,j));
@@ -270,12 +290,12 @@ void chain::copy(const chain &in){
     _dice=in._dice;
     _current_chi=in._current_chi;
     _current_degeneracy=in._current_degeneracy;
+    _total_written=in._total_written;
     _n_written=in._n_written;
     _iteration=in._iteration;
     _chain_label=in._chain_label;
-    
     _dim=in._dim;
-    _n_written=in._n_written;
+
     int i,j;
     for(i=0;i<letters;i++){
         _output_name_root[i]=in._output_name_root[i];

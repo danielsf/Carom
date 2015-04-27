@@ -64,8 +64,7 @@ void mcmc::write_timing(char *msg){
     FILE *output;
     
     output=fopen(name,"a");
-    fprintf(output,"\nat %d\n",_chisq->get_called());
-    fprintf(output,"%s\n\n",msg);
+    fprintf(output,"at %d %s\n",_chisq->get_called(),msg);
     fclose(output);
 
 }
@@ -214,9 +213,10 @@ void mcmc::sample(int nSamples){
     trial.set_name("mcmc_sample_trial");
     dir.set_name("mcmc_sample_dir");
     
-    int iChain,ix,iy,thinby,total_points;
+    int iChain,ix,iy,thinby,total_points,update_ct;
     int final_ct,burn_ct,total_ct,last_wrote,last_assessed;
-    int last_updated_factor,something_changed;
+    int last_updated,last_updated_factor,something_changed;
+    int last_dumped;
     
     double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
@@ -231,8 +231,11 @@ void mcmc::sample(int nSamples){
     final_ct=0;
     burn_ct=0;
     total_ct=0;
+    last_updated=0;
     last_updated_factor=0;
     last_wrote=0;
+    last_dumped=0;
+    update_ct=0;
     
     while(final_ct<nSamples){
         for(iChain=0;iChain<_chains.get_n_chains();iChain++){
@@ -266,83 +269,48 @@ void mcmc::sample(int nSamples){
         total_ct++;
         
         something_changed=0;
-        if(burn_ct>=_burn_in+_set_factor){
-            final_ct++;
-            if(final_ct>last_assessed+1000){
-                thinby=_chains.get_thinby(0.1,0.0);
-                total_points=_chains.get_points();
-                
-                if(thinby>100){
-                    update_bases();
-                    something_changed=1;
-                    
-                    sprintf(message,"total_points %d thinby %d resetting bases\n",
-                    total_points,thinby);
-                    
-                    write_timing(message);
-                    
-                    last_assessed=final_ct;
-                    
-                }
-                
-                last_assessed=final_ct;
+        final_ct++;
+        
+        if(final_ct>last_wrote+1000 && final_ct<last_dumped+5000){
+            write_timing(0);
+            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                _chains(iChain)->write_chain(0);
             }
-            
-            if(final_ct>last_wrote+5000){
-                write_timing(0);
-                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                    _chains(iChain)->write_chain();
-                }
-                last_wrote=final_ct;
-                last_assessed=final_ct;
-            }
+            last_wrote=final_ct;
         }
-        else{
-            burn_ct++;
-            if(burn_ct==_burn_in){
-                update_bases();
-                something_changed=1;
-                write_timing(0);
-                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                    _chains(iChain)->write_chain();
-                }
-                last_updated_factor=burn_ct;
+        else if(final_ct>=last_dumped+5000){
+            write_timing(0);
+            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                _chains(iChain)->write_chain(1);
             }
-            else if(burn_ct>_burn_in){
-                
-                if(burn_ct-last_updated_factor>=100){
-                    acceptance=acceptance_rate();
-                    if(fabs(1.0/acceptance-4.0)>1.0){
-                        if(acceptance>0.25){
-                            _factor*=1.25;
-                        }
-                        else{
-                            _factor*=0.9;
-                        }
-                        something_changed=1;
-                    }
-                    write_timing(0);
-                    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                        _chains(iChain)->write_chain();
-                    }
-                    last_updated_factor=burn_ct;
+            last_dumped=final_ct;
+        }
+        
+        if(final_ct>last_updated+2000){
+            update_ct++;
+            write_timing("updating bases");
+            update_bases();
+            last_updated=final_ct;
+            last_updated_factor=final_ct;
+        }
+        
+        if(final_ct>last_updated_factor+200 && update_ct%2==1){
+            last_updated_factor=final_ct;
+            acceptance=acceptance_rate();
+            if(fabs(1.0/acceptance-4.0)>1.0){
+                if(acceptance<0.25){
+                    _factor*=0.9;
+                }
+                else{
+                    _factor*=1.2;
                 }
             }
-            
-            if(burn_ct>=_burn_in+_set_factor){
-                printf("writing burnin\n");
-                write_timing(0);
-                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                    _chains(iChain)->write_chain();
-                }
-            }
-
             
         }
                     
         if(something_changed==1){
             for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                _chains(iChain)->write_chain();
+                _chains(iChain)->write_chain(1);
                 _chains(iChain)->increment_iteration();
             }
             last_wrote=0;
@@ -354,7 +322,7 @@ void mcmc::sample(int nSamples){
     printf("done %d %d -- %d\n",final_ct,nSamples,_chisq->get_called());
 
    for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-       _chains(iChain)->write_chain();
+       _chains(iChain)->write_chain(1);
    }
 
 }
