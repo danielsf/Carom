@@ -65,7 +65,7 @@ void mcmc::write_timing(char *msg){
     
     output=fopen(name,"a");
     fprintf(output,"\nat %d\n",_chisq->get_called());
-    fprintf(output,"%s\n\m",msg);
+    fprintf(output,"%s\n\n",msg);
     fclose(output);
 
 }
@@ -268,7 +268,7 @@ void mcmc::sample(int nSamples){
         something_changed=0;
         if(burn_ct>=_burn_in+_set_factor){
             final_ct++;
-            if(final_ct>last_assessed+1000 && final_ct>_burn_in+_set_factor+1000){
+            if(final_ct>last_assessed+1000){
                 thinby=_chains.get_thinby(0.1,0.0);
                 total_points=_chains.get_points();
                 
@@ -279,6 +279,8 @@ void mcmc::sample(int nSamples){
                     sprintf(message,"total_points %d thinby %d resetting bases\n",
                     total_points,thinby);
                     
+                    write_timing(message);
+                    
                     last_assessed=final_ct;
                     
                 }
@@ -286,7 +288,7 @@ void mcmc::sample(int nSamples){
                 last_assessed=final_ct;
             }
             
-            if(final_ct>last_wrote+5000 && final_ct>_burn_in+_set_factor+5000){
+            if(final_ct>last_wrote+5000){
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain();
@@ -340,8 +342,12 @@ void mcmc::sample(int nSamples){
                     
         if(something_changed==1){
             for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                _chains(iChain)->write_chain();
                 _chains(iChain)->increment_iteration();
             }
+            last_wrote=0;
+            last_assessed=0;
+            final_ct=0;
         }
    }
 
