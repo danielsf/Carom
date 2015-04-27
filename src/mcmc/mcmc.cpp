@@ -203,15 +203,14 @@ void mcmc::sample(int nSamples){
     
     int iChain,ix,iy;
     int final_ct,burn_ct,total_ct,last_wrote;
-    int last_updated_factor;
+    int last_updated_factor,something_changed;
     
     double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
     
-    char word[2*letters];
     for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-        sprintf(word,"%s_%d.txt",_name_root,iChain);
-        _chains(iChain)->set_output_name(word);
+        _chains(iChain)->set_output_name_root(_name_root);
+        _chains(iChain)->set_chain_label(iChain);
     }
     
     final_ct=0;
@@ -251,6 +250,7 @@ void mcmc::sample(int nSamples){
         }
         total_ct++;
         
+        something_changed=0;
         if(burn_ct>=_burn_in+_set_factor){
             final_ct++;
             if(final_ct>last_wrote+1000){
@@ -265,9 +265,10 @@ void mcmc::sample(int nSamples){
             burn_ct++;
             if(burn_ct==_burn_in){
                 update_bases();
+                something_changed=1;
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                    _chains(iChain)->write_burnin();
+                    _chains(iChain)->write_chain();
                 }
                 last_updated_factor=burn_ct;
             }
@@ -282,10 +283,11 @@ void mcmc::sample(int nSamples){
                         else{
                             _factor*=0.9;
                         }
+                        something_changed=1;
                     }
                     write_timing(0);
                     for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                        _chains(iChain)->write_burnin();
+                        _chains(iChain)->write_chain();
                     }
                     last_updated_factor=burn_ct;
                 }
@@ -295,9 +297,16 @@ void mcmc::sample(int nSamples){
                 printf("writing burnin\n");
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                    _chains(iChain)->write_burnin();
+                    _chains(iChain)->write_chain();
                 }
             }
+            
+            if(something_changed==1){
+                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                    _chains(iChain)->increment_iteration();
+                }
+            }
+            
         }
    }
 

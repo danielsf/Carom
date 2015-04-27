@@ -13,11 +13,12 @@ void chain::is_dice_safe(char *routine){
 void chain::initialize(){
     _dice=NULL;
     _dim=0;
+    _iteration=0;
+    _chain_label=0;
     _n_written=0;
-    _n_written_burnin=0;
     _current_chi=2.0*exception_value;
     _current_degeneracy=0;
-    _output_name[0]=0;
+    _output_name_root[0]=0;
     _points.set_name("chain_points");
     _degeneracy.set_name("chain_degeneracy");
     _chisquared.set_name("chain_chisquared");
@@ -37,12 +38,12 @@ void chain::set_dice(Ran *dd){
    _dice=dd;
 }
 
-void chain::set_output_name(char *nn){
+void chain::set_output_name_root(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
-        _output_name[i]=nn[i];
+        _output_name_root[i]=nn[i];
     }
-    _output_name[i]=0;
+    _output_name_root[i]=0;
 }
 
 chain::chain(){
@@ -202,41 +203,29 @@ void chain::add_point(array_1d<double> &pt, double mu){
     }
 }
 
-void chain::write_burnin(){
-    if(_output_name[0]==0){
-        printf("WARNING asked to write chain but have no name\n");
-        exit(1);
-    }
-    
-    char burninName[2*letters];
-    sprintf(burninName,"%s_burnin.txt",_output_name);
-    
-    if(_n_written_burnin==0){
-        write(burninName,0);
-    }
-    else{
-        write(burninName,1);
-    }
-    
-    _n_written_burnin+=_points.get_rows();
+void chain::increment_iteration(){
+    _iteration++;
+    _n_written=0;
+}
 
-    _points.reset_preserving_room();
-    _degeneracy.reset_preserving_room();
-    _chisquared.reset_preserving_room();
-
+void chain::set_chain_label(int ii){
+    _chain_label=ii;
 }
 
 void chain::write_chain(){
-    if(_output_name[0]==0){
+    if(_output_name_root[0]==0){
         printf("WARNING asked to write chain but have no name\n");
         exit(1);
     }
 
+    char output_name[2*letters];
+    sprintf(output_name,"%s_%d_%d.txt",_output_name_root,_iteration,_chain_label);
+
     if(_n_written==0){
-        write(_output_name,0);
+        write(output_name,0);
     }
     else{
-        write(_output_name,1);
+        write(output_name,1);
     }
     
     _n_written+=_points.get_rows();
@@ -282,13 +271,14 @@ void chain::copy(const chain &in){
     _current_chi=in._current_chi;
     _current_degeneracy=in._current_degeneracy;
     _n_written=in._n_written;
-    _n_written_burnin=in._n_written_burnin;
+    _iteration=in._iteration;
+    _chain_label=in._chain_label;
     
     _dim=in._dim;
     _n_written=in._n_written;
     int i,j;
     for(i=0;i<letters;i++){
-        _output_name[i]=in._output_name[i];
+        _output_name_root[i]=in._output_name_root[i];
     }
     
     _current_point.reset();

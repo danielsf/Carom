@@ -19,7 +19,7 @@ public:
     
     void set_dim(int);
     void set_dice(Ran*);
-    void set_output_name(char*);
+    void set_output_name_root(char*);
     
     int is_current_point_valid();
     double get_current_point(int);
@@ -44,12 +44,14 @@ public:
     int get_thinby(double, int, int);
     
     void write_chain();
-    void write_burnin();
     void copy(const chain&);
+    
+    void increment_iteration();
+    void set_chain_label(int);
 
 private:
 
-    int _dim,_n_written,_n_written_burnin;
+    int _dim,_n_written,_iteration,_chain_label;
     int _current_degeneracy;
     
     double _current_chi;
@@ -60,7 +62,7 @@ private:
 
     Ran *_dice;
     
-    char _output_name[letters];
+    char _output_name_root[letters];
 
     void initialize();
     void write(char*,int);
