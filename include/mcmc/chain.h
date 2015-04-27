@@ -101,6 +101,7 @@ public:
 
     double acceptance_rate();
     int get_thinby(double, double);
+    int get_points();
 
 private:
     chain *_data;

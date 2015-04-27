@@ -22,6 +22,7 @@ public:
     void write_burnin();
     void write_chains();
     void write_timing(int);
+    void write_timing(char*);
 
     void sample(int);
 

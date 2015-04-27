@@ -57,6 +57,19 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
 
 }
 
+void mcmc::write_timing(char *msg){
+   char name[2*letters];
+    sprintf(name,"%s_timing.txt",_name_root);
+
+    FILE *output;
+    
+    output=fopen(name,"a");
+    fprintf(output,"\nat %d\n",_chisq->get_called());
+    fprintf(output,"%s\n\m",msg);
+    fclose(output);
+
+}
+
 void mcmc::write_timing(int overwrite){
     char name[2*letters];
     sprintf(name,"%s_timing.txt",_name_root);
@@ -65,7 +78,7 @@ void mcmc::write_timing(int overwrite){
     
     if(overwrite==1){
         output=fopen(name,"w");
-        fprintf(output,"#calls time timeper timeperRaw overhead acceptance factor\n");
+        fprintf(output,"#calls time timeper timeperRaw overhead acceptance factor thinby\n");
     }
     else{
         output=fopen(name,"a");
@@ -79,9 +92,9 @@ void mcmc::write_timing(int overwrite){
     timePerRaw=_chisq->get_time_spent()/double(_chisq->get_called());
     overhead = timePer-timePerRaw;
     
-    fprintf(output,"%d %e %e %e %e %e %e\n",
+    fprintf(output,"%d %e %e %e %e %e %e %d\n",
     _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead,acceptance_rate(),
-    _factor);
+    _factor,_chains.get_thinby(0.1,0.0));
     
     fclose(output);
 
@@ -201,12 +214,14 @@ void mcmc::sample(int nSamples){
     trial.set_name("mcmc_sample_trial");
     dir.set_name("mcmc_sample_dir");
     
-    int iChain,ix,iy;
-    int final_ct,burn_ct,total_ct,last_wrote;
+    int iChain,ix,iy,thinby,total_points;
+    int final_ct,burn_ct,total_ct,last_wrote,last_assessed;
     int last_updated_factor,something_changed;
     
     double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
+    
+    char message[3*letters];
     
     for(iChain=0;iChain<_chains.get_n_chains();iChain++){
         _chains(iChain)->set_output_name_root(_name_root);
@@ -253,12 +268,31 @@ void mcmc::sample(int nSamples){
         something_changed=0;
         if(burn_ct>=_burn_in+_set_factor){
             final_ct++;
-            if(final_ct>last_wrote+1000){
+            if(final_ct>last_assessed+1000 && final_ct>_burn_in+_set_factor+1000){
+                thinby=_chains.get_thinby(0.1,0.0);
+                total_points=_chains.get_points();
+                
+                if(thinby>100){
+                    update_bases();
+                    something_changed=1;
+                    
+                    sprintf(message,"total_points %d thinby %d resetting bases\n",
+                    total_points,thinby);
+                    
+                    last_assessed=final_ct;
+                    
+                }
+                
+                last_assessed=final_ct;
+            }
+            
+            if(final_ct>last_wrote+5000 && final_ct>_burn_in+_set_factor+5000){
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain();
                 }
                 last_wrote=final_ct;
+                last_assessed=final_ct;
             }
         }
         else{
@@ -300,13 +334,14 @@ void mcmc::sample(int nSamples){
                     _chains(iChain)->write_chain();
                 }
             }
+
             
-            if(something_changed==1){
-                for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                    _chains(iChain)->increment_iteration();
-                }
+        }
+                    
+        if(something_changed==1){
+            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                _chains(iChain)->increment_iteration();
             }
-            
         }
    }
 

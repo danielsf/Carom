@@ -627,6 +627,15 @@ void arrayOfChains::remove(int dex){
     
 }
 
+int arrayOfChains::get_points(){
+    int i,ans;
+    ans=0;
+    for(i=0;i<_n_chains;i++){
+        ans+=_data[i].get_points();
+    }
+    return ans;
+}
+
 int arrayOfChains::get_thinby(double threshold, double burninDenom){
 
     int i,thinby,thinbyMax,burnin;
