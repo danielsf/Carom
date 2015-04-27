@@ -627,9 +627,9 @@ void arrayOfChains::remove(int dex){
     
 }
 
-void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, array_2d<double> &covar){
+int arrayOfChains::get_thinby(double threshold, double burninDenom){
 
-    int i,j,thinby,thinbyMax,burnin;
+    int i,thinby,thinbyMax,burnin;
     int step,total;
     
     thinbyMax=-1;
@@ -657,7 +657,17 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
             thinbyMax=thinby;
         }
     }
+    
+    return thinbyMax;
+}
 
+void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, array_2d<double> &covar){
+
+    int i,j,thinbyMax,burnin;
+    int step;
+    
+    thinbyMax=get_thinby(threshold,burninDenom);
+ 
     array_1d<int> dexes,tags,temp_dexes;
     dexes.set_name("arrayOfChains_get_covar_dexes");
     tags.set_name("arrayOfChains_get_covar_tags");

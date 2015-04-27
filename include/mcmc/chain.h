@@ -100,6 +100,7 @@ public:
     double get_sample(int,int);
 
     double acceptance_rate();
+    int get_thinby(double, double);
 
 private:
     chain *_data;
