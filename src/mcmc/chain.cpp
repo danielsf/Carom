@@ -314,16 +314,22 @@ void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output, i
     output.reset_preserving_room();
     int ct,i,currentDegen,ctStart,total;
     
+    if(output.get_dim()!=0){
+        printf("WARNING failed to reset output\n");
+        exit(1);
+    }
+    
     ct=0;
     for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
         ct+=_degeneracy.get_data(i);
     }
+    
+    total=ct;
        
     ctStart=ct;
     ct=thinby-(burnin-ctStart);
     ctStart=ct;
-    
-    total=ct;   
+     
     for(;i<_points.get_rows() && (limit<=0 || total<limit);i++){
         if(ct+_degeneracy.get_data(i)>=thinby){
             currentDegen=_degeneracy.get_data(i);
@@ -367,8 +373,8 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
         total=limit;
     } 
     
-    int thinby,thinbyBest,i1,i2,bestPts,maxDex,bestDex;
-    double covarMax,covarMaxBest,mu;
+    int thinby,thinbyBest,i1,i2,bestPts,maxDex,bestDex,repeats;
+    double covarMax,covarMaxBest,mu,varMax;
     
     thinbyBest=-1;
     covarMaxBest=2.0*exception_value;
@@ -377,7 +383,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     means.set_dim(_dim);
     vars.set_dim(_dim);
     covars.set_dim(_dim);
-
+    
     printf("in get thinby total %d\n",total);
 
     for(thinby=step;(fabs(threshold-covarMaxBest)>0.1*threshold && covarMaxBest>threshold)
@@ -406,10 +412,12 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
            vars.divide_val(i,double(dexes.get_dim()-1));
        }
        
+       repeats=0;
        covars.zero();
        for(i=0;i<dexes.get_dim()-1;i++){
            i1=dexes.get_data(i);
            i2=dexes.get_data(i+1);
+           if(i1==i2)repeats++;
            for(j=0;j<_dim;j++){
                covars.add_val(j,(means.get_data(j)-_points.get_data(i1,j))*(means.get_data(j)-_points.get_data(i2,j)));
            }
@@ -425,12 +433,15 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
            if(!isnan(covars.get_data(i))){
                mu=fabs(covars.get_data(i));
                if(mu>covarMax){
+                   varMax=sqrt(fabs(vars.get_data(i)))/means.get_data(i);
                    covarMax=mu;
                    maxDex=i;
                }
            }
        }
-              
+       
+       //printf("    thinby %d covar %e -- %d %d %e %d\n",thinby,covarMax,dexes.get_dim(),repeats,varMax,maxDex);
+       
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
            covarMaxBest=covarMax;
