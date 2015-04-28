@@ -8,11 +8,14 @@ int nChains,dim;
 dim=6;
 nChains=4;
 
-sprintf(inNameRoot,"chains/mcmc_test_150425");
-sprintf(outNameRoot,"processedChains/mcmc_test_150425");
+//sprintf(inNameRoot,"chains/mcmc_test_150425");
+//sprintf(outNameRoot,"processedChains/mcmc_test_150425");
 
 //sprintf(inNameRoot,"/Users/danielsf/physics/recreate_getdist/ieuchains_1304/wmap7_reformatted");
 //sprintf(outNameRoot,"processedChains/ieu15k");
+
+sprintf(inNameRoot,"chains/test_chain_0");
+sprintf(outNameRoot,"processedChains/test_chain");
 
 arrayOfChains chains(nChains, dim, NULL);
 
@@ -24,6 +27,7 @@ for(i=0;i<nChains;i++){
 }
 
 printf("acceptance rate %e\n",chains.acceptance_rate());
+printf("points %d\n",chains.get_points());
 
 array_1d<double> V,W,R;
 R.set_name("R");

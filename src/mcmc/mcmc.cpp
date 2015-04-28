@@ -77,7 +77,7 @@ void mcmc::write_timing(int overwrite){
     
     if(overwrite==1){
         output=fopen(name,"w");
-        fprintf(output,"#calls time timeper timeperRaw overhead acceptance factor thinby\n");
+        fprintf(output,"#calls time timeper timeperRaw overhead acceptance factor thinby totalpts\n");
     }
     else{
         output=fopen(name,"a");
@@ -91,9 +91,9 @@ void mcmc::write_timing(int overwrite){
     timePerRaw=_chisq->get_time_spent()/double(_chisq->get_called());
     overhead = timePer-timePerRaw;
     
-    fprintf(output,"%d %e %e %e %e %e %e %d\n",
+    fprintf(output,"%d %e %e %e %e %e %e %d %d\n",
     _chisq->get_called(),timeSpent,timePer,timePerRaw,overhead,acceptance_rate(),
-    _factor,_chains.get_thinby(0.1,0.0));
+    _factor,_chains.get_thinby(0.1,0.0),_chains.get_points());
     
     fclose(output);
 
@@ -133,13 +133,9 @@ double mcmc::acceptance_rate(){
     
 }
 
-void mcmc::update_bases(){
+double mcmc::update_bases(){
     array_2d<double> covar;
     covar.set_name("mcmc_update_bases_covar");
-    
-    printf("updating basis -- acceptance %e\n",acceptance_rate());
-
-    _chains.get_covariance_matrix(0.1,0,covar);
     
     array_2d<double> old_basis,evecs;
     array_1d<double> evals;
@@ -149,11 +145,12 @@ void mcmc::update_bases(){
     evals.set_name("mcmc_update_bases_evals");
     
     try{
+        _chains.get_covariance_matrix(0.1,0,covar);
+
         eval_symm(covar,evecs,evals,0.1);
     }
     catch(int iex){
-        printf("updating basis failed on eval\n");
-        return;
+        return -1.0;
     }
     
     old_basis.set_cols(_chisq->get_dim());
@@ -168,24 +165,29 @@ void mcmc::update_bases(){
         _sigma.set(ix,sqrt(fabs(evals.get_data(ix))));
     }
     
-    double dotMax,dot;
+    double dotMax,dot,dotMin;
     int i;
     dotMax=-1.0;
     for(ix=0;ix<_chisq->get_dim();ix++){
+        dotMin=2.0*exception_value;
         for(iy=0;iy<_chisq->get_dim();iy++){
             dot=0.0;
             for(i=0;i<_chisq->get_dim();i++){
                 dot+=old_basis.get_data(ix,i)*_bases.get_data(iy,i);
             }
             
-            if(fabs(1.0-dot)>dotMax){
-                dotMax=fabs(1.0-dot);
+            if(fabs(1.0-dot)<dotMin){
+                dotMin=fabs(1.0-dot);
             }
+        }
+        
+        if(dotMin>dotMax){
+            dotMax=dotMin;
         }
     }
     
-    printf("dotMax %e\n",dotMax);
     validate_bases();
+    return dotMax;
 }
 
 void mcmc::sample(int nSamples){
@@ -288,15 +290,20 @@ void mcmc::sample(int nSamples){
         
         if(final_ct>last_updated+2000){
             update_ct++;
-            write_timing("updating bases");
-            update_bases();
+            mu=update_bases();
+            sprintf(message,"updating bases -- dotMax: %e;",mu);
+            
+            write_timing(message);
+
             last_updated=final_ct;
             last_updated_factor=final_ct;
         }
         
         if(final_ct>last_updated_factor+200 && update_ct%2==1){
+
             last_updated_factor=final_ct;
             acceptance=acceptance_rate();
+
             if(fabs(1.0/acceptance-4.0)>1.0){
                 if(acceptance<0.25){
                     _factor*=0.9;

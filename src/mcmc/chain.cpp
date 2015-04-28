@@ -242,6 +242,8 @@ void chain::write_chain(int dump){
     
     _total_written+=_points.get_rows();
     
+    int zeropt;
+    
     if(dump==1){
         _n_written=0;
         _points.reset_preserving_room();
@@ -249,7 +251,8 @@ void chain::write_chain(int dump){
         _chisquared.reset_preserving_room();
     }
     else{
-        _n_written+=_points.get_rows();
+        zeropt=_n_written;
+        _n_written+=_points.get_rows()-zeropt;
         _points.add_row(_current_point);
         _chisquared.add(_current_chi);
         _degeneracy.add(1);
@@ -394,7 +397,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     vars.set_dim(_dim);
     covars.set_dim(_dim);
     
-    printf("in get thinby total %d\n",total);
+    //printf("in get thinby total %d\n",total);
 
     for(thinby=step;(fabs(threshold-covarMaxBest)>0.1*threshold && covarMaxBest>threshold)
                    && thinby<(total-burnin)/10; thinby+=step){
@@ -461,9 +464,9 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
        
     }
     
-    printf("thinby %d best %e pts %d dex %d\n",thinbyBest,covarMaxBest,bestPts,bestDex);
+    //printf("thinby %d best %e pts %d dex %d\n",thinbyBest,covarMaxBest,bestPts,bestDex);
     
-    if(thinbyBest<0){
+    if(thinbyBest<=0){
         thinbyBest = (total-burnin)/10;
     }
     
@@ -691,16 +694,16 @@ int arrayOfChains::get_thinby(double threshold, double burninDenom){
 }
 
 void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, array_2d<double> &covar){
-
+       
     int i,j,thinbyMax,burnin;
     int step;
-    
-    thinbyMax=get_thinby(threshold,burninDenom);
- 
+   
     array_1d<int> dexes,tags,temp_dexes;
     dexes.set_name("arrayOfChains_get_covar_dexes");
     tags.set_name("arrayOfChains_get_covar_tags");
     temp_dexes.set_name("arrayOfChains_get_covar_temp_dexes");
+    
+    thinbyMax=2;
     
     for(i=0;i<_n_chains;i++){
         if(burninDenom>1){
@@ -714,6 +717,10 @@ void arrayOfChains::get_covariance_matrix(double threshold, int burninDenom, arr
             dexes.add(temp_dexes.get_data(j));
             tags.add(i);
         }
+    }
+    
+    if(dexes.get_dim()<3){
+        throw -1;
     }
     
     array_1d<double> means;
