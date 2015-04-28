@@ -248,8 +248,7 @@ void mcmc::sample(int nSamples){
                         trial.set(ix,_chains(iChain)->get_current_point(ix));
                         dir.set(ix,normal_deviate(_dice,0.0,1.0));
                     }
-                    dir.normalize();
-                    norm=_factor*normal_deviate(_dice,0.0,1.0)/sqrtD;
+                    norm=_factor/sqrtD;
             
                     for(ix=0;ix<_chisq->get_dim();ix++){
                         for(iy=0;iy<_chisq->get_dim();iy++){
