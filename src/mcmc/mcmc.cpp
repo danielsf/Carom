@@ -279,7 +279,7 @@ void mcmc::sample(int nSamples){
             }
             last_wrote=final_ct;
         }
-        else if(final_ct>=last_dumped+5000){
+        else if(final_ct>=last_dumped+5000 || (last_dumped==0 && final_ct>=last_dumped+1000)){
             update_ct++;
             mu=update_bases();
             sprintf(message,"updating bases -- dotMax: %e;",mu);
