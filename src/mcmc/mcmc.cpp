@@ -145,7 +145,7 @@ double mcmc::update_bases(){
     evals.set_name("mcmc_update_bases_evals");
     
     try{
-        _chains.get_covariance_matrix(0.1,0,covar);
+        _chains.get_covariance_matrix(covar);
 
         eval_symm(covar,evecs,evals,0.1);
     }

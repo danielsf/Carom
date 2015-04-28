@@ -82,7 +82,7 @@ public:
     arrayOfChains(array_2d<double>&, array_1d<double>&,Ran*);
 
     int get_n_chains();
-    void get_covariance_matrix(double,int,array_2d<double>&);
+    void get_covariance_matrix(array_2d<double>&);
 
     void initialize(int,int,Ran*);
 
