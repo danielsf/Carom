@@ -280,14 +280,6 @@ void mcmc::sample(int nSamples){
             last_wrote=final_ct;
         }
         else if(final_ct>=last_dumped+5000){
-            write_timing(0);
-            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-                _chains(iChain)->write_chain(1);
-            }
-            last_dumped=final_ct;
-        }
-        
-        if(final_ct>last_updated+2000){
             update_ct++;
             mu=update_bases();
             sprintf(message,"updating bases -- dotMax: %e;",mu);
@@ -296,8 +288,13 @@ void mcmc::sample(int nSamples){
 
             last_updated=final_ct;
             last_updated_factor=final_ct;
+            write_timing(0);
+            for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+                _chains(iChain)->write_chain(1);
+            }
+            last_dumped=final_ct;
         }
-        
+
         if(final_ct>last_updated_factor+200){
 
             last_updated_factor=final_ct;
