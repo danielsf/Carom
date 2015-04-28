@@ -299,7 +299,7 @@ void mcmc::sample(int nSamples){
             last_updated_factor=final_ct;
         }
         
-        if(final_ct>last_updated_factor+200 && update_ct%2==1){
+        if(final_ct>last_updated_factor+200){
 
             last_updated_factor=final_ct;
             acceptance=acceptance_rate();

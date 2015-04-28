@@ -8,14 +8,14 @@ int nChains,dim;
 dim=6;
 nChains=4;
 
-//sprintf(inNameRoot,"chains/mcmc_test_150427_0");
-//sprintf(outNameRoot,"processedChains/mcmc_test_150427");
+sprintf(inNameRoot,"chains/mcmc_test_150427_0");
+sprintf(outNameRoot,"processedChains/mcmc_test_150427");
 
 //sprintf(inNameRoot,"/Users/danielsf/physics/recreate_getdist/ieuchains_1304/wmap7_reformatted");
 //sprintf(outNameRoot,"processedChains/ieu5k");
 
-sprintf(inNameRoot,"chains/test_chain_0");
-sprintf(outNameRoot,"processedChains/test_chain");
+//sprintf(inNameRoot,"chains/test_chain_0");
+//sprintf(outNameRoot,"processedChains/test_chain");
 
 arrayOfChains chains(nChains, dim, NULL);
 
