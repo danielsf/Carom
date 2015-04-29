@@ -6,7 +6,7 @@ maybe you should just set burn_in
 use one interval of that many  steps to find the eigen vectors
 
 then use another interval of that (sub_divided) to set _factor
-
+--yourself
 */
 
 #include "mcmc/mcmc.h"
