@@ -978,3 +978,64 @@ double arrayOfChains::acceptance_rate(){
     
     return double(rows)/double(ct);
 }
+
+void arrayOfChains::acceptance_statistics(int burnin, int limit){
+    int iChain,iRow,degen;
+    double mean,var;
+    int max,nOver5,nOver10;
+    int total,burned,startRow,rowCt;
+    
+    for(iChain=0;iChain<_n_chains;iChain++){
+        total=0;
+        burned=0;
+        mean=0.0;
+        var=0.0;
+        max=0;
+        nOver5=0;
+        nOver10=0;
+        rowCt=0;
+        
+        for(iRow=0;iRow<_data[iChain].get_rows() && burned<burnin; iRow++){
+            burned+=_data[iChain].get_degeneracy(iRow);
+        }
+        
+        startRow=iRow;
+        
+        for(;iRow<_data[iChain].get_rows() && (limit<0 || total<limit); iRow++){
+            total+=_data[iChain].get_degeneracy(iRow);
+            degen=_data[iChain].get_degeneracy(iRow);
+            mean+=double(degen);
+            if(degen>max){
+                max=degen;
+            }
+            
+            if(degen>5){
+                nOver5++;
+            }
+            
+            if(degen>10){
+                nOver10++;
+            }
+            
+            rowCt++;
+
+        }
+        
+        mean=mean/double(rowCt);
+        
+        total=0;
+        rowCt=0;
+        for(iRow=startRow;iRow<_data[iChain].get_rows() && (limit<0 || total<limit); iRow++){
+            degen=_data[iChain].get_degeneracy(iRow);
+            var+=power(double(degen)-mean,2);
+            rowCt++;
+        }
+        var=var/double(rowCt-1);
+        
+        printf("chain %d\n",iChain);
+        printf("mean %e var %e sqrt(var) %e\n",mean,var,sqrt(var));
+        printf("max %d nOver5 %d nOver10 %d\n\n",max,nOver5,nOver10);
+        
+    }
+    
+}

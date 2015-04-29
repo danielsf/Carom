@@ -103,6 +103,8 @@ public:
     int get_thinby(double, double);
     int get_points();
 
+    void acceptance_statistics(int,int);
+
 private:
     chain *_data;
     Ran *_dice;

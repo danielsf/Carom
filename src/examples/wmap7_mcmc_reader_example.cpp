@@ -8,8 +8,8 @@ int nChains,dim;
 dim=6;
 nChains=4;
 
-sprintf(inNameRoot,"chains/mcmc_test_150428_0");
-sprintf(outNameRoot,"processedChains/mcmc_test_150428");
+sprintf(inNameRoot,"chains/mcmc_test_150429_0");
+sprintf(outNameRoot,"processedChains/mcmc_test_150429");
 
 //sprintf(inNameRoot,"/Users/danielsf/physics/recreate_getdist/ieuchains_1304/wmap7_reformatted");
 //sprintf(outNameRoot,"processedChains/ieu6k");
@@ -34,7 +34,7 @@ R.set_name("R");
 V.set_name("V");
 W.set_name("W");
 
-chains.get_independent_samples(0.1,6000,12000);
+chains.get_independent_samples(0.1,1000,-1);
 
 chains.calculate_R(R,V,W);
 printf("got R,V,W\n");
