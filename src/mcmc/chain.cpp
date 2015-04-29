@@ -223,7 +223,7 @@ void chain::write_chain(int dump){
     sprintf(output_name,"%s_%d_%d.txt",_output_name_root,_iteration,_chain_label);
 
     if(dump==0){
-        if(_degeneracy.get_data(_degeneracy.get_dim()-1)>0){
+        if(_degeneracy.get_data(_degeneracy.get_dim()-1)>1){
             _degeneracy.subtract_val(_degeneracy.get_dim()-1,1);
         }
         else{
