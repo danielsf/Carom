@@ -746,7 +746,7 @@ void arrayOfChains::get_covariance_matrix(array_2d<double> &covar){
 
 }
 
-void arrayOfChains::get_independent_samples(double threshold, int limit){
+void arrayOfChains::get_independent_samples(double threshold, int burnin, int limit){
     
     _independent_sample_dexes.reset();
     _independent_samples.reset();
@@ -771,7 +771,7 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
             step=10;
         }
     
-        thinby=_data[ic].get_thinby(threshold,0,step,limit);
+        thinby=_data[ic].get_thinby(threshold,burnin,step,limit);
         if(thinby>thinbyMax){
             thinbyMax=thinby;
         }
@@ -783,7 +783,7 @@ void arrayOfChains::get_independent_samples(double threshold, int limit){
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_temp_dexes");
     for(ic=0;ic<_n_chains;ic++){
-        _data[ic].get_thinned_indices(thinbyMax, 0, temp_dexes, limit);
+        _data[ic].get_thinned_indices(thinbyMax, burnin, temp_dexes, limit);
         _independent_sample_dexes.add_row(temp_dexes);
         total+=temp_dexes.get_dim();
     }
