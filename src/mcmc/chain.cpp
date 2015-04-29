@@ -337,8 +337,7 @@ void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output, i
         ct+=_degeneracy.get_data(i);
     }
     
-    total=ct;
-       
+    total=0;       
     ctStart=ct;
     ct=thinby-(burnin-ctStart);
     ctStart=ct;
@@ -382,8 +381,8 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
         total+=_degeneracy.get_data(i);
     }
    
-    if(limit>0 && limit<total){
-        total=limit;
+    if(limit>0 && limit+burnin<total){
+        total=limit+burnin;
     } 
     
     int thinby,thinbyBest,i1,i2,bestPts,maxDex,bestDex,repeats;
