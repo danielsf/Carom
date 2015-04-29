@@ -176,8 +176,8 @@ double mcmc::update_bases(){
                 dot+=old_basis.get_data(ix,i)*_bases.get_data(iy,i);
             }
             
-            if(fabs(1.0-dot)<dotMin){
-                dotMin=fabs(1.0-dot);
+            if(fabs(1.0-fabs(dot))<dotMin){
+                dotMin=fabs(1.0-fabs(dot));
             }
         }
         
