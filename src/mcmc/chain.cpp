@@ -748,6 +748,48 @@ void arrayOfChains::get_covariance_matrix(array_2d<double> &covar){
 
 }
 
+void arrayOfChains::use_all(int burnin, int limit){
+    _independent_sample_dexes.reset();
+    _independent_samples.reset();
+    
+    int i,total,burned,j;
+    int iChain,toburn,touse;
+    
+    array_1d<int> temp_dexes;
+    temp_dexes.set_name("arrayOfChains_use_all_temp_dexes");
+    
+    for(iChain=0;iChain<_n_chains;iChain++){
+        temp_dexes.reset_preserving_room();
+        total=0;
+        burned=0;
+        for(i=0;i<_data[iChain].get_rows() && burned<burnin;iChain++){
+            if(burned+_data[iChain].get_degeneracy(i)<burnin){
+                burned+=_data[iChain].get_degeneracy(i);
+            }
+            else{
+                toburn=burnin-burned;
+                touse=_data[iChain].get_degeneracy(i)-toburn;
+                for(j=0;j<touse;j++){
+                    temp_dexes.add(i);
+                }
+                burned=burnin;
+                total=touse;
+            }
+            
+        }
+        
+        for(;i<_data[iChain].get_rows() && (limit<=0 || total<limit);i++){
+            total+=_data[iChain].get_degeneracy(i);
+            for(j=0;j<_data[iChain].get_degeneracy(i);j++){
+                temp_dexes.add(i);
+            }
+        }
+        
+        _independent_sample_dexes.add_row(temp_dexes);
+        
+    }
+}
+
 void arrayOfChains::get_independent_samples(double threshold, int burnin, int limit){
     
     _independent_sample_dexes.reset();

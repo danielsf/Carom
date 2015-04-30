@@ -13,7 +13,7 @@ dchi=0.3;
 
 int burnin,limit;
 
-burnin=5000;
+burnin=0;
 limit=15000-burnin;
 
 dim=6;
@@ -45,7 +45,8 @@ R.set_name("R");
 V.set_name("V");
 W.set_name("W");
 
-chains.get_independent_samples(0.1,burnin,limit);
+//chains.get_independent_samples(0.1,burnin,limit);
+chains.use_all(burnin,limit);
 chains.acceptance_statistics(burnin,limit);
 
 chains.calculate_R(R,V,W);
