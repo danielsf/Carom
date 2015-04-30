@@ -193,8 +193,6 @@ void mcmc::sample(int nSamples){
 
     write_timing(1);
     
-    validate_bases();
-    
     int i,j;
     if(_bases.get_rows()==0){
         for(i=0;i<_chisq->get_dim();i++){
@@ -209,6 +207,8 @@ void mcmc::sample(int nSamples){
             }
         }
     }
+    
+    validate_bases();
     
     array_1d<double> trial,dir;
     trial.set_name("mcmc_sample_trial");
@@ -272,7 +272,8 @@ void mcmc::sample(int nSamples){
         final_ct++;
         
         if(final_ct<_burn_in){
-            if(final_ct>=last_updated+500 && final_ct>0){
+            if(final_ct>=last_updated+500){
+
                 mu=update_bases();
                 sprintf(message,"updating bases -- dotMax %e;",mu);
                 write_timing(message);
@@ -285,7 +286,7 @@ void mcmc::sample(int nSamples){
                     _chains(iChain)->write_chain(1);
                 }
             }
-            else if(final_ct>=last_updated_factor+100 && final_ct>0){
+            else if(final_ct>=last_updated_factor+100){
                 acceptance=acceptance_rate();
                 if(fabs(1.0/acceptance-3.0)>1.0){
                     if(acceptance<0.3333333){
@@ -300,7 +301,6 @@ void mcmc::sample(int nSamples){
             }
         }
         else if(final_ct>last_wrote+1000){
-            
             if(final_ct>last_dumped+5000){
                 ix=1;
                 last_dumped=final_ct;

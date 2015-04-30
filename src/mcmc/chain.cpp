@@ -367,6 +367,10 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     ///find the amount to thinby to achieve the specified threshold
     ///burnin is the number of points to discard
     
+    if(get_points()==0){
+        return -1;
+    }
+     
     array_1d<double> means,covars,vars;
     int i,j,ix,total;
     means.set_name("chain_get_thinby_means");
@@ -454,8 +458,8 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
            
        }
        
-       printf("    thinby %d covar %.3e %.3e -- %d %d %.3e %.3e %.3e\n",thinby,covarMax,meanVal,
-       dexes.get_dim(),repeats,varMax,covRat,meanRat);
+       //printf("    thinby %d covar %.3e %.3e -- %d %d %.3e %.3e %.3e\n",thinby,covarMax,meanVal,
+       //dexes.get_dim(),repeats,varMax,covRat,meanRat);
        
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
@@ -471,7 +475,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     if(thinbyBest<=0){
         thinbyBest = (total-burnin)/10;
     }
-    printf("    thinbyBest %d covarMaxBest %e\n",thinbyBest,covarMaxBest);
+    //printf("    thinbyBest %d covarMaxBest %e\n",thinbyBest,covarMaxBest);
     return thinbyBest;
     
 }

@@ -50,8 +50,8 @@ for(i=0;i<6;i++){
     mcmc_test.set_max(i,max.get_data(i));
 }
 
-mcmc_test.guess_bases(12.6,1);
-mcmc_test.set_burnin(2000,1000);
+//mcmc_test.guess_bases(12.6,1);
+mcmc_test.set_burnin(3000);
 mcmc_test.set_name_root("chains/test_chain");
 mcmc_test.sample(20000);
 
