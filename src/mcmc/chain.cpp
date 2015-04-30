@@ -787,7 +787,61 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
         total+=temp_dexes.get_dim();
     }
     
-    printf("%d independent samples\n",total);
+    array_1d<double> means,vars,covars;
+    means.set_name("arrayOfChains_get_independent_samples_means");
+    vars.set_name("arrayOfChains_get_independent_samples_vars");
+    covars.set_name("arrayOfChains_get_independent_samples_covars");
+    
+    means.set_dim(_dim);
+    vars.set_dim(_dim);
+    covars.set_dim(_dim);
+    
+    int i,j,dex;
+    for(ic=0;ic<_independent_sample_dexes.get_rows();ic++){
+        for(i=0;i<_independent_sample_dexes.get_cols(ic);i++){
+            dex=_independent_sample_dexes.get_data(ic,i);
+            for(j=0;j<_dim;j++){
+                means.add_val(j,_data[ic].get_point(dex,j));
+            }
+        }
+    }
+    
+    for(i=0;i<_dim;i++){
+        means.divide_val(i,double(total));
+    }
+    
+    int dex2,covarTotal;
+    
+    covarTotal=0;
+    for(ic=0;ic<_independent_sample_dexes.get_rows();ic++){
+        for(i=0;i<_independent_sample_dexes.get_cols(ic);i++){
+            dex=_independent_sample_dexes.get_data(ic,i);
+            if(i<_independent_sample_dexes.get_cols(ic)-1){
+                dex2=_independent_sample_dexes.get_data(ic,i+1);
+                covarTotal++;
+            }
+            for(j=0;j<_dim;j++){
+                vars.add_val(j,power(_data[ic].get_point(dex,j)-means.get_data(j),2));
+                if(i<_independent_sample_dexes.get_cols(ic)-1){
+                    covars.add_val(j,(_data[ic].get_point(dex,j)-means.get_data(j))*
+                                     (_data[ic].get_point(dex2,j)-means.get_data(j)));
+                }
+            }
+        }
+    }
+    
+    double covarMax=-1.0;
+    for(i=0;i<_dim;i++){
+        vars.divide_val(i,double(total-1));
+        covars.divide_val(i,double(covarTotal-1));
+        covars.divide_val(i,vars.get_data(i));
+        if(fabs(covars.get_data(i))>covarMax){
+            covarMax=fabs(covars.get_data(i));
+        }
+    }
+    
+    
+    printf("%d independent samples -- covar in time %e\n",total,covarMax);
 }
 
 void arrayOfChains::_get_full_independent_samples(){
