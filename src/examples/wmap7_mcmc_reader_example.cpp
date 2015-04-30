@@ -13,17 +13,17 @@ dchi=0.3;
 
 int burnin,limit;
 
-burnin=1000;
-limit=15000-burnin;
+burnin=7000;
+limit=8000;
 
 dim=6;
 nChains=4;
 
 //sprintf(inNameRoot,"chains/mcmc_test_150429_0");
-//sprintf(outNameRoot,"processedChains/mcmc_test_150429");
+//sprintf(outNameRoot,"processedChains/mcmc_test_150429_30k");
 
 sprintf(inNameRoot,"/Users/danielsf/physics/recreate_getdist/ieuchains_1304/wmap7_reformatted");
-sprintf(outNameRoot,"ieuProcessed/ieu_total%d",burnin+limit);
+sprintf(outNameRoot,"ieuProcessed/ieu_total_60k_burn7k");
 
 //sprintf(inNameRoot,"chains/test_chain_0");
 //sprintf(outNameRoot,"processedChains/test_chain");
@@ -71,7 +71,7 @@ for(i=0;i<dim;i++){
 
 int j;
 
-FILE *output;
+/*FILE *output;
 output=fopen("processedChains/independent_samples.txt","w");
 for(i=0;i<chains.get_n_samples();i++){
     for(j=0;j<dim;j++){
@@ -79,6 +79,6 @@ for(i=0;i<chains.get_n_samples();i++){
     }
     fprintf(output,"\n");
 }
-fclose(output);
+fclose(output);*/
 
 }

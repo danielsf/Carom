@@ -12,7 +12,7 @@ public:
 
     ~mcmc();
     mcmc(int, int, chisquared*);
-    void set_burnin(int,int);
+    void set_burnin(int);
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
@@ -39,7 +39,7 @@ private:
 
     char _name_root[letters];
 
-    int _set_factor,_burn_in;
+    int _burn_in;
 
     void initialize();
     void validate_bases();
