@@ -963,6 +963,56 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
 
 }
 
+void arrayOfChains::plot_chisquared_histogram(int limit, double min, double max, double dx, char *nameRoot){
+    int total,globalTotal;
+    int iChain,i;
+    double cc,mu;
+    int dex;
+    
+    array_1d<int> counts;
+    
+    for(cc=min;cc<=max;cc+=dx){
+        counts.add(0);
+    }
+    
+    globalTotal=0;
+    for(iChain=0;iChain<_n_chains;iChain++){
+        total=0;
+        for(i=0;i<_data[iChain].get_rows() && (limit<=0 || total<limit);i++){
+            total+=_data[iChain].get_degeneracy(i);
+            globalTotal+=_data[iChain].get_degeneracy(i);
+            cc=_data[iChain].get_chisquared(i);
+            
+            mu=(cc-min)/dx;
+            dex=int(mu);
+            
+            if(mu-1.0*dex>0.5){
+                dex++;
+            }
+            
+            if(dex>counts.get_dim()-1){
+                dex=counts.get_dim()-1;
+            }
+            
+            counts.add_val(dex,_data[iChain].get_degeneracy(i));
+            
+        }
+    }
+
+    char name[2*letters];
+    sprintf(name,"%s_histogram.sav",nameRoot);
+    FILE *output;
+    output=fopen(name,"w");
+    for(i=0;i<counts.get_dim();i++){
+        fprintf(output,"%e %d\n",min+dx*i,counts.get_data(i));
+    }
+    fclose(output);
+
+    printf("plotted histogram of %d points\n",globalTotal);
+
+
+}
+
 void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoot){
     if(_independent_sample_dexes.get_rows()==0){
         printf("WARNING cannot plot contours; no independent samples\n");

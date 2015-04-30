@@ -95,6 +95,8 @@ public:
     void get_independent_samples(double,int,int);
     void calculate_R(array_1d<double>&, array_1d<double>&, array_1d<double>&);
     void plot_contours(int,int,double,char*);
+    
+    void plot_chisquared_histogram(int,double,double,double,char*);
 
     int get_n_samples();
     double get_sample(int,int);

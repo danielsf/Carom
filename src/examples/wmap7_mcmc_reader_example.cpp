@@ -5,9 +5,15 @@ int main(){
 char inNameRoot[letters],outNameRoot[letters];
 int nChains,dim;
 
+double chimin,chimax,dchi;
+
+chimin=1270.0;
+chimax=1400.0;
+dchi=0.3;
+
 int burnin,limit;
 
-burnin=4000;
+burnin=5000;
 limit=15000-burnin;
 
 dim=6;
@@ -17,7 +23,7 @@ nChains=4;
 //sprintf(outNameRoot,"processedChains/mcmc_test_150429");
 
 sprintf(inNameRoot,"/Users/danielsf/physics/recreate_getdist/ieuchains_1304/wmap7_reformatted");
-sprintf(outNameRoot,"processedChains/ieu_junk");
+sprintf(outNameRoot,"ieuProcessed/ieu_total%d",burnin+limit);
 
 //sprintf(inNameRoot,"chains/test_chain_0");
 //sprintf(outNameRoot,"processedChains/test_chain");
@@ -54,6 +60,8 @@ for(ix=0;ix<dim;ix++){
         }
     }
 }
+
+chains.plot_chisquared_histogram(burnin+limit,chimin,chimax,dchi,outNameRoot);
 
 for(i=0;i<dim;i++){
     printf("%d %e %e %e\n",i,R.get_data(i),V.get_data(i),W.get_data(i));
