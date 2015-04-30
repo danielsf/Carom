@@ -272,7 +272,7 @@ void mcmc::sample(int nSamples){
         final_ct++;
         
         if(final_ct<_burn_in){
-            if(final_ct>=last_updated+500){
+            if(final_ct>=last_updated+500 && final_ct>0){
                 mu=update_bases();
                 sprintf(message,"updating bases -- dotMax %e;",mu);
                 write_timing(message);
@@ -285,7 +285,7 @@ void mcmc::sample(int nSamples){
                     _chains(iChain)->write_chain(1);
                 }
             }
-            else if(final_ct>=last_updated_factor+100){
+            else if(final_ct>=last_updated_factor+100 && final_ct>0){
                 acceptance=acceptance_rate();
                 if(fabs(1.0/acceptance-3.0)>1.0){
                     if(acceptance<0.3333333){
