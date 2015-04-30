@@ -386,7 +386,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     } 
     
     int thinby,thinbyBest,i1,i2,bestPts,maxDex,bestDex,repeats;
-    double covarMax,covarMaxBest,mu,varMax;
+    double covarMax,covarMaxBest,mu,varMax,covRat,meanRat,meanVal;
     
     thinbyBest=-1;
     covarMaxBest=2.0*exception_value;
@@ -441,18 +441,21 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                covars.divide_val(i,double(dexes.get_dim()-2));
            }
            
-           covars.divide_val(i,vars.get_data(i));
-           if(!isnan(covars.get_data(i))){
-               mu=fabs(covars.get_data(i));
-               if(mu>covarMax){
-                   varMax=sqrt(fabs(vars.get_data(i)))/means.get_data(i);
-                   covarMax=mu;
-                   maxDex=i;
-               }
+           mu=sqrt(fabs(covars.get_data(i)))/fabs(means.get_data(i));
+           //mu=fabs(covars.get_data(i))/fabs(vars.get_data(i));
+           if(mu>covarMax && !isnan(mu)){
+               varMax=sqrt(fabs(vars.get_data(i)))/means.get_data(i);
+               covRat=covars.get_data(i)/vars.get_data(i);
+               meanRat=sqrt(fabs(covars.get_data(i)))/fabs(means.get_data(i));
+               meanVal=means.get_data(i);
+               covarMax=mu;
+               maxDex=i;
            }
+           
        }
        
-       //printf("    thinby %d covar %e -- %d %d %e %d\n",thinby,covarMax,dexes.get_dim(),repeats,varMax,maxDex);
+       printf("    thinby %d covar %.3e %.3e -- %d %d %.3e %.3e %.3e\n",thinby,covarMax,meanVal,
+       dexes.get_dim(),repeats,varMax,covRat,meanRat);
        
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
@@ -468,7 +471,7 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     if(thinbyBest<=0){
         thinbyBest = (total-burnin)/10;
     }
-    
+    printf("    thinbyBest %d covarMaxBest %e\n",thinbyBest,covarMaxBest);
     return thinbyBest;
     
 }
@@ -1105,7 +1108,7 @@ void arrayOfChains::acceptance_statistics(int burnin, int limit){
         
         startRow=iRow;
         
-        for(;iRow<_data[iChain].get_rows() && (limit<0 || total<limit); iRow++){
+        for(;iRow<_data[iChain].get_rows() && (limit<=0 || total<limit); iRow++){
             total+=_data[iChain].get_degeneracy(iRow);
             degen=_data[iChain].get_degeneracy(iRow);
             mean+=double(degen);
@@ -1129,7 +1132,7 @@ void arrayOfChains::acceptance_statistics(int burnin, int limit){
         
         total=0;
         rowCt=0;
-        for(iRow=startRow;iRow<_data[iChain].get_rows() && (limit<0 || total<limit); iRow++){
+        for(iRow=startRow;iRow<_data[iChain].get_rows() && (limit<=0 || total<limit); iRow++){
             degen=_data[iChain].get_degeneracy(iRow);
             var+=power(double(degen)-mean,2);
             rowCt++;
