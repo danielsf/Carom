@@ -502,6 +502,7 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     
     _independent_sample_dexes.set_name("arrayOfChains_independent_sample_dexes");
     _independent_samples.set_name("arrayOfChains_independent_samples");
+    _independent_sample_weights.set_name("arrayOfChains_independent_sample_weights");
     
     int i;
     for(i=0;i<_n_chains;i++){
@@ -751,6 +752,7 @@ void arrayOfChains::get_covariance_matrix(array_2d<double> &covar){
 void arrayOfChains::use_all(int burnin, int limit){
     _independent_sample_dexes.reset();
     _independent_samples.reset();
+    _independent_sample_weights.reset();
     
     int i,total,burned,j;
     int iChain,toburn,touse;
@@ -758,42 +760,50 @@ void arrayOfChains::use_all(int burnin, int limit){
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_use_all_temp_dexes");
     
+    printf("burn %d lim %d\n",burnin,limit);
+    
     for(iChain=0;iChain<_n_chains;iChain++){
         temp_dexes.reset_preserving_room();
         total=0;
         burned=0;
-        for(i=0;i<_data[iChain].get_rows() && burned<burnin;iChain++){
+        for(i=0;i<_data[iChain].get_rows() && burned<burnin;i++){
+           // printf("burning %d burned %d %d %d\n",_data[iChain].get_degeneracy(i),burned,i,_data[iChain].get_rows());
             if(burned+_data[iChain].get_degeneracy(i)<burnin){
                 burned+=_data[iChain].get_degeneracy(i);
             }
             else{
                 toburn=burnin-burned;
                 touse=_data[iChain].get_degeneracy(i)-toburn;
-                for(j=0;j<touse;j++){
-                    temp_dexes.add(i);
-                }
+                temp_dexes.add(i);
+                _independent_sample_weights.add(double(touse));
                 burned=burnin;
                 total=touse;
             }
             
+            //printf("burned %d\n",burned);
         }
         
+        //printf("total %d %d %d\n",total,i,_data[iChain].get_rows());
+        
         for(;i<_data[iChain].get_rows() && (limit<=0 || total<limit);i++){
+
             total+=_data[iChain].get_degeneracy(i);
-            for(j=0;j<_data[iChain].get_degeneracy(i);j++){
-                temp_dexes.add(i);
-            }
+            temp_dexes.add(i);
+            _independent_sample_weights.add(double(_data[iChain].get_degeneracy(i)));
         }
         
         _independent_sample_dexes.add_row(temp_dexes);
         
     }
+    
+    printf("ind rows %d\n",_independent_sample_dexes.get_rows());
 }
 
 void arrayOfChains::get_independent_samples(double threshold, int burnin, int limit){
     
     _independent_sample_dexes.reset();
     _independent_samples.reset();
+    _independent_sample_weights.reset();
     
     printf("getting independent samples\n");
     
@@ -823,12 +833,17 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
     
     printf("thinning by %d\n",thinbyMax);
 
+    int iw;
+
     total=0;    
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_temp_dexes");
     for(ic=0;ic<_n_chains;ic++){
         _data[ic].get_thinned_indices(thinbyMax, burnin, temp_dexes, limit);
         _independent_sample_dexes.add_row(temp_dexes);
+        for(iw=0;iw<temp_dexes.get_dim();iw++){
+            _independent_sample_weights.add(1.0);
+        }
         total+=temp_dexes.get_dim();
     }
     
@@ -910,7 +925,7 @@ void arrayOfChains::_get_full_independent_samples(){
     }
     
     printf("set row %d\n",row);
-    _density.set_data(&_independent_samples);
+    _density.set_data(&_independent_samples, _independent_sample_weights);
 }
 
 void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_1d<double> &W){

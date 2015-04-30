@@ -13,7 +13,7 @@ dchi=0.3;
 
 int burnin,limit;
 
-burnin=0;
+burnin=1000;
 limit=15000-burnin;
 
 dim=6;
@@ -57,6 +57,7 @@ for(ix=0;ix<dim;ix++){
         for(iy=ix+1;iy<dim;iy++){
             if(iy!=3){
                 chains.plot_contours(ix,iy,0.95,outNameRoot);
+                printf("plotted %d %d\n",ix,iy);
             }
         }
     }

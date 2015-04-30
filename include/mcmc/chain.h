@@ -117,6 +117,7 @@ private:
     
     asymm_array_2d<int> _independent_sample_dexes;
     array_2d<double> _independent_samples;
+    array_1d<double> _independent_sample_weights;
 
     void verify_chains(int,char*);
     void _get_full_independent_samples();

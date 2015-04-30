@@ -18,14 +18,14 @@ kde::kde(){
 
 kde::~kde(){}
 
-void kde::set_data(array_2d<double> *dd){
+void kde::set_data(array_2d<double> *dd, array_1d<double> &degen){
     data=dd;
     wgt.reset();
     min.reset();
     max.reset();
     int i,j;
     for(i=0;i<data->get_rows();i++){
-        wgt.set(i,1.0);
+        wgt.set(i,degen.get_data(i));
         for(j=0;j<data->get_cols();j++){
             if(i==0 || data->get_data(i,j)<min.get_data(j))min.set(j,data->get_data(i,j));
             if(i==0 || data->get_data(i,j)>max.get_data(j))max.set(j,data->get_data(i,j));
