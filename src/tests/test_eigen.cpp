@@ -132,36 +132,28 @@ for(iteration=0;iteration<10;iteration++){
     }
     
     try{
-        eval_symm(AA,evecs,evals,dim-2,dim,1,0.01);
-        eval_symm(AA,other_evecs,other_evals,2,dim,-1,0.01);
-        
-        evals.set(dim-2,other_evals.get_data(0));
-        evals.set(dim-1,other_evals.get_data(1));
-        for(i=0;i<dim;i++){
-            evecs.set(i,dim-2,other_evecs.get_data(i,0));
-            evecs.set(i,dim-1,other_evecs.get_data(i,1));
-        }
-        
+        eval_symm(AA,evecs,evals);
+               
         for(i=0;i<dim;i++){
          
             for(j=0;j<dim;j++){
                 vv.set(j,0.0);
                 for(k=0;k<dim;k++){
-                    vv.add_val(j,AA.get_data(j,k)*evecs.get_data(k,i));
+                    vv.add_val(j,AA.get_data(j,k)*evecs.get_data(i,k));
                 }
             }
             
             local_maxerr=-1.0;
             for(j=0;j<dim;j++){
                 vv.divide_val(j,evals.get_data(i));
-                err=fabs(vv.get_data(j)-evecs.get_data(j,i));
-                if(evecs.get_data(j,i)!=0.0)err=err/fabs(evecs.get_data(j,i));
+                err=fabs(vv.get_data(j)-evecs.get_data(i,j));
+                if(evecs.get_data(i,j)!=0.0)err=err/fabs(evecs.get_data(i,j));
                 
                 if(err>maxerr)maxerr=err;
                 if(err>local_maxerr)local_maxerr=err;
             }
             
-            for(j=0;j<dim;j++)vv.set(j,evecs.get_data(j,i));
+            for(j=0;j<dim;j++)vv.set(j,evecs.get_data(i,j));
             nn=eigen_check(AA,vv,evals.get_data(i),dim);
             err=fabs(nn-local_maxerr);
             if(local_maxerr!=0.0)err=err/local_maxerr;

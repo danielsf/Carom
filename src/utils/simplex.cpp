@@ -265,6 +265,10 @@ void simplex_minimizer::is_it_safe(char *word){
     }
 }
 
+double simplex_minimizer::get_minimum(){
+    return _true_min_ff;
+}
+
 void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &min_pt){
     is_it_safe("find_minimum");
 

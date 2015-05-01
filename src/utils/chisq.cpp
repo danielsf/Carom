@@ -179,6 +179,7 @@ void chisquared::make_centersRandom(){
         
         if(iterations>5000){
             printf("WARNING; chisq was unable to construct an acceptable function\n");
+            printf("ncenters %d dim %d\n",ncenters,dim);
             
             exit(1);
         }
@@ -511,7 +512,7 @@ void chisquared::decrement_called(){
     called--;
 }
 
-double chisquared::operator()(array_1d<double> &v)const{
+double chisquared::operator()(array_1d<double> &v){
     death_knell("meaningless operator");
     return -1.0;
 }
@@ -1068,7 +1069,7 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     
 }
 
-double s_curve::operator()(array_1d<double> &in_pt) const{
+double s_curve::operator()(array_1d<double> &in_pt){
     
     if(dice==NULL){
          death_knell("you called operator before making bases");
@@ -1623,7 +1624,7 @@ void s_curve::build_boundary(double br){
     
 }
 
-double ellipses::operator()(array_1d<double> &in_pt) const{
+double ellipses::operator()(array_1d<double> &in_pt){
     
     if(dice==NULL){
          death_knell("you called operator before making bases");
@@ -1730,7 +1731,7 @@ void ellipses::build_boundary(double br){
     
 }
 
-double linear_ellipses::operator()(array_1d<double> &in_pt) const{
+double linear_ellipses::operator()(array_1d<double> &in_pt){
 
     if(dice==NULL){
          death_knell("you called operator before making bases");

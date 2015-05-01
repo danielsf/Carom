@@ -141,6 +141,7 @@ public:
     
     /*clear the contents of the array; name and where_am_i are untouched*/
     void reset();
+    void reset_preserving_room();
     
     /*these routines exist so that array_2d can apply its name to the array_1d's that
     comprise its rows*/
@@ -287,6 +288,7 @@ public:
     
     /*reset the contents of the array_2d; name and where_am_i are untouched*/
     void reset();
+    void reset_preserving_room();
     
     /*reduce the number of rows by one; the contents of the array_2d
     are untouched*/
@@ -436,6 +438,7 @@ public:
     
     /*reset the contents of this asymm_array_2d*/
     void reset();
+    void reset_preserving_room();
     
     /*return a pointer to the row indexed by int, i.e.
     

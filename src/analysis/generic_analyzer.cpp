@@ -71,12 +71,14 @@ FILE *input,*output;
 double maxerr=-1.0;
 
 double chi_min=2.0*exception_value;
+int ct=0;
 
 input=fopen(inputName,"r");
 for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
 }
-while(fscanf(input,"%le",&nn)>0){
+while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
+    ct++;
     vv.set(0,nn);
     for(i=1;i<dim;i++){
         fscanf(input,"%le",&nn);
@@ -102,8 +104,10 @@ for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
 }
 
+ct=0;
 printf("word %s dim %d\n",word,dim);
-while(fscanf(input,"%le",&nn)>0){
+while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
+    ct++;
     vv.set(0,nn);
     for(i=1;i<dim;i++){
         fscanf(input,"%le",&nn);

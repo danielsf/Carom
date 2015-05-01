@@ -313,6 +313,11 @@ void array_1d<T>::increment_dim(){
 }
 
 template <typename T>
+void array_1d<T>::reset_preserving_room(){
+    dim=0;
+}
+
+template <typename T>
 void array_1d<T>::reset(){
 
     if(data==NULL && (room>0 || dim>0)){
@@ -1034,6 +1039,11 @@ void array_2d<T>::decrement_rows(){
 }
 
 template <typename T>
+void array_2d<T>::reset_preserving_room(){
+    rows=0;
+}
+
+template <typename T>
 void array_2d<T>::reset(){
     
     //printf("resetting %s\n",name);
@@ -1460,6 +1470,11 @@ void asymm_array_2d<T>::remove_row(int dex){
     rows--;
     
     
+}
+
+template <typename T>
+void asymm_array_2d<T>::reset_preserving_room(){
+    rows=0;
 }
 
 template <typename T>
