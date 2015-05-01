@@ -296,6 +296,7 @@ protected:
     the bases will be the usual (1,0,0,0), (0,1,0,0), (0,0,1,0), etc.
     */
     void make_bases(int);
+    void make_bases(int,int);
     
     void make_centersRandom();
 
@@ -410,6 +411,19 @@ public:
 	linear_ellipses(int,int);
 	virtual double operator()(array_1d<double>&);
 	virtual void build_boundary(double);
+
+};
+
+class jellyBean : public chisquared{
+
+public:
+    ~jellyBean();
+    jellyBean(int,double, double);
+    virtual double operator()(array_1d<double>&);
+
+private:
+    array_1d<double> curvature_center,radial_direction;
+    double curvature_radius;
 
 };
 

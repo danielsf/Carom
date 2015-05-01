@@ -70,6 +70,10 @@ void chisquared::reset_boundary(){
 }
 
 void chisquared::make_bases(int seed){
+    make_bases(seed, 1);
+}
+
+void chisquared::make_bases(int seed, int doCenters){
 
     int do_random_bases=1;
     
@@ -146,7 +150,9 @@ void chisquared::make_bases(int seed){
     }
     
     
-    make_centersRandom();
+    if(doCenters==1){
+        make_centersRandom();
+    }
     
     centers.set_where("nowhere");
     bases.set_where("nowhere");
@@ -2081,5 +2087,102 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
     fclose(output);
     
     called=0;
+
+}
+
+jellyBean::~jellyBean(){}
+
+jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
+    //ww is a linear width long the curvature
+    //rr is the radius of curvature
+    make_bases(22,0);
+    
+    //these are in basis coordinates
+    curvature_center.set_name("jellyBean_curvature_center");
+    radial_direction.set_name("jellyBean_radial_direction");
+    
+    int ix,iy;
+    for(ix=0;ix<dim;ix++){
+        centers.set(0,ix,-10.0+20.0*dice->doub());
+        if(ix>0){
+            widths.set(0,ix,dice->doub()*2.0+0.5);
+        }
+    }
+    
+    widths.set(0,0,ww);
+    
+
+    
+    double theta=dice->doub()*2.0*pi;
+    double dx,dy;
+    
+    curvature_radius=rr;
+    
+    dx=curvature_radius*cos(theta);
+    dy=curvature_radius*sin(theta);
+    
+    array_1d<double> projected_center;
+    projected_center.set_name("jellyBean_constructor_projected_center");
+    
+    for(ix=0;ix<dim;ix++){
+        projected_center.set(ix,project_to_basis(ix,centers(0)[0]));
+    }
+    
+    for(ix=0;ix<dim;ix++){
+        curvature_center.set(ix,projected_center.get_data(ix));
+    }
+    
+    curvature_center.add_val(0,dx);
+    curvature_center.add_val(1,dy);
+    
+    radial_direction.set_dim(dim);
+    radial_direction.zero();
+    radial_direction.set(0,-1.0*dx);
+    radial_direction.set(1,-1.0*dy);
+    
+    radial_direction.normalize();
+    
+    
+}
+
+double jellyBean::operator()(array_1d<double> &pt){
+    array_1d<double> projected_point;
+    
+    projected_point.set_name("jellyBean_operator_projected_point");
+    
+    int ix;
+    for(ix=0;ix<dim;ix++){
+        projected_point.set(ix, project_to_basis(ix,pt));
+    }
+
+    double chisq=0.0;
+    for(ix=2;ix<dim;ix++){
+        chisq+=power((centers.get_data(0,ix)-projected_point.get_data(ix))/widths.get_data(0,ix),2);
+    }
+    
+    double rr=0.0;
+    rr=power(projected_point.get_data(0)-curvature_center.get_data(0),2)+
+       power(projected_point.get_data(1)-curvature_center.get_data(1),2);
+    
+    chisq+=rr/widths.get_data(1,ix);
+
+    array_1d<double> dir;
+    dir.set_name("jellyBean_operator_dir");
+    dir.set_dim(dim);
+    dir.zero();
+    dir.set(0,projected_point.get_data(0)-curvature_center.get_data(0));
+    dir.set(1,projected_point.get_data(1)-curvature_center.get_data(1));
+    dir.normalize();
+    
+    double dot=0.0;
+    for(ix=0;ix<dim;ix++){
+        dot+=dir.get_data(ix)*radial_direction.get_data(ix);
+    }
+    
+    double theta=acos(dot);
+    
+    chisq+=power(theta*curvature_radius,2)/widths.get_data(0,0);
+    
+    return chisq;
 
 }
