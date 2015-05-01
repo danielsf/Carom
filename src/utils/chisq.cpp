@@ -2164,7 +2164,7 @@ double jellyBean::operator()(array_1d<double> &pt){
     rr=power(projected_point.get_data(0)-curvature_center.get_data(0),2)+
        power(projected_point.get_data(1)-curvature_center.get_data(1),2);
     
-    chisq+=rr/widths.get_data(1,ix);
+    chisq+=rr/widths.get_data(0,1);
 
     array_1d<double> dir;
     dir.set_name("jellyBean_operator_dir");
