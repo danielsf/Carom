@@ -2191,6 +2191,11 @@ double jellyBean::operator()(array_1d<double> &pt){
         chisq+=power((centers.get_data(0,ix)-projected_point.get_data(ix))/widths.get_data(0,ix),2);
     }
     
+    if(isnan(chisq)){
+        printf("chisq is nan after simple dims\n");
+        exit(1);
+    }
+    
     double rr;
     array_1d<double> dir;
     dir.set_name("jellyBean_operator_dir");
@@ -2202,6 +2207,11 @@ double jellyBean::operator()(array_1d<double> &pt){
     
     chisq+=power((rr-curvature_radius)/widths.get_data(0,1),2);
     
+    if(isnan(chisq)){
+        printf("chisq is nan after radial %e\n",rr);
+        exit(1);
+    }
+    
     double dot=0.0;
     for(ix=0;ix<dim;ix++){
         dot+=dir.get_data(ix)*radial_direction.get_data(ix);
@@ -2209,7 +2219,16 @@ double jellyBean::operator()(array_1d<double> &pt){
     
     double theta=acos(dot);
     
+    if(isnan(theta) && dot>0.0){
+        theta=0.0;
+    }
+    else if(isnan(theta) && dot<0.0){
+        theta=pi;
+    }
+    
     chisq+=power(theta*curvature_radius,2)/widths.get_data(0,0);
+    
+    
     
     called++;
     time_spent+=double(time(NULL))-before;
