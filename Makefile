@@ -118,6 +118,13 @@ s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	object/node.o object/carom.o \
 	$(LIBRARIES)
 
+jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o
+	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/node.o object/carom.o \
+	$(LIBRARIES)
+
 ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
 object/wmap_likelihood_function.o
 	$(gg) -o bin/ellipseMCMC src/examples/ellipse_mcmc_example.cpp \
