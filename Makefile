@@ -125,6 +125,14 @@ jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o
 	object/node.o object/carom.o \
 	$(LIBRARIES)
 
+jellyBeanMCMC: src/examples/jellyBean_mcmc_example.cpp object/mcmc.o \
+object/wmap_likelihood_function.o
+	$(gg) -o bin/jellyBeanMCMC src/examples/jellyBean_mcmc_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/chain.o object/kde.o object/mcmc.o \
+	$(LIBRARIES)
+
 ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
 object/wmap_likelihood_function.o
 	$(gg) -o bin/ellipseMCMC src/examples/ellipse_mcmc_example.cpp \
@@ -157,6 +165,12 @@ object/wmap_likelihood_function.o
 
 wmap7reader: src/examples/wmap7_mcmc_reader_example.cpp object/chain.o
 	$(gg) -o bin/wmap7reader src/examples/wmap7_mcmc_reader_example.cpp \
+	object/containers.o object/goto_tools.o object/chain.o \
+	object/kde.o object/kd.o \
+	$(LIBRARIES)
+
+MCMCreader: src/examples/generic_mcmc_reader.cpp object/chain.o
+	$(gg) -o bin/MCMCreader src/examples/generic_mcmc_reader.cpp \
 	object/containers.o object/goto_tools.o object/chain.o \
 	object/kde.o object/kd.o \
 	$(LIBRARIES)

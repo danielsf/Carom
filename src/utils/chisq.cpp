@@ -2097,15 +2097,30 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
     //rr is the radius of curvature
     make_bases(22,0);
     
+    int ix,iy;
+    
+    for(ix=0;ix<dim;ix++){
+        for(iy=0;iy<dim;iy++){
+            if(ix==iy){
+                bases.set(ix,iy,1.0);
+            }
+            else{
+                bases.set(ix,iy,0.0);
+            }
+        }
+    }
+    
+    time_spent=0.0;
+    called=0;
+    
     //these are in basis coordinates
     curvature_center.set_name("jellyBean_curvature_center");
     radial_direction.set_name("jellyBean_radial_direction");
     
-    int ix,iy;
     for(ix=0;ix<dim;ix++){
         centers.set(0,ix,-10.0+20.0*dice->doub());
         if(ix>0){
-            widths.set(0,ix,dice->doub()*2.0+0.5);
+            widths.set(0,ix,dice->doub()*0.5+0.1);
         }
     }
     
@@ -2142,10 +2157,19 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
     
     radial_direction.normalize();
     
+    printf("bases\n");
+    for(ix=0;ix<dim;ix++){
+        for(iy=0;iy<dim;iy++){
+            printf("%.2e ",bases.get_data(iy,ix));
+        }
+        printf("\n");
+    }
+    
     
 }
 
 double jellyBean::operator()(array_1d<double> &pt){
+    double before=double(time(NULL));
     array_1d<double> projected_point;
     
     projected_point.set_name("jellyBean_operator_projected_point");
@@ -2160,19 +2184,16 @@ double jellyBean::operator()(array_1d<double> &pt){
         chisq+=power((centers.get_data(0,ix)-projected_point.get_data(ix))/widths.get_data(0,ix),2);
     }
     
-    double rr=0.0;
-    rr=power(projected_point.get_data(0)-curvature_center.get_data(0),2)+
-       power(projected_point.get_data(1)-curvature_center.get_data(1),2);
-    
-    chisq+=rr/widths.get_data(0,1);
-
+    double rr;
     array_1d<double> dir;
     dir.set_name("jellyBean_operator_dir");
     dir.set_dim(dim);
     dir.zero();
     dir.set(0,projected_point.get_data(0)-curvature_center.get_data(0));
     dir.set(1,projected_point.get_data(1)-curvature_center.get_data(1));
-    dir.normalize();
+    rr=dir.normalize();
+    
+    chisq+=power((rr-curvature_radius)/widths.get_data(0,1),2);
     
     double dot=0.0;
     for(ix=0;ix<dim;ix++){
@@ -2182,6 +2203,9 @@ double jellyBean::operator()(array_1d<double> &pt){
     double theta=acos(dot);
     
     chisq+=power(theta*curvature_radius,2)/widths.get_data(0,0);
+    
+    called++;
+    time_spent+=double(time(NULL))-before;
     
     return chisq;
 

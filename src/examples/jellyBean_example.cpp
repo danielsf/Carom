@@ -40,7 +40,7 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBean chisq(dim,0.4,1.0);
+jellyBean chisq(dim,2.0,2.0);
 
 //declare APS
 //the '20' below is the number of nearest neighbors to use when seeding the
@@ -50,7 +50,7 @@ jellyBean chisq(dim,0.4,1.0);
 //on a 5-dimensional parameter space
 
 carom carom_test;
-carom_test.set_deltachi(delta_chisq);
+carom_test.set_target(delta_chisq);
 carom_test.set_seed(seed);
 
 //pass chisq to the aps object
