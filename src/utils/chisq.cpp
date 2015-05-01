@@ -2168,6 +2168,13 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
     
 }
 
+void jellyBean::get_curvature_center(array_1d<double> &out){
+    int ix;
+    for(ix=0;ix<dim;ix++){
+        out.set(ix,project_to_basis(ix,curvature_center));
+    }
+}
+
 double jellyBean::operator()(array_1d<double> &pt){
     double before=double(time(NULL));
     array_1d<double> projected_point;
