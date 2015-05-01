@@ -13,8 +13,8 @@ dchi=0.3;
 
 int burnin,limit;
 
-burnin=7000;
-limit=8000;
+burnin=2000;
+limit=7500-burnin;
 
 dim=6;
 nChains=4;
@@ -23,7 +23,7 @@ nChains=4;
 //sprintf(outNameRoot,"processedChains/mcmc_test_150429_30k");
 
 sprintf(inNameRoot,"/Users/danielsf/physics/recreate_getdist/ieuchains_1304/wmap7_reformatted");
-sprintf(outNameRoot,"ieuProcessed/ieu_total_60k_burn7k");
+sprintf(outNameRoot,"ieuProcessed/ieu_total_30k");
 
 //sprintf(inNameRoot,"chains/test_chain_0");
 //sprintf(outNameRoot,"processedChains/test_chain");
