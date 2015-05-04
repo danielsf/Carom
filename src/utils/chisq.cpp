@@ -2093,7 +2093,7 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
 jellyBean::~jellyBean(){}
 
 jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
-    //ww is a linear width long the curvature
+    //ww is a width in radians
     //rr is the radius of curvature
     make_bases(22,0);
     
@@ -2124,7 +2124,7 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
         }
     }
     
-    widths.set(0,0,ww);
+    widths.set(0,0,ww*rr);
     
 
     

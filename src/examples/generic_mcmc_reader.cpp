@@ -16,11 +16,11 @@ int burnin,limit;
 burnin=1000;
 limit=-1;
 
-dim=5;
+dim=22;
 nChains=4;
 
-sprintf(inNameRoot,"chains/jellyBean_chain_0");
-sprintf(outNameRoot,"processedChains/jellyBean_all");
+sprintf(inNameRoot,"chains/jellyBean_d22_chain_0");
+sprintf(outNameRoot,"processedChains/jellyBean_d22_all");
 
 arrayOfChains chains(nChains, dim, NULL);
 
@@ -45,6 +45,10 @@ chains.acceptance_statistics(burnin,limit);
 
 chains.calculate_R(R,V,W);
 printf("got R,V,W\n");
+
+for(i=0;i<dim;i++){
+    printf("%d %e %e %e\n",i,R.get_data(i),V.get_data(i),W.get_data(i));
+}
 int ix,iy;
 for(ix=0;ix<dim;ix++){
     for(iy=ix+1;iy<dim;iy++){
@@ -54,10 +58,6 @@ for(ix=0;ix<dim;ix++){
 }
 
 chains.plot_chisquared_histogram(burnin+limit,chimin,chimax,dchi,outNameRoot);
-
-for(i=0;i<dim;i++){
-    printf("%d %e %e %e\n",i,R.get_data(i),V.get_data(i),W.get_data(i));
-}
 
 
 }
