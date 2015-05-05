@@ -1,6 +1,7 @@
+#include <stdlib.h>
 #include "mcmc/chain.h"
 
-int main(){
+int main(int iargc, char *argv[]){
 
 char inNameRoot[letters],outNameRoot[letters];
 int nChains,dim;
@@ -12,6 +13,7 @@ chimax=20.0;
 dchi=0.3;
 
 int burnin,limit;
+double confidenceLimit=0.95;
 
 burnin=1000;
 limit=-1;
@@ -22,9 +24,65 @@ nChains=4;
 sprintf(inNameRoot,"chains/jellyBean_d22_chain_0");
 sprintf(outNameRoot,"processedChains/jellyBean_d22_all");
 
+array_1d<int> xdexes,ydexes;
+xdexes.set_name("xdexes");
+ydexes.set_name("ydexes");
+
+int i,j;
+for(i=1;i<iargc;i++){
+    if(argv[i][0]=='-'){
+        switch(argv[i][1]){
+            case 'h':
+                printf("b = burnin\ni = inNameRoot\no = outNameRoot\n");
+                printf("d = dim\nc = nChains\nx = xdex, ydex\n");
+                printf("l = limit\np = confidence limit\n");
+                exit(1);
+            case 'b':
+                i++;
+                burnin=atoi(argv[i]);
+                break;
+            case 'i':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    inNameRoot[j]=argv[i][j];
+                }
+                inNameRoot[j]=0;
+                break;
+            case 'o':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    outNameRoot[j]=argv[i][j];
+                }
+                outNameRoot[j]=0;
+                break;
+            case 'd':
+                i++;
+                dim=atoi(argv[i]);
+                break;
+            case 'c':
+                i++;
+                nChains=atoi(argv[i]);
+                break;
+            case 'l':
+                i++;
+                limit=atoi(argv[i]);
+            case 'x':
+                i++;
+                xdexes.add(atoi(argv[i]));
+                i++;
+                ydexes.add(atoi(argv[i]));
+                break; 
+            case 'p':
+                i++;
+                confidenceLimit=atof(argv[i]);
+                break;   
+        
+        }
+    }
+}
+
 arrayOfChains chains(nChains, dim, NULL);
 
-int i;
 char inName[letters];
 for(i=0;i<nChains;i++){
     sprintf(inName,"%s_%d.txt",inNameRoot,i);
@@ -49,12 +107,23 @@ printf("got R,V,W\n");
 for(i=0;i<dim;i++){
     printf("%d %e %e %e\n",i,R.get_data(i),V.get_data(i),W.get_data(i));
 }
+
 int ix,iy;
-for(ix=0;ix<dim;ix++){
-    for(iy=ix+1;iy<dim;iy++){
-            chains.plot_contours(ix,iy,0.95,outNameRoot);
-            printf("plotted %d %d\n",ix,iy);
+if(xdexes.get_dim()==0){
+    for(ix=0;ix<dim;ix++){
+        for(iy=ix+1;iy<dim;iy++){
+            xdexes.add(ix);
+            ydexes.add(iy);
         }
+    }
+}
+
+for(i=0;i<xdexes.get_dim();i++){
+    ix=xdexes.get_data(i);
+    iy=ydexes.get_data(i);
+    chains.plot_contours(ix,iy,confidenceLimit,outNameRoot);
+    printf("plotted %d %d\n",ix,iy);
+
 }
 
 chains.plot_chisquared_histogram(burnin+limit,chimin,chimax,dchi,outNameRoot);
