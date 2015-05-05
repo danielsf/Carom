@@ -15,6 +15,7 @@ int seed=99;
 int nsamples=50000;
 int burnin=3000;
 int dim=10;
+int nChains=4;
 char nameroot[letters];
 
 for(i=1;i<iargc;i++){
@@ -22,7 +23,7 @@ for(i=1;i<iargc;i++){
         switch(argv[i][1]){
             case 'h':
                 printf("s = seed\nb = burnin\nn = nsamples\n");
-                printf("d = dim\no = nameroot\n");
+                printf("d = dim\no = nameroot\nc = nChains");
                 exit(1);
             case 's':
                 i++;
@@ -39,6 +40,10 @@ for(i=1;i<iargc;i++){
             case 'd':
                 i++;
                 dim=atoi(argv[i]);
+                break;
+            case 'c':
+                i++;
+                nChains=atoi(argv[i]);
                 break;
             case 'o':
                 i++;
@@ -76,7 +81,7 @@ for(i=0;i<dim;i++){
 }
 
 
-mcmc mcmc_test(4,seed,&chisq);
+mcmc mcmc_test(nChains,seed,&chisq);
 for(i=0;i<dim;i++){
     mcmc_test.set_min(i,min.get_data(i));
     mcmc_test.set_max(i,max.get_data(i));
