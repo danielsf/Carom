@@ -14,19 +14,6 @@ int dim=5;
 int nsamples=100000;
 double delta_chisq=11.0;
 
-if(iargc>1)seed=atoi(argv[1]);
-if(iargc>2)dim=atoi(argv[2]);
-if(iargc>3)delta_chisq=atof(argv[3]);
-
-if(iargc>4){
-    nsamples=atoi(argv[4]);
-}
-
-if(seed<0){
-    seed=int(time(NULL));
-    if(seed>10000)seed=seed%10000;
-}
-
 char timingname[letters],outname[letters];
 
 //what is the name of the file where APS will store its timing information
@@ -34,6 +21,55 @@ sprintf(timingname,"output/jellyBean_d%d_s%d_timing.sav",dim,seed);
 
 //what is the name of the file where APS will output the points it sampled
 sprintf(outname,"output/jellyBean_d%d_s%d_output.sav",dim,seed);
+
+for(i=1;i<iargc;i++){
+    if(argv[i][0]=='-'){
+        switch(argv[i][1]){
+            case 'h':
+                printf("s = seed\nc = delta_chi\nn = nsamples\n");
+                printf("d = dim\no = outputname\nt = timingname\n");
+                exit(1);
+            case 's':
+                i++;
+                seed=atoi(argv[i]);
+                break;
+            case 'c':
+                i++;
+                delta_chisq=atof(argv[i]);
+                break;
+            case 'n':
+                i++;
+                nsamples=atoi(argv[i]);
+                break;
+            case 'd':
+                i++;
+                dim=atoi(argv[i]);
+                break;
+            case 'o':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    outname[j]=argv[i][j];
+                }
+                outname[j]=0;
+                break;
+            case 't':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    timingname[j]=argv[i][j];
+                }
+                timingname[j]=0;
+                break;
+    
+        }
+    }
+}
+
+
+if(seed<0){
+    seed=int(time(NULL));
+    if(seed>10000)seed=seed%10000;
+}
+
 
 printf("seed %d\n",seed);
 
