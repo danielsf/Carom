@@ -11,10 +11,12 @@ xdexes.set_name("xdexes");
 ydexes.set_name("ydexes");
 
 xdexes.add(0);
+xdexes.add(0);
 xdexes.add(1);
 xdexes.add(6);
 
 ydexes.add(1);
+ydexes.add(5);
 ydexes.add(3);
 ydexes.add(8);
 
