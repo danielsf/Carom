@@ -2216,12 +2216,12 @@ void node::initialize_ricochet(){
        }
        if(iOrigin<0){
            for(j=0;j<_chisquared->get_dim();j++){
-               grazing.set(j,_chisquared->get_pt(_ricochet_particles.get_data(i),j)-_chisquared->get_pt(_centerdex,j));
+               grazing.set(j,radial.get_data(j));
            }
        }
        else{
            for(j=0;j<_chisquared->get_dim();j++){
-               grazing.set(j,radial.get_data(j));
+               grazing.set(j,_chisquared->get_pt(_ricochet_particles.get_data(i),j)-_chisquared->get_pt(iOrigin,j));
            }
        }
        grazing.normalize();
