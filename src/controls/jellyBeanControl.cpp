@@ -3,8 +3,23 @@
 
 int main(){
 
-int dim=5;
+int dim=10;
 
+array_1d<int> xdexes,ydexes;
+
+xdexes.set_name("xdexes");
+ydexes.set_name("ydexes");
+
+xdexes.add(0);
+xdexes.add(1);
+xdexes.add(6);
+
+ydexes.add(1);
+ydexes.add(3);
+ydexes.add(8);
+
+char outNameRoot[letters];
+sprintf(outNameRoot,"controls/jellyBeanD10control/jellyBeanD10");
 
 double angularWidth,radiusOfCurvature;
 
@@ -75,11 +90,24 @@ kd_tree *allPointsTree,*boundaryPointsTree;
 allPointsTree=NULL;
 boundaryPointsTree=NULL;
 
+
+if(xdexes.get_dim()==0){
+    for(ix=0;ix<dim;ix++){
+        for(iy=ix+1;iy<dim;iy++){
+            xdexes.add(ix);
+            ydexes.add(iy);
+        }
+    }
+}
+
 char filename[3*letters];
 FILE *output;
 
-for(ix=0;ix<dim;ix++){
-    for(iy=ix+1;iy<dim;iy++){
+int ii;
+for(ii=0;ii<xdexes.get_dim();ii++){
+    ix=xdexes.get_data(ii);
+    iy=ydexes.get_data(ii);
+
        if(allPointsTree!=NULL){
            delete allPointsTree;
            allPointsTree=NULL;
@@ -242,7 +270,7 @@ for(ix=0;ix<dim;ix++){
        lastpt.set(1,origin.get_data(1));
        
        lastdex=0;
-       sprintf(filename,"controls/jellyBean_%d_%d_control.txt",ix,iy);
+       sprintf(filename,"%s_%d_%d_control.txt",outNameRoot,ix,iy);
        output=fopen(filename,"w");
        while(boundaryPointsTree->get_pts()>1){
            fprintf(output,"%e %e\n",lastpt.get_data(0),lastpt.get_data(1));
@@ -257,8 +285,7 @@ for(ix=0;ix<dim;ix++){
        fprintf(output,"%e %e\n",origin.get_data(0),origin.get_data(1));
        
        fclose(output);
-       
-    }
+    
 }
 
 

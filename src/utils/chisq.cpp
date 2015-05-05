@@ -2157,15 +2157,6 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
     
     radial_direction.normalize();
     
-    printf("bases\n");
-    for(ix=0;ix<dim;ix++){
-        for(iy=0;iy<dim;iy++){
-            printf("%.2e ",bases.get_data(iy,ix));
-        }
-        printf("\n");
-    }
-    
-    
 }
 
 void jellyBean::get_curvature_center(array_1d<double> &out){
