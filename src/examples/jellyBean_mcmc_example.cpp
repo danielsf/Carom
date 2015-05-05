@@ -13,13 +13,44 @@ int main(int iargc, char *argv[]){
 int i,j;
 int seed=99;
 int nsamples=50000;
+int burnin=3000;
 int dim=10;
+char nameroot[letters];
 
-if(iargc>1)seed=atoi(argv[1]);
-
-if(iargc>2){
-    nsamples=atoi(argv[2]);
+for(i=1;i<iargc;i++){
+    if(argv[i][0]=='-'){
+        switch(argv[i][1]){
+            case 'h':
+                printf("s = seed\nb = burnin\nn = nsamples\n");
+                printf("d = dim\no = nameroot\n");
+                exit(1);
+            case 's':
+                i++;
+                seed=atoi(argv[i]);
+                break;
+            case 'b':
+                i++;
+                burnin=atoi(argv[i]);
+                break;
+            case 'n':
+                i++;
+                nsamples=atoi(argv[i]);
+                break;
+            case 'd':
+                i++;
+                dim=atoi(argv[i]);
+                break;
+            case 'o':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    nameroot[j]=argv[i][j];
+                }
+                nameroot[j]=0;
+                break;    
+        }
+    }
 }
+
 
 if(seed<0){
     seed=int(time(NULL));
@@ -52,8 +83,8 @@ for(i=0;i<dim;i++){
 }
 
 //mcmc_test.guess_bases(12.6,1);
-mcmc_test.set_burnin(3000);
-mcmc_test.set_name_root("chains/jellyBean_d10_chain");
-mcmc_test.sample(50000);
+mcmc_test.set_burnin(burnin);
+mcmc_test.set_name_root(nameroot);
+mcmc_test.sample(nsamples);
 
 }
