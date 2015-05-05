@@ -1039,6 +1039,8 @@ void arrayOfChains::plot_chisquared_histogram(int limit, double min, double max,
         counts.add(0);
     }
     
+    printf("in histogram limit %d\n",limit);
+    
     globalTotal=0;
     for(iChain=0;iChain<_n_chains;iChain++){
         total=0;

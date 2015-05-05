@@ -11,6 +11,8 @@ int main(int iargc, char *argv[]){
 //d=5 -> delta_chisq=11
 
 int i,j;
+int doGuess=0;
+double chiLimit=12.6;
 int seed=99;
 int nsamples=50000;
 int burnin=3000;
@@ -23,7 +25,8 @@ for(i=1;i<iargc;i++){
         switch(argv[i][1]){
             case 'h':
                 printf("s = seed\nb = burnin\nn = nsamples\n");
-                printf("d = dim\no = nameroot\nc = nChains");
+                printf("d = dim\no = nameroot\nc = nChains\n");
+                printf("g = doGuess (limit)\n");
                 exit(1);
             case 's':
                 i++;
@@ -44,6 +47,11 @@ for(i=1;i<iargc;i++){
             case 'c':
                 i++;
                 nChains=atoi(argv[i]);
+                break;
+            case 'g':
+                doGuess=1;
+                i++;
+                chiLimit=atof(argv[i]);
                 break;
             case 'o':
                 i++;
@@ -87,7 +95,9 @@ for(i=0;i<dim;i++){
     mcmc_test.set_max(i,max.get_data(i));
 }
 
-//mcmc_test.guess_bases(12.6,1);
+if(doGuess==1){
+    mcmc_test.guess_bases(chiLimit,1);
+}
 mcmc_test.set_burnin(burnin);
 mcmc_test.set_name_root(nameroot);
 mcmc_test.sample(nsamples);

@@ -126,7 +126,11 @@ for(i=0;i<xdexes.get_dim();i++){
 
 }
 
-chains.plot_chisquared_histogram(burnin+limit,chimin,chimax,dchi,outNameRoot);
+int trueLimit;
+if(limit<0)trueLimit=limit;
+else trueLimit=burnin+limit;
+
+chains.plot_chisquared_histogram(trueLimit,chimin,chimax,dchi,outNameRoot);
 
 
 }
