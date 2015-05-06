@@ -260,6 +260,7 @@ fclose(output);
 double volume=1.0;
 for(i=0;i<dim;i++){
     volume*=xmax.get_data(i)-xmin.get_data(i);
+    printf("%d %e %e\n",i,xmin.get_data(i),xmax.get_data(i));
 }
 
 printf("volume %e \n",volume);
