@@ -66,6 +66,7 @@ for(i=1;i<iargc;i++){
             case 'l':
                 i++;
                 limit=atoi(argv[i]);
+                break;
             case 'x':
                 i++;
                 xdexes.add(atoi(argv[i]));
