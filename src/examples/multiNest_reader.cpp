@@ -19,8 +19,9 @@ array_1d<int> xdexes,ydexes;
 xdexes.set_name("xdexes");
 ydexes.set_name("ydexes");
 char inName[letters],outNameRoot[letters];
-int dim;
+int dim,smoothby=3;
 double confidenceLimit=0.95;
+double pixelFactor=0.01;
 
 int i,j;
 for(i=1;i<iargc;i++){
@@ -48,9 +49,18 @@ for(i=1;i<iargc;i++){
                 i++;
                 confidenceLimit=atof(argv[i]);
                 break;
+            case 's':
+                i++;
+                smoothby=atoi(argv[i]);
+                break;
+            case 'f':
+                i++;
+                pixelFactor=atof(argv[i]);
+                break;
             case 'h':
                 printf("o = outname\ni = inName\nd = dim\nx = dexes\n");
-                printf("p = confidence limit\n");
+                printf("p = confidence limit\ns = smoothby\n");
+                printf("f = pixelFactor\n");
                 exit(1);
                 break;
         }
@@ -105,11 +115,12 @@ for(i=0;i<xdexes.get_dim();i++){
     ix=xdexes.get_data(i);
     iy=ydexes.get_data(i);
     
-    dx=0.01*(maxes.get_data(ix)-mins.get_data(ix));
-    dy=0.01*(maxes.get_data(iy)-mins.get_data(iy));
+    dx=pixelFactor*(maxes.get_data(ix)-mins.get_data(ix));
+    dy=pixelFactor*(maxes.get_data(iy)-mins.get_data(iy));
     
     sprintf(outname,"%s_%d_%d_contour.txt",outNameRoot,ix,iy);
     density.plot_boundary(ix,dx,iy,dy,confidenceLimit,outname,3);
+    printf("plotted %d %e %d %e\n",ix,dx,iy,dy);
 }
 
 }
