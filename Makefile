@@ -131,6 +131,12 @@ jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/chis
 	object/wrappers.o \
 	$(LIBRARIES)
 
+jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp object/chisq.o
+	$(gg) -o bin/jellyBean_frequentistControl src/controls/jellyBeanFrequentistControl.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o \
+	$(LIBRARIES)
+
 jellyBeanMCMC: src/examples/jellyBean_mcmc_example.cpp object/mcmc.o \
 object/wmap_likelihood_function.o
 	$(gg) -o bin/jellyBeanMCMC src/examples/jellyBean_mcmc_example.cpp \

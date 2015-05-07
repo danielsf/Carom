@@ -2198,6 +2198,8 @@ double jellyBean::operator()(array_1d<double> &pt){
     
     chisq+=power((rr-curvature_radius)/widths.get_data(0,1),2);
     
+    //printf("chisq is %e after rr\n",chisq);
+    
     if(isnan(chisq)){
         printf("chisq is nan after radial %e\n",rr);
         exit(1);
@@ -2219,7 +2221,7 @@ double jellyBean::operator()(array_1d<double> &pt){
     
     chisq+=power(theta*curvature_radius,2)/widths.get_data(0,0);
     
-    
+    //printf("chisq is %e after angle\n",chisq);
     
     called++;
     time_spent+=double(time(NULL))-before;
