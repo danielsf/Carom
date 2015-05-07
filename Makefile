@@ -194,7 +194,7 @@ multiNestReader: src/examples/multiNest_reader.cpp object/chain.o
 	$(LIBRARIES)
 
 multiNestFullReader: src/examples/multiNest_fullD_reader.cpp object/goto_tools.o
-	$(gg) -o bin/muliNestFullReader src/examples/multiNest_fullD_reader.cpp \
+	$(gg) -o bin/multiNestFullReader src/examples/multiNest_fullD_reader.cpp \
 	object/containers.o object/goto_tools.o \
 	$(LIBRARIES)
 
