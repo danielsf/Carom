@@ -16,6 +16,14 @@ carom::~carom(){
 
 }
 
+void carom::set_dof(int dd){
+    _chifn.set_dof(dd);
+}
+
+void carom::set_confidence_limit(double cc){
+    _chifn.set_confidence_limit(cc);
+}
+
 void carom::set_seed(int ii){
     _chifn.set_seed(ii);
 }

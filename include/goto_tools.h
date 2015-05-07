@@ -88,6 +88,21 @@ struct chisquared_distribution{
         return exp(logans);
     }
 
+    double maximum_likelihood_chisquared_value(double dof){
+        _fix=0.0;
+        double x,lnpdf,pdf,maxpdf,x_max;
+        maxpdf=-1.0;
+        for(x=0.0;x<dof+1000.0;x+=1.0){
+            pdf=_pdf_fn(x,dof,&lnpdf);
+            if(pdf>maxpdf){
+                maxpdf=pdf;
+                x_max=x;
+            }
+        }
+
+        return x;
+    }
+
     double confidence_limit(double dof, double pct){
         _fix=0.0;
 
