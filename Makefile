@@ -58,7 +58,7 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 	$(gg) -o bin/test_eigen src/tests/test_eigen.cpp object/containers.o object/goto_tools.o \
 	object/eigen_wrapper.o $(LIBRARIES)
 
-object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
+object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o object/wrappers.o
 	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
 
 object/chain.o: src/mcmc/chain.cpp include/mcmc/chain.h object/containers.o \
@@ -125,8 +125,8 @@ jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o
 	object/node.o object/carom.o \
 	$(LIBRARIES)
 
-jellyBean_control: src/controls/jellyBeanControl.cpp object/chisq.o
-	$(gg) -o bin/jellyBean_control src/controls/jellyBeanControl.cpp \
+jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/chisq.o
+	$(gg) -o bin/jellyBean_bayesianControl src/controls/jellyBeanBayesianControl.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o \
 	$(LIBRARIES)
