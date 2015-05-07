@@ -13,6 +13,7 @@ int seed=99;
 int dim=5;
 int nsamples=100000;
 double delta_chisq=11.0;
+double confidence_limit=0.95;
 
 char timingname[letters],outname[letters];
 
@@ -28,7 +29,13 @@ for(i=1;i<iargc;i++){
             case 'h':
                 printf("s = seed\nc = delta_chi\nn = nsamples\n");
                 printf("d = dim\no = outputname\nt = timingname\n");
+                printf("p = confidence limit\n");
                 exit(1);
+                break;
+            case 'p':
+                i++;
+                confidence_limit=atof(argv[i]);
+                break;
             case 's':
                 i++;
                 seed=atoi(argv[i]);
@@ -88,6 +95,7 @@ jellyBean chisq(dim,1.0,20.0);
 carom carom_test;
 carom_test.set_target(delta_chisq);
 carom_test.set_seed(seed);
+carom_test.set_confidence_limit(confidence_limit);
 
 //pass chisq to the aps object
 carom_test.set_chisquared(&chisq);

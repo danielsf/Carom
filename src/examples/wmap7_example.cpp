@@ -14,6 +14,7 @@ int i,j;
 int seed=99;
 int dim,ncenters;
 int nsamples=50000;
+int dof=1199;
 
 if(iargc>1)seed=atoi(argv[1]);
 
@@ -45,6 +46,8 @@ carom carom_test;
 //carom_test.set_deltachi(12.6);
 carom_test.set_target(1280.7);
 carom_test.set_seed(seed);
+carom_test.set_dof(dof);
+carom_test.set_confidence_limit(0.95);
 
 //pass chisq to the aps object
 carom_test.set_chisquared(&chisq);
