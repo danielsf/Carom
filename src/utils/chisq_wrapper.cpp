@@ -621,7 +621,7 @@ int chisq_wrapper::could_it_go_lower(double chimin){
     }
     else{
         if(_expected_delta<0.0 && _dof>0 && _confidence_limit>0.0){
-            _expected_delta=_distribution.confidence_limit(double(_dof),_confidence_limit);
+            _expected_delta=_distribution.confidence_limit(double(_kptr->get_dim()),_confidence_limit);
         }
         
         if(_expected_delta<0.0){
