@@ -187,7 +187,7 @@ MCMCreader: src/examples/generic_mcmc_reader.cpp object/chain.o
 	object/kde.o object/kd.o \
 	$(LIBRARIES)
 
-multiNestReader: src/examples/multiNest_reader.cpp object/kde.o
+multiNestReader: src/examples/multiNest_reader.cpp object/chain.o
 	$(gg) -o bin/multiNestReader src/examples/multiNest_reader.cpp \
 	object/containers.o object/goto_tools.o object/chain.o \
 	object/kde.o object/kd.o \

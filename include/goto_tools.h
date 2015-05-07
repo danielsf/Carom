@@ -14,6 +14,8 @@ double raiseup(double,double);
 
 double power(double,int);
 
+void transcribe(char*,char*);
+
 struct Ran{
 
 //this structure will be based on the Xorshift random number generator
