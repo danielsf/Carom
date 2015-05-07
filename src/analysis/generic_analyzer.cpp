@@ -106,6 +106,10 @@ double chi_min=2.0*exception_value;
 int ct=0;
 
 input=fopen(inputName,"r");
+if(input==NULL){
+    printf("\nWARNING could not open %s\n\n",inputName);
+    exit(1);
+}
 for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
 }
@@ -200,6 +204,8 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
 }
 
 fclose(input);
+
+printf("read in everything\n");
 
 aps_extractor apsExtractor;
 apsExtractor.set_filename(inputName);

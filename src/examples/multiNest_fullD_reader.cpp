@@ -64,6 +64,10 @@ points.set_cols(dim);
 FILE *input;
 total=0.0;
 input=fopen(inName,"r");
+if(input==NULL){
+    printf("\nWARNING could not open %s\n\n",inName);
+    exit(1);
+}
 ct=0;
 while(fscanf(input,"%le",&mu)>0){
     total+=mu;

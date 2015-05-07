@@ -74,6 +74,11 @@ wgt.set_name("wgt");
 vv.set_name("vv");
 data.set_name("data");
 input=fopen(inName,"r");
+
+if(input==NULL){
+    printf("WARNING could not open %s\n",inName);
+}
+
 while(fscanf(input,"%le",&mu)>0){
     wgt.add(mu);
     fscanf(input,"%le",&mu);
