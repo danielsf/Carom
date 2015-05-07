@@ -2637,7 +2637,7 @@ void node::search(){
     
     if(_ct_simplex<_ct_ricochet && 
         _failed_simplexes<3 && 
-        _chisquared->could_it_go_lower(_chimin)){
+        _chisquared->could_it_go_lower(_chimin)>0){
         
         simplex_search();
     }
