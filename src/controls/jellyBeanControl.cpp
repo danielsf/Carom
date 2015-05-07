@@ -3,7 +3,7 @@
 
 int main(){
 
-int dim=10;
+int dim=15;
 
 array_1d<int> xdexes,ydexes;
 
@@ -21,7 +21,7 @@ ydexes.add(3);
 ydexes.add(8);
 
 char outNameRoot[letters];
-sprintf(outNameRoot,"controls/jellyBeanD10control/jellyBeanD10");
+sprintf(outNameRoot,"controls/jellyBeanD15control/jellyBeanD15");
 
 double angularWidth,radiusOfCurvature;
 
