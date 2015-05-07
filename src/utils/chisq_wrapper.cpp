@@ -22,6 +22,7 @@ chisq_wrapper::chisq_wrapper(){
     _iWhere=-1;
     _expected_min=-1.0;
     _confidence_limit=-1.0;
+    _expected_delta=-1.0;
     
     _ct_where.set(iSimplex,0);
     _ct_where.set(iRicochet,0);
@@ -598,7 +599,9 @@ void chisq_wrapper::copy(chisq_wrapper &in){
 
 int chisq_wrapper::could_it_go_lower(double chimin){
 
-    if(chimin<1.0){
+    double tol=1.0;
+
+    if(chimin<tol){
         return 0;
     }
 
@@ -611,7 +614,7 @@ int chisq_wrapper::could_it_go_lower(double chimin){
             return 1;
         }
         else{
-            if(chimin<_expected_min+1.0){
+            if(chimin<_expected_min+tol){
                 return 0;
             }
             else{
@@ -628,7 +631,7 @@ int chisq_wrapper::could_it_go_lower(double chimin){
             return 1;
         }
         else{
-            if(chimin<_target-_expected_delta+1.0){
+            if(chimin<_target-_expected_delta+tol){
                 return 0;
             }
             else{
