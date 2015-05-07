@@ -150,15 +150,15 @@ void marginalized_bisection(array_1d<double> &lowball_in, array_1d<double> &high
 
 int main(){
 
-int dim=15;
-double chi_target=25.0;
+int dim=5;
+double chi_target=11.0;
 
 array_1d<int> xdexes,ydexes;
 
 xdexes.set_name("xdexes");
 ydexes.set_name("ydexes");
 
-xdexes.add(0);
+/*xdexes.add(0);
 xdexes.add(0);
 xdexes.add(1);
 xdexes.add(6);
@@ -166,10 +166,10 @@ xdexes.add(6);
 ydexes.add(1);
 ydexes.add(5);
 ydexes.add(3);
-ydexes.add(8);
+ydexes.add(8);*/
 
 char outNameRoot[letters];
-sprintf(outNameRoot,"controls/jellyBeanD15control/jellyBeanD15freq");
+sprintf(outNameRoot,"controls/jellyBean/d5/jellyBeanD5freq");
 
 double angularWidth,radiusOfCurvature;
 
@@ -364,7 +364,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
            
        }
        else{
-           chi_worst=25.0;
+           chi_worst=chi_target;
            ct=0;
            if(ix==0){
                iMargin=1;
