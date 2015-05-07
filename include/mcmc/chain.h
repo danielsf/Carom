@@ -107,17 +107,22 @@ public:
     int get_points();
 
     void acceptance_statistics(int,int);
+    double get_chimin();
+    void _get_contour_bounds();
 
 private:
     chain *_data;
     Ran *_dice;
     kde _density;
+
     int _n_chains;
     int _dim;
+    double _chisq_guess,_confidence_limit;
     
     asymm_array_2d<int> _independent_sample_dexes;
     array_2d<double> _independent_samples;
     array_1d<double> _independent_sample_weights;
+    array_1d<double> _contour_maxes,_contour_mins;
 
     void verify_chains(int,char*);
     void _get_full_independent_samples();
