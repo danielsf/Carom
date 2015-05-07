@@ -227,8 +227,7 @@ void carom::search(int limit){
     int active_nodes=0,goon=1,dosimplex;
     
     while(goon==1){        
-        if(_calls_to_simplex>2*_nodes.get_dim() && 
-           _calls_to_simplex>_nodes.get_dim()+1 &&
+        if(_calls_to_simplex>_nodes.get_dim()+2 &&
            _nodes.get_dim()>0){
             dosimplex=0;
         }
@@ -266,8 +265,7 @@ void carom::search(int limit){
         }
         
         if(active_nodes==0 && 
-           _calls_to_simplex>2*_nodes.get_dim() &&
-           _calls_to_simplex>_nodes.get_dim()+1 &&
+           _calls_to_simplex>_nodes.get_dim()+2 &&
            _nodes.get_dim()>0){
             goon=0;
             write_pts();
