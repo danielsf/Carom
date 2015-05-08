@@ -150,26 +150,26 @@ void marginalized_bisection(array_1d<double> &lowball_in, array_1d<double> &high
 
 int main(){
 
-int dim=5;
-double chi_target=11.0;
+int dim=10;
+double chi_target=18.3;
 
 array_1d<int> xdexes,ydexes;
 
 xdexes.set_name("xdexes");
 ydexes.set_name("ydexes");
 
-/*xdexes.add(0);
 xdexes.add(0);
-xdexes.add(1);
-xdexes.add(6);
+//xdexes.add(0);
+//xdexes.add(1);
+//xdexes.add(6);
 
 ydexes.add(1);
-ydexes.add(5);
-ydexes.add(3);
-ydexes.add(8);*/
+//ydexes.add(5);
+//ydexes.add(3);
+//ydexes.add(8);
 
 char outNameRoot[letters];
-sprintf(outNameRoot,"controls/jellyBean/d5/jellyBeanD5freq");
+sprintf(outNameRoot,"controls/jellyBean/d%d/jellyBeanD%dfreq",dim,dim);
 
 double angularWidth,radiusOfCurvature;
 
@@ -292,7 +292,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                    trial.set(i,true_center.get_data(i));
                }
                
-               while(mu>chi_target){
+               while(mu<=chi_target){
                    trial.add_val(ix,cos(theta));
                    trial.add_val(iy,sin(theta));
                    mu=chisq(trial);
@@ -447,6 +447,13 @@ for(ii=0;ii<xdexes.get_dim();ii++){
            if(boundary.get_data(i,1)>max.get_data(1)){
                 max.set(1,boundary.get_data(i,1));
            }
+       }
+       
+       if(ix==0 && iy==1){
+           min.set(0,0.0);
+           max.set(0,0.01);
+           min.set(1,0.0);
+           max.set(1,0.01);
        }
        
        
