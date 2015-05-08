@@ -64,6 +64,7 @@ void node::initialize(){
     _ricochet_distances.set_name("node_ricochet_distances");
     _ricochet_mu.set_name("node_ricochet_mu");
     _ricochet_strike_log.set_name("node_ricochet_strike_log");
+    _associates.set_name("node_associates");
 }
 
 void node::copy(const node &in){
@@ -90,6 +91,11 @@ void node::copy(const node &in){
     int i,j;
     
     _chisquared=in._chisquared;
+    
+    _associates.reset();
+    for(i=0;i<in._associates.get_dim();i++){
+        _associates.add(in._associates.get_data(i));
+    }
     
     _compass_points.reset();
     for(i=0;i<in._compass_points.get_dim();i++){
@@ -376,16 +382,57 @@ void node::is_it_safe(char *word){
     }
 }
 
+int node::is_this_an_associate(int dex){
+
+    double dd,ddmin;
+    int i,ibest;
+    ibest=-1;
+    for(i=0;i<_associates.get_dim();i++){
+        if(dex==_associates.get_data(i))return 1;
+        dd=node_distance(dex,_associates.get_data(i));
+        if(ibest<0 || dd<ddmin){
+            ibest=_associates.get_data(i);
+            ddmin=dd;
+        }
+    }
+
+    dd=node_distance(dex,_centerdex);
+    if(dd<ddmin || ibest<0){
+        ibest=_centerdex;
+    }
+    
+    if(ibest<0){
+        return 0;
+    }
+    
+    array_1d<double> trial;
+    trial.set_name("node_is_this_trial");
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_chisquared->get_pt(ibest,i)+_chisquared->get_pt(dex,i)));
+    }
+    double mu;
+    int newDex,j;
+    evaluate(trial,&mu,&newDex);
+    
+    if(mu<_chisquared->target()){
+        _associates.add(dex);
+        return 1;
+    }
+    
+    return 0;
+
+}
+
 void node::evaluate(array_1d<double> &pt, double *value, int *dex){
     is_it_safe("evaluate");
     
     _chisquared->evaluate(pt,value,dex);
     
-    int i;
+    int i,j;
     array_1d<double> projected;
     projected.set_name("node_evaluate_projected");
     
-    if(dex>=0){
+    if(dex[0]>=0){
         if(value[0]<_chimin){
             _chimin=value[0];
             _centerdex=dex[0];
@@ -393,6 +440,15 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
         }
         
         if(value[0]<=_chisquared->target()){
+            j=1;
+            for(i=0;i<_associates.get_dim() && j==1;i++){
+                if(_associates.get_data(i)==dex[0])j=0;
+            }
+            
+            if(j==1){
+                _associates.add(dex[0]);
+            }
+            
             for(i=0;i<pt.get_dim();i++){
                 if(i>=_min_found.get_dim() || pt.get_data(i)<_min_found.get_data(i)){
                     _min_found.set(i,pt.get_data(i));

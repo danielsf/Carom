@@ -36,6 +36,8 @@ public:
     void recalibrate_projected_max_min();
     void print_ricochet_discoveries(char*);
     
+    int is_this_an_associate(int);
+    
 private:
     int _centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
@@ -47,6 +49,7 @@ private:
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;
+    array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
     array_1d<double> _max_found,_min_found,_distance_traveled;
