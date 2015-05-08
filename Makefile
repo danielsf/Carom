@@ -93,7 +93,7 @@ analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o \
 	$(LIBRARIES)
 
-object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
+object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/kd.o
 	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
 
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
