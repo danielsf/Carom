@@ -2294,7 +2294,6 @@ void node::initialize_ricochet(){
 
     _min_basis_error_changed=0;
     _since_expansion=0;
-    _active=1;
 
     FILE *output;
     output=fopen("ricochet_particles.sav","w");
@@ -2720,6 +2719,7 @@ void node::search(){
         
         if(_min_basis_error_changed==1){
             initialize_ricochet();
+            _active=1;
         }
         _ct_simplex+=_chisquared->get_called()-ibefore;
     }
@@ -2744,6 +2744,7 @@ void node::search(){
            fabs(projectedVolume0-projectedVolume1)>maxDeltaV*projectedVolume0){
        
            initialize_ricochet();
+           _active=1;
        }
     }
     
