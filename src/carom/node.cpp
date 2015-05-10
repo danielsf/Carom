@@ -2747,6 +2747,21 @@ void node::search(){
        }
     }
     
+    int pad_by;
+    
+    if(_active==0){
+        ibefore=_chisquared->get_called();
+        pad_by=_ct_ricochet/10;
+        volume0=volume();
+        while(_chisquared->get_called()-ibefore<pad_by && _active==0){
+            ricochet();
+            volume1=volume();
+            if(volume1-volume0>maxDeltaV*volume0){
+                _active=1;
+            }
+        }
+    }
+    
     if(_ricochet_particles.get_dim()==0){
         _active=0;
     }
