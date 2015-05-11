@@ -8,6 +8,8 @@ kd_tree::~kd_tree(){
    // printf("calling kd destructor\n");
 }
 
+kd_tree::kd_tree(){}
+
 kd_tree::kd_tree(const kd_tree &in){
     copy(in);
 }

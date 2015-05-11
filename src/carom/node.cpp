@@ -65,6 +65,7 @@ void node::initialize(){
     _ricochet_mu.set_name("node_ricochet_mu");
     _ricochet_strike_log.set_name("node_ricochet_strike_log");
     _associates.set_name("node_associates");
+    _boundary_points.set_name("node_boundary_points");
 }
 
 void node::copy(const node &in){
@@ -95,6 +96,11 @@ void node::copy(const node &in){
     _associates.reset();
     for(i=0;i<in._associates.get_dim();i++){
         _associates.add(in._associates.get_data(i));
+    }
+    
+    _boundary_points.reset();
+    for(i=0;i<in._boundary_points.get_dim();i++){
+        _boundary_points.add(in._boundary_points.get_data(i));
     }
     
     _compass_points.reset();
@@ -1116,6 +1122,7 @@ void node::compass_search(){
             dx=fabs(dx);
             
             if(iFound>=0){
+                _boundary_points.add(iFound);
                 _compass_points.add(iFound);
                 _ricochet_candidates.add(iFound);
                 j=iFound;
@@ -1288,6 +1295,7 @@ void node::compass_off_diagonal(){
                         if(xweight<0.0 && yweight<0.0)dmin_nn=dmin;
                         if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
                         
+                        _boundary_points.add(iFound);
                         _compass_points.add(iFound);
                         _ricochet_candidates.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
@@ -1751,10 +1759,8 @@ void node::recalibrate_projected_max_min(){
         to_use.add(_ricochet_candidates.get_data(i));
     }
     
-    for(i=0;i<_ricochet_discoveries.get_rows();i++){
-        for(j=0;j<_ricochet_discoveries.get_cols(i);j++){
-            to_use.add(_ricochet_discoveries.get_data(i,j));
-        }
+    for(i=0;i<_boundary_points.get_dim();i++){
+        to_use.add(_boundary_points.get_data(i));
     }
     
     for(i=0;i<to_use.get_dim();i++){
@@ -2010,6 +2016,7 @@ void node::off_center_compass(int iStart){
             iFound=bisection(lowball,flow,highball,fhigh,1);
             
             if(iFound>=0){
+                _boundary_points.add(iFound);
                 _off_center_compass_points.add(iFound);
                 _ricochet_candidates.add(iFound);
             }
@@ -2064,7 +2071,12 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     neigh.set_name("node_ricochet_model_neigh");
     dd.set_name("node_ricochet_model_dd");
     
-    tree.nn_srch(pt,npts,neigh,dd);
+    tree.nn_srch(pt,npts+1,neigh,dd);
+    
+    if(dd.get_data(0)<1.0e-20){
+        neigh.remove(0);
+        dd.remove(0);
+    }
     
     array_1d<double> mutual_dd,mutual_dd_sorted;
     array_1d<int> mutual_dexes;
@@ -2183,12 +2195,19 @@ void node::initialize_ricochet(){
     
     int nParticles=2*_chisquared->get_dim();
     
-    array_1d<int> dexes;
-    array_1d<double> dmu;
+    array_1d<int> dexes,points_already_modeled;
+    array_1d<double> dmu,min,max;
+    array_2d<double> points_to_model;
+    kd_tree tree;
+    
     int j,ix,iChosen;
     double dist,dist_best,dist_local_best;
     dexes.set_name("node_initialize_ricochet_dexes");
     dmu.set_name("node_initialize_ricochet_dmu");
+    points_to_model.set_name("node_initialize_ricochet_points_to_model");
+    points_already_modeled.set_name("node_initialize_ricochet_points_already_modeled");
+    min.set_name("node_initialize_ricochet_min");
+    max.set_name("node_initialize_ricochet_max");
 
     for(i=0;i<_ricochet_candidates.get_dim();i++){
         if(_chisquared->get_fn(_ricochet_candidates.get_data(i))<0.5*(_chisquared->target()+_chisquared->chimin())){
@@ -2206,9 +2225,47 @@ void node::initialize_ricochet(){
         }
     }
     else{
+        points_to_model.set_cols(_chisquared->get_dim());
+        points_to_model.add_row(_chisquared->get_pt(_centerdex)[0]);
+        points_already_modeled.add(_centerdex);
+        for(i=0;i<_boundary_points.get_dim();i++){
+            j=1;
+            for(ix=0;ix<points_already_modeled.get_dim() && j==1;ix++){
+                if(points_already_modeled.get_data(ix)==_boundary_points.get_data(i)){
+                    j=0;
+                } 
+            }
+            
+            if(j==1){
+                points_to_model.add_row(_chisquared->get_pt(_boundary_points.get_data(i))[0]);
+                points_already_modeled.add(_boundary_points.get_data(i));
+            }
+        }
+        
+        for(i=0;i<_chisquared->get_dim();i++){
+            if(_max_found.get_data(i)-_min_found.get_data(i)>1.0e-20){
+                max.set(i,_max_found.get_data(i));
+                min.set(i,_min_found.get_data(i));
+            }
+            else{
+                max.set(i,1.0);
+                min.set(i,0.0);
+            }
+        }
+
+        if(points_to_model.get_rows()>2+_chisquared->get_dim()){
+            tree.build_tree(points_to_model,min,max);
+        }
+
         for(i=0;i<_ricochet_candidates.get_dim();i++){
             ix=_ricochet_candidates.get_data(i);
-            dmu.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
+            
+            if(tree.get_pts()>_chisquared->get_dim()+2){
+                dmu.set(i,fabs(_chisquared->get_fn(ix)-ricochet_model(_chisquared->get_pt(ix)[0],tree)));
+            }
+            else{
+                dmu.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
+            }
         }
         while(_ricochet_particles.get_dim()<nParticles){
             iChosen=-1;
@@ -2314,127 +2371,6 @@ void node::initialize_ricochet(){
     fclose(output);
 }
 
-int node::gradient_kick(int ix, array_1d<double> &dir){
-    is_it_safe("gradient_kick");
-
-    int i,nearestParticle;
-    double x1,x2,ddbest,ddmin,dd;
-    nearestParticle=-1;
-    ddmin=1.0e-10;
-    
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        dd=node_distance(_ricochet_candidates.get_data(i),_ricochet_particles.get_data(ix));
-        if(dd>ddmin){
-            if(nearestParticle<0 || dd<ddbest){
-                ddbest=dd;
-                nearestParticle=_ricochet_candidates.get_data(i);
-            }
-        }
-    }
-    
-    int irow;
-    for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
-        if(irow!=_ricochet_discovery_dexes.get_data(ix)){
-            for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
-                dd=node_distance(_ricochet_discoveries.get_data(irow, i),_ricochet_particles.get_data(ix));
-                if(dd>ddmin){
-                    if(nearestParticle<0 || dd<ddbest){
-                        ddbest=dd;
-                        nearestParticle=_ricochet_discoveries.get_data(irow,i);
-                    }
-                }
-            }
-        }
-    }
-
-    array_1d<double> gradient,lowball,highball;
-    gradient.set_name("node_gradient_kick_gradient");
-    lowball.set_name("node_gradient_kick_lowball");
-    highball.set_name("node_gradient_kick_highball");
-    
-    node_gradient(_ricochet_particles.get_data(ix),gradient);
-    double gnorm,flow,fhigh;
-    gnorm=gradient.normalize();
-    
-    for(i=0;i<_chisquared->get_dim();i++){
-        lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
-        highball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
-    }
-    flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
-    
-    fhigh=-2.0*exception_value;
-    while(fhigh<_chisquared->target()){
-        for(i=0;i<_chisquared->get_dim();i++){
-            highball.add_val(i,-1.0*gradient.get_data(i));
-        }
-        evaluate(highball,&fhigh,&i);
-        if(fhigh<_chisquared->target()){
-            flow=fhigh;
-            for(i=0;i<_chisquared->get_dim();i++){
-                lowball.set(i,highball.get_data(i));
-            }
-        }
-    }
-    
-    int iFound;
-    iFound=bisection(lowball,flow,highball,fhigh,1);
-    
-    if(iFound<0){
-        printf("WARNING in gradient kick intermediate found negative iFound\n");
-        exit(1);
-    }
-    
-    array_1d<double> trial;
-    trial.set_name("node_gradient_kick_trial");
-    for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_chisquared->get_pt(_ricochet_particles.get_data(ix),i)+_chisquared->get_pt(iFound,i)));
-    }
-    evaluate(trial,&flow,&iFound);
-    
-    if(iFound<0){
-        return 0;
-    }
-    
-    _ricochet_particles.set(ix,iFound);
-    
-    if(nearestParticle>=0){
-         for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(nearestParticle,i));
-         }
-     }
-     else{
-         for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
-         }
-     }
-     dir.normalize();
-     return 1;
-
-}
-
-int node::random_kick(int ix, array_1d<double> &dir){
-
-    int i;
-    array_1d<double> trial;
-    trial.set_name("node_random_kick_trial");
-    double ftrial;
-    int iFound;
-    ftrial=2.0*exception_value;
-    while(ftrial>_chisquared->target()){
-        for(i=0;i<_chisquared->get_dim();i++){
-           trial.set(i,_min_found.get_data(i)+_chisquared->random_double()*(_max_found.get_data(i)-_min_found.get_data(i)));
-        }
-        evaluate(trial,&ftrial,&iFound);
-    }
-    _ricochet_particles.set(ix,iFound);
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,_ricochet_velocities.get_data(ix,i));
-    }
-    
-    return 1;
-
-}
-
 int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
     array_1d<double> radial;
     radial.set_name("node_smart_step_kick_radial");
@@ -2479,15 +2415,13 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
         }
     }
     
-    for(i=0;i<_ricochet_discoveries.get_rows();i++){
-        for(j=0;j<_ricochet_discoveries.get_cols(i);j++){
-            for(k=0;k<_chisquared->get_dim();k++){
-                trial.set(k,_chisquared->get_pt(_ricochet_discoveries.get_data(i,j),k)-_chisquared->get_pt(_ricochet_particles.get_data(ix),k));
-            }
-            mu=trial.normalize();
-            if(mu>1.0e-20){
-                unitSphere.add_row(trial);
-            }
+    for(i=0;i<_boundary_points.get_dim();i++){
+        for(k=0;k<_chisquared->get_dim();k++){
+            trial.set(k,_chisquared->get_pt(_boundary_points.get_data(i),k)-_chisquared->get_pt(_ricochet_particles.get_data(ix),k));
+        }
+        mu=trial.normalize();
+        if(mu>1.0e-20){
+            unitSphere.add_row(trial);
         }
     }
     
@@ -2552,19 +2486,18 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
         }
     }
     
-    int irow;
-    for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
-        if(irow!=_ricochet_discovery_dexes.get_data(ix)){
-            for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
-                dd=node_distance(_ricochet_discoveries.get_data(irow, i), _chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
-                if(dd>ddmin){
-                    if(nearestParticle<0 || dd<ddbest){
-                        ddbest=dd;
-                        nearestParticle=_ricochet_discoveries.get_data(irow,i);
-                    }
+    for(i=0;i<_boundary_points.get_dim();i++){
+        if(_boundary_points.get_data(i)!=_ricochet_particles.get_data(ix)){
+            dd=node_distance(_boundary_points.get_data(i),_ricochet_particles.get_data(ix));
+            if(dd>ddmin){
+                if(nearestParticle<0 || dd<ddbest){
+                    ddbest=dd;
+                    nearestParticle=_boundary_points.get_data(i);
                 }
             }
         }
+            
+        
     }
     
     array_1d<double> trial;
@@ -2633,14 +2566,12 @@ void node::origin_kick(int ix, array_1d<double> &dir){
         }
     }
     
-    for(irow=0;irow<_ricochet_discoveries.get_rows();irow++){
-        for(i=0;i<_ricochet_discoveries.get_cols(irow);i++){
-            dd=node_distance(_ricochet_discoveries.get_data(irow,i),_chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
-            if(dd>ddmin){
-                if(iOrigin<0 || dd<ddbest){
-                    ddbest=dd;
-                    iOrigin=_ricochet_discoveries.get_data(irow,i);
-                }
+    for(i=0;i<_boundary_points.get_dim();i++){
+        dd=node_distance(_boundary_points.get_data(i),_ricochet_particles.get_data(ix));
+        if(dd>ddmin){
+            if(iOrigin<0 || dd<ddbest){
+                ddbest=dd;
+                iOrigin=_boundary_points.get_data(i);
             }
         }
     }
@@ -3037,6 +2968,7 @@ void node::ricochet(){
        if(iFound>=0){
            distanceMoved.set(ix,node_distance(start_pts(start_pts.get_rows()-1)[0],_chisquared->get_pt(iFound)[0]));
            chiFound.set(ix,_chisquared->get_fn(iFound));
+           _boundary_points.add(iFound);
        }
        else{
            distanceMoved.set(ix,0.0);

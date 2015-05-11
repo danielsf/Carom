@@ -41,6 +41,8 @@ class kd_tree{
         
         kd_tree(const kd_tree&);
         
+        kd_tree();
+        
         ~kd_tree();
         
         void copy(const kd_tree&);
