@@ -67,6 +67,8 @@ private:
     asymm_array_2d<double> _ricochet_dir_norm,_ricochet_mu;
     asymm_array_2d<int> _ricochet_strike_log;
     
+    kd_tree *_boundary_tree;
+    
     chisq_wrapper *_chisquared;
     
     int bisection(array_1d<double>&,double,array_1d<double>&,double,int);
@@ -78,6 +80,7 @@ private:
     void guess_bases(array_2d<double>&);
     void validate_bases(array_2d<double>&, char*);
     void initialize();
+    void add_to_boundary(int);
     
     void is_it_safe(char*);
     

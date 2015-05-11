@@ -4,7 +4,11 @@ node::node(){
     initialize();
 }
 
-node::~node(){}
+node::~node(){
+    if(_boundary_tree!=NULL){
+        delete _boundary_tree;
+    }
+}
 
 node::node(const node &in){
     initialize();
@@ -35,6 +39,8 @@ void node::initialize(){
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
     _failed_simplexes=0;
+    
+    _boundary_tree=NULL;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -92,6 +98,15 @@ void node::copy(const node &in){
     int i,j;
     
     _chisquared=in._chisquared;
+    
+    if(_boundary_tree!=NULL){
+        delete _boundary_tree;
+        _boundary_tree=NULL;
+    }
+    
+    if(in._boundary_tree!=NULL){
+        _boundary_tree=new kd_tree(in._boundary_tree[0]);
+    }
     
     _associates.reset();
     for(i=0;i<in._associates.get_dim();i++){
@@ -1122,7 +1137,7 @@ void node::compass_search(){
             dx=fabs(dx);
             
             if(iFound>=0){
-                _boundary_points.add(iFound);
+                add_to_boundary(iFound);
                 _compass_points.add(iFound);
                 _ricochet_candidates.add(iFound);
                 j=iFound;
@@ -1295,7 +1310,7 @@ void node::compass_off_diagonal(){
                         if(xweight<0.0 && yweight<0.0)dmin_nn=dmin;
                         if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
                         
-                        _boundary_points.add(iFound);
+                        add_to_boundary(iFound);
                         _compass_points.add(iFound);
                         _ricochet_candidates.add(iFound);
                         for(i=0;i<_chisquared->get_dim();i++){
@@ -2016,7 +2031,7 @@ void node::off_center_compass(int iStart){
             iFound=bisection(lowball,flow,highball,fhigh,1);
             
             if(iFound>=0){
-                _boundary_points.add(iFound);
+                add_to_boundary(iFound);
                 _off_center_compass_points.add(iFound);
                 _ricochet_candidates.add(iFound);
             }
@@ -2173,6 +2188,58 @@ double node::ricochet_distance(int i1, int i2){
     return sqrt(dd);
 }
 
+void node::add_to_boundary(int dex){
+    array_2d<double> points_to_model;
+    array_1d<int> points_already_modeled;
+    array_1d<double> min,max;
+
+    int i,j,ix;
+
+    _boundary_points.add(dex);
+    
+    if(_boundary_tree!=NULL){
+        _boundary_tree->add(_chisquared->get_pt(dex)[0]);
+    }
+    else if(_boundary_tree==NULL && _boundary_points.get_dim()>2+_chisquared->get_dim()){
+        points_to_model.set_name("node_add_to_boundary_points_to_model");
+        points_already_modeled.set_name("node_add_to_boundary_points_already");
+        min.set_name("node_add_to_boundary_min");
+        max.set_name("node_add_to_boundary_max");
+
+        points_to_model.set_cols(_chisquared->get_dim());
+        points_to_model.add_row(_chisquared->get_pt(_centerdex)[0]);
+        points_already_modeled.add(_centerdex);
+        for(i=0;i<_boundary_points.get_dim();i++){
+            j=1;
+            for(ix=0;ix<points_already_modeled.get_dim() && j==1;ix++){
+                if(points_already_modeled.get_data(ix)==_boundary_points.get_data(i)){
+                    j=0;
+                } 
+            }
+            
+            if(j==1){
+                points_to_model.add_row(_chisquared->get_pt(_boundary_points.get_data(i))[0]);
+                points_already_modeled.add(_boundary_points.get_data(i));
+            }
+        }
+        
+        
+        for(i=0;i<_chisquared->get_dim();i++){
+            if(_max_found.get_data(i)-_min_found.get_data(i)>1.0e-20){
+                max.set(i,_max_found.get_data(i));
+                min.set(i,_min_found.get_data(i));
+            }
+            else{
+                max.set(i,1.0);
+                min.set(i,0.0);
+            }
+        }
+            
+        _boundary_tree=new kd_tree(points_to_model,min,max);
+
+    }
+}
+
 void node::initialize_ricochet(){
     is_it_safe("initialize_ricochet");
     
@@ -2195,19 +2262,13 @@ void node::initialize_ricochet(){
     
     int nParticles=2*_chisquared->get_dim();
     
-    array_1d<int> dexes,points_already_modeled;
-    array_1d<double> dmu,min,max;
-    array_2d<double> points_to_model;
-    kd_tree tree;
+    array_1d<int> dexes;
+    array_1d<double> dmu;
     
     int j,ix,iChosen;
     double dist,dist_best,dist_local_best;
     dexes.set_name("node_initialize_ricochet_dexes");
     dmu.set_name("node_initialize_ricochet_dmu");
-    points_to_model.set_name("node_initialize_ricochet_points_to_model");
-    points_already_modeled.set_name("node_initialize_ricochet_points_already_modeled");
-    min.set_name("node_initialize_ricochet_min");
-    max.set_name("node_initialize_ricochet_max");
 
     for(i=0;i<_ricochet_candidates.get_dim();i++){
         if(_chisquared->get_fn(_ricochet_candidates.get_data(i))<0.5*(_chisquared->target()+_chisquared->chimin())){
@@ -2225,43 +2286,11 @@ void node::initialize_ricochet(){
         }
     }
     else{
-        points_to_model.set_cols(_chisquared->get_dim());
-        points_to_model.add_row(_chisquared->get_pt(_centerdex)[0]);
-        points_already_modeled.add(_centerdex);
-        for(i=0;i<_boundary_points.get_dim();i++){
-            j=1;
-            for(ix=0;ix<points_already_modeled.get_dim() && j==1;ix++){
-                if(points_already_modeled.get_data(ix)==_boundary_points.get_data(i)){
-                    j=0;
-                } 
-            }
-            
-            if(j==1){
-                points_to_model.add_row(_chisquared->get_pt(_boundary_points.get_data(i))[0]);
-                points_already_modeled.add(_boundary_points.get_data(i));
-            }
-        }
-        
-        for(i=0;i<_chisquared->get_dim();i++){
-            if(_max_found.get_data(i)-_min_found.get_data(i)>1.0e-20){
-                max.set(i,_max_found.get_data(i));
-                min.set(i,_min_found.get_data(i));
-            }
-            else{
-                max.set(i,1.0);
-                min.set(i,0.0);
-            }
-        }
-
-        if(points_to_model.get_rows()>2+_chisquared->get_dim()){
-            tree.build_tree(points_to_model,min,max);
-        }
-
         for(i=0;i<_ricochet_candidates.get_dim();i++){
             ix=_ricochet_candidates.get_data(i);
             
-            if(tree.get_pts()>_chisquared->get_dim()+2){
-                dmu.set(i,fabs(_chisquared->get_fn(ix)-ricochet_model(_chisquared->get_pt(ix)[0],tree)));
+            if(_boundary_tree!=NULL && _boundary_tree->get_pts()>_chisquared->get_dim()+2){
+                dmu.set(i,fabs(_chisquared->get_fn(ix)-ricochet_model(_chisquared->get_pt(ix)[0],_boundary_tree[0])));
             }
             else{
                 dmu.set(i,fabs(_chisquared->get_fn(ix)-apply_quadratic_model(_chisquared->get_pt(ix)[0])));
@@ -2539,7 +2568,13 @@ void node::origin_kick(int ix, array_1d<double> &dir){
     int i,j;
     double mu,dmu,dmubest;
     for(i=0;i<_ricochet_candidates.get_dim();i++){
-        mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
+        if(_boundary_tree!=NULL && _boundary_tree->get_pts()>_chisquared->get_dim()+2){
+            mu=ricochet_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0],_boundary_tree[0]);
+        }
+        else{
+            mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
+        }
+
         dmu=fabs(mu-_chisquared->get_fn(_ricochet_candidates.get_data(i)));
         if(iChosen<0 || dmu>dmubest){
             iChosen=_ricochet_candidates.get_data(i);
@@ -2968,7 +3003,8 @@ void node::ricochet(){
        if(iFound>=0){
            distanceMoved.set(ix,node_distance(start_pts(start_pts.get_rows()-1)[0],_chisquared->get_pt(iFound)[0]));
            chiFound.set(ix,_chisquared->get_fn(iFound));
-           _boundary_points.add(iFound);
+           add_to_boundary(iFound);
+ 
        }
        else{
            distanceMoved.set(ix,0.0);
