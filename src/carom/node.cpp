@@ -2282,9 +2282,9 @@ void node::initialize_ricochet(){
       }
       radial.normalize();
       
-      for(j=0;j<_ricochet_candidates.get_dim();j++){
-           dist=_chisquared->distance(_chisquared->get_pt(_ricochet_particles.get_data(i))[0],_ricochet_candidates.get_data(j));
-           if(dist<dist_best){
+      for(j=0;j<_boundary_points.get_dim();j++){
+           dist=node_distance(_ricochet_particles.get_data(i),_boundary_points.get_data(j));
+           if(dist<dist_best && dist>1.0e-20){
               dist_best=dist;
               iOrigin=_ricochet_candidates.get_data(j);
            }
