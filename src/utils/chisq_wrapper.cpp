@@ -27,6 +27,7 @@ chisq_wrapper::chisq_wrapper(){
     _ct_where.set(iSimplex,0);
     _ct_where.set(iRicochet,0);
     _ct_where.set(iCompass,0);
+    _ct_where.set(iNodeSimplex,0);
 }
 
 chisq_wrapper::~chisq_wrapper(){

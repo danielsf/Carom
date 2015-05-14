@@ -1929,6 +1929,8 @@ void node::off_center_compass(int iStart){
     int i,goAhead;
     double dd,ddmin;
     
+    _chisquared->set_iWhere(iCompass);
+    
     ddmin=1.0e-3;
     goAhead=1;
     for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
@@ -2695,6 +2697,8 @@ void node::simplex_search(){
     seed.set_cols(_chisquared->get_dim());
     int i,j;
     double mu;
+
+    _chisquared->set_iWhere(iNodeSimplex);
 
     if(_ricochet_particles.get_dim()<=_chisquared->get_dim()+1){
         for(i=0;i<_ricochet_particles.get_dim();i++){

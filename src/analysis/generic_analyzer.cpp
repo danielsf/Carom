@@ -172,12 +172,15 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
         hptr=&ricochetHist;
     }
     else{
-        printf("WARNING ling %d\n",j);
+        hptr=NULL;
     }
     
-    for(i=hdex;i<hptr->get_dim();i++){
-        hptr->add_val(i,1);
+    if(hptr!=NULL){
+        for(i=hdex;i<hptr->get_dim();i++){
+            hptr->add_val(i,1);
+        }
     }
+    
     for(i=hdex;i<totalHist.get_dim();i++){
         totalHist.add_val(i,1);
     }
