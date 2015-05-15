@@ -58,6 +58,7 @@ private:
     
     array_2d<double> _ricochet_velocities;
     array_1d<int> _ricochet_particles;
+    array_1d<int> _ricochet_origins;
     array_1d<int> _ricochet_strikes;
     array_1d<int> _boundary_points;
     
@@ -92,6 +93,7 @@ private:
     
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
+    int t_kick(int,array_1d<double>&);
     int smart_step_kick(int, double, array_1d<double>&);
     void originate_particle(int, array_1d<double>&);
     
