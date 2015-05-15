@@ -93,7 +93,7 @@ private:
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
     int smart_step_kick(int, double, array_1d<double>&);
-    void origin_kick(int, array_1d<double>&);
+    void originate_particle(int, array_1d<double>&);
     
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);

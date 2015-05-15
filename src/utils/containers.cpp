@@ -1553,11 +1553,14 @@ void asymm_array_2d<T>::divide_val(int ir, int ic, T val){
 
 template <typename T>
 void asymm_array_2d<T>::add(int dex, T val){
-    if(dex<0 || dex>=rows){
+    int i;
+    if(dex<0){
         printf("in asymm 2d add\n");
 	die(dex);
     }
-    
+    else if(dex>=rows){
+        set(dex,0,val);
+    }
     data[dex].add(val);
 }
 
