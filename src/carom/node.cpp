@@ -2784,35 +2784,25 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
    
-   int updated;
-   
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
        start_pts.add_row(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
+
+       node_gradient(_ricochet_particles.get_data(ix),gradient);
        
-       updated=0;
-       if(_ricochet_strikes.get_data(ix)!=0){
-           updated=kick_particle(ix,dir);
+       gnorm=gradient.normalize();
+       component=0.0;
+       for(i=0;i<_chisquared->get_dim();i++){
+           component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
        }
        
-       if(updated==0){
-           node_gradient(_ricochet_particles.get_data(ix),gradient);
-       
-           gnorm=gradient.normalize();
-           component=0.0;
-           for(i=0;i<_chisquared->get_dim();i++){
-               component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
-           }
-       
-           for(i=0;i<_chisquared->get_dim();i++){
-               dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
-           }
-       
-           dirnorm=dir.normalize();
+       for(i=0;i<_chisquared->get_dim();i++){
+           dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
        }
        
+       dirnorm=dir.normalize();
 
        flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
        for(i=0;i<_chisquared->get_dim();i++){
