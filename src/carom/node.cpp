@@ -2426,7 +2426,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
      }
      else{
          for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(_centerdex,i));
          }
      }
      dir.normalize();
