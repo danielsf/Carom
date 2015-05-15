@@ -2457,6 +2457,30 @@ void node::originate_particle(int ix, array_1d<double> &dir){
     
     _ricochet_candidates.remove(iCandidate);
     
+    int irow,iOrigin;
+    double dd,ddbest,ddmin;
+    ddmin=1.0e-20;
+    iOrigin=-1;
+    for(i=0;i<_ricochet_candidates.get_dim();i++){
+        dd=node_distance(_ricochet_candidates.get_data(i),_chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
+        if(dd>ddmin){
+            if(iOrigin<0 || dd<ddbest){
+                ddbest=dd;
+                iOrigin=_ricochet_candidates.get_data(i);
+            }
+        }
+    }
+    
+    for(i=0;i<_boundary_points.get_dim();i++){
+        dd=node_distance(_boundary_points.get_data(i),_ricochet_particles.get_data(ix));
+        if(dd>ddmin){
+            if(iOrigin<0 || dd<ddbest){
+                ddbest=dd;
+                iOrigin=_boundary_points.get_data(i);
+            }
+        }
+    }
+
     _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iChosen);
@@ -2465,25 +2489,12 @@ void node::originate_particle(int ix, array_1d<double> &dir){
     _ricochet_mu.add(_ricochet_discovery_dexes.get_data(ix),-2.0*exception_value);
     _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),-2);
 
-    array_1d<double> gradient;
-    gradient.set_name("node_originate_particle_gradient");
-    double gnorm,component;
-    
-    node_gradient(_ricochet_particles.get_data(ix),gradient);
-    gnorm=gradient.normalize();
-    
-    component=-1.0;
-    while(component<0.0){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        dir.normalize();
-        
-        component=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            component+=dir.get_data(i)*gradient.get_data(i);
-        }
+    double component=0.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(iOrigin,i));
     }
+    dir.normalize();
+    
 
 }
 
