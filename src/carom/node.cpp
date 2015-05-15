@@ -2496,7 +2496,6 @@ int node::t_kick(int ix, array_1d<double> &dir){
         }
     }
     
-    printf("sucessfully t_kicked\n");
     return 1;
 
 }
