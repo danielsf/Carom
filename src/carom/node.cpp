@@ -2407,6 +2407,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
     
     double flow,fhigh;
     array_1d<double> lowball;
+    int iFound;
     
     if(mu>_chisquared->target()){
         flow=_chisquared->get_fn(_centerdex);
@@ -2414,17 +2415,49 @@ int node::t_kick(int ix, array_1d<double> &dir){
             lowball.set(i,_chisquared->get_pt(_centerdex,i));
         }
         
-        iMid=bisection(lowball, flow, midpt, mu, 0);
-        if(iMid>=0){
-            _ricochet_particles.set(ix,iMid);
+        iFound=bisection(lowball, flow, midpt, mu, 0);
+        if(iFound>=0){
+            _ricochet_particles.set(ix,iFound);
             for(i=0;i<_chisquared->get_dim();i++){
-                _ricochet_velocities.set(ix,i,_chisquared->get_pt(iMid,i)-_chisquared->get_pt(_centerdex,i));
+                _ricochet_velocities.set(ix,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(_centerdex,i));
             }
             _ricochet_velocities(ix)->normalize();
         }
         
         return 0;
     }
+    
+    int iOrigin;
+    array_1d<double> origin;
+    origin.set_name("node_t_kick_origin");
+    for(i=0;i<_chisquared->get_dim();i++){
+        origin.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iMid,i)));
+    }
+    
+    evaluate(origin,&mu,&iOrigin);
+    
+    if(iOrigin<0){
+        return 0;
+    }
+    
+    if(mu>_chisquared->target()){
+        flow=_chisquared->get_fn(_centerdex);
+        for(i=0;i<_chisquared->get_dim();i++){
+            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+        }
+        
+        iFound=bisection(lowball, flow, origin, mu, 0);
+        if(iFound>=0){
+            _ricochet_particles.set(ix,iFound);
+            for(i=0;i<_chisquared->get_dim();i++){
+                _ricochet_velocities.set(ix,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(_centerdex,i));
+            }
+            _ricochet_velocities(ix)->normalize();
+        }
+        
+        return 0;
+    }
+    
     
     double rnorm,component;
     array_1d<double> axis,r_axis;
@@ -2462,7 +2495,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
     trial.set_name("node_t_kick_trial");
     
     int ct_above,ct_below;
-    _ricochet_particles.set(ix,iMid);
+    _ricochet_particles.set(ix,iOrigin);
     
     ct_above=0;
     ct_below=0;
