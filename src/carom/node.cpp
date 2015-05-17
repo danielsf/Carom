@@ -2221,15 +2221,6 @@ void node::initialize_ricochet(){
     if(nParticles>_ricochet_candidates.get_dim()){
         nParticles=_ricochet_candidates.get_dim();
     }
-
-    _ricochet_discovery_dexes.reset();
-    _ricochet_discoveries.reset();
-    _ricochet_discovery_time.reset();
-    _ricochet_distances.reset();
-    _ricochet_grad_norm.reset();
-    _ricochet_dir_norm.reset();
-    _ricochet_mu.reset();
-    _ricochet_strike_log.reset();
     
     for(i=0;i<nParticles;i++){
         _ricochet_discovery_dexes.set(i,i);
