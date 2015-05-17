@@ -38,6 +38,9 @@ public:
     
     int is_this_an_associate(int);
     
+    int get_failed_kicks();
+    int get_successful_kicks();
+    
 private:
     int _centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;

@@ -258,6 +258,14 @@ void node::copy(const node &in){
     
 }
 
+int node::get_failed_kicks(){
+    return _failed_kicks;
+}
+
+int node::get_successful_kicks(){
+    return _successful_kicks;
+}
+
 int node::get_activity(){
     return _active;
 }
