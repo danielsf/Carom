@@ -44,6 +44,8 @@ private:
     int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
     double _chimin,_chimin_bases,_bisection_tolerance;
     
+    int _failed_kicks,_successful_kicks;
+    
     double _min_basis_error;
     int _since_expansion,_min_basis_error_changed;
     
