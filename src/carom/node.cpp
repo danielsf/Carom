@@ -2459,159 +2459,24 @@ int node::t_kick(int ix, array_1d<double> &dir){
         return 0;
     }
     
-    
-    double rnorm,component;
-    array_1d<double> axis,r_axis;
-    axis.set_name("node_t_kick_axis");
-    r_axis.set_name("node_t_kick_r_axis");
-    
-    for(i=0;i<_chisquared->get_dim();i++){
-        axis.set(i,_chisquared->get_pt(i1,i)-_chisquared->get_pt(i0,i));
-        r_axis.set(i,_chisquared->get_pt(iMid,i)-_chisquared->get_pt(iOrigin,i));
-    }
-    axis.normalize();
-    rnorm=r_axis.normalize();
-    
-    if(rnorm<tol){
-        return 0;
-    }
-
-    component=0.0;
-    for(i=0;i<_chisquared->get_dim();i++){
-        component+=axis.get_data(i)*r_axis.get_data(i);
-    }
-    
-    for(i=0;i<_chisquared->get_dim();i++){
-        axis.subtract_val(i,component*r_axis.get_data(i));
-    }
-    
-    double anorm;
-    anorm=axis.normalize();
-    
-    if(anorm<tol){
-        return 0;
-    }
-
     array_1d<double> trial;
     trial.set_name("node_t_kick_trial");
-    
-    int ct_above,ct_below;
-    int ct_above_pos,ct_below_pos,ct_above_neg,ct_below_neg;
-    _ricochet_particles.set(ix,iOrigin);
-    
-    double r_component;
-    
-    ct_above=0;
-    ct_below=0;
-    ct_above_pos=0;
-    ct_above_neg=0;
-    ct_below_pos=0;
-    ct_below_neg=0;
-    for(i=0;i<_boundary_points.get_dim();i++){
-        for(j=0;j<_chisquared->get_dim();j++){
-            trial.set(j,_chisquared->get_pt(_boundary_points.get_data(i),j)-_chisquared->get_pt(_centerdex,j));
-        }
-        
-        component=0.0;
-        for(j=0;j<_chisquared->get_dim();j++){
-            component+=trial.get_data(j)*axis.get_data(j);
-        }
-        
-        r_component=0.0;
-        for(j=0;j<_chisquared->get_dim();j++){
-            r_component+=trial.get_data(j)*r_axis.get_data(j);
-        }
-        
-        if(component>0.0){
-            ct_above++;
-            
-            if(r_component>0.0){
-                ct_above_pos++;
-            }
-            else{
-                ct_above_neg++;
-            }
-        }
-        else{
-            ct_below++;
-            
-            if(r_component>0.0){
-                ct_below_pos++;
-            }
-            else{
-                ct_below_neg++;
-            }
-        }
-        
-    }
-    
-    if(ct_above>ct_below){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,-1.0*axis.get_data(i));
-        }
-        
-        if(ct_above_pos>ct_above_neg){
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.add_val(i,-1.0*r_axis.get_data(i));
-            }
-        }
-        else{
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.add_val(i,r_axis.get_data(i));
-            }
-        }
-    }
-    else{
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,axis.get_data(i));
-        }
-        
-        if(ct_below_pos>ct_below_neg){
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.add_val(i,-1.0*r_axis.get_data(i));
-            }
-        }
-        else{
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.add_val(i,r_axis.get_data(i));
-            }
-        }
-    }
-    
-    dir.normalize();
-    
-    array_1d<double> perturbation;
-    perturbation.set_name("node_t_kick_perturbation");
-    double pnorm=-1.0;
-    while(pnorm<1.0e-10){
-        for(i=0;i<_chisquared->get_dim();i++){
-            perturbation.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        
-        component=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            component+=perturbation.get_data(i)*axis.get_data(i);
-        }
-        for(i=0;i<_chisquared->get_dim();i++){
-            perturbation.subtract_val(i,component*axis.get_data(i));
-        }
-        
-        component=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            component+=perturbation.get_data(i)*r_axis.get_data(i);
-        }
-        for(i=0;i<_chisquared->get_dim();i++){
-            perturbation.subtract_val(i,component*r_axis.get_data(i));
-        }
-        
-        pnorm=perturbation.normalize();
-    }
-    
+    double dnorm;
     for(i=0;i<_chisquared->get_dim();i++){
-        dir.add_val(i,0.1*perturbation.get_dim());
+        trial.set(i,_chisquared->get_pt(i1,i)-_chisquared->get_pt(i0,i));
     }
     
-    dir.normalize();
+    dnorm=trial.normalize();
+    
+    if(dnorm<tol){
+        return 0;
+    }
+    
+    _ricochet_particles.set(ix,iOrigin);
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,trial.get_data(i));
+    }
+    
     
     return 1;
 
