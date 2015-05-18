@@ -2580,6 +2580,39 @@ int node::t_kick(int ix, array_1d<double> &dir){
     
     dir.normalize();
     
+    array_1d<double> perturbation;
+    perturbation.set_name("node_t_kick_perturbation");
+    double pnorm=-1.0;
+    while(pnorm<1.0e-10){
+        for(i=0;i<_chisquared->get_dim();i++){
+            perturbation.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        
+        component=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            component+=perturbation.get_data(i)*axis.get_data(i);
+        }
+        for(i=0;i<_chisquared->get_dim();i++){
+            perturbation.subtract_val(i,component*axis.get_data(i));
+        }
+        
+        component=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            component+=perturbation.get_data(i)*r_axis.get_data(i);
+        }
+        for(i=0;i<_chisquared->get_dim();i++){
+            perturbation.subtract_val(i,component*r_axis.get_data(i));
+        }
+        
+        pnorm=perturbation.normalize();
+    }
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.add_val(i,0.1*perturbation.get_dim());
+    }
+    
+    dir.normalize();
+    
     return 1;
 
 }
