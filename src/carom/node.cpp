@@ -2905,8 +2905,7 @@ void node::ricochet(){
 
        updated=0;
        if(_ricochet_strikes.get_data(ix)>0){
-           updated=t_kick(ix,dir);
-           //updated=kick_particle(ix,dir);
+           updated=kick_particle(ix,dir);
        }
 
        if(updated==0){
