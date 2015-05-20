@@ -2576,21 +2576,24 @@ void node::originate_particle(int ix, array_1d<double> &dir){
     }
     radius.normalize();
     
-    double dot,dotBest;
+    double dot,dotBest,tNorm;
+    dotBest=2.0*exception_value;
     for(i=0;i<_boundary_points.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
             trial.set(j,_chisquared->get_pt(iChosen,j)-_chisquared->get_pt(_boundary_points.get_data(i),j));
         }
-        trial.normalize();
-        dot=0.0;
-        for(j=0;j<_chisquared->get_dim();j++){
-            dot+=trial.get_data(j)*radius.get_data(j);
-        }
-        
-        if(i==0 || dot<dotBest){
-            dotBest=dot;
+        tNorm=trial.normalize();
+        if(tNorm>1.0e-10){
+            dot=0.0;
             for(j=0;j<_chisquared->get_dim();j++){
-                dir.set(j,trial.get_data(j));
+                dot+=trial.get_data(j)*radius.get_data(j);
+            }
+        
+            if(dot<dotBest){
+                dotBest=dot;
+                for(j=0;j<_chisquared->get_dim();j++){
+                    dir.set(j,trial.get_data(j));
+                }
             }
         }
     }
@@ -2602,7 +2605,7 @@ void node::originate_particle(int ix, array_1d<double> &dir){
     _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
     _ricochet_mu.add(_ricochet_discovery_dexes.get_data(ix),-2.0*exception_value);
     _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),-2);
-
+    
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
