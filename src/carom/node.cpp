@@ -816,7 +816,16 @@ void node::node_gradient(int dex, array_1d<double> &grad){
 
 }
 
-int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh, int doSlope){
+int node::bisection(array_1d<double> &ll, double fl,
+                    array_1d<double> &hh, double fh,
+                    int doSlope){
+
+        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target());
+}
+
+int node::bisection(array_1d<double> &lowball, double flow,
+                    array_1d<double> &highball, double fhigh,
+                    int doSlope, double target_value){
 
     is_it_safe("bisection");
     
@@ -841,10 +850,10 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
     
     ct=0;
     iout=-1;
-    while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
+    while(ct<100 && (took_a_step==0 || target_value-flow>threshold)){
         
         if(doSlope==1){
-            wgt=(fhigh-_chisquared->target())/(fhigh-flow);
+            wgt=(fhigh-target_value)/(fhigh-flow);
             if(wgt<0.1)wgt=0.1;
             else if(wgt>0.9)wgt=0.9;
         }
@@ -857,7 +866,7 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
         }
         
         evaluate(trial,&ftrial,&i);
-        if(ftrial<_chisquared->target()){
+        if(ftrial<target_value){
             flow=ftrial;
             if(i>=0)iout=i;
             for(i=0;i<_chisquared->get_dim();i++){
