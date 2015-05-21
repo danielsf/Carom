@@ -1146,22 +1146,22 @@ void node::compass_search(){
                 add_to_boundary(iFound);
                 _compass_points.add(iFound);
                 _ricochet_candidates.add(iFound);
-                j=iFound;
-                for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
+                
+                if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                        highball.set(i,_chisquared->get_pt(iFound,i));
+                    }
+                    
+                    fhigh=_chisquared->get_fn(iFound);
+                    iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                    
+                    if(iFound>=0){
+                        _basis_associates.add(iFound);
+                    }
+                    
                 }
-                evaluate(trial,&ftrial,&iFound);
-                if(iFound>=0){
-                    _basis_associates.add(iFound);
-                }
-            
-                for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,0.75*_chisquared->get_pt(_centerdex,i)+0.25*_chisquared->get_pt(j,i));
-                }
-                evaluate(trial,&ftrial,&iFound);
-                if(iFound>=0){
-                    _basis_associates.add(iFound);
-                }
+                
             }
             
         }
@@ -1319,12 +1319,18 @@ void node::compass_off_diagonal(){
                         add_to_boundary(iFound);
                         _compass_points.add(iFound);
                         _ricochet_candidates.add(iFound);
-                        for(i=0;i<_chisquared->get_dim();i++){
-                            trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
-                        }
-                        evaluate(trial,&ftrial,&iFound);
-                        if(iFound>=0){
-                            _basis_associates.add(iFound);
+                        if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
+                            for(i=0;i<_chisquared->get_dim();i++){
+                                lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                                highball.set(i,_chisquared->get_pt(iFound,i));
+                            }
+                            
+                            fhigh=_chisquared->get_fn(iFound);
+                            iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                            if(iFound>=0){
+                                _basis_associates.add(iFound);
+                            }
+                        
                         }
                     }
                     
@@ -1803,6 +1809,11 @@ void node::find_bases(){
     
     if(_basis_associates.get_dim()==0){
         compass_search();
+    }
+    
+    if(_basis_associates.get_dim()==0){
+        printf("WARNING cannot find bases; no associates\n");
+        return;
     }
     
     _chimin_bases=_chimin;
