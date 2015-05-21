@@ -58,7 +58,7 @@ test_eigen: src/tests/test_eigen.cpp object/eigen_wrapper.o
 	$(gg) -o bin/test_eigen src/tests/test_eigen.cpp object/containers.o object/goto_tools.o \
 	object/eigen_wrapper.o $(LIBRARIES)
 
-object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o
+object/chisq.o: src/utils/chisq.cpp include/chisq.h object/goto_tools.o object/kd.o object/wrappers.o
 	$(gg) -c -o object/chisq.o src/utils/chisq.cpp
 
 object/chain.o: src/mcmc/chain.cpp include/mcmc/chain.h object/containers.o \
@@ -93,7 +93,7 @@ analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o \
 	$(LIBRARIES)
 
-object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/chisq.o object/kd.o
+object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/kd.o
 	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
 
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
@@ -116,6 +116,33 @@ s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/node.o object/carom.o \
+	$(LIBRARIES)
+
+jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o
+	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/node.o object/carom.o \
+	$(LIBRARIES)
+
+jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/chisq.o
+	$(gg) -o bin/jellyBean_bayesianControl src/controls/jellyBeanBayesianControl.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o \
+	$(LIBRARIES)
+
+jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp object/chisq.o
+	$(gg) -o bin/jellyBean_frequentistControl src/controls/jellyBeanFrequentistControl.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o \
+	$(LIBRARIES)
+
+jellyBeanMCMC: src/examples/jellyBean_mcmc_example.cpp object/mcmc.o \
+object/wmap_likelihood_function.o
+	$(gg) -o bin/jellyBeanMCMC src/examples/jellyBean_mcmc_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
+	object/chain.o object/kde.o object/mcmc.o \
 	$(LIBRARIES)
 
 ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
@@ -152,6 +179,23 @@ wmap7reader: src/examples/wmap7_mcmc_reader_example.cpp object/chain.o
 	$(gg) -o bin/wmap7reader src/examples/wmap7_mcmc_reader_example.cpp \
 	object/containers.o object/goto_tools.o object/chain.o \
 	object/kde.o object/kd.o \
+	$(LIBRARIES)
+
+MCMCreader: src/examples/generic_mcmc_reader.cpp object/chain.o
+	$(gg) -o bin/MCMCreader src/examples/generic_mcmc_reader.cpp \
+	object/containers.o object/goto_tools.o object/chain.o \
+	object/kde.o object/kd.o \
+	$(LIBRARIES)
+
+multiNestReader: src/examples/multiNest_reader.cpp object/chain.o
+	$(gg) -o bin/multiNestReader src/examples/multiNest_reader.cpp \
+	object/containers.o object/goto_tools.o object/chain.o \
+	object/kde.o object/kd.o \
+	$(LIBRARIES)
+
+multiNestFullReader: src/examples/multiNest_fullD_reader.cpp object/goto_tools.o
+	$(gg) -o bin/multiNestFullReader src/examples/multiNest_fullD_reader.cpp \
+	object/containers.o object/goto_tools.o \
 	$(LIBRARIES)
 
 wmap7_2d: src/examples/wmap7_2d_example.cpp object/carom.o \

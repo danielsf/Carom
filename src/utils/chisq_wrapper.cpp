@@ -20,10 +20,14 @@ chisq_wrapper::chisq_wrapper(){
     _seed=-1;
     _called=0;
     _iWhere=-1;
+    _expected_min=-1.0;
+    _confidence_limit=-1.0;
+    _expected_delta=-1.0;
     
     _ct_where.set(iSimplex,0);
     _ct_where.set(iRicochet,0);
     _ct_where.set(iCompass,0);
+    _ct_where.set(iNodeSimplex,0);
 }
 
 chisq_wrapper::~chisq_wrapper(){
@@ -34,6 +38,14 @@ chisq_wrapper::~chisq_wrapper(){
     if(_dice!=NULL){
         delete _dice;
     }
+}
+
+void chisq_wrapper::set_confidence_limit(double cc){
+    _confidence_limit=cc;
+}
+
+void chisq_wrapper::set_dof(int dd){
+    _dof=dd;
 }
 
 void chisq_wrapper::set_chisquared(chisquared *xx){
@@ -584,4 +596,52 @@ void chisq_wrapper::copy(chisq_wrapper &in){
     if(_seed<0)_seed=int(time(NULL));
     _dice=new Ran(_seed);
     printf("done copying\n");
+}
+
+int chisq_wrapper::could_it_go_lower(double chimin){
+
+    double tol=1.0;
+
+    if(chimin<tol){
+        return 0;
+    }
+
+    if(_adaptive_target==1){
+        if(_expected_min<0.0 && _dof>0){
+            _expected_min=_distribution.maximum_likelihood_chisquared_value(double(_dof));
+        }
+        
+        if(_expected_min<0.0){
+            return 1;
+        }
+        else{
+            if(chimin<_expected_min+tol){
+                return 0;
+            }
+            else{
+                return 1;
+            }
+        }
+    }
+    else{
+        if(_expected_delta<0.0 && _confidence_limit>0.0){
+            _expected_delta=_distribution.confidence_limit(double(_kptr->get_dim()),_confidence_limit);
+        }
+        
+        if(_expected_delta<0.0){
+            return 1;
+        }
+        else{
+            if(chimin<_target-_expected_delta+tol){
+                return 0;
+            }
+            else{
+                return 1;
+            }
+        
+        }
+    }
+
+    return 1;
+  
 }

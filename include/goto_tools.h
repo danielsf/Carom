@@ -6,15 +6,15 @@
 
 #define exception_value 1.0e30
 
-enum{iSimplex,iCompass,iRicochet};
+enum{iSimplex,iCompass,iRicochet,iNodeSimplex};
 
 void kill(char*);
 
 double raiseup(double,double);
 
-
-
 double power(double,int);
+
+void transcribe(char*,char*);
 
 struct Ran{
 
@@ -75,5 +75,95 @@ array_1d<double>&,int);
 double compare_arr(array_1d<double>&,array_1d<double>&);
 
 int compare_int_arr(array_1d<int>&, array_1d<int>&);
+
+struct chisquared_distribution{
+
+    double _fix;
+
+    double _pdf_fn(double x, double dof,double *lnpdf){
+        double logans;
+        logans=-0.5*x+(0.5*dof-1.0)*log(x)-_fix;
+
+        lnpdf[0]=logans;
+        return exp(logans);
+    }
+
+    double maximum_likelihood_chisquared_value(double dof){
+        _fix=0.0;
+        double x,lnpdf,pdf,maxpdf,x_max;
+        maxpdf=-1.0;
+        for(x=0.0;x<dof+1000.0;x+=1.0){
+            pdf=_pdf_fn(x,dof,&lnpdf);
+            if(pdf>maxpdf){
+                maxpdf=pdf;
+                x_max=x;
+            }
+        }
+
+        return x;
+    }
+
+    double confidence_limit(double dof, double pct){
+        _fix=0.0;
+
+        double x,pdf,pdfold,xold,total,lim,ans,lnpdf;
+        double maxf,maxx,lmax=-1.0e10;
+        double start,step,stop,target;
+        double x1,x2;
+
+        maxf=-1.0e20;
+
+        target=-1.0;
+
+        start=1.0e-10;
+        stop=dof+1000.0;
+        step=dof*0.01;
+
+        xold=0.0;
+        pdfold=0.0;
+        total=0.0;
+
+        _fix=0.0;
+        for(x=start;x<stop;x+=step){
+            pdf=_pdf_fn(x,dof,&lnpdf);
+            if(lnpdf>lmax)lmax=lnpdf;
+        }
+        _fix=lmax;
+
+        lmax=-1.0e10;
+
+        for(x=start;x<stop;x+=step){
+            pdf=_pdf_fn(x,dof,&lnpdf);
+            if(lnpdf>lmax){
+                maxf=pdf;
+                maxx=x;
+                lmax=lnpdf;
+            }
+            total+=0.5*(pdf+pdfold)*(x-xold);
+ 
+            xold=x;
+            pdfold=pdf;
+        }
+
+
+        lim=pct*total;
+        ans=0.0;
+        xold=start;
+
+        pdfold=0.0;
+        for(x=start;ans<lim;x+=step){
+            pdf=_pdf_fn(x,dof,&lnpdf);
+            ans+=0.5*(pdfold+pdf)*(x-xold);
+            xold=x;
+            pdfold=pdf;
+ 
+        }
+
+        return xold;
+
+}
+
+
+};
 
 #endif

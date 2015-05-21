@@ -30,6 +30,8 @@ public:
     void set_max(array_1d<double>&);
     void set_ddmin(double);
     
+    int could_it_go_lower(double);
+    
     double target();
     double chimin();
     double get_deltachi();
@@ -68,11 +70,16 @@ public:
     int in_bounds(array_1d<double>&);
     int in_bounds(int, double);
 
+    void set_confidence_limit(double);
+    void set_dof(int);
+
     kd_tree* get_tree();
 
 private:
     double _chimin,_deltachi,_target,_ddmin;
+    double _expected_min,_expected_delta,_confidence_limit;
     int _adaptive_target,_seed,_called,_mindex,_iWhere;
+    int _dof;
     
     array_1d<double> _characteristic_length,_range_min,_range_max,_fn;
     
@@ -85,6 +92,8 @@ private:
     
     array_1d<double> _valid_dd;
     array_1d<int> _valid_neigh,_ct_where,_where_log;
+
+    chisquared_distribution _distribution;
 };
 
 #endif

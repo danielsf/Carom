@@ -36,12 +36,16 @@ public:
     int get_called();
     int active_nodes();
     
+    void set_confidence_limit(double);
+    void set_dof(int);
+    
 private:
 
     chisq_wrapper _chifn;
     arrayOfNodes _nodes;
     int _write_every,_last_written;
     int _ct_simplex,_ct_node,_calls_to_simplex;
+    
     double _time_started;
     
     char _outname[letters],_timingname[letters];

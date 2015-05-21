@@ -494,6 +494,7 @@ arrayOfChains::arrayOfChains(){
     _data=NULL;
     _n_chains=0;
     _dim=0;
+    _chisq_guess=-1.0;
 
 }
 
@@ -508,11 +509,16 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     _independent_samples.set_name("arrayOfChains_independent_samples");
     _independent_sample_weights.set_name("arrayOfChains_independent_sample_weights");
     
+    _contour_maxes.set_name("arrayOfChains_contour_maxes");
+    _contour_mins.set_name("arrayOfChains_contour_mins");
+    
     int i;
     for(i=0;i<_n_chains;i++){
         _data[i].set_dim(_dim);
         _data[i].set_dice(_dice);
     }
+    
+    _chisq_guess=-1.0;
     
 }
 
@@ -1039,6 +1045,8 @@ void arrayOfChains::plot_chisquared_histogram(int limit, double min, double max,
         counts.add(0);
     }
     
+    printf("in histogram limit %d\n",limit);
+    
     globalTotal=0;
     for(iChain=0;iChain<_n_chains;iChain++){
         total=0;
@@ -1077,6 +1085,77 @@ void arrayOfChains::plot_chisquared_histogram(int limit, double min, double max,
 
 }
 
+double arrayOfChains::get_chimin(){
+    int i,j;
+    double chimin=2.0*exception_value;
+    for(i=0;i<_n_chains;i++){
+        for(j=0;j<_data[i].get_rows();j++){
+            if(_data[i].get_chisquared(j)<chimin){
+                chimin=_data[i].get_chisquared(j);
+            }
+        }
+    }
+    
+    return chimin;
+}
+
+void arrayOfChains::_get_contour_bounds(){
+    if(_independent_samples.get_rows()==0){
+        printf("WARNING cannot get contour bounds; need full independent samples\n");
+        exit(1);
+    }
+    array_1d<double> chisq_list,chisq_list_sorted;
+    array_1d<int> dexes;
+    
+    _contour_mins.reset();
+    _contour_maxes.reset();
+    
+    chisq_list.set_name("arrayOfChains_get_chisq_guess_chisq_list");
+    chisq_list_sorted.set_name("arrayOfChains_get_chisq_guess_sorted");
+    dexes.set_name("arrayOfChains_get_chisq_guess_dexes");
+    
+    int i,j,dex;
+    
+    for(i=0;i<_dim;i++){
+        _contour_maxes.set(i,-2.0*exception_value);
+        _contour_mins.set(i,2.0*exception_value);
+    }
+    
+    double total,mu;
+    
+    total=0.0;
+    dex=0;
+    for(i=0;i<_independent_sample_dexes.get_rows();i++){
+        for(j=0;j<_independent_sample_dexes.get_cols(i);j++){
+            dexes.add(dex);
+            mu=_data[i].get_chisquared(_independent_sample_dexes.get_data(i,j));
+            total+=exp(-0.5*mu)*_independent_sample_weights.get_data(dex);
+            chisq_list.add(mu);
+            dex++;
+        }
+    }
+
+    sort_and_check(chisq_list,chisq_list_sorted,dexes);
+    double sum;
+    int ix;
+    sum=0.0;
+    for(i=0;i<chisq_list_sorted.get_dim() && sum<0.68*total;i++){
+        sum+=exp(-0.5*chisq_list_sorted.get_data(i))*_independent_sample_weights.get_data(dexes.get_data(i));
+        
+        dex=dexes.get_data(i);
+        for(ix=0;ix<_dim;ix++){
+            if(_independent_samples.get_data(dex,ix)<_contour_mins.get_data(ix)){
+                _contour_mins.set(ix,_independent_samples.get_data(dex,ix));
+            }
+            
+            if(_independent_samples.get_data(dex,ix)>_contour_maxes.get_data(ix)){
+                _contour_maxes.set(ix,_independent_samples.get_data(dex,ix));
+            }
+        }
+    }
+
+}
+
 void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoot){
     if(_independent_sample_dexes.get_rows()==0){
         printf("WARNING cannot plot contours; no independent samples\n");
@@ -1087,30 +1166,20 @@ void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoo
         _get_full_independent_samples();
     }
     
-    double dx,dy;
-    double xmax,xmin,ymax,ymin;
-    int i;
-    
-    for(i=0;i<_independent_samples.get_rows();i++){
-        if(i==0 || _independent_samples.get_data(i,ix)<xmin){
-            xmin=_independent_samples.get_data(i,ix);
-        }
-        
-        if(i==0 || _independent_samples.get_data(i,ix)>xmax){
-            xmax=_independent_samples.get_data(i,ix);
-        }
-        
-        if(i==0 || _independent_samples.get_data(i,iy)<ymin){
-            ymin=_independent_samples.get_data(i,iy);
-        }
-        
-        if(i==0 || _independent_samples.get_data(i,iy)>ymax){
-            ymax=_independent_samples.get_data(i,iy);
-        }
+    if(_contour_maxes.get_dim()==0){
+        _get_contour_bounds();
     }
     
-    dx=(xmax-xmin)/100.0;
-    dy=(ymax-ymin)/100.0;
+    double dx,dy;
+    double xmax,xmin,ymax,ymin;
+    int i,j,dex;
+    
+    
+    
+    dx=(_contour_maxes.get_data(ix)-_contour_mins.get_data(ix))/200.0;
+    dy=(_contour_maxes.get_data(iy)-_contour_mins.get_data(iy))/200.0;
+    
+    printf("printing %d %e %d %e\n",ix,dx,iy,dy);
     
     char boundaryName[2*letters],scatterName[2*letters];
     sprintf(boundaryName,"%s_%d_%d_contour.txt",nameRoot,ix,iy);

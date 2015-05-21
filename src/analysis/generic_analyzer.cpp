@@ -22,27 +22,59 @@ for(i=0;i<120;i++){
 
 char inputName[letters],word[letters],outputRoot[letters];
 
+array_1d<int> xdexes,ydexes;
+xdexes.set_name("xdexes");
+ydexes.set_name("ydexes");
+
 int dim,ncenters,limit=-1;
 double target_chi;
 
 dim=22;
 target_chi=33.93;
 
-for(i=0;i<letters-1 && argv[1][i]!=0;i++){
-    inputName[i]=argv[1][i];
+
+for(i=1;i<iargc;i++){
+    if(argv[i][0]=='-'){
+        switch(argv[i][1]){
+            case 'h':
+                printf("d = dim\nc = chisq\nl = limit\n");
+                printf("o = output\ni = input\nx = xdexes\n");
+                exit(1);
+            case 'd':
+                i++;
+                dim=atoi(argv[i]);
+                break;
+            case 'c':
+                i++;
+                target_chi=atof(argv[i]);
+                break;
+            case 'l':
+                i++;
+                limit=atoi(argv[i]);
+                break;
+            case 'o':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    outputRoot[j]=argv[i][j];
+                }
+                outputRoot[j]=0;
+                break;
+            case 'i':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    inputName[j]=argv[i][j];
+                }
+                inputName[j]=0;
+                break;
+            case 'x':
+                i++;
+                xdexes.add(atoi(argv[i]));
+                i++;
+                ydexes.add(atoi(argv[i]));
+                break;
+        }
+    }
 }
-inputName[i]=0;
-
-printf("inputName %s\n",inputName);
-
-for(i=0;i<letters-1 && argv[2][i]!=0;i++){
-    outputRoot[i]=argv[2][i];
-}
-outputRoot[i]=0;
-
-if(iargc>3)dim=atoi(argv[3]);
-if(iargc>4)target_chi=atof(argv[4]);
-if(iargc>5)limit=atoi(argv[5]);
 
 
 array_2d<double> data;
@@ -74,6 +106,10 @@ double chi_min=2.0*exception_value;
 int ct=0;
 
 input=fopen(inputName,"r");
+if(input==NULL){
+    printf("\nWARNING could not open %s\n\n",inputName);
+    exit(1);
+}
 for(i=0;i<dim+5;i++){
     fscanf(input,"%s",word);
 }
@@ -136,12 +172,15 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
         hptr=&ricochetHist;
     }
     else{
-        printf("WARNING ling %d\n",j);
+        hptr=NULL;
     }
     
-    for(i=hdex;i<hptr->get_dim();i++){
-        hptr->add_val(i,1);
+    if(hptr!=NULL){
+        for(i=hdex;i<hptr->get_dim();i++){
+            hptr->add_val(i,1);
+        }
     }
+    
     for(i=hdex;i<totalHist.get_dim();i++){
         totalHist.add_val(i,1);
     }
@@ -169,6 +208,8 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
 
 fclose(input);
 
+printf("read in everything\n");
+
 aps_extractor apsExtractor;
 apsExtractor.set_filename(inputName);
 apsExtractor.set_target(target_chi);
@@ -177,15 +218,25 @@ if(limit>0)apsExtractor.set_cutoff(limit);
 char outname[letters];
 int ix,iy;
 
-
-for(ix=0;ix<dim;ix++){
-    for(iy=ix+1;iy<dim;iy++){
-        sprintf(outname,"%s_%d_%d_frequentist.sav",outputRoot,ix,iy);
-        apsExtractor.write_good_points(outname,ix,iy);
-        
-        //sprintf(outname,"%s_%d_%d_bayesian.sav",outputRoot,ix.get_data(i),iy.get_data(i));
-        //apsExtractor.draw_bayesian_bounds(outname,ix.get_data(i),iy.get_data(i),0.95);
+if(xdexes.get_dim()==0){
+    for(ix=0;ix<dim;ix++){
+        for(iy=ix+1;iy<dim;iy++){
+            xdexes.add(ix);
+            ydexes.add(iy);
+        }
     }
+}
+
+for(i=0;i<xdexes.get_dim();i++){
+    ix=xdexes.get_data(i);
+    iy=ydexes.get_data(i);
+
+    sprintf(outname,"%s_%d_%d_frequentist.sav",outputRoot,ix,iy);
+    apsExtractor.write_good_points(outname,ix,iy);
+        
+    //sprintf(outname,"%s_%d_%d_bayesian.sav",outputRoot,ix.get_data(i),iy.get_data(i));
+    //apsExtractor.draw_bayesian_bounds(outname,ix.get_data(i),iy.get_data(i),0.95);
+
 }
 
 sprintf(outname,"%s_good.sav",outputRoot);
@@ -218,6 +269,7 @@ fclose(output);
 double volume=1.0;
 for(i=0;i<dim;i++){
     volume*=xmax.get_data(i)-xmin.get_data(i);
+    printf("%d %e %e\n",i,xmin.get_data(i),xmax.get_data(i));
 }
 
 printf("volume %e \n",volume);

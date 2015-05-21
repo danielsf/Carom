@@ -16,6 +16,14 @@ carom::~carom(){
 
 }
 
+void carom::set_dof(int dd){
+    _chifn.set_dof(dd);
+}
+
+void carom::set_confidence_limit(double cc){
+    _chifn.set_confidence_limit(cc);
+}
+
 void carom::set_seed(int ii){
     _chifn.set_seed(ii);
 }
@@ -120,11 +128,12 @@ void carom::write_pts(){
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim());
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%.4e %.4e %d %d -- dd ",
-        _nodes(i)->projected_volume(),_nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates());
-        for(j=0;j<_chifn.get_dim();j++){
+        fprintf(output,"%.4e %.4e %d %d -- kicks %d %d ",
+        _nodes(i)->projected_volume(),_nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates(),
+        _nodes(i)->get_failed_kicks(),_nodes(i)->get_successful_kicks());
+        /*for(j=0;j<_chifn.get_dim();j++){
             fprintf(output,"%.4e ",_nodes(i)->distance_traveled(j));
-        }
+        }*/
         fprintf(output,"; ");
     }
     
@@ -227,7 +236,8 @@ void carom::search(int limit){
     int active_nodes=0,goon=1,dosimplex;
     
     while(goon==1){        
-        if(_calls_to_simplex>2*_nodes.get_dim() && _calls_to_simplex>_nodes.get_dim()+1){
+        if(_calls_to_simplex>_nodes.get_dim()+2 &&
+           _nodes.get_dim()>0){
             dosimplex=0;
         }
         else{
@@ -263,7 +273,9 @@ void carom::search(int limit){
             _ct_node+=_nodes(i)->get_ct_ricochet();
         }
         
-        if(active_nodes==0 && _calls_to_simplex>2*_nodes.get_dim() && _calls_to_simplex>_nodes.get_dim()+1){
+        if(active_nodes==0 && 
+           _calls_to_simplex>_nodes.get_dim()+2 &&
+           _nodes.get_dim()>0){
             goon=0;
             write_pts();
         }
@@ -293,20 +305,21 @@ void carom::assess_node(int dex){
         return;
     }
     
-    int keep_it,i,ix,iFound;
+    int keep_it,i,ix,iFound,isAssociate;
     double ftrial;
     array_1d<double> trial;
     trial.set_name("carom_assess_node_trial");
     
     keep_it=1;
     for(ix=0;ix<_nodes.get_dim() && keep_it==1;ix++){
-        for(i=0;i<_chifn.get_dim();i++){
-            trial.set(i,0.5*_chifn.get_pt(dex,i)+0.5*_chifn.get_pt(_nodes(ix)->get_center(),i));
-        }
-        _chifn.evaluate(trial,&ftrial,&iFound);
-        if(ftrial<_chifn.target()){
+        
+        isAssociate=_nodes(ix)->is_this_an_associate(dex);
+        
+        if(isAssociate==1){
             keep_it=0;
-            
+        }
+        
+        if(keep_it==0){   
             if(_chifn.get_fn(dex)<_chifn.get_fn(_nodes(ix)->get_center())){
                 _nodes(ix)->set_center(dex);
             }

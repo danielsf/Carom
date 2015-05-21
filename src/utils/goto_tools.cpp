@@ -4,6 +4,15 @@
 #include <time.h>
 #include "goto_tools.h"
 
+
+void transcribe(char *w1, char *w2){
+    int i;
+    for(i=0;i<letters-1 && w1[i]!=0;i++){
+        w2[i]=w1[i];
+    }
+    w2[i]=0;
+}
+
 double normal_deviate(Ran *chaos, double mu, double sig){
  
  int i;

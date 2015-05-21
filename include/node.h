@@ -36,17 +36,25 @@ public:
     void recalibrate_projected_max_min();
     void print_ricochet_discoveries(char*);
     
+    int is_this_an_associate(int);
+    
+    int get_failed_kicks();
+    int get_successful_kicks();
+    
 private:
     int _centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
     double _chimin,_chimin_bases,_bisection_tolerance;
     
+    int _failed_kicks,_successful_kicks;
+    
     double _min_basis_error;
     int _since_expansion,_min_basis_error_changed;
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;
+    array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
     array_1d<double> _max_found,_min_found,_distance_traveled;
@@ -55,7 +63,9 @@ private:
     
     array_2d<double> _ricochet_velocities;
     array_1d<int> _ricochet_particles;
+    array_1d<int> _ricochet_origins;
     array_1d<int> _ricochet_strikes;
+    array_1d<int> _boundary_points;
     
     asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
     array_1d<int> _ricochet_discovery_dexes;
@@ -74,6 +84,7 @@ private:
     void guess_bases(array_2d<double>&);
     void validate_bases(array_2d<double>&, char*);
     void initialize();
+    void add_to_boundary(int);
     
     void is_it_safe(char*);
     
@@ -87,10 +98,9 @@ private:
     
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
+    int t_kick(int,array_1d<double>&);
     int smart_step_kick(int, double, array_1d<double>&);
-    int gradient_kick(int,array_1d<double>&);
-    int random_kick(int,array_1d<double>&);
-    void origin_kick(int, array_1d<double>&);
+    void originate_particle(int, array_1d<double>&);
     
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);
