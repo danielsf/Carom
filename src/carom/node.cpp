@@ -1156,9 +1156,20 @@ void node::compass_search(){
                     
                     fhigh=_chisquared->get_fn(iFound);
                     iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
-                    
+
                     if(iFound>=0){
                         _basis_associates.add(iFound);
+
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                            highball.set(i,_chisquared->get_pt(iFound,i));
+                        }
+                        fhigh=_chisquared->get_fn(iFound);
+                        iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+fhigh));
+                        if(iFound>=0){
+                            _basis_associates.add(iFound);
+                        }
+
                     }
                     
                 }
