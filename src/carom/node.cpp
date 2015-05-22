@@ -1067,6 +1067,7 @@ void node::compass_search(){
     is_it_safe("compass_search");
     _compass_points.reset();
     _chisquared->set_iWhere(iCompass);
+    _basis_associates.reset();
     
     int ibefore=_chisquared->get_called();
     
