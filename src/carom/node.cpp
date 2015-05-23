@@ -1787,23 +1787,9 @@ void node::recalibrate_projected_max_min(){
     projected.set_name("node_recalibrate_projected");
     int i,j;
     
-    array_1d<int> to_use;
-    to_use.set_name("node_recalibrate_to_use");
     
-    for(i=0;i<_compass_points.get_dim();i++){
-        to_use.add(_compass_points.get_data(i));
-    }
-    
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        to_use.add(_ricochet_candidates.get_data(i));
-    }
-    
-    for(i=0;i<_boundary_points.get_dim();i++){
-        to_use.add(_boundary_points.get_data(i));
-    }
-    
-    for(i=0;i<to_use.get_dim();i++){
-        project_to_bases(_chisquared->get_pt(to_use.get_data(i))[0],projected);
+    for(i=0;i<_associates.get_dim();i++){
+        project_to_bases(_chisquared->get_pt(_associates.get_data(i))[0],projected);
         for(j=0;j<_chisquared->get_dim();j++){
             if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
                 _projected_min.set(j,projected.get_data(j));
