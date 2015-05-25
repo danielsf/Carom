@@ -816,7 +816,16 @@ void node::node_gradient(int dex, array_1d<double> &grad){
 
 }
 
-int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &highball, double fhigh, int doSlope){
+int node::bisection(array_1d<double> &ll, double fl,
+                    array_1d<double> &hh, double fh,
+                    int doSlope){
+
+        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target());
+}
+
+int node::bisection(array_1d<double> &lowball, double flow,
+                    array_1d<double> &highball, double fhigh,
+                    int doSlope, double target_value){
 
     is_it_safe("bisection");
     
@@ -841,10 +850,10 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
     
     ct=0;
     iout=-1;
-    while(ct<100 && (took_a_step==0 || _chisquared->target()-flow>threshold)){
+    while(ct<100 && (took_a_step==0 || target_value-flow>threshold)){
         
         if(doSlope==1){
-            wgt=(fhigh-_chisquared->target())/(fhigh-flow);
+            wgt=(fhigh-target_value)/(fhigh-flow);
             if(wgt<0.1)wgt=0.1;
             else if(wgt>0.9)wgt=0.9;
         }
@@ -857,7 +866,7 @@ int node::bisection(array_1d<double> &lowball, double flow, array_1d<double> &hi
         }
         
         evaluate(trial,&ftrial,&i);
-        if(ftrial<_chisquared->target()){
+        if(ftrial<target_value){
             flow=ftrial;
             if(i>=0)iout=i;
             for(i=0;i<_chisquared->get_dim();i++){
@@ -1058,6 +1067,7 @@ void node::compass_search(){
     is_it_safe("compass_search");
     _compass_points.reset();
     _chisquared->set_iWhere(iCompass);
+    _basis_associates.reset();
     
     int ibefore=_chisquared->get_called();
     
@@ -1137,22 +1147,33 @@ void node::compass_search(){
                 add_to_boundary(iFound);
                 _compass_points.add(iFound);
                 _ricochet_candidates.add(iFound);
-                j=iFound;
-                for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
+                
+                if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                        highball.set(i,_chisquared->get_pt(iFound,i));
+                    }
+                    
+                    fhigh=_chisquared->get_fn(iFound);
+                    iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+
+                    if(iFound>=0){
+                        _basis_associates.add(iFound);
+
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                            highball.set(i,_chisquared->get_pt(iFound,i));
+                        }
+                        fhigh=_chisquared->get_fn(iFound);
+                        iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+fhigh));
+                        if(iFound>=0){
+                            _basis_associates.add(iFound);
+                        }
+
+                    }
+                    
                 }
-                evaluate(trial,&ftrial,&iFound);
-                if(iFound>=0){
-                    _basis_associates.add(iFound);
-                }
-            
-                for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,0.75*_chisquared->get_pt(_centerdex,i)+0.25*_chisquared->get_pt(j,i));
-                }
-                evaluate(trial,&ftrial,&iFound);
-                if(iFound>=0){
-                    _basis_associates.add(iFound);
-                }
+                
             }
             
         }
@@ -1310,12 +1331,18 @@ void node::compass_off_diagonal(){
                         add_to_boundary(iFound);
                         _compass_points.add(iFound);
                         _ricochet_candidates.add(iFound);
-                        for(i=0;i<_chisquared->get_dim();i++){
-                            trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iFound,i)));
-                        }
-                        evaluate(trial,&ftrial,&iFound);
-                        if(iFound>=0){
-                            _basis_associates.add(iFound);
+                        if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
+                            for(i=0;i<_chisquared->get_dim();i++){
+                                lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                                highball.set(i,_chisquared->get_pt(iFound,i));
+                            }
+                            
+                            fhigh=_chisquared->get_fn(iFound);
+                            iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                            if(iFound>=0){
+                                _basis_associates.add(iFound);
+                            }
+                        
                         }
                     }
                     
@@ -1760,23 +1787,9 @@ void node::recalibrate_projected_max_min(){
     projected.set_name("node_recalibrate_projected");
     int i,j;
     
-    array_1d<int> to_use;
-    to_use.set_name("node_recalibrate_to_use");
     
-    for(i=0;i<_compass_points.get_dim();i++){
-        to_use.add(_compass_points.get_data(i));
-    }
-    
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        to_use.add(_ricochet_candidates.get_data(i));
-    }
-    
-    for(i=0;i<_boundary_points.get_dim();i++){
-        to_use.add(_boundary_points.get_data(i));
-    }
-    
-    for(i=0;i<to_use.get_dim();i++){
-        project_to_bases(_chisquared->get_pt(to_use.get_data(i))[0],projected);
+    for(i=0;i<_associates.get_dim();i++){
+        project_to_bases(_chisquared->get_pt(_associates.get_data(i))[0],projected);
         for(j=0;j<_chisquared->get_dim();j++){
             if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
                 _projected_min.set(j,projected.get_data(j));
@@ -1794,6 +1807,11 @@ void node::find_bases(){
     
     if(_basis_associates.get_dim()==0){
         compass_search();
+    }
+    
+    if(_basis_associates.get_dim()==0){
+        printf("WARNING cannot find bases; no associates\n");
+        return;
     }
     
     _chimin_bases=_chimin;
