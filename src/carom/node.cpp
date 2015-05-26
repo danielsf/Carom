@@ -1067,7 +1067,6 @@ void node::compass_search(){
     is_it_safe("compass_search");
     _compass_points.reset();
     _chisquared->set_iWhere(iCompass);
-    _basis_associates.reset();
     
     int ibefore=_chisquared->get_called();
     
@@ -1804,6 +1803,10 @@ void node::recalibrate_projected_max_min(){
 
 void node::find_bases(){
     is_it_safe("find_bases");
+    
+    if(_centerdex_basis<0 || node_distance(_centerdex_basis,_centerdex)>0.01){
+        _basis_associates.reset();
+    }
     
     if(_basis_associates.get_dim()==0){
         compass_search();
