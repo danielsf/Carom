@@ -45,7 +45,7 @@ private:
     int _centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
-    double _chimin,_chimin_bases,_bisection_tolerance;
+    double _chimin,_chimin_bases;
     
     int _failed_kicks,_successful_kicks;
     
@@ -76,7 +76,7 @@ private:
     chisq_wrapper *_chisquared;
     
     int bisection(array_1d<double>&,double,array_1d<double>&,double,int);
-    int bisection(array_1d<double>&,double,array_1d<double>&,double,int,double);
+    int bisection(array_1d<double>&,double,array_1d<double>&,double,int,double,double);
     
     void perturb_bases(int,array_1d<double>&,array_2d<double>&);
     double basis_error(array_2d<double>&,array_1d<double>&);

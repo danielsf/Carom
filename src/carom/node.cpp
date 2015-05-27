@@ -24,7 +24,6 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _centerdex_basis=-1;
-    _bisection_tolerance=0.01;
     _min_changed=0;
     _active=1;
     _found_bases=0;
@@ -820,12 +819,12 @@ int node::bisection(array_1d<double> &ll, double fl,
                     array_1d<double> &hh, double fh,
                     int doSlope){
 
-        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target());
+        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target(),0.01);
 }
 
 int node::bisection(array_1d<double> &lowball, double flow,
                     array_1d<double> &highball, double fhigh,
-                    int doSlope, double target_value){
+                    int doSlope, double target_value, double tolerance){
 
     is_it_safe("bisection");
     
@@ -839,10 +838,10 @@ int node::bisection(array_1d<double> &lowball, double flow,
     trial.set_name("node_bisection_trial");
     
     if(_chisquared->get_deltachi()<0.0){
-        threshold=_bisection_tolerance;
+        threshold=tolerance;
     }
     else{
-        threshold=_bisection_tolerance*_chisquared->get_deltachi();
+        threshold=tolerance*_chisquared->get_deltachi();
     }
     
     int took_a_step=0,ct,i,iout;
@@ -1154,7 +1153,7 @@ void node::compass_search(){
                     }
                     
                     fhigh=_chisquared->get_fn(iFound);
-                    iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                    iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()),0.1);
 
                     if(iFound>=0){
                         _basis_associates.add(iFound);
@@ -1164,7 +1163,7 @@ void node::compass_search(){
                             highball.set(i,_chisquared->get_pt(iFound,i));
                         }
                         fhigh=_chisquared->get_fn(iFound);
-                        iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+fhigh));
+                        iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+fhigh),0.1);
                         if(iFound>=0){
                             _basis_associates.add(iFound);
                         }
@@ -1337,7 +1336,7 @@ void node::compass_off_diagonal(){
                             }
                             
                             fhigh=_chisquared->get_fn(iFound);
-                            iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                            iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()),0.1);
                             if(iFound>=0){
                                 _basis_associates.add(iFound);
                             }
