@@ -1147,7 +1147,7 @@ void node::compass_search(){
                     
                     fhigh=_chisquared->get_fn(iFound);
                     bisection_target=0.5*(_chimin+_chisquared->target());
-                    iFound=bisection(lowball,_chimin,highball,fhigh,0,bisection_target,0.1*(bisection_target-_chimin));
+                    iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
 
                     if(iFound>=0){
                         _basis_associates.add(iFound);
@@ -1158,7 +1158,7 @@ void node::compass_search(){
                         }
                         fhigh=_chisquared->get_fn(iFound);
                         bisection_target=0.5*(_chimin+fhigh);
-                        iFound=bisection(lowball,_chimin,highball,fhigh,0,bisection_target,0.1*(bisection_target-_chimin));
+                        iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
                         if(iFound>=0){
                             _basis_associates.add(iFound);
                         }
@@ -1332,7 +1332,7 @@ void node::compass_off_diagonal(){
                             
                             fhigh=_chisquared->get_fn(iFound);
                             bisection_target=0.5*(_chimin+_chisquared->target());
-                            iFound=bisection(lowball,_chimin,highball,fhigh,0,bisection_target,0.1*(bisection_target-_chimin));
+                            iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
                             if(iFound>=0){
                                 _basis_associates.add(iFound);
                             }
