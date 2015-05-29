@@ -425,6 +425,7 @@ public:
 private:
     array_1d<double> curvature_center,radial_direction;
     double curvature_radius;
+    int _true_dim;
 
 };
 
