@@ -24,7 +24,6 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _centerdex_basis=-1;
-    _bisection_tolerance=0.01;
     _min_changed=0;
     _active=1;
     _found_bases=0;
@@ -820,12 +819,12 @@ int node::bisection(array_1d<double> &ll, double fl,
                     array_1d<double> &hh, double fh,
                     int doSlope){
 
-        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target());
+        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
 }
 
 int node::bisection(array_1d<double> &lowball, double flow,
                     array_1d<double> &highball, double fhigh,
-                    int doSlope, double target_value){
+                    int doSlope, double target_value, double tolerance){
 
     is_it_safe("bisection");
     
@@ -834,23 +833,16 @@ int node::bisection(array_1d<double> &lowball, double flow,
         exit(1);
     }
     
-    double ftrial,threshold;
+    double ftrial;
     array_1d<double> trial;
     trial.set_name("node_bisection_trial");
-    
-    if(_chisquared->get_deltachi()<0.0){
-        threshold=_bisection_tolerance;
-    }
-    else{
-        threshold=_bisection_tolerance*_chisquared->get_deltachi();
-    }
-    
+ 
     int took_a_step=0,ct,i,iout;
     double wgt;
     
     ct=0;
     iout=-1;
-    while(ct<100 && (took_a_step==0 || target_value-flow>threshold)){
+    while(ct<100 && (took_a_step==0 || target_value-flow>tolerance)){
         
         if(doSlope==1){
             wgt=(fhigh-target_value)/(fhigh-flow);
@@ -1071,7 +1063,7 @@ void node::compass_search(){
     int ibefore=_chisquared->get_called();
     
     int ix,i,j,iFound;
-    double sgn,flow,fhigh,dx,ftrial,step;
+    double sgn,flow,fhigh,dx,ftrial,step,bisection_target;
     double blength;
     array_1d<double> lowball,highball,trial;
     
@@ -1154,7 +1146,8 @@ void node::compass_search(){
                     }
                     
                     fhigh=_chisquared->get_fn(iFound);
-                    iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                    bisection_target=0.5*(_chimin+_chisquared->target());
+                    iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
 
                     if(iFound>=0){
                         _basis_associates.add(iFound);
@@ -1164,7 +1157,8 @@ void node::compass_search(){
                             highball.set(i,_chisquared->get_pt(iFound,i));
                         }
                         fhigh=_chisquared->get_fn(iFound);
-                        iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+fhigh));
+                        bisection_target=0.5*(_chimin+fhigh);
+                        iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
                         if(iFound>=0){
                             _basis_associates.add(iFound);
                         }
@@ -1195,7 +1189,7 @@ void node::compass_off_diagonal(){
     highball.set_name("node_off_diag_highball");
     dir.set_name("node_off_diag_dir");
     
-    double dx,dy,dmin,step;
+    double dx,dy,dmin,step,bisection_target;
     double flow,fhigh,ftrial,mu;
     int i,j,k,iFound;
     int nGuessHigh=0,nGuessLow=0,isHigh;
@@ -1337,7 +1331,8 @@ void node::compass_off_diagonal(){
                             }
                             
                             fhigh=_chisquared->get_fn(iFound);
-                            iFound=bisection(lowball,_chimin,highball,fhigh,0,0.5*(_chimin+_chisquared->target()));
+                            bisection_target=0.5*(_chimin+_chisquared->target());
+                            iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
                             if(iFound>=0){
                                 _basis_associates.add(iFound);
                             }
