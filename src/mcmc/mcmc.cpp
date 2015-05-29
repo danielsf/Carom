@@ -377,6 +377,9 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     
     simplex_minimizer f_min;
     f_min.set_chisquared(_chisq);
+    f_min.set_minmax(min,max);
+    f_min.set_dice(_dice);
+    f_min.use_gradient();
     f_min.find_minimum(seed, center);
     fcenter=f_min.get_minimum();
     minOut[0]=fcenter;
