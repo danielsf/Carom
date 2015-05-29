@@ -70,19 +70,36 @@ void kde::initialize_density(int ix1_in, double dx1_in,
     
     i_grid.set_cols(2);
     
-    int dex_map_dim=200;
+    int out_of_bounds=0,x_max=-1,x_min=10000,y_max=-1,y_min=10000;
+    int dex_map_dim=400;
+
+    int i,j,xc,yc,x,y;
+    
+    array_1d<double> trial;
+    trial.set_name("kde_initialize_trial");
+    trial.set_dim(data[0](0)->get_dim());
+    trial.set(ix1,max.get_data(ix1));
+    trial.set(ix2,max.get_data(ix2));
+    
+    dex_map_dim=get_dex(trial,ix1,dx1);
+    i=get_dex(trial,ix2,dx2);
+    if(i>dex_map_dim)dex_map_dim=i;
+    
+    if(dex_map_dim>500)dex_map_dim=500;
+    
     array_2d<int> dex_map;
     dex_map.set_dim(dex_map_dim,dex_map_dim);
     dex_map.set_name("kde_initialize_density_dex_map");
     
-    int i,j,xc,yc,x,y;
     
     for(i=0;i<dex_map_dim;i++){
         for(j=0;j<dex_map_dim;j++){
             dex_map.set(i,j,-1);
         }
     }
-    
+    temp_grid_wgt.add_room(dex_map_dim*dex_map_dim);
+    i_grid.set_dim(dex_map_dim*dex_map_dim,2);
+    i_grid.reset_preserving_room();
     
     double ww;
     double began=double(time(NULL));
@@ -90,9 +107,10 @@ void kde::initialize_density(int ix1_in, double dx1_in,
         xc=get_dex(*data[0](i),ix1,dx1);
         yc=get_dex(*data[0](i),ix2,dx2);
         
-        if(i%1000==0){
-            printf("row %d of %d %e\n",i,data->get_rows(),double(time(NULL))-began);
-        }
+        /*if(i%1000==0){
+            printf("row %d of %d %e %d\n",i,data->get_rows(),double(time(NULL))-began,out_of_bounds);
+            printf("%d %d %d %d\n",x_min,x_max,y_min,y_max);
+        }*/
         
         for(x=xc-3*smoothby;x<=xc+3*smoothby;x++){
             for(y=yc-3*smoothby;y<=yc+3*smoothby;y++){
@@ -111,10 +129,15 @@ void kde::initialize_density(int ix1_in, double dx1_in,
                     }
                 }
                 else{
-                
+                    out_of_bounds++;
                     for(j=0;j<i_grid.get_rows() && 
                         (i_grid.get_data(j,0)!=x || i_grid.get_data(j,1)!=y);j++);
                 }
+                
+                if(x<x_min)x_min=x;
+                if(x>x_max)x_max=x;
+                if(y<y_min)y_min=y;
+                if(y>y_max)y_max=y;
                 
                 if(j<i_grid.get_rows() && i_grid.get_data(j,0)==x && 
                         i_grid.get_data(j,1)==y){

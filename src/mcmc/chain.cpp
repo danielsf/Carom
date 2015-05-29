@@ -1187,8 +1187,8 @@ void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoo
     
     
     
-    _density.plot_density(ix,dx,iy,dy,fraction,scatterName,2);
-    _density.plot_boundary(ix,dx,iy,dy,fraction,boundaryName,2);
+    _density.plot_density(ix,dx,iy,dy,fraction,scatterName,3);
+    _density.plot_boundary(ix,dx,iy,dy,fraction,boundaryName,3);
     
 }
 
