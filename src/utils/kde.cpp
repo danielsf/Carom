@@ -70,14 +70,28 @@ void kde::initialize_density(int ix1_in, double dx1_in,
     
     i_grid.set_cols(2);
     
+    int dex_map_dim=200;
+    array_2d<int> dex_map;
+    dex_map.set_dim(dex_map_dim,dex_map_dim);
+    dex_map.set_name("kde_initialize_density_dex_map");
+    
     int i,j,xc,yc,x,y;
+    
+    for(i=0;i<dex_map_dim;i++){
+        for(j=0;j<dex_map_dim;j++){
+            dex_map.set(i,j,-1);
+        }
+    }
+    
+    
     double ww;
+    double began=double(time(NULL));
     for(i=0;i<data->get_rows();i++){
         xc=get_dex(*data[0](i),ix1,dx1);
         yc=get_dex(*data[0](i),ix2,dx2);
         
         if(i%1000==0){
-            printf("row %d of %d\n",i,data->get_rows());
+            printf("row %d of %d %e\n",i,data->get_rows(),double(time(NULL))-began);
         }
         
         for(x=xc-3*smoothby;x<=xc+3*smoothby;x++){
@@ -90,9 +104,18 @@ void kde::initialize_density(int ix1_in, double dx1_in,
                     ww=wgt.get_data(i);
                 }
                 
-                for(j=0;j<i_grid.get_rows() && 
+                if(x>=0 && x<dex_map_dim && y>=0 && y<dex_map_dim){
+                    j=dex_map.get_data(x,y);
+                    if(j<0){
+                        j=i_grid.get_rows()+10;
+                    }
+                }
+                else{
+                
+                    for(j=0;j<i_grid.get_rows() && 
                         (i_grid.get_data(j,0)!=x || i_grid.get_data(j,1)!=y);j++);
-        
+                }
+                
                 if(j<i_grid.get_rows() && i_grid.get_data(j,0)==x && 
                         i_grid.get_data(j,1)==y){
             
@@ -103,6 +126,10 @@ void kde::initialize_density(int ix1_in, double dx1_in,
                     i_grid.set(j,0,x);
                     i_grid.set(j,1,y);
                     temp_grid_wgt.set(j,ww);
+                    
+                    if(x>=0 && x<dex_map_dim && y>=0 && y<dex_map_dim){
+                        dex_map.set(x,y,j);
+                    }
                 }
         
                 if(temp_grid_wgt.get_dim()!=i_grid.get_rows()){
