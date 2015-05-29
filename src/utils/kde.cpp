@@ -76,6 +76,10 @@ void kde::initialize_density(int ix1_in, double dx1_in,
         xc=get_dex(*data[0](i),ix1,dx1);
         yc=get_dex(*data[0](i),ix2,dx2);
         
+        if(i%1000==0){
+            printf("row %d of %d\n",i,data->get_rows());
+        }
+        
         for(x=xc-3*smoothby;x<=xc+3*smoothby;x++){
             for(y=yc-3*smoothby;y<=yc+3*smoothby;y++){
                
@@ -110,6 +114,8 @@ void kde::initialize_density(int ix1_in, double dx1_in,
             }
         }
     }
+    
+    printf("time to sort %d\n",temp_grid_wgt.get_dim());
     
     array_1d<int> dexes;
     array_1d<double> sorted_wgt;
