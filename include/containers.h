@@ -246,7 +246,40 @@ public:
     
     /*calculate the Euclidean norm of the array and divide all of the elements thereby.
     Return the calculated norm*/
-    double normalize();
+    inline double normalize(){
+    
+        if(dim<0){
+            printf("WARNING 1d array has dim %d\n",dim);
+            die(-1);
+        }
+    
+        if(dim==0){
+            return 0.0;
+        }
+     
+        double ans;
+        int i;
+        ans=0.0;
+        for(i=0;i<dim;i++){
+            ans+=data[i]*data[i];
+        }
+    
+        if(ans<0.0){
+            printf("WARNING square of norm %e\n",ans);
+        
+            die(-1);
+        }
+    
+        if(ans>0.0){
+            ans=sqrt(ans);
+            for(i=0;i<dim;i++){
+                data[i]=data[i]/ans;
+            }
+        }
+    
+        return ans;
+
+    }
     
     /*return the Euclidean norm of the array without normalizing the array*/
     double get_norm();

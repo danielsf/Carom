@@ -387,41 +387,6 @@ double array_1d<T>::get_norm(){
 
 }
 
-template <typename T>
-double array_1d<T>::normalize(){
-    
-    if(dim<0){
-        printf("WARNING 1d array has dim %d\n",dim);
-        die(-1);
-    }
-    
-    if(dim==0){
-        return 0.0;
-    }
-     
-    double ans;
-    int i;
-    ans=0.0;
-    for(i=0;i<dim;i++){
-        ans+=data[i]*data[i];
-    }
-    
-    if(ans<0.0){
-        printf("WARNING square of norm %e\n",ans);
-        
-        die(-1);
-    }
-    
-    if(ans>0.0){
-        ans=sqrt(ans);
-        for(i=0;i<dim;i++){
-            data[i]=data[i]/ans;
-        }
-    }
-    
-    return ans;
-
-}
 
 template <typename T>
 array_2d<T>::array_2d(){
