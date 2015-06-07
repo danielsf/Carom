@@ -12,7 +12,24 @@ void kill(char*);
 
 double raiseup(double,double);
 
-double power(double,int);
+
+inline double power(double arg,int raised){
+
+  //return arg raised to the integer power 'raised'
+
+  int n;
+  double ans;
+
+  if(raised==0)return 1.0;
+  else{ans=1.0;
+  for(n=0;n<raised;n++){
+    ans=ans*arg;
+  }
+
+  return ans;
+  }
+
+}
 
 void transcribe(char*,char*);
 
