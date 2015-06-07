@@ -2092,10 +2092,9 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
 
 jellyBean::~jellyBean(){}
 
-jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id<=15 ? 15 : id){
+jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
     //ww is a width in radians
     //rr is the radius of curvature
-    
     make_bases(22,0);
     
     int ix,iy;
@@ -2127,6 +2126,8 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id<=15 ? 15 : id
     
     widths.set(0,0,ww*rr);
     
+
+    
     double theta=dice->doub()*2.0*pi;
     double dx,dy;
     
@@ -2156,8 +2157,6 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id<=15 ? 15 : id
     
     radial_direction.normalize();
     
-    _true_dim=id;
-    
 }
 
 void jellyBean::get_curvature_center(array_1d<double> &out){
@@ -2170,22 +2169,16 @@ void jellyBean::get_curvature_center(array_1d<double> &out){
 double jellyBean::operator()(array_1d<double> &pt){
     double before=double(time(NULL));
     array_1d<double> projected_point;
-    array_1d<double> buffer_pt;
     
     projected_point.set_name("jellyBean_operator_projected_point");
     
     int ix;
-    for(ix=0;ix<_true_dim;ix++)buffer_pt.set(ix,pt.get_data(ix));
-    for(;ix<dim;ix++){
-        buffer_pt.set(ix,0.0);
-    }
-    
     for(ix=0;ix<dim;ix++){
-        projected_point.set(ix, project_to_basis(ix,buffer_pt));
+        projected_point.set(ix, project_to_basis(ix,pt));
     }
 
     double chisq=0.0;
-    for(ix=2;ix<_true_dim;ix++){
+    for(ix=2;ix<dim;ix++){
         chisq+=power((centers.get_data(0,ix)-projected_point.get_data(ix))/widths.get_data(0,ix),2);
     }
     
