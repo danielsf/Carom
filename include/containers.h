@@ -92,7 +92,48 @@ public:
     }
     
     /*add an element onto the end of the array*/
-    void add(T);
+    inline void add(T in){
+
+        if(data==NULL && dim>0){
+           printf("dying from add\n");
+           die(0);
+        }
+    
+        if(data==NULL && room>0){
+            printf("dying from add\n");
+            die(0);
+        }
+    
+        if(room==0 && data!=NULL){
+            printf("dying from add\n");
+            die(0);
+        }
+
+
+        if(data==NULL){
+            room=2;
+	    data=new T[room];
+	    dim=0;
+        }
+    
+        T *buffer;
+        int i;
+    
+        if(dim==room){
+            buffer=new T[dim];
+            for(i=0;i<dim;i++)buffer[i]=data[i];
+	    delete [] data;
+            room+=5;
+	    data=new T[room];
+	    for(i=0;i<dim;i++){
+	        data[i]=buffer[i];
+	    }
+	    delete [] buffer;
+        }
+    
+        data[dim]=in;
+        dim++;
+    }
     
     /*set the element of the array specified by the int index to the value T.
     If you try to set an index that is beyond the current size of the array,
@@ -102,7 +143,16 @@ public:
     
     /*add the value T to the element of the array indexed by int, i.e.
     array[int] = array[int] + T*/
-    void add_val(int,T);
+    inline void add_val(int dex, T val){
+    
+        if(dex<0 || dex>=dim){
+            printf("dying from add_val\n");
+            die(dex);
+        }
+    
+        data[dex]+=val;
+    
+    }
     
     /*subtract the value T from the element of the array indexed by int*/
     void subtract_val(int,T);
@@ -307,7 +357,14 @@ public:
     add the provided value to the indexed element, i.e.
     array[int1][int2] = array[int1][int2]+T
     */
-    void add_val(int,int,T);
+    inline void add_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from add_val\n");
+             die(ir,ic);
+        }
+        data[ir].add_val(ic,val);
+    }
     
     /*subtract the provided value from the indexed element*/
     void subtract_val(int,int,T);
@@ -457,12 +514,29 @@ public:
     }
     
     /*add T to the end of the row specified by int*/
-    void add(int,T);
+    inline void add(int dex, T val){
+        int i;
+        if(dex<0){
+            printf("in asymm 2d add\n");
+            die(dex);
+        }
+        else if(dex>=rows){
+            set(dex,0,val);
+        }
+        data[dex].add(val);
+    }  
     
     /*add the value T onto the indexed element, i.e.
     asymm_array[int1][int2] = asymm_array[int1][int2] + T
     */
-    void add_val(int,int,T);
+    inline void add_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d add_val\n");
+	    die(ir);
+        }
+    
+        data[ir].add_val(ic,val);
+    }
     
     /*subtract the value T from the indexed element*/
     void subtract_val(int,int,T);
