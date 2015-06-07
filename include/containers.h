@@ -75,7 +75,21 @@ public:
     T* get_ptr();
     
     /*return the element of the array specified by int*/
-    T get_data(int) const;
+    inline T get_data(int dex) const{
+
+        if(data==NULL){
+            printf("dying from get_data because data is null\n");
+            die(dex);
+        }
+
+        if(dex<0 || dex>=dim){
+            printf("dying from get_data because request makes no sense\n");
+            die(dex);
+        }
+    
+        return data[dex];
+    
+    }
     
     /*add an element onto the end of the array*/
     void add(T);
@@ -241,7 +255,25 @@ public:
     
     /*return the element of the array_2d indexed by the two arguments (rows first, 
     columns second)*/
-    T get_data(int,int) const;
+    inline T get_data(int ir, int ic) const{
+   
+        if(data==NULL){
+            printf("dying from get_data\n");
+            die(ir,ic);
+        }
+        else if(row_room<rows){
+           printf("dying from get_data\n");
+            die(ir,ic);
+        }
+        else if(ir>=rows || ir<0 || ic>=cols || ic<0){
+           printf("dying from get_data\n");
+            die(ir,ic);
+        }
+
+        return data[ir].get_data(ic);
+    
+    }
+
     
     /*set the name member variable (for diagnostic purposes)*/
     void set_name(char*);
@@ -404,7 +436,25 @@ public:
     /*
     Return the indexed element
     */
-    T get_data(int,int) const;
+    inline T get_data(int ir, int ic) const{
+    
+        if(ir<0 || ir>=rows){
+            printf("WARNING asking for asymm 2d data %d %d but rows %d\n",
+	    ir,ic,rows);
+	    die(ir);
+        }
+    
+    
+        try{
+           return data[ir].get_data(ic); 
+        }
+        catch(int iex){
+            printf("tried to get asymm 2d data %d %d\n",ir,ic);
+	    die(ir);
+        }
+
+        return data[ir].get_data(ic);
+    }
     
     /*add T to the end of the row specified by int*/
     void add(int,T);

@@ -441,24 +441,6 @@ int array_1d<T>::get_dim() const{
 }
 
 template <typename T>
-T array_1d<T>::get_data(int dex) const{
-
-    if(data==NULL){
-        printf("dying from get_data because data is null\n");
-        die(dex);
-    }
-
-    if(dex<0 || dex>=dim){
-        printf("dying from get_data because request makes no sense\n");
-        die(dex);
-    }
-    
-    return data[dex];
-    
-}
-
-
-template <typename T>
 double array_1d<T>::get_square_norm(){
     
     if(dim<0){
@@ -1151,27 +1133,6 @@ int array_2d<T>::get_cols() const{
 }
 
 template <typename T>
-T array_2d<T>::get_data(int ir, int ic) const{
-   
-    
-    if(data==NULL){
-        printf("dying from get_data\n");
-        die(ir,ic);
-    }
-    else if(row_room<rows){
-       printf("dying from get_data\n");
-        die(ir,ic);
-    }
-    else if(ir>=rows || ir<0 || ic>=cols || ic<0){
-       printf("dying from get_data\n");
-        die(ir,ic);
-    }
-
-    return data[ir].get_data(ic);
-    
-}
-
-template <typename T>
 array_1d<T>* array_2d<T>::operator()(int dex){
     
     if(dex<0 || dex>=rows){
@@ -1428,27 +1389,6 @@ void asymm_array_2d<T>::set_row(int ir, const array_1d<T> &vv){
     }
     
 
-}
-
-template <typename T>
-T asymm_array_2d<T>::get_data(int ir, int ic) const{
-    
-    if(ir<0 || ir>=rows){
-        printf("WARNING asking for asymm 2d data %d %d but rows %d\n",
-	ir,ic,rows);
-	die(ir);
-    }
-    
-    
-    try{
-       return data[ir].get_data(ic); 
-    }
-    catch(int iex){
-        printf("tried to get asymm 2d data %d %d\n",ir,ic);
-	die(ir);
-    }
-
-    return data[ir].get_data(ic);
 }
 
 template <typename T>
