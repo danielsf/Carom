@@ -184,7 +184,9 @@ public:
     void increment_dim();
     
     /*return the length of the array*/
-    int get_dim() const;
+    inline int get_dim() const{
+        return dim;
+    }
     
     /*set the name of the array, so that, if it causes an exception to be thrown,
     you will know which array threw the exception*/
@@ -384,10 +386,14 @@ public:
     void decrement_rows();
     
     /*return the number of rows*/
-    int get_rows() const;
+    inline int get_rows() const{
+        return rows;
+    }
     
     /*return the number of columns*/
-    int get_cols() const;
+    inline int get_cols() const{
+        return cols;
+    }
     
     /*throw an exception; the arguments are for indicating which element
     the code tried to access when the exception was thrown*/
@@ -550,11 +556,31 @@ public:
     /*replace the indexed row with the provided array_1d*/
     void replace_row(int,array_1d<T>&);
     
-    /*return the number of rows*/
-    int get_rows() const;
+    inline int get_rows() const{
+        return rows;
+    }
+
+    inline int get_cols(int dex) const{
     
-    /*return the number of columns in the row indexed by int*/
-    int get_cols(int) const;
+        if(data==NULL){
+            return 0;
+        
+            //printf("WARNING asking for cols in asymm array 2d\n");
+            //die(dex);
+        }
+    
+        if(dex<0){
+            printf("WARNING asking for cols in asymm array 2d\n");
+            die(dex);
+        }
+    
+        if(dex>=rows){
+            return 0;
+        }
+    
+        return data[dex].get_dim();
+    
+    }
     
     /*throw an exception; the argument indicates the row index being
     called for when the exception was thrown*/

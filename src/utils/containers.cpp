@@ -380,11 +380,6 @@ void array_1d<T>::print_name(){
 }
 
 template <typename T>
-int array_1d<T>::get_dim() const{
-    return dim;
-}
-
-template <typename T>
 double array_1d<T>::get_square_norm(){
     
     if(dim<0){
@@ -1053,15 +1048,6 @@ void array_2d<T>::set_name(char *word){
     
 }
 
-template <typename T>
-int array_2d<T>::get_rows() const{
-    return rows;
-}
-
-template <typename T>
-int array_2d<T>::get_cols() const{
-    return cols;
-}
 
 template <typename T>
 array_1d<T>* array_2d<T>::operator()(int dex){
@@ -1195,34 +1181,6 @@ void asymm_array_2d<T>::set_name(char *word){
             die(0);
         }
     }
-    
-}
-
-template <typename T>
-int asymm_array_2d<T>::get_rows() const{
-    return rows;
-}
-
-template <typename T>
-int asymm_array_2d<T>::get_cols(int dex) const{
-    
-    if(data==NULL){
-        return 0;
-        
-        //printf("WARNING asking for cols in asymm array 2d\n");
-        //die(dex);
-    }
-    
-    if(dex<0){
-        printf("WARNING asking for cols in asymm array 2d\n");
-        die(dex);
-    }
-    
-    if(dex>=rows){
-        return 0;
-    }
-    
-    return data[dex].get_dim();
     
 }
 
