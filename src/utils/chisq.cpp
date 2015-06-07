@@ -2156,7 +2156,7 @@ jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id<=15 ? 15 : id
     
     radial_direction.normalize();
     
-    _active_dim=id;
+    _true_dim=id;
     
 }
 
@@ -2175,7 +2175,7 @@ double jellyBean::operator()(array_1d<double> &pt){
     projected_point.set_name("jellyBean_operator_projected_point");
     
     int ix;
-    for(ix=0;ix<_active_dim;ix++)buffer_pt.set(ix,pt.get_data(ix));
+    for(ix=0;ix<_true_dim;ix++)buffer_pt.set(ix,pt.get_data(ix));
     for(;ix<dim;ix++){
         buffer_pt.set(ix,0.0);
     }
@@ -2185,7 +2185,7 @@ double jellyBean::operator()(array_1d<double> &pt){
     }
 
     double chisq=0.0;
-    for(ix=2;ix<_active_dim;ix++){
+    for(ix=2;ix<_true_dim;ix++){
         chisq+=power((centers.get_data(0,ix)-projected_point.get_data(ix))/widths.get_data(0,ix),2);
     }
     
