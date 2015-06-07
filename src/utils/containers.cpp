@@ -68,18 +68,6 @@ void array_1d<T>::die(int ii) const{
     
 }
 
-template <typename T>
-void array_1d<T>::divide_val(int dex, T val){
-    
-    if(dex<0 || dex>=dim){
-        printf("dying from divide_val\n");
-        die(dex);
-    }
-    
-    data[dex]=data[dex]/val;
-    
-    
-}
 
 template <typename T>
 int array_1d<T>::get_room(){
@@ -811,19 +799,6 @@ void array_2d<T>::set(int ir, int ic, T val){
 }
 
 template <typename T>
-void array_2d<T>::divide_val(int ir, int ic, T val){
-    
-    
-    if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
-        printf("dying from divide_val\n");
-         die(ir,ic);
-    }
-    
-    data[ir].divide_val(ic,val);
-
-}
-
-template <typename T>
 void array_2d<T>::set_row(int dex, array_1d<T> &in){
 
     if(dex<0){
@@ -1287,17 +1262,6 @@ void asymm_array_2d<T>::reset(){
     
 
     
-}
-
-
-template <typename T>
-void asymm_array_2d<T>::divide_val(int ir, int ic, T val){
-    if(ir<0 || ir>=rows){
-        printf("in asymm 2d divide_val\n");
-        die(ir);
-    }
-    
-    data[ir].divide_val(ic,val);
 }
 
 template <typename T>

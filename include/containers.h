@@ -167,7 +167,16 @@ public:
     
     /*divide the element of the array indexed by int by the value T, i.e.
     array[iint] = array[int]/T */
-    void divide_val(int,T);
+    inline void divide_val(int dex, T val){
+    
+        if(dex<0 || dex>=dim){
+            printf("dying from divide_val\n");
+            die(dex);
+        }
+    
+        data[dex]=data[dex]/val;
+    
+    }
     
     /*multiply the element of the array indexed by int by the value T*/
     inline void multiply_val(int dex, T val){
@@ -409,7 +418,16 @@ public:
     }
     
     /*divide the indexed element by the provided value*/
-    void divide_val(int,int,T);
+    inline void divide_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from divide_val\n");
+            die(ir,ic);
+        }
+    
+        data[ir].divide_val(ic,val);
+
+    }
     
     /*reset the contents of the array_2d; name and where_am_i are untouched*/
     void reset();
@@ -589,7 +607,14 @@ public:
     }
     
     /*divide the indexed element by the value T*/
-    void divide_val(int,int,T);
+    inline void divide_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d divide_val\n");
+            die(ir);
+        }
+    
+        data[ir].divide_val(ic,val);
+    }
     
     /*multiply the indexed elmement by the value T*/
     inline void multiply_val(int ir, int ic, T val){
