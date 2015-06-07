@@ -119,26 +119,6 @@ void array_1d<T>::add_room(int ii){
     
 }
 
-
-template <typename T>
-void array_1d<T>::set(int dex, T val){
-   
-    
-    int i;
-    
-    if(dex<0){
-        printf("dying from set with negative dex\n");
-        die(dex);
-    }
-    else if(dex>=dim){
-        for(i=dim;i<dex+1;i++)add(0);
-        set(dex,val);
-    }
-    else{
-        data[dex]=val;
-    } 
-}
-
 template <typename T>
 void array_1d<T>::set_dim(int ii){
     
@@ -726,42 +706,6 @@ void array_2d<T>::set_dim(int ir, int ic){
     
 }
 
-template <typename T>
-void array_2d<T>::set(int ir, int ic, T val){
-    
-    if(ir<0){
-        printf("tried to set to negative row\n");
-        die(ir,ic);
-    }
-    
-    if(ic<0 || ic>=cols){
-        printf("dying from set\n");
-        die(ir,ic);
-    }
-    
-    if(cols<=0){
-        printf("\nYou cannot use set(int,int) on a 2d array if cols are zero\n");
-        die(ir,ic);
-    }
-    
-    if(data==NULL){ 
-        printf("dying from set\n");
-        die(ir,ic);
-    }
-    
-    int i;
-    array_1d<T> vector;
-    if(ir>=rows){
-        for(i=0;i<cols;i++)vector.set(i,0);
-        while(rows<=ir)add_row(vector);
-        
-    }
-
-    data[ir].set(ic,val);
-    
-    
-    
-}
 
 template <typename T>
 void array_2d<T>::set_row(int dex, array_1d<T> &in){
@@ -1134,21 +1078,6 @@ void asymm_array_2d<T>::add_row(const array_1d<T> &in){
             }
     } 
     
-}
-
-template <typename T>
-void asymm_array_2d<T>::set(int ir, int ic, T val){
-    
-    array_1d<T> empty;
-    int i;
- 
-    while(rows<=ir){
-        add_row(empty);
-    }
-    
-    
-    data[ir].set(ic,val);
-
 }
 
 template <typename T>

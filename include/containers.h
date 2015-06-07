@@ -139,7 +139,22 @@ public:
     If you try to set an index that is beyond the current size of the array,
     zeros will be added to fill in between the current size of the array
     and the element you are setting*/
-    void set(int,T);
+    inline void set(int dex, T val){
+   
+        int i;
+    
+        if(dex<0){
+            printf("dying from set with negative dex\n");
+            die(dex);
+        }
+        else if(dex>=dim){
+            for(i=dim;i<dex+1;i++)add(0);
+            set(dex,val);
+        }
+        else{
+            data[dex]=val;
+        } 
+    }
     
     /*add the value T to the element of the array indexed by int, i.e.
     array[int] = array[int] + T*/
@@ -410,7 +425,39 @@ public:
     the array_2d until there is room.  If you try to set a column
     that is beyond the current size of this array_2d, the code
     will throw an exception.*/
-    void set(int,int,T);
+    inline void set(int ir, int ic, T val){
+    
+        if(ir<0){
+            printf("tried to set to negative row\n");
+            die(ir,ic);
+        }
+    
+        if(ic<0 || ic>=cols){
+            printf("dying from set\n");
+            die(ir,ic);
+        }
+    
+        if(cols<=0){
+            printf("\nYou cannot use set(int,int) on a 2d array if cols are zero\n");
+            die(ir,ic);
+        }
+    
+        if(data==NULL){ 
+            printf("dying from set\n");
+            die(ir,ic);
+        }
+    
+        int i;
+        array_1d<T> vector;
+        if(ir>=rows){
+            for(i=0;i<cols;i++)vector.set(i,0);
+            while(rows<=ir)add_row(vector);
+        
+        }
+
+        data[ir].set(ic,val);
+    
+    }
     
     /*set all of the elements of this array_2d to zero*/
     void zero();
@@ -579,7 +626,18 @@ public:
     index as each row in asymm_array_2d is allowed to have a different
     number of columns.
     */
-    void set(int,int,T);
+    inline void set(int ir, int ic, T val){
+    
+        array_1d<T> empty;
+        int i;
+ 
+        while(rows<=ir){
+            add_row(empty);
+        }
+    
+        data[ir].set(ic,val);
+    }
+
     
     /*
     Return the indexed element
