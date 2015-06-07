@@ -155,7 +155,15 @@ public:
     }
     
     /*subtract the value T from the element of the array indexed by int*/
-    void subtract_val(int,T);
+    inline void subtract_val(int dex, T val){
+ 
+        if(dex<0 || dex>=dim){
+            printf("dying from subtract_val");
+            die(dex);
+        }
+    
+        data[dex]-=val;
+    }
     
     /*divide the element of the array indexed by int by the value T, i.e.
     array[iint] = array[int]/T */
@@ -369,7 +377,15 @@ public:
     }
     
     /*subtract the provided value from the indexed element*/
-    void subtract_val(int,int,T);
+    inline void subtract_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from subtract_val\n");
+            die(ir,ic);
+        }
+    
+        data[ir].subtract_val(ic,val);
+    }
     
     /*multiply the indexed element by the provided value*/
     void multiply_val(int,int,T);
@@ -545,7 +561,14 @@ public:
     }
     
     /*subtract the value T from the indexed element*/
-    void subtract_val(int,int,T);
+    inline void subtract_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d subtract_val\n");
+            die(ir);
+        }
+    
+        data[ir].subtract_val(ic,val);
+    }
     
     /*divide the indexed element by the value T*/
     void divide_val(int,int,T);

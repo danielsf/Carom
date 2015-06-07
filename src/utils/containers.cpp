@@ -69,18 +69,6 @@ void array_1d<T>::die(int ii) const{
 }
 
 template <typename T>
-void array_1d<T>::subtract_val(int dex, T val){
- 
-    
-    if(dex<0 || dex>=dim){
-        printf("dying from subtract_val");
-        die(dex);
-    }
-    
-    data[dex]-=val;
-}
-
-template <typename T>
 void array_1d<T>::divide_val(int dex, T val){
     
     if(dex<0 || dex>=dim){
@@ -836,19 +824,6 @@ void array_2d<T>::set(int ir, int ic, T val){
 }
 
 template <typename T>
-void array_2d<T>::subtract_val(int ir, int ic, T val){
-    
-    
-    if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
-        printf("dying from subtract_val\n");
-         die(ir,ic);
-    }
-    
-    data[ir].subtract_val(ic,val);
-
-}
-
-template <typename T>
 void array_2d<T>::multiply_val(int ir, int ic, T val){
     
     
@@ -1338,16 +1313,6 @@ void asymm_array_2d<T>::reset(){
     
 
     
-}
-
-template <typename T>
-void asymm_array_2d<T>::subtract_val(int ir, int ic, T val){
-    if(ir<0 || ir>=rows){
-        printf("in asymm 2d subtract_val\n");
-        die(ir);
-    }
-    
-    data[ir].subtract_val(ic,val);
 }
 
 template <typename T>
