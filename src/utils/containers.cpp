@@ -82,19 +82,6 @@ void array_1d<T>::divide_val(int dex, T val){
 }
 
 template <typename T>
-void array_1d<T>::multiply_val(int dex, T val){
-
-    if(dex<0 || dex>=dim){
-        printf("dying from multiply_val\n");
-        die(dex);
-    }
-    
-    data[dex]*=val;
-    
-    
-}
-
-template <typename T>
 int array_1d<T>::get_room(){
     return room;
 }
@@ -824,19 +811,6 @@ void array_2d<T>::set(int ir, int ic, T val){
 }
 
 template <typename T>
-void array_2d<T>::multiply_val(int ir, int ic, T val){
-    
-    
-    if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
-        printf("dying from multiply_val\n");
-         die(ir,ic);
-    }
-    
-    data[ir].multiply_val(ic,val);
-
-}
-
-template <typename T>
 void array_2d<T>::divide_val(int ir, int ic, T val){
     
     
@@ -1315,15 +1289,6 @@ void asymm_array_2d<T>::reset(){
     
 }
 
-template <typename T>
-void asymm_array_2d<T>::multiply_val(int ir, int ic, T val){
-    if(ir<0 || ir>=rows){
-        printf("in asymm 2d multiply_val\n");
-        die(ir);
-    }
-    
-    data[ir].multiply_val(ic,val);
-}
 
 template <typename T>
 void asymm_array_2d<T>::divide_val(int ir, int ic, T val){

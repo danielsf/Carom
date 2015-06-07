@@ -170,7 +170,17 @@ public:
     void divide_val(int,T);
     
     /*multiply the element of the array indexed by int by the value T*/
-    void multiply_val(int,T);
+    inline void multiply_val(int dex, T val){
+
+        if(dex<0 || dex>=dim){
+            printf("dying from multiply_val\n");
+            die(dex);
+        }
+    
+        data[dex]*=val;
+    
+    }
+
     
     /*set all of the elements of the array to zero*/
     void zero();
@@ -388,7 +398,15 @@ public:
     }
     
     /*multiply the indexed element by the provided value*/
-    void multiply_val(int,int,T);
+    inline void multiply_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from multiply_val\n");
+            die(ir,ic);
+        }
+    
+        data[ir].multiply_val(ic,val);
+    }
     
     /*divide the indexed element by the provided value*/
     void divide_val(int,int,T);
@@ -574,7 +592,14 @@ public:
     void divide_val(int,int,T);
     
     /*multiply the indexed elmement by the value T*/
-    void multiply_val(int,int,T);
+    inline void multiply_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d multiply_val\n");
+            die(ir);
+        }
+    
+        data[ir].multiply_val(ic,val);
+    }
     
     /*replace the indexed row with the provided array_1d*/
     void replace_row(int,array_1d<T>&);
