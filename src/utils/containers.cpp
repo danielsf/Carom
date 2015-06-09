@@ -1008,17 +1008,6 @@ void asymm_array_2d<T>::replace_row(int dex, array_1d<T> &pt){
 
 }
 
-template <typename T>
-array_1d<T>* asymm_array_2d<T>::operator()(int dex){
-    
-    if(dex<0 || dex>=rows){
-        printf("WARNING asked for row %d but only have %d\n",dex,rows);
-    }
-    
-    return &data[dex];
-
-}
-
 template class asymm_array_2d<int>;
 template class asymm_array_2d<double>;
 template class array_2d<int>;

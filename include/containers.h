@@ -915,7 +915,14 @@ public:
     *myAsymmArray(i) behaves like an array_1d
     
     */
-    array_1d<T>* operator()(int);
+    inline array_1d<T>* operator()(int dex){
+    
+        if(dex<0 || dex>=rows){
+            printf("WARNING asked for row %d but only have %d\n",dex,rows);
+        }
+    
+        return &data[dex];
+    }
     
 private:
     
