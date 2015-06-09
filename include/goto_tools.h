@@ -134,7 +134,7 @@ struct chisquared_distribution{
 
         start=1.0e-10;
         stop=dof+1000.0;
-        step=dof*1.0e-5;
+        step=0.01;
 
         xold=0.0;
         pdfold=0.0;
