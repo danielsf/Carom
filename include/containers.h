@@ -490,7 +490,38 @@ public:
     /*set the number of columns of the array_2d. Once this is set, it cannot
     be changed without first calling reset() and deleting the contents of the
     array_2d*/
-    void set_cols(int);
+    inline void set_cols(int ii){
+        reset();
+    
+        row_room=2;
+        rows=0;
+        cols=ii;
+        data=new array_1d<T>[row_room];
+        int i;
+        for(i=0;i<row_room;i++){
+            data[i].set_dim(cols);
+        }
+    
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_name(name);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        
+            try{
+                data[i].assert_where(where_am_i);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        }
+    
+    }
+
     
     /*return the element of the array_2d indexed by the two arguments (rows first, 
     columns second)*/
