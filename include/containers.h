@@ -297,11 +297,49 @@ public:
     }
     
     /*return the Euclidean norm of the array without normalizing the array*/
-    double get_norm();
+    inline double get_norm(){
+    
+        if(dim<0){
+            printf("WARNING 1d array has dim %d\n",dim);
+            die(-1);
+        }
+    
+        if(dim==0){
+            return 0.0;
+        }
+    
+        int i;
+        double ans=0.0;
+        for(i=0;i<dim;i++){
+            ans+=data[i]*data[i];
+        }
+        ans=sqrt(ans);
+        return ans;
+
+    }
     
     /*return the square of the Euclidean norm of the array without normalizing
     the array*/
-    double get_square_norm();
+    inline double get_square_norm(){
+    
+        if(dim<0){
+            printf("WARNING 1d array has dim %d\n",dim);
+            die(-1);
+        }
+    
+        if(dim==0){
+            return 0.0;
+        }
+    
+        int i;
+        double ans=0.0;
+        for(i=0;i<dim;i++){
+            ans+=data[i]*data[i];
+        }
+
+        return ans;
+
+    }
     
     /*add room for int new elements in the array*/
     void add_room(int);
