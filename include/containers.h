@@ -411,7 +411,81 @@ public:
     ~array_2d();
     
     /*set the dimensions of the array_2d. rows first, columns second*/
-    void set_dim(int,int);
+    inline void set_dim(int ir, int ic){
+    
+        if(ir<0 || ic<0){
+            printf("tried to set dimensions %d %d\n",ir,ic);
+            die(ir,ic);
+        }
+    
+        if(data==NULL && (rows>0 || cols>0)){
+            printf("WARNING data is null but rows %d cols %d\n",
+            rows,cols);
+            if(name!=NULL)printf("name %s\n",name);
+            if(where_am_i!=NULL)printf("where %s\n",where_am_i);
+            exit(1);
+        }
+    
+        if(data!=NULL && cols<=0){
+            printf("WARNING data is not null but rows %d cols %d\n",
+            rows,cols);
+            if(name!=NULL)printf("name %s\n",name);
+            if(where_am_i!=NULL)printf("where %s\n",where_am_i);
+            exit(1);
+        }
+    
+        if(ir==rows && ic==cols){
+            return;
+        }
+    
+        if(ir==0 && ic==0){
+            reset();
+            return;
+        }
+    
+        if((ir==0 && ic!=0) || (ic==0 && ir!=0)){
+            printf("WARNING trying to set dim %d %d\n",ir,ic);
+            die(ir,ic);
+        }
+    
+        int i;
+        if(data!=NULL){
+            delete [] data;
+        }
+    
+        row_room=ir;
+        rows=ir;
+        cols=ic;
+        data=new array_1d<T>[row_room];
+    
+        int j;
+        for(i=0;i<rows;i++){
+            data[i].set_dim(cols);
+            for(j=0;j<cols;j++){
+                if(i!=j)data[i].set(j,0);
+                else data[i].set(j,1);
+            }
+        }
+    
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_name(name);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        
+            try{
+                data[i].assert_where(where_am_i);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        }
+    
+    }
     
     /*set the number of columns of the array_2d. Once this is set, it cannot
     be changed without first calling reset() and deleting the contents of the
