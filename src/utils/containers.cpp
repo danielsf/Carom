@@ -728,18 +728,6 @@ void array_2d<T>::set_name(char *word){
 
 
 template <typename T>
-array_1d<T>* array_2d<T>::operator()(int dex){
-    
-    if(dex<0 || dex>=rows){
-        printf("WARNING asked for row %d but only have %d\n",dex,rows);
-        die(-1,-1);
-    }
-    
-    return &data[dex];
-
-}
-
-template <typename T>
 asymm_array_2d<T>::asymm_array_2d(){
     name=NULL;
     where_am_i=NULL;

@@ -684,7 +684,16 @@ public:
     
     *myArray2d(i) behaves just like an array_1d
     */
-    array_1d<T>* operator()(int);
+    inline array_1d<T>* operator()(int dex){
+    
+        if(dex<0 || dex>=rows){
+            printf("WARNING asked for row %d but only have %d\n",dex,rows);
+            die(-1,-1);
+        }
+    
+        return &data[dex];
+
+    }
     
 private:
    
