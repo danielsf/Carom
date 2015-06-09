@@ -75,30 +75,136 @@ public:
     T* get_ptr();
     
     /*return the element of the array specified by int*/
-    T get_data(int) const;
+    inline T get_data(int dex) const{
+
+        if(data==NULL){
+            printf("dying from get_data because data is null\n");
+            die(dex);
+        }
+
+        if(dex<0 || dex>=dim){
+            printf("dying from get_data because request makes no sense\n");
+            die(dex);
+        }
+    
+        return data[dex];
+    
+    }
     
     /*add an element onto the end of the array*/
-    void add(T);
+    inline void add(T in){
+
+        if(data==NULL && dim>0){
+           printf("dying from add\n");
+           die(0);
+        }
+    
+        if(data==NULL && room>0){
+            printf("dying from add\n");
+            die(0);
+        }
+    
+        if(room==0 && data!=NULL){
+            printf("dying from add\n");
+            die(0);
+        }
+
+
+        if(data==NULL){
+            room=2;
+	    data=new T[room];
+	    dim=0;
+        }
+    
+        T *buffer;
+        int i;
+    
+        if(dim==room){
+            buffer=new T[dim];
+            for(i=0;i<dim;i++)buffer[i]=data[i];
+	    delete [] data;
+            room+=5;
+	    data=new T[room];
+	    for(i=0;i<dim;i++){
+	        data[i]=buffer[i];
+	    }
+	    delete [] buffer;
+        }
+    
+        data[dim]=in;
+        dim++;
+    }
     
     /*set the element of the array specified by the int index to the value T.
     If you try to set an index that is beyond the current size of the array,
     zeros will be added to fill in between the current size of the array
     and the element you are setting*/
-    void set(int,T);
+    inline void set(int dex, T val){
+   
+        int i;
+    
+        if(dex<0){
+            printf("dying from set with negative dex\n");
+            die(dex);
+        }
+        else if(dex>=dim){
+            for(i=dim;i<dex+1;i++)add(0);
+            set(dex,val);
+        }
+        else{
+            data[dex]=val;
+        } 
+    }
     
     /*add the value T to the element of the array indexed by int, i.e.
     array[int] = array[int] + T*/
-    void add_val(int,T);
+    inline void add_val(int dex, T val){
+    
+        if(dex<0 || dex>=dim){
+            printf("dying from add_val\n");
+            die(dex);
+        }
+    
+        data[dex]+=val;
+    
+    }
     
     /*subtract the value T from the element of the array indexed by int*/
-    void subtract_val(int,T);
+    inline void subtract_val(int dex, T val){
+ 
+        if(dex<0 || dex>=dim){
+            printf("dying from subtract_val");
+            die(dex);
+        }
+    
+        data[dex]-=val;
+    }
     
     /*divide the element of the array indexed by int by the value T, i.e.
     array[iint] = array[int]/T */
-    void divide_val(int,T);
+    inline void divide_val(int dex, T val){
+    
+        if(dex<0 || dex>=dim){
+            printf("dying from divide_val\n");
+            die(dex);
+        }
+    
+        data[dex]=data[dex]/val;
+    
+    }
     
     /*multiply the element of the array indexed by int by the value T*/
-    void multiply_val(int,T);
+    inline void multiply_val(int dex, T val){
+
+        if(dex<0 || dex>=dim){
+            printf("dying from multiply_val\n");
+            die(dex);
+        }
+    
+        data[dex]*=val;
+    
+    }
+
     
     /*set all of the elements of the array to zero*/
     void zero();
@@ -120,7 +226,9 @@ public:
     void increment_dim();
     
     /*return the length of the array*/
-    int get_dim() const;
+    inline int get_dim() const{
+        return dim;
+    }
     
     /*set the name of the array, so that, if it causes an exception to be thrown,
     you will know which array threw the exception*/
@@ -153,14 +261,85 @@ public:
     
     /*calculate the Euclidean norm of the array and divide all of the elements thereby.
     Return the calculated norm*/
-    double normalize();
+    inline double normalize(){
+    
+        if(dim<0){
+            printf("WARNING 1d array has dim %d\n",dim);
+            die(-1);
+        }
+    
+        if(dim==0){
+            return 0.0;
+        }
+     
+        double ans;
+        int i;
+        ans=0.0;
+        for(i=0;i<dim;i++){
+            ans+=data[i]*data[i];
+        }
+    
+        if(ans<0.0){
+            printf("WARNING square of norm %e\n",ans);
+        
+            die(-1);
+        }
+    
+        if(ans>0.0){
+            ans=sqrt(ans);
+            for(i=0;i<dim;i++){
+                data[i]=data[i]/ans;
+            }
+        }
+    
+        return ans;
+
+    }
     
     /*return the Euclidean norm of the array without normalizing the array*/
-    double get_norm();
+    inline double get_norm(){
+    
+        if(dim<0){
+            printf("WARNING 1d array has dim %d\n",dim);
+            die(-1);
+        }
+    
+        if(dim==0){
+            return 0.0;
+        }
+    
+        int i;
+        double ans=0.0;
+        for(i=0;i<dim;i++){
+            ans+=data[i]*data[i];
+        }
+        ans=sqrt(ans);
+        return ans;
+
+    }
     
     /*return the square of the Euclidean norm of the array without normalizing
     the array*/
-    double get_square_norm();
+    inline double get_square_norm(){
+    
+        if(dim<0){
+            printf("WARNING 1d array has dim %d\n",dim);
+            die(-1);
+        }
+    
+        if(dim==0){
+            return 0.0;
+        }
+    
+        int i;
+        double ans=0.0;
+        for(i=0;i<dim;i++){
+            ans+=data[i]*data[i];
+        }
+
+        return ans;
+
+    }
     
     /*add room for int new elements in the array*/
     void add_room(int);
@@ -232,16 +411,139 @@ public:
     ~array_2d();
     
     /*set the dimensions of the array_2d. rows first, columns second*/
-    void set_dim(int,int);
+    inline void set_dim(int ir, int ic){
+    
+        if(ir<0 || ic<0){
+            printf("tried to set dimensions %d %d\n",ir,ic);
+            die(ir,ic);
+        }
+    
+        if(data==NULL && (rows>0 || cols>0)){
+            printf("WARNING data is null but rows %d cols %d\n",
+            rows,cols);
+            if(name!=NULL)printf("name %s\n",name);
+            if(where_am_i!=NULL)printf("where %s\n",where_am_i);
+            exit(1);
+        }
+    
+        if(data!=NULL && cols<=0){
+            printf("WARNING data is not null but rows %d cols %d\n",
+            rows,cols);
+            if(name!=NULL)printf("name %s\n",name);
+            if(where_am_i!=NULL)printf("where %s\n",where_am_i);
+            exit(1);
+        }
+    
+        if(ir==rows && ic==cols){
+            return;
+        }
+    
+        if(ir==0 && ic==0){
+            reset();
+            return;
+        }
+    
+        if((ir==0 && ic!=0) || (ic==0 && ir!=0)){
+            printf("WARNING trying to set dim %d %d\n",ir,ic);
+            die(ir,ic);
+        }
+    
+        int i;
+        if(data!=NULL){
+            delete [] data;
+        }
+    
+        row_room=ir;
+        rows=ir;
+        cols=ic;
+        data=new array_1d<T>[row_room];
+    
+        int j;
+        for(i=0;i<rows;i++){
+            data[i].set_dim(cols);
+            for(j=0;j<cols;j++){
+                if(i!=j)data[i].set(j,0);
+                else data[i].set(j,1);
+            }
+        }
+    
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_name(name);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        
+            try{
+                data[i].assert_where(where_am_i);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        }
+    
+    }
     
     /*set the number of columns of the array_2d. Once this is set, it cannot
     be changed without first calling reset() and deleting the contents of the
     array_2d*/
-    void set_cols(int);
+    inline void set_cols(int ii){
+        reset();
+    
+        row_room=2;
+        rows=0;
+        cols=ii;
+        data=new array_1d<T>[row_room];
+        int i;
+        for(i=0;i<row_room;i++){
+            data[i].set_dim(cols);
+        }
+    
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_name(name);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        
+            try{
+                data[i].assert_where(where_am_i);
+            }
+            catch(int iex){
+                printf("in 2d set dim\n");
+                die(0,0);
+            }
+        }
+    
+    }
+
     
     /*return the element of the array_2d indexed by the two arguments (rows first, 
     columns second)*/
-    T get_data(int,int) const;
+    inline T get_data(int ir, int ic) const{
+   
+        if(data==NULL){
+            printf("dying from get_data\n");
+            die(ir,ic);
+        }
+        else if(row_room<rows){
+           printf("dying from get_data\n");
+            die(ir,ic);
+        }
+        else if(ir>=rows || ir<0 || ic>=cols || ic<0){
+           printf("dying from get_data\n");
+            die(ir,ic);
+        }
+
+        return data[ir].get_data(ic);
+    
+    }
+
     
     /*set the name member variable (for diagnostic purposes)*/
     void set_name(char*);
@@ -266,7 +568,39 @@ public:
     the array_2d until there is room.  If you try to set a column
     that is beyond the current size of this array_2d, the code
     will throw an exception.*/
-    void set(int,int,T);
+    inline void set(int ir, int ic, T val){
+    
+        if(ir<0){
+            printf("tried to set to negative row\n");
+            die(ir,ic);
+        }
+    
+        if(ic<0 || ic>=cols){
+            printf("dying from set\n");
+            die(ir,ic);
+        }
+    
+        if(cols<=0){
+            printf("\nYou cannot use set(int,int) on a 2d array if cols are zero\n");
+            die(ir,ic);
+        }
+    
+        if(data==NULL){ 
+            printf("dying from set\n");
+            die(ir,ic);
+        }
+    
+        int i;
+        array_1d<T> vector;
+        if(ir>=rows){
+            for(i=0;i<cols;i++)vector.set(i,0);
+            while(rows<=ir)add_row(vector);
+        
+        }
+
+        data[ir].set(ic,val);
+    
+    }
     
     /*set all of the elements of this array_2d to zero*/
     void zero();
@@ -275,16 +609,48 @@ public:
     add the provided value to the indexed element, i.e.
     array[int1][int2] = array[int1][int2]+T
     */
-    void add_val(int,int,T);
+    inline void add_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from add_val\n");
+             die(ir,ic);
+        }
+        data[ir].add_val(ic,val);
+    }
     
     /*subtract the provided value from the indexed element*/
-    void subtract_val(int,int,T);
+    inline void subtract_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from subtract_val\n");
+            die(ir,ic);
+        }
+    
+        data[ir].subtract_val(ic,val);
+    }
     
     /*multiply the indexed element by the provided value*/
-    void multiply_val(int,int,T);
+    inline void multiply_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from multiply_val\n");
+            die(ir,ic);
+        }
+    
+        data[ir].multiply_val(ic,val);
+    }
     
     /*divide the indexed element by the provided value*/
-    void divide_val(int,int,T);
+    inline void divide_val(int ir, int ic, T val){
+    
+        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+            printf("dying from divide_val\n");
+            die(ir,ic);
+        }
+    
+        data[ir].divide_val(ic,val);
+
+    }
     
     /*reset the contents of the array_2d; name and where_am_i are untouched*/
     void reset();
@@ -295,10 +661,14 @@ public:
     void decrement_rows();
     
     /*return the number of rows*/
-    int get_rows() const;
+    inline int get_rows() const{
+        return rows;
+    }
     
     /*return the number of columns*/
-    int get_cols() const;
+    inline int get_cols() const{
+        return cols;
+    }
     
     /*throw an exception; the arguments are for indicating which element
     the code tried to access when the exception was thrown*/
@@ -314,7 +684,16 @@ public:
     
     *myArray2d(i) behaves just like an array_1d
     */
-    array_1d<T>* operator()(int);
+    inline array_1d<T>* operator()(int dex){
+    
+        if(dex<0 || dex>=rows){
+            printf("WARNING asked for row %d but only have %d\n",dex,rows);
+            die(-1,-1);
+        }
+    
+        return &data[dex];
+
+    }
     
 private:
    
@@ -399,38 +778,125 @@ public:
     index as each row in asymm_array_2d is allowed to have a different
     number of columns.
     */
-    void set(int,int,T);
+    inline void set(int ir, int ic, T val){
+    
+        array_1d<T> empty;
+        int i;
+ 
+        while(rows<=ir){
+            add_row(empty);
+        }
+    
+        data[ir].set(ic,val);
+    }
+
     
     /*
     Return the indexed element
     */
-    T get_data(int,int) const;
+    inline T get_data(int ir, int ic) const{
+    
+        if(ir<0 || ir>=rows){
+            printf("WARNING asking for asymm 2d data %d %d but rows %d\n",
+	    ir,ic,rows);
+	    die(ir);
+        }
+    
+    
+        try{
+           return data[ir].get_data(ic); 
+        }
+        catch(int iex){
+            printf("tried to get asymm 2d data %d %d\n",ir,ic);
+	    die(ir);
+        }
+
+        return data[ir].get_data(ic);
+    }
     
     /*add T to the end of the row specified by int*/
-    void add(int,T);
+    inline void add(int dex, T val){
+        int i;
+        if(dex<0){
+            printf("in asymm 2d add\n");
+            die(dex);
+        }
+        else if(dex>=rows){
+            set(dex,0,val);
+        }
+        data[dex].add(val);
+    }  
     
     /*add the value T onto the indexed element, i.e.
     asymm_array[int1][int2] = asymm_array[int1][int2] + T
     */
-    void add_val(int,int,T);
+    inline void add_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d add_val\n");
+	    die(ir);
+        }
+    
+        data[ir].add_val(ic,val);
+    }
     
     /*subtract the value T from the indexed element*/
-    void subtract_val(int,int,T);
+    inline void subtract_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d subtract_val\n");
+            die(ir);
+        }
+    
+        data[ir].subtract_val(ic,val);
+    }
     
     /*divide the indexed element by the value T*/
-    void divide_val(int,int,T);
+    inline void divide_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d divide_val\n");
+            die(ir);
+        }
+    
+        data[ir].divide_val(ic,val);
+    }
     
     /*multiply the indexed elmement by the value T*/
-    void multiply_val(int,int,T);
+    inline void multiply_val(int ir, int ic, T val){
+        if(ir<0 || ir>=rows){
+            printf("in asymm 2d multiply_val\n");
+            die(ir);
+        }
+    
+        data[ir].multiply_val(ic,val);
+    }
     
     /*replace the indexed row with the provided array_1d*/
     void replace_row(int,array_1d<T>&);
     
-    /*return the number of rows*/
-    int get_rows() const;
+    inline int get_rows() const{
+        return rows;
+    }
+
+    inline int get_cols(int dex) const{
     
-    /*return the number of columns in the row indexed by int*/
-    int get_cols(int) const;
+        if(data==NULL){
+            return 0;
+        
+            //printf("WARNING asking for cols in asymm array 2d\n");
+            //die(dex);
+        }
+    
+        if(dex<0){
+            printf("WARNING asking for cols in asymm array 2d\n");
+            die(dex);
+        }
+    
+        if(dex>=rows){
+            return 0;
+        }
+    
+        return data[dex].get_dim();
+    
+    }
     
     /*throw an exception; the argument indicates the row index being
     called for when the exception was thrown*/
@@ -449,7 +915,14 @@ public:
     *myAsymmArray(i) behaves like an array_1d
     
     */
-    array_1d<T>* operator()(int);
+    inline array_1d<T>* operator()(int dex){
+    
+        if(dex<0 || dex>=rows){
+            printf("WARNING asked for row %d but only have %d\n",dex,rows);
+        }
+    
+        return &data[dex];
+    }
     
 private:
     

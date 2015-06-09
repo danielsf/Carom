@@ -30,25 +30,6 @@ double normal_deviate(Ran *chaos, double mu, double sig){
 }
 
 
-
-double power(double arg,int raised){
-
-  //return arg raised to the integer power 'raised'
-
-  int n;
-  double ans;
-
-  if(raised==0)return 1.0;
-  else{ans=1.0;
-  for(n=0;n<raised;n++){
-    ans=ans*arg;
-  }
-
-  return ans;
-  }
-
-}
-
 void kill(char *words){
  double junk;
  FILE *output;

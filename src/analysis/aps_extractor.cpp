@@ -765,7 +765,7 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
         
             been_plotted_tree->nn_srch(*to_plot(chosen),1,neigh,ddneigh);
             
-            if(ddneigh.get_data(0)>0.01){
+            if(ddneigh.get_data(0)>0.05){
                 plot_it=1;
             }
             else{
