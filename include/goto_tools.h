@@ -111,13 +111,13 @@ struct chisquared_distribution{
         maxpdf=-1.0;
         for(x=0.0;x<dof+1000.0;x+=1.0){
             pdf=_pdf_fn(x,dof,&lnpdf);
-            if(pdf>maxpdf){
-                maxpdf=pdf;
+            if(lnpdf>maxpdf){
+                maxpdf=lnpdf;
                 x_max=x;
             }
         }
 
-        return x;
+        return x_max;
     }
 
     double confidence_limit(double dof, double pct){
@@ -134,7 +134,7 @@ struct chisquared_distribution{
 
         start=1.0e-10;
         stop=dof+1000.0;
-        step=dof*0.01;
+        step=dof*1.0e-5;
 
         xold=0.0;
         pdfold=0.0;
