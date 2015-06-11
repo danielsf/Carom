@@ -1,4 +1,4 @@
-#include "chisq.h"
+#include "jellyBean.h"
 #include "kd.h"
 
 array_1d<double> curvature_center, radial_direction;

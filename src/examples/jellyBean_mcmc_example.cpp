@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "mcmc/mcmc.h"
-#include "chisq.h"
+#include "jellyBean.h"
 
 
 int main(int iargc, char *argv[]){

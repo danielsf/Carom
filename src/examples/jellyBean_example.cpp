@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "jellyBean.h"
 #include "carom.h"
 
 int main(int iargc, char *argv[]){

@@ -414,18 +414,4 @@ public:
 
 };
 
-class jellyBean : public chisquared{
-
-public:
-    ~jellyBean();
-    jellyBean(int,double, double);
-    virtual double operator()(array_1d<double>&);
-    void get_curvature_center(array_1d<double>&);
-
-private:
-    array_1d<double> curvature_center,radial_direction;
-    double curvature_radius;
-
-};
-
 #endif

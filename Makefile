@@ -99,6 +99,8 @@ object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/kd.o
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
 
+object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
+	$(gg) -c -o object/jellyBean.o src/utils/jellyBean.cpp
 
 object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o object/chisq_wrapper.o
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
@@ -118,31 +120,32 @@ s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	object/node.o object/carom.o \
 	$(LIBRARIES)
 
-jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o
+jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o \
+object/jellyBean.o
 	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/node.o object/carom.o \
+	object/node.o object/carom.o object/jellyBean.o \
 	$(LIBRARIES)
 
-jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/chisq.o
+jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/jellyBean.o
 	$(gg) -o bin/jellyBean_bayesianControl src/controls/jellyBeanBayesianControl.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o object/jellyBean.o \
 	object/wrappers.o \
 	$(LIBRARIES)
 
-jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp object/chisq.o
+jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp object/jellyBean.o
 	$(gg) -o bin/jellyBean_frequentistControl src/controls/jellyBeanFrequentistControl.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o object/jellyBean.o \
 	object/wrappers.o \
 	$(LIBRARIES)
 
 jellyBeanMCMC: src/examples/jellyBean_mcmc_example.cpp object/mcmc.o \
-object/wmap_likelihood_function.o
+object/wmap_likelihood_function.o object/jellyBean.o
 	$(gg) -o bin/jellyBeanMCMC src/examples/jellyBean_mcmc_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
-	object/chain.o object/kde.o object/mcmc.o \
+	object/chain.o object/kde.o object/mcmc.o object/jellyBean.o \
 	$(LIBRARIES)
 
 ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
