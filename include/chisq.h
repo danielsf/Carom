@@ -225,49 +225,49 @@ protected:
     
     ncenters is the number of modes (only relevant for cartoon likelihoods)
     */
-    int dim,ncenters;
+    int _dim,_ncenters;
     
     /*
     This is where APS keeps track of how many times chisquared::operator() has
     been called
     */
-    mutable int called;
+    mutable int _called;
 
     /*
     This is where APS keeps track of how much clock time has been spent (total)
     in chisquared::operator()
     */
-    mutable double time_spent;
+    mutable double _time_spent;
   
     /*
     The maximum and minimum values allowed in each parameter
     */
-    array_1d<double> maxs,mins;
+    array_1d<double> _maxs,_mins;
   
     /*
     In the case of cartoon likelihoods, these will store the basis vectors
     in paramter space, the centers of the modes, and the widths in paramter
     space of each mode
     */
-    array_2d<double> bases,widths,centers;
+    array_2d<double> _bases,_widths,_centers;
 
     /*
     This is where chisquared will store the boundary points found
     by build_boundary above
     */
-    double ***boundary,rr_max;
+    double ***_boundary,_rr_max;
     
     /*
     These store the number of boundary points in each 2-dimensional
     sub-space, and the amount of room allotted in ***boundary for
     each 2-dimensional sub-space
     */
-    array_1d<int> nboundary,boundary_room;
+    array_1d<int> _nboundary,_boundary_room;
     
     /*
     A random number generator for use by make_bases on cartoon likelihoods
     */
-    Ran *dice;
+    Ran *_dice;
     
     /*
     Reset the contents of ***boundary
@@ -302,7 +302,7 @@ protected:
 
     
     /*
-    Used by build_boundary() to add points to **boundary
+    Used by build_boundary() to add points tSo **boundary
     */
     void add_to_boundary(array_1d<double>&,int,int,double);
 
@@ -326,7 +326,7 @@ class s_curve : public chisquared{
     */
 
 private:
-    double trig_factor;
+    double _trig_factor;
     
     double find_theta_from_x(double);
     double find_theta_from_y(double);
