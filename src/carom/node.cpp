@@ -1121,9 +1121,10 @@ void node::compass_search(){
             
             iFound=-1;
             if(flow>_chisquared->target() || flow>fhigh){
-                printf("WARNING in compass %e %e %e\n",
-                flow,fhigh,_chisquared->target());
-                exit(1);
+                flow=_chisquared->get_fn(_centerdex);
+                for(i=0;i<_chisquared->get_dim();i++){
+                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                }
             }
             iFound=bisection(lowball,flow,highball,fhigh,1);
             
@@ -1299,9 +1300,11 @@ void node::compass_off_diagonal(){
                     }
                     
                     if(flow>_chisquared->target() || flow>fhigh){
-                        printf("WARNING in off_diag %e %e %e\n",
-                        flow,fhigh,_chisquared->target());
-                        exit(1);
+                        flow=_chisquared->get_fn(_centerdex);
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                        }
+                        
                     }
                     iFound=bisection(lowball,flow,highball,fhigh,1);
                     
