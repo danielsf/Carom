@@ -2630,6 +2630,14 @@ int node::kick_particle(int ix, array_1d<double> &dir){
 
 void node::search(){
 
+    if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
+        simplex_search();
+        if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
+            _active=0;
+            return;
+        }
+    }
+
     double minExpansionFactor=1.001;
  
     double projectedVolume0=projected_volume(); 
@@ -2945,7 +2953,7 @@ void node::ricochet(){
            lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
        }
 
-       if(flow>=_chisquared->target()){
+       while(flow>=_chisquared->target()){
            for(i=0;i<_chisquared->get_dim();i++){
                elowball.set(i,_chisquared->get_pt(_centerdex,i));
                ehighball.set(i,lowball.get_data(i));
@@ -2960,6 +2968,7 @@ void node::ricochet(){
            if(eflow>_chisquared->target() || eflow>efhigh){
                printf("WARNING eflow %e %e %e\n",
                eflow,efhigh,_chisquared->target());
+               printf("%e\n",_chisquared->get_fn(_centerdex));
                exit(1);
            }
            
@@ -2972,7 +2981,7 @@ void node::ricochet(){
        }
        
        if(flow>=_chisquared->target()){
-           printf("WARNING in node ricochet flow %e\n",flow);
+           printf("WARNING in node ricochet flow %e; target %e\n",flow,_chisquared->target());
            exit(1);
        }
        
