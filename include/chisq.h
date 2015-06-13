@@ -158,6 +158,7 @@ public:
     coefficient.
     */
     double project_to_basis(int,array_1d<double>&) const;
+    void project_to_basis(array_1d<double>&, array_1d<double>&) const;
     
     /*
     If build_boundary has been called, return the number of boundary

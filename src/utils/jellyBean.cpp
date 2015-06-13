@@ -139,3 +139,253 @@ double jellyBean::operator()(array_1d<double> &pt){
     return chisq;
 
 }
+
+////////////////////////////////jellyBeanData
+
+jellyBeanData::jellyBeanData(int dd, int cc, int nData, double sigma, double ww, double radial, double rr) : 
+chisquared(dd, cc){
+
+    /*
+    dim
+    ncenters
+    nData points
+    spread of data points
+    angular width
+    radial width (fraction)
+    curvature radius
+    */
+
+    _x_values.set_name("jellyBeanData_x");
+    _y_values.set_name("jellyBeanData_y");
+    _sigma.set_name("jellyBeanData_sigma");
+    _curvature_centers.set_name("jellyBeanData_curvature_center");
+    _radial_directions.set_name("jellyBeanData_radial_directions");
+    _radii.set_name("jellyBeanData_radii");
+    _mean_parameters.set_name("jellyBeanData_mean_parameters");
+    _aux_params.set_name("jellyBeanData_aux_parameters");
+    _param_buffer.set_name("jellyBeanData_param_buffer");
+
+    make_bases(22,0);
+    _ndata=nData;
+    _sig=sigma;
+
+    _curvature_centers.set_dim(_ncenters,_dim);
+    _radial_directions.set_dim(_ncenters,_dim);
+    
+    array_1d<double> dir,trial;
+    dir.set_name("jellyBeanData_constructor_dir");
+    trial.set_name("jellyBeanData_constructor_trial");
+    
+    double curvature_radius=rr;
+    
+    double mu;
+    int ix,ic;
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+            mu=-4.0+_dice->doub()*8.0;
+            _centers.set(ic,ix,mu);
+            _curvature_centers.set(ic,ix,mu);
+        }
+        
+        for(ix=0;ix<2;ix++){
+            trial.set(ix,normal_deviate(_dice,0.0,1.0));
+        }
+        for(;ix<_dim;ix++){
+            trial.set(ix,0.0);
+        }
+        trial.normalize();
+        
+        project_to_basis(trial,dir);
+        
+        for(ix=0;ix<_dim;ix++){
+            _curvature_centers.add_val(ic,ix,curvature_radius*dir.get_data(ix));
+        }
+        
+        for(ix=0;ix<_dim;ix++){
+            _radial_directions.set(ic,ix,_centers.get_data(ic,ix)-_curvature_centers.get_data(ic,ix));
+        }
+        
+        _radii.set(ic,_radial_directions(ic)->normalize());
+        
+        _widths.set(ic,0,ww);
+        
+        _widths.set(ic,1,radial*curvature_radius);
+        
+        for(ix=2;ix<_dim;ix++){
+            _widths.set(ic,ix,fabs(normal_deviate(_dice,0.1,0.5)+0.2));
+        }
+    }
+    
+    for(ix=0;ix<3;ix++){
+        _mean_parameters.set(ix,1.0);
+    }
+    
+    int iy,aux_ct;
+    double norm;
+    aux_ct=0;
+    for(;ix<_dim;ix++){
+        _mean_parameters.set(ix,_dice->doub()*4.0-2.0);
+        
+        norm=exp(log(10.0)*(aux_ct/2));
+        
+        _aux_params.set(aux_ct,_dice->doub()*norm);
+        aux_ct++;
+        _aux_params.set(aux_ct,_dice->doub()*30.0);
+        aux_ct++;
+        
+ 
+    }
+    printf("aux_ct %d %e %e\n",aux_ct,_mean_parameters.get_data(3),_mean_parameters.get_data(4));
+    for(ix=0;ix<aux_ct;ix++){
+        printf("aux %e\n",_aux_params.get_data(ix));
+    }
+
+}
+
+void jellyBeanData::write_data(){
+    FILE *output;
+    output=fopen("data_scratch.txt", "w");
+    int ix;
+    for(ix=0;ix<_x_values.get_dim();ix++){
+        fprintf(output,"%e %e %e\n",_x_values.get_data(ix),_y_values.get_data(ix),_sigma.get_data(ix));
+    }
+    fclose(output);
+}
+
+void jellyBeanData::print_mins(){
+    array_1d<double> trial,params;
+    trial.set_name("jellyBeanData_print_mins_trial");
+    params.set_name("jellyBeanData_print_mins_params");
+    int ic,ix;
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+            trial.set(ix,_centers.get_data(ic,ix));
+        } 
+        printf("center %d val %e\n",ic,this[0](trial));
+        convert_params(trial,params,ic);
+        for(ix=0;ix<_dim;ix++){
+            printf("    %e\n",params.get_data(ix));
+        }
+    }
+    printf("x_vals %d\n",_x_values.get_dim());
+    for(ix=0;ix<_aux_params.get_dim();ix++){
+        printf("    aux %d %e\n",ix,_aux_params.get_data(ix));
+    }
+
+}
+
+void jellyBeanData::initialize_data(){
+
+    array_1d<double> params;
+    params.set_name("jellyBeanData_initiailize_params");
+    int ix,ic;
+    
+    for(ix=0;ix<_dim;ix++)params.set(ix,0.0);
+    
+    array_1d<double> samples;
+    samples.set_name("jellyBeanData_initialize_samples");
+
+    double xx,yy,mean,var;
+    for(ix=0, xx=0.0;xx<30.0;xx+=0.3, ix++){
+        mean=data_function(params,xx);
+        for(ic=0;ic<_ndata;ic++){
+            samples.set(ic,normal_deviate(_dice,mean,_sig));
+        }
+        mean=0.0;
+        for(ic=0;ic<samples.get_dim();ic++){
+            mean+=samples.get_data(ic);
+        }
+        mean=mean/double(samples.get_dim());
+        _x_values.set(ix,xx);
+        _y_values.set(ix,mean);
+        
+        var=0.0;
+        for(ic=0;ic<samples.get_dim();ic++){
+            var+=power(samples.get_data(ic)-mean,2);
+        }
+        var=var/double((samples.get_dim()-1)*samples.get_dim());
+        _sigma.set(ix,sqrt(var));
+    }
+    
+    write_data();
+
+}
+
+void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+
+    array_1d<double> dir,trial;
+    dir.set_name("jellyBeanData_convert_params_dir");
+    trial.set_name("jellyBeanData_convert_params_trial");
+    int ix;
+    
+    for(ix=0;ix<_dim;ix++){
+        dir.set(ix,pt.get_data(ix)-_curvature_centers.get_data(ic,ix));
+    }
+    
+    double radius=dir.normalize();
+    
+    double dot=0.0;
+    for(ix=0;ix<_dim;ix++){
+        dot+=dir.get_data(ix)*_radial_directions.get_data(ic,ix);
+    }
+    
+    out.set(0,(1.0-dot)/_widths.get_data(ic,0));
+    out.set(1,(radius-_radii.get_data(ic))/_widths.get_data(ic,1));
+    
+    for(ix=2;ix<_dim;ix++){
+        out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+    }
+
+}
+
+double jellyBeanData::data_function(array_1d<double> &params, double xx){
+    
+    double ans=0.0;
+
+    ans=(_mean_parameters.get_data(0)+params.get_data(0))*xx*xx;
+    ans+=(_mean_parameters.get_data(1)+params.get_data(1))*xx;
+    ans+=_mean_parameters.get_data(2)+params.get_data(2);
+
+    double mu,amp;
+    int ix=3,i1,i2;
+    i1=0;
+    i2=1;
+    for(;ix<_dim;ix++){
+        amp=_mean_parameters.get_data(ix)+params.get_data(ix);
+        mu=(1.0+10.0*xx)*amp*sin(_aux_params.get_data(i1)*(xx-_aux_params.get_data(i2)));
+        ans+=mu;
+        i1+=2;
+        i2+=2;
+    }
+    
+    return ans;
+
+}
+
+double jellyBeanData::operator()(array_1d<double> &pt){
+
+    double before=double(time(NULL));
+
+    if(_x_values.get_dim()==0){
+        initialize_data();
+    }
+
+    double chisq,chisq_min;
+    double yy;
+    int ic,ix;
+    for(ic=0;ic<_ncenters;ic++){
+        convert_params(pt,_param_buffer, ic);
+        for(ix=0;ix<_x_values.get_dim();ix++){
+            yy=data_function(_param_buffer,_x_values.get_data(ix));
+            chisq+=power((yy-_y_values.get_data(ix))/_sigma.get_data(ix),2);
+        }
+        
+        if(ic==0 || chisq<chisq_min){
+            chisq_min=chisq;
+        }
+    }
+    
+    _called++;
+    _time_spent+=double(time(NULL))-before;
+    return chisq_min;
+}

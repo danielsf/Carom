@@ -538,6 +538,17 @@ void chisquared::get_basis(int ix, array_1d<double> &v){
     }
 }
 
+void chisquared::project_to_basis(array_1d<double> &in, array_1d<double> &out) const{
+    int ix,iy;
+    for(ix=0;ix<_dim;ix++){
+        out.set(ix,0.0);
+        for(iy=0;iy<_dim;iy++){
+            out.add_val(ix,in.get_data(iy)*_bases.get_data(ix,iy));
+        }
+    }
+
+}
+
 double chisquared::project_to_basis(int ix, array_1d<double> &vv) const{
     int i;
     double nn=1.0e30;
