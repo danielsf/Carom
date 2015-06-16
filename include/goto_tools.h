@@ -94,6 +94,8 @@ double compare_arr(array_1d<double>&,array_1d<double>&);
 
 int compare_int_arr(array_1d<int>&, array_1d<int>&);
 
+double bisection(function_wrapper&,array_1d<double>&,array_1d<double>&,double,double,array_1d<double>&);
+
 struct chisquared_distribution{
 
     double _fix;
@@ -179,9 +181,7 @@ struct chisquared_distribution{
 
         return xold;
 
-}
-
-
+    }
 };
 
 #endif
