@@ -169,7 +169,7 @@ chisquared(dd, cc){
     _projected_pt.set_name("jellyBeanData_projected_pt");
     _dir.set_name("jellyBeanData_global_dir");
 
-    make_bases(-22,0);
+    make_bases(22,0);
     _ndata=nData;
     _sig=sigma;
 
@@ -372,7 +372,7 @@ double jellyBeanData::data_function(array_1d<double> &params, double xx){
     i2=1;
     for(;ix<_dim;ix++){
         amp=_mean_parameters.get_data(ix)+params.get_data(ix);
-        mu=amp*sin(_aux_params.get_data(i1)*(xx-_aux_params.get_data(i2)));
+        mu=amp*sin(_aux_params.get_data(i2)*(xx-_aux_params.get_data(i1)));
         ans+=mu;
         i1+=2;
         i2+=2;
