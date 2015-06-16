@@ -400,7 +400,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     for(i=0;i<_chisq->get_dim();i++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
             temp_dir.set(i,sgn);
-            bisection(-1.0,center,fcenter,temp_dir,temp_pt);
+            mcmc_bisection(-1.0,center,fcenter,temp_dir,temp_pt);
             
             if(sgn<0.0){
                 min.set(i,temp_pt.get_data(i));
@@ -722,7 +722,7 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOu
     
 }
 
-void mcmc::bisection(double deltachi, array_1d<double> &lowball_in, double flow, array_1d<double> &dir, array_1d<double> &found){
+void mcmc::mcmc_bisection(double deltachi, array_1d<double> &lowball_in, double flow, array_1d<double> &dir, array_1d<double> &found){
     
     double target=flow+deltachi;
 
@@ -826,7 +826,7 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
             for(i=0;i<_chisq->get_dim();i++){
                 temp_dir.set(i,sgn*_bases.get_data(ix,i));
             }
-            bisection(deltaChi, center,minVal,temp_dir,temp_pt);
+            mcmc_bisection(deltaChi, center,minVal,temp_dir,temp_pt);
             
             d=0.0;
             for(i=0;i<_chisq->get_dim();i++){
