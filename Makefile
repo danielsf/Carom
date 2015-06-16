@@ -34,7 +34,10 @@ ff = gfortran -O3
 object/containers.o: src/utils/containers.cpp include/containers.h
 	$(gg) -c -o object/containers.o src/utils/containers.cpp
 
-object/goto_tools.o: include/goto_tools.h src/utils/goto_tools.cpp object/containers.o
+object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/containers.o
+	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
+
+object/goto_tools.o: include/goto_tools.h src/utils/goto_tools.cpp object/wrappers.o
 	$(gg) -c -o object/goto_tools.o src/utils/goto_tools.cpp
 
 test_containers: object/containers.o src/tests/test_containers.cpp object/goto_tools.o
@@ -92,9 +95,6 @@ analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
 	$(gg) -o bin/analysis src/analysis/generic_analyzer.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o \
 	$(LIBRARIES)
-
-object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/kd.o
-	$(gg) -c -o object/wrappers.o src/utils/wrappers.cpp
 
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp

@@ -5,9 +5,7 @@
 #include <time.h>
 #include <stdio.h>
 
-#include "goto_tools.h"
 #include "containers.h"
-#include "kd.h"
 
 class function_wrapper{
 public:
