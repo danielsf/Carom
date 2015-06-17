@@ -86,7 +86,9 @@ void control_integrator::run_analysis(){
         }
                 
         if(ipt%1000000==0 && ipt>0){
-            printf("ct %d good %d in %e -- %e\n",ipt,chi_vals.get_dim(),double(time(NULL))-start,foundMin);
+            printf("ct %d good %d in %e %e -- %e\n",
+            ipt,chi_vals.get_dim(),double(time(NULL))-start,
+            (double(time(NULL))-start)/double(ipt),foundMin);
         }
             
     }
