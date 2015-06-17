@@ -44,6 +44,10 @@ test_containers: object/containers.o src/tests/test_containers.cpp object/goto_t
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
 
+test_grid: object/containers.o src/tests/test_grid.cpp object/goto_tools.o
+	$(gg) -o bin/test_grid src/tests/test_grid.cpp object/containers.o \
+        object/goto_tools.o $(LIBRARIES)
+
 object/kd.o: src/utils/kd.cpp include/kd.h object/containers.o object/goto_tools.o
 	$(gg) -c -o object/kd.o src/utils/kd.cpp
 
@@ -112,6 +116,10 @@ object/simplex.o
 object/carom.o: src/carom/carom.cpp include/carom.h \
 object/simplex.o object/node.o object/eigen_wrapper.o
 	$(gg) -c -o object/carom.o src/carom/carom.cpp
+
+object/control_integrator.o: src/controls/control_integrator.cpp \
+include/controls/control_integrator.h object/simplex.o object/kd.o
+	$(gg) -c -o object/control_integrator.o src/controls/control_integrator.cpp
 
 s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \

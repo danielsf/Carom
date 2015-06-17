@@ -13,7 +13,6 @@ void kill(char*);
 
 double raiseup(double,double);
 
-
 inline double power(double arg,int raised){
 
   //return arg raised to the integer power 'raised'
@@ -95,6 +94,22 @@ double compare_arr(array_1d<double>&,array_1d<double>&);
 int compare_int_arr(array_1d<int>&, array_1d<int>&);
 
 double bisection(function_wrapper&,array_1d<double>&,array_1d<double>&,double,double,array_1d<double>&);
+
+inline void expand_grid(int ii ,array_1d<int> &grid_ct, array_1d<int> &out){
+    int ix,iy,denom,subtract;
+
+    for(ix=0;ix<grid_ct.get_dim();ix++){
+        denom=1;
+        for(iy=ix+1;iy<grid_ct.get_dim();iy++){
+            denom*=grid_ct.get_data(iy);
+        }
+        iy=ii/denom;
+        out.set(ix,iy);
+        subtract=ii/denom;
+        ii-=subtract*denom;
+    }
+
+}
 
 struct chisquared_distribution{
 
