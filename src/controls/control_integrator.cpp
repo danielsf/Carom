@@ -17,13 +17,13 @@ control_integrator::control_integrator(function_wrapper &chisq,
     }
     _name_root[i]=0;
     
-    _chiLim3d=124.0;
+    _chi_lim_full=124.4;
     _chi_min=2.0*exception_value;
 
 }
 
-void control_integrator::set_chiLim3d(double dd){
-    _chiLim3d=dd;
+void control_integrator::set_chi_lim_full(double dd){
+    _chi_lim_full=dd;
 }
 
 void control_integrator::run_analysis(){
@@ -80,7 +80,7 @@ void control_integrator::run_analysis(){
                 
         if(mu<foundMin)foundMin=mu;
                 
-        if(mu<_chiLim3d+d_threshold){
+        if(mu<_chi_lim_full+d_threshold){
             coordinates.add_row(pt);
             chi_vals.add(mu);
         }
@@ -127,7 +127,7 @@ void control_integrator::run_analysis(){
         for(iy=ix+1;iy<3;iy++){
             sprintf(name,"%s_%d_%d",_name_root,ix,iy);    
             write_output(ix,iy,chi_sorted,likelihood_sorted,dexes,coordinates,total,
-                         _min,_max,_dx,_chiLim3d,name);
+                         _min,_max,_dx,_chi_lim_full,name);
 
         }
     }

@@ -14,7 +14,7 @@ class control_integrator{
         
         control_integrator(function_wrapper&,array_1d<double>&,array_1d<double>&,array_1d<double>&,char*);
         
-        void set_chiLim3d(double);
+        void set_chi_lim_full(double);
         
         void run_analysis();
         void convert_to_boundary(array_2d<double>&,double,double,int,array_2d<double>&);
@@ -32,7 +32,7 @@ class control_integrator{
     
     private:
         array_1d<double> _min,_max,_dx;
-        double _chiLim3d,_chi_min;
+        double _chi_lim_full,_chi_min;
         function_wrapper *_chisq;
         char _name_root[letters];
 
