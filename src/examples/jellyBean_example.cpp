@@ -85,6 +85,7 @@ printf("seed %d\n",seed);
 //ellipses_integrable chisq(dim,ncenters);
 
 jellyBeanData chisq(dim,1,100,0.4,0.4,0.1,20.0);
+    
 chisq.print_mins();
 
 //declare APS

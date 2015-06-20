@@ -394,6 +394,7 @@ double jellyBeanData::operator()(array_1d<double> &pt){
     double yy;
     int ic,ix;
     for(ic=0;ic<_ncenters;ic++){
+        chisq=0.0;
         convert_params(pt,_param_buffer, ic);
         for(ix=0;ix<_x_values.get_dim();ix++){
             yy=data_function(_param_buffer,_x_values.get_data(ix));

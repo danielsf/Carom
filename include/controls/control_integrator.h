@@ -14,7 +14,7 @@ class control_integrator{
         
         control_integrator(function_wrapper&,array_1d<double>&,array_1d<double>&,array_1d<double>&,char*);
         
-        void set_chi_lim_full(double);
+        void set_chi_lim_freq(double);
         
         void run_analysis();
         void convert_to_boundary(array_2d<double>&,double,double,int,array_2d<double>&);
@@ -22,17 +22,16 @@ class control_integrator{
         void write_output(int, int,
                         array_1d<double>&,
                         array_1d<double>&,
-                        array_1d<int>&, array_2d<double>&,
+                        array_1d<int>&, array_2d<int>&,
                         double,
-                        array_1d<double>&, array_1d<double>&, array_1d<double>&,
                         double,
                         char*);
     
-        void find_chi_min();
+        void find_chi_min(array_1d<double>&, array_1d<double>&);
     
     private:
         array_1d<double> _min,_max,_dx;
-        double _chi_lim_full,_chi_min;
+        double _chi_lim_freq,_delta_chi_bayes,_chi_min;
         function_wrapper *_chisq;
         char _name_root[letters];
 

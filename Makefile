@@ -121,6 +121,14 @@ object/control_integrator.o: src/controls/control_integrator.cpp \
 include/controls/control_integrator.h object/simplex.o object/kd.o
 	$(gg) -c -o object/control_integrator.o src/controls/control_integrator.cpp
 
+jellyBean_control: object/control_integrator.o src/controls/jellyBean_control.cpp \
+object/jellyBean.o
+	$(gg) -o bin/jellyBean_control src/controls/jellyBean_control.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/wrappers.o \
+	object/chisq.o object/jellyBean.o object/control_integrator.o \
+	object/simplex.o \
+	$(LIBRARIES)
+
 s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
 	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
