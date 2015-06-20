@@ -373,11 +373,11 @@ void control_integrator::write_output(int xdex, int ydex,
                 
             }
             
-            if(minChi2Grid.get_data(ix,iy)<=_chi_min+_delta_chi_bayes){
+            if(minChi2Grid.get_data(ix,iy)<=_delta_chi_bayes){
                 frequentistFullDrelative.add_row(trial);
             }
             
-            if(minChi2Grid.get_data(ix,iy)<=_chi_min+delta_chi_2d){
+            if(minChi2Grid.get_data(ix,iy)<=delta_chi_2d){
                 frequentist2D.add_row(trial);
             }
         }
