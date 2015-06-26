@@ -2671,32 +2671,6 @@ void node::search(){
         simplex_search();
     }
     
-    array_1d<double> geomCenter;
-    geomCenter.set_name("node_search_geomCenter");
-    int i,iGeom;
-    double mu;
-    
-    if(_chimin_bases-_chimin>0.5*(_chisquared->target()-_chimin_bases)){
-        ibefore=_chisquared->get_called();
-        compass_search();
-        for(i=0;i<_chisquared->get_dim();i++){
-            geomCenter.set(i,0.5*(_max_found.get_data(i)+_min_found.get_data(i)));
-        }
-        
-        evaluate(geomCenter,&mu,&iGeom);
-        
-        if(mu<_chisquared->target()){
-            off_center_compass(iGeom);
-        }
-        
-        find_bases();
-        
-        if(_min_basis_error_changed==1){
-            initialize_ricochet();
-            _active=1;
-        }
-        _ct_simplex+=_chisquared->get_called()-ibefore;
-    }
 
     if(_ricochet_particles.get_dim()==0){
         printf("deactivating because no particles are worth it\n");
