@@ -3076,12 +3076,6 @@ void node::ricochet(){
        exit(1);
    }
 
-   array_1d<int> rejectThis;
-   rejectThis.set_name("node_ricochet_rejectThis");
-   for(i=0;i<_ricochet_particles.get_dim();i++){
-       rejectThis.set(i,0);
-   }
-
    iChosen=-1;
    double mu;
    int isAStrike;
@@ -3123,13 +3117,8 @@ void node::ricochet(){
        }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-           if(_ricochet_candidates.get_dim()>0){
-               originate_particle(i,_ricochet_velocities(i)[0]);
-               _ricochet_strikes.set(i,0);
-           }
-           else{
-               rejectThis.set(i,1);
-           }
+           originate_particle(i,_ricochet_velocities(i)[0]);
+           _ricochet_strikes.set(i,0);
        }
        
        if(iChosen<0 || mu>ddmax){
@@ -3142,17 +3131,6 @@ void node::ricochet(){
        
    }
    
-   for(i=0;i<_ricochet_particles.get_dim();i++){
-       if(rejectThis.get_data(i)==1){
-           _ricochet_particles.remove(i);
-           _ricochet_velocities.remove_row(i);
-           _ricochet_strikes.remove(i);
-           _ricochet_discovery_dexes.remove(i);
-           rejectThis.remove(i);
-           i--;
-       }
-   }
-
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
    
