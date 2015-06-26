@@ -75,8 +75,8 @@ private:
     
     chisq_wrapper *_chisquared;
     
-    int bisection(array_1d<double>&,double,array_1d<double>&,double,int);
-    int bisection(array_1d<double>&,double,array_1d<double>&,double,int,double,double);
+    int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int);
+    int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int,double,double);
     
     void perturb_bases(int,array_1d<double>&,array_2d<double>&);
     double basis_error(array_2d<double>&,array_1d<double>&);

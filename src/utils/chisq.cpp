@@ -7,66 +7,66 @@
 void chisquared::allot_arrays(){
     int ix,iy;
     
-    bases.set_dim(dim,dim);
-    widths.set_dim(ncenters,dim);
-    centers.set_dim(ncenters,dim);     
-    nboundary.set_dim(dim*dim);
-    boundary_room.set_dim(dim*dim);
+    _bases.set_dim(_dim,_dim);
+    _widths.set_dim(_ncenters,_dim);
+    _centers.set_dim(_ncenters,_dim);     
+    _nboundary.set_dim(_dim*_dim);
+    _boundary_room.set_dim(_dim*_dim);
 
     
-    for(ix=0;ix<dim*dim;ix++)nboundary.set(ix,0);
-    for(ix=0;ix<dim*dim;ix++)boundary_room.set(ix,3);
+    for(ix=0;ix<_dim*_dim;ix++)_nboundary.set(ix,0);
+    for(ix=0;ix<_dim*_dim;ix++)_boundary_room.set(ix,3);
     
-    boundary=new double**[dim*dim];
-    for(ix=0;ix<dim*dim;ix++){
-        boundary[ix]=new double*[boundary_room.get_data(ix)];
-        for(iy=0;iy<boundary_room.get_data(ix);iy++){
-	    boundary[ix][iy]=new double[3];
+    _boundary=new double**[_dim*_dim];
+    for(ix=0;ix<_dim*_dim;ix++){
+        _boundary[ix]=new double*[_boundary_room.get_data(ix)];
+        for(iy=0;iy<_boundary_room.get_data(ix);iy++){
+	    _boundary[ix][iy]=new double[3];
 	}
         
     }
     
-    mins.set_dim(dim);
-    maxs.set_dim(dim);
+    _mins.set_dim(_dim);
+    _maxs.set_dim(_dim);
 
-    for(ix=0;ix<dim;ix++){
-        mins.set(ix,2.0*exception_value);
-	maxs.set(ix,-2.0*exception_value);
+    for(ix=0;ix<_dim;ix++){
+        _mins.set(ix,2.0*exception_value);
+	_maxs.set(ix,-2.0*exception_value);
     } 
     
-    bases.set_name("chisq_bases");
-    widths.set_name("chisq_widths");
-    centers.set_name("chisq_centers");
-    nboundary.set_name("chisq_nboundary");
-    boundary_room.set_name("chisq_boundary_room");
-    mins.set_name("chisq_mins");
-    maxs.set_name("chisq_maxs");
+    _bases.set_name("chisq_bases");
+    _widths.set_name("chisq_widths");
+    _centers.set_name("chisq_centers");
+    _nboundary.set_name("chisq_nboundary");
+    _boundary_room.set_name("chisq_boundary_room");
+    _mins.set_name("chisq_mins");
+    _maxs.set_name("chisq_maxs");
     
 }
 
 void chisquared::set_max(int dex, double nn){
-    maxs.set(dex,nn);
+    _maxs.set(dex,nn);
 }
 
 void chisquared::set_min(int dex, double nn){
-    mins.set(dex,nn);
+    _mins.set(dex,nn);
 }
 
 double chisquared::get_min(int dex){
-    return mins.get_data(dex);
+    return _mins.get_data(dex);
 }
 
 double chisquared::get_max(int dex){
-    return maxs.get_data(dex);
+    return _maxs.get_data(dex);
 }
 
 double chisquared::get_time_spent(){
-    return time_spent;
+    return _time_spent;
 }
 
 void chisquared::reset_boundary(){
     int i;
-    for(i=0;i<dim*dim;i++)nboundary.set(i,0);
+    for(i=0;i<_dim*_dim;i++)_nboundary.set(i,0);
 }
 
 void chisquared::make_bases(int seed){
@@ -85,60 +85,60 @@ void chisquared::make_bases(int seed, int doCenters){
         do_random_bases=0;
     }
     
-    if(dice==NULL){
-        dice=new Ran(seed);
+    if(_dice==NULL){
+        _dice=new Ran(seed);
     }
     
     double nn;
     int i,j,ii,jj,goon;
     
-    centers.set_where("chisq_make_bases");
-    bases.set_where("chisq_make_bases");
-    widths.set_where("chisq_make_bases");
+    _centers.set_where("chisq_make_bases");
+    _bases.set_where("chisq_make_bases");
+    _widths.set_where("chisq_make_bases");
     
     if(do_random_bases==1){
-        for(ii=0;ii<dim;ii++){
+        for(ii=0;ii<_dim;ii++){
             goon=1;
 	    while(goon==1){
                 goon=0;
-	        for(i=0;i<dim;i++)bases.set(ii,i,dice->doub()-0.5);
+	        for(i=0;i<_dim;i++)_bases.set(ii,i,_dice->doub()-0.5);
 	        for(jj=0;jj<ii;jj++){
 	            nn=0.0;
-		    for(i=0;i<dim;i++)nn+=bases.get_data(ii,i)*bases.get_data(jj,i);
-		    for(i=0;i<dim;i++)bases.subtract_val(ii,i,nn*bases.get_data(jj,i));
+		    for(i=0;i<_dim;i++)nn+=_bases.get_data(ii,i)*_bases.get_data(jj,i);
+		    for(i=0;i<_dim;i++)_bases.subtract_val(ii,i,nn*_bases.get_data(jj,i));
 	        }
 	    
 	        nn=0.0;
-	        for(i=0;i<dim;i++){
-		    nn+=power(bases.get_data(ii,i),2);
+	        for(i=0;i<_dim;i++){
+		    nn+=power(_bases.get_data(ii,i),2);
 	        }
 	        if(nn<1.0e-20)goon=1;
 	        nn=sqrt(nn);
-	        for(i=0;i<dim;i++){
-	            bases.divide_val(ii,i,nn);
+	        for(i=0;i<_dim;i++){
+	            _bases.divide_val(ii,i,nn);
 	        }
 	    }
         }
     }//if do_random_bases==1
     else{
-        for(i=0;i<dim;i++){
-            for(jj=0;jj<dim;jj++){
-                if(i==jj)bases.set(i,jj,1.0);
-                else bases.set(i,jj,0.0);
+        for(i=0;i<_dim;i++){
+            for(jj=0;jj<_dim;jj++){
+                if(i==jj)_bases.set(i,jj,1.0);
+                else _bases.set(i,jj,0.0);
             }
         }
     }
     
     double normerr,ortherr;
-    for(ii=0;ii<dim;ii++){
+    for(ii=0;ii<_dim;ii++){
         nn=0.0;
-	for(i=0;i<dim;i++)nn+=power(bases.get_data(ii,i),2);
+	for(i=0;i<_dim;i++)nn+=power(_bases.get_data(ii,i),2);
 	nn=fabs(1.0-nn);
 	if(ii==0 || nn>normerr)normerr=nn;
 	
-	for(jj=ii+1;jj<dim;jj++){
+	for(jj=ii+1;jj<_dim;jj++){
 	   nn=0.0;
-	   for(i=0;i<dim;i++)nn+=bases.get_data(ii,i)*bases.get_data(jj,i);
+	   for(i=0;i<_dim;i++)nn+=_bases.get_data(ii,i)*_bases.get_data(jj,i);
 	   nn=fabs(nn);
 	   if((ii==0 && jj==1) || nn>ortherr)ortherr=nn;
 	}
@@ -154,14 +154,14 @@ void chisquared::make_bases(int seed, int doCenters){
         make_centersRandom();
     }
     
-    centers.set_where("nowhere");
-    bases.set_where("nowhere");
-    widths.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _bases.set_where("nowhere");
+    _widths.set_where("nowhere");
     
-    time_spent=0.0;
-    called=0;
+    _time_spent=0.0;
+    _called=0;
     
-    //printf("set centers and widths %d %d\n",dim,ncenters);
+    //printf("set centers and widths %d %d\n",_dim,_ncenters);
     
 }  
 
@@ -176,8 +176,8 @@ void chisquared::make_centersRandom(){
     array_1d<double> trial_center,trial_pt;
     int acceptable,iterations=0;;
     
-    trial_center.set_dim(dim);
-    trial_pt.set_dim(dim);
+    trial_center.set_dim(_dim);
+    trial_pt.set_dim(_dim);
 
     goon=0;
     while(goon==0){
@@ -185,30 +185,30 @@ void chisquared::make_centersRandom(){
         
         if(iterations>5000){
             printf("WARNING; chisq was unable to construct an acceptable function\n");
-            printf("ncenters %d dim %d\n",ncenters,dim);
+            printf("ncenters %d dim %d\n",_ncenters,_dim);
             
             exit(1);
         }
         
-	for(ii=0;ii<ncenters;ii++){
-            for(i=0;i<dim;i++)centers.set(ii,i,1.0e30);
-	    for(i=0;i<dim;i++)widths.set(ii,i,1.0e-5);
+	for(ii=0;ii<_ncenters;ii++){
+            for(i=0;i<_dim;i++)_centers.set(ii,i,1.0e30);
+	    for(i=0;i<_dim;i++)_widths.set(ii,i,1.0e-5);
         }
 	
 	goon=1;
-        for(ii=0;ii<ncenters;ii++){
+        for(ii=0;ii<_ncenters;ii++){
 	    
 	    acceptable=1;
 	    
-	    for(i=0;i<dim;i++)trial_center.set(i,0.0);
+	    for(i=0;i<_dim;i++)trial_center.set(i,0.0);
 	    
-            for(i=0;i<dim;i++){
-                trial_center.add_val(i,normal_deviate(dice,0.0,30.0));
+            for(i=0;i<_dim;i++){
+                trial_center.add_val(i,normal_deviate(_dice,0.0,30.0));
 	    }
             
 	    if(ii>0){
-	        rr=normal_deviate(dice,40.0,20.0);
-	        theta=dice->doub()*2.0*pi;
+	        rr=normal_deviate(_dice,40.0,20.0);
+	        theta=_dice->doub()*2.0*pi;
 	        
                 if(cos(theta)<0.0)dx=-2.0;
                 else dx=2.0;
@@ -216,14 +216,14 @@ void chisquared::make_centersRandom(){
                 if(sin(theta)<0.0)dy=-2.0;
                 else dy=2.0;
                 
-		trial_center.set(0,centers.get_data(0,0)+(rr*cos(theta)+dx)*widths.get_data(0,0));
-		trial_center.set(1,centers.get_data(0,1)+(rr*sin(theta)+dy)*widths.get_data(0,1));
+		trial_center.set(0,_centers.get_data(0,0)+(rr*cos(theta)+dx)*_widths.get_data(0,0));
+		trial_center.set(1,_centers.get_data(0,1)+(rr*sin(theta)+dy)*_widths.get_data(0,1));
 	 
 	    } 
 
-	    for(i=0;i<dim;i++){
+	    for(i=0;i<_dim;i++){
 		trial_pt.set(i,0.0);
-	        for(j=0;j<dim;j++)trial_pt.add_val(i,trial_center.get_data(j)*bases.get_data(j,i));
+	        for(j=0;j<_dim;j++)trial_pt.add_val(i,trial_center.get_data(j)*_bases.get_data(j,i));
 	    }
 	    
 	    rr=(*this)(trial_pt);
@@ -231,9 +231,9 @@ void chisquared::make_centersRandom(){
 	    if(rr<100.0)acceptable=0;
 	    
 	    if(acceptable==1){
-	        for(i=0;i<dim;i++){
-		    centers.set(ii,i,trial_center.get_data(i));
-		    widths.set(ii,i,fabs(normal_deviate(dice,3.0-(1.8/21.0)*double(dim),0.05))+0.05);
+	        for(i=0;i<_dim;i++){
+		    _centers.set(ii,i,trial_center.get_data(i));
+		    _widths.set(ii,i,fabs(normal_deviate(_dice,3.0-(1.8/21.0)*double(_dim),0.05))+0.05);
 	        }
 	    }
 	    else ii--;
@@ -244,17 +244,17 @@ void chisquared::make_centersRandom(){
 	
 	
 	
-	for(i=0;i<dim && acceptable==1;i++){
-	    for(ii=0;ii<ncenters && acceptable==1;ii++){
-                if(centers.get_data(ii,i)-4.0*widths.get_data(ii,i)<-100.0)acceptable=0;
-                if(centers.get_data(ii,i)+4.0*widths.get_data(ii,i)>100.0)acceptable=0;
+	for(i=0;i<_dim && acceptable==1;i++){
+	    for(ii=0;ii<_ncenters && acceptable==1;ii++){
+                if(_centers.get_data(ii,i)-4.0*_widths.get_data(ii,i)<-100.0)acceptable=0;
+                if(_centers.get_data(ii,i)+4.0*_widths.get_data(ii,i)>100.0)acceptable=0;
                 
-	        for(jj=ii+1;jj<ncenters && acceptable==1;jj++){
-		    nn=fabs(centers.get_data(ii,i)-centers.get_data(jj,i));
-		    if(nn<2.0*widths.get_data(ii,i) || nn<2.0*widths.get_data(jj,i)){
+	        for(jj=ii+1;jj<_ncenters && acceptable==1;jj++){
+		    nn=fabs(_centers.get_data(ii,i)-_centers.get_data(jj,i));
+		    if(nn<2.0*_widths.get_data(ii,i) || nn<2.0*_widths.get_data(jj,i)){
                         acceptable=0;
-                        //printf("centers %d %d -- %d -- %e %e -- %e %e\n",ii,jj,i,centers.get_data(ii,i),widths.get_data(ii,i),
-                        //centers.get_data(jj,i),widths.get_data(jj,i));
+                        //printf("centers %d %d -- %d -- %e %e -- %e %e\n",ii,jj,i,centers.get_data(ii,i),_widths.get_data(ii,i),
+                        //centers.get_data(jj,i),_widths.get_data(jj,i));
                     }
 		}
 	    }
@@ -284,48 +284,48 @@ void chisquared::add_to_boundary(array_1d<double> &alpha, int ix, int iy,double 
 	iy=i;
     }
     
-    ipt=ix*dim+iy;
-    room=boundary_room.get_data(ipt);
+    ipt=ix*_dim+iy;
+    room=_boundary_room.get_data(ipt);
     
-    if(nboundary.get_data(ipt)>=room){
+    if(_nboundary.get_data(ipt)>=room){
   
 	buffer.set_dim(room,3);
 	for(i=0;i<room;i++){
-	    for(j=0;j<3;j++)buffer.set(i,j,boundary[ipt][i][j]);
-	    delete [] boundary[ipt][i];
+	    for(j=0;j<3;j++)buffer.set(i,j,_boundary[ipt][i][j]);
+	    delete [] _boundary[ipt][i];
 	}
-        delete [] boundary[ipt];
-	boundary_room.add_val(ipt,100);
-	boundary[ipt]=new double*[boundary_room.get_data(ipt)];
-	for(i=0;i<boundary_room.get_data(ipt);i++)boundary[ipt][i]=new double[3];
+        delete [] _boundary[ipt];
+	_boundary_room.add_val(ipt,100);
+	_boundary[ipt]=new double*[_boundary_room.get_data(ipt)];
+	for(i=0;i<_boundary_room.get_data(ipt);i++)_boundary[ipt][i]=new double[3];
 	
 	for(i=0;i<room;i++){
-	    for(j=0;j<3;j++)boundary[ipt][i][j]=buffer.get_data(i,j);
+	    for(j=0;j<3;j++)_boundary[ipt][i][j]=buffer.get_data(i,j);
 	}
 	buffer.reset();
     }
     
-    boundary[ipt][nboundary.get_data(ipt)][0]=alpha.get_data(ix);
-    boundary[ipt][nboundary.get_data(ipt)][1]=alpha.get_data(iy);
-    boundary[ipt][nboundary.get_data(ipt)][2]=chitest;
+    _boundary[ipt][_nboundary.get_data(ipt)][0]=alpha.get_data(ix);
+    _boundary[ipt][_nboundary.get_data(ipt)][1]=alpha.get_data(iy);
+    _boundary[ipt][_nboundary.get_data(ipt)][2]=chitest;
     
-    nboundary.add_val(ipt,1);
+    _nboundary.add_val(ipt,1);
     
     rr=0.0;
-    for(i=0;i<dim;i++)rr+=alpha.get_data(i)*alpha.get_data(i);
+    for(i=0;i<_dim;i++)rr+=alpha.get_data(i)*alpha.get_data(i);
     rr=sqrt(rr);
-    if(rr>rr_max)rr_max=rr;
+    if(rr>_rr_max)_rr_max=rr;
     
-    pt.set_dim(dim);
-    for(i=0;i<dim;i++)pt.set(i,0.0);
-    for(i=0;i<dim;i++){
-        for(j=0;j<dim;j++){
-	    pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+    pt.set_dim(_dim);
+    for(i=0;i<_dim;i++)pt.set(i,0.0);
+    for(i=0;i<_dim;i++){
+        for(j=0;j<_dim;j++){
+	    pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 	}
     }
     
     double nn=0.0;
-    for(i=0;i<dim;i++)nn+=pt.get_data(i)*pt.get_data(i);
+    for(i=0;i<_dim;i++)nn+=pt.get_data(i)*pt.get_data(i);
     nn=sqrt(nn);
     if(fabs(nn-rr)>1.0e-4){
         printf("WARNING nn %e rr %e\n",nn,rr);
@@ -333,9 +333,9 @@ void chisquared::add_to_boundary(array_1d<double> &alpha, int ix, int iy,double 
     
     //not sure why this is here
     //I think I was using it for analysis of cartoons
-    /*for(i=0;i<dim;i++){
-        if(pt.get_data(i)<mins.get_data(i))mins.set(i,pt.get_data(i));
-	if(pt.get_data(i)>maxs.get_data(i))maxs.set(i,pt.get_data(i));
+    /*for(i=0;i<_dim;i++){
+        if(pt.get_data(i)<_mins.get_data(i))_mins.set(i,pt.get_data(i));
+	if(pt.get_data(i)>_maxs.get_data(i))_maxs.set(i,pt.get_data(i));
     }*/
     
 }
@@ -345,15 +345,15 @@ void chisquared::print_mins_maxs(){
     double nn;
     nn=0.0;
     printf("mins and maxs\n");
-    for(i=0;i<dim;i++){
-        printf("p%d -- %e %e -- %e\n",i,mins.get_data(i),maxs.get_data(i),maxs.get_data(i)-mins.get_data(i));
-	nn+=power(maxs.get_data(i)-mins.get_data(i),2);
+    for(i=0;i<_dim;i++){
+        printf("p%d -- %e %e -- %e\n",i,_mins.get_data(i),_maxs.get_data(i),_maxs.get_data(i)-_mins.get_data(i));
+	nn+=power(_maxs.get_data(i)-_mins.get_data(i),2);
     }
     printf("\nfiducial distance %e\n",sqrt(nn));
 }
 
 double chisquared::get_rr_max(){
-    return rr_max;
+    return _rr_max;
 }
 
 int chisquared::get_n_boundary(int ix, int iy){
@@ -365,37 +365,37 @@ int chisquared::get_n_boundary(int ix, int iy){
 	iy=i;
     }
     
-    return nboundary.get_data(ix*dim+iy);
+    return _nboundary.get_data(ix*_dim+iy);
 }
 
 double chisquared::get_width(int ic, int ix){
   
-    return widths.get_data(ic,ix);
+    return _widths.get_data(ic,ix);
    
 }
 
 double chisquared::get_center(int ic, int ix){
-    return centers.get_data(ic,ix);
+    return _centers.get_data(ic,ix);
 }
 
 double chisquared::get_real_center(int ic, int ix){
-    if(ic>=ncenters || ix>=dim){
+    if(ic>=_ncenters || ix>=_dim){
         return exception_value;
     }
     
     int i;
     double ans=0.0;
-    for(i=0;i<dim;i++){
-        ans+=centers.get_data(ic,i)*bases.get_data(i,ix);
+    for(i=0;i<_dim;i++){
+        ans+=_centers.get_data(ic,i)*_bases.get_data(i,ix);
     }
     return ans;
     
 }
 
 double chisquared::distance_to_center(int ic, array_1d<double> &pt){
-    if(ic<0 || ic>=centers.get_rows()){
+    if(ic<0 || ic>=_centers.get_rows()){
         printf("WARHNG asked for center %d but max %d\n",
-	ic,centers.get_rows());
+	ic,_centers.get_rows());
 	
 	exit(1);
     }
@@ -404,14 +404,14 @@ double chisquared::distance_to_center(int ic, array_1d<double> &pt){
     
     int i;
     
-    for(i=0;i<centers.get_cols();i++){
+    for(i=0;i<_centers.get_cols();i++){
         projected.set(i,project_to_basis(i,pt));
     }
     
     double dd;
     dd=0.0;
-    for(i=0;i<centers.get_cols();i++){
-        dd+=power(projected.get_data(i)-centers.get_data(ic,i),2);
+    for(i=0;i<_centers.get_cols();i++){
+        dd+=power(projected.get_data(i)-_centers.get_data(ic,i),2);
     }
     dd=sqrt(dd);
     return dd;
@@ -426,12 +426,12 @@ double chisquared::get_boundary(int ix, int iy, int ipt, int idim){
 	iy=i;
     }
     
-    if(ix<0 || iy<0 || ix>=dim || iy>=dim){
-        printf("WARNING asked for boundary slog %d %d but dim %d\n",ix,iy,dim);
+    if(ix<0 || iy<0 || ix>=_dim || iy>=_dim){
+        printf("WARNING asked for boundary slog %d %d but dim %d\n",ix,iy,_dim);
     }
     
-    if(idim>=3 || ipt>=nboundary.get_data(ix*dim+iy))return exception_value;
-    return boundary[ix*dim+iy][ipt][idim];
+    if(idim>=3 || ipt>=_nboundary.get_data(ix*_dim+iy))return exception_value;
+    return _boundary[ix*_dim+iy][ipt][idim];
 }
 
 void chisquared::death_knell(char *word)const{
@@ -440,11 +440,11 @@ void chisquared::death_knell(char *word)const{
 }
 
 int chisquared::get_dim(){
-    return dim;
+    return _dim;
 }
 
 int chisquared::get_ncenters(){
-    return ncenters;
+    return _ncenters;
 }
 
 chisquared::chisquared(){
@@ -452,31 +452,31 @@ chisquared::chisquared(){
 };
 
 chisquared::chisquared(int id){
-    ncenters=1;
-    dim=id;
+    _ncenters=1;
+    _dim=id;
     
-    time_spent=0.0;
+    _time_spent=0.0;
     
-    boundary=NULL;
-    dice=NULL;
+    _boundary=NULL;
+    _dice=NULL;
     
-    rr_max=-1.0;
-    called=0;
+    _rr_max=-1.0;
+    _called=0;
     
     allot_arrays();
 };
 
 chisquared::chisquared(int id, int ic){
-    dim=id;
-    ncenters=ic;
+    _dim=id;
+    _ncenters=ic;
     
-    time_spent=0.0;
+    _time_spent=0.0;
  
-    boundary=NULL;   
-    dice=NULL;
+    _boundary=NULL;   
+    _dice=NULL;
      
-    rr_max=-1.0;
-    called=0;
+    _rr_max=-1.0;
+    _called=0;
     
     allot_arrays();
 };
@@ -486,36 +486,36 @@ chisquared::chisquared(int id, int ic){
 chisquared::~chisquared(){
     int i,ix,iy;
     
-    if(boundary!=NULL){
-        for(ix=0;ix<dim;ix++){
-	    for(iy=ix+1;iy<dim;iy++){
-	            for(i=0;i<boundary_room.get_data(ix*dim+iy);i++){
-		        delete [] boundary[ix*dim+iy][i];
+    if(_boundary!=NULL){
+        for(ix=0;ix<_dim;ix++){
+	    for(iy=ix+1;iy<_dim;iy++){
+	            for(i=0;i<_boundary_room.get_data(ix*_dim+iy);i++){
+		        delete [] _boundary[ix*_dim+iy][i];
 		    }
-		    delete [] boundary[ix*dim+iy];
+		    delete [] _boundary[ix*_dim+iy];
 		
 	    }
 	}
-	delete [] boundary;
+	delete [] _boundary;
     }
     
-    if(dice!=NULL){
-        delete dice;
+    if(_dice!=NULL){
+        delete _dice;
     }
 
 }
 
 int chisquared::get_called(){
-    return called;
+    return _called;
 }
 
 void chisquared::reset_timer(){
-    called=0;
-    time_spent=0.0;
+    _called=0;
+    _time_spent=0.0;
 }
 
 void chisquared::decrement_called(){
-    called--;
+    _called--;
 }
 
 double chisquared::operator()(array_1d<double> &v){
@@ -529,24 +529,35 @@ void chisquared::build_boundary(double rr){
 
 void chisquared::get_basis(int ix, array_1d<double> &v){
     int i;
-    if(ix<dim){
-        for(i=0;i<dim;i++)v.set(i,bases.get_data(ix,i));
+    if(ix<_dim){
+        for(i=0;i<_dim;i++)v.set(i,_bases.get_data(ix,i));
     }
     else{
-        printf("WARNING called get_basis with %d %d\n",ix,dim);
+        printf("WARNING called get_basis with %d %d\n",ix,_dim);
 	exit(1);
     }
+}
+
+void chisquared::project_to_basis(array_1d<double> &in, array_1d<double> &out) const{
+    int ix,iy;
+    for(ix=0;ix<_dim;ix++){
+        out.set(ix,0.0);
+        for(iy=0;iy<_dim;iy++){
+            out.add_val(ix,in.get_data(iy)*_bases.get_data(ix,iy));
+        }
+    }
+
 }
 
 double chisquared::project_to_basis(int ix, array_1d<double> &vv) const{
     int i;
     double nn=1.0e30;
-    if(ix<dim){
+    if(ix<_dim){
         nn=0.0;
-	for(i=0;i<dim;i++)nn+=vv.get_data(i)*bases.get_data(ix,i);
+	for(i=0;i<_dim;i++)nn+=vv.get_data(i)*_bases.get_data(ix,i);
     }
     else{
-        printf("WARNING called project_to_basis with %d %d\n",ix,dim);
+        printf("WARNING called project_to_basis with %d %d\n",ix,_dim);
     }
     
     return nn;
@@ -554,18 +565,18 @@ double chisquared::project_to_basis(int ix, array_1d<double> &vv) const{
 
 s_curve::~s_curve(){}
 
-s_curve::s_curve() : chisquared(6), trig_factor(10.0){make_bases(22);
+s_curve::s_curve() : chisquared(6), _trig_factor(10.0){make_bases(22);
 }
 
-s_curve::s_curve(int id) : chisquared(id), trig_factor(10.0){make_bases(22);}
+s_curve::s_curve(int id) : chisquared(id), _trig_factor(10.0){make_bases(22);}
 
-s_curve::s_curve(int id, int ic) : chisquared(id,ic), trig_factor(10.0){
+s_curve::s_curve(int id, int ic) : chisquared(id,ic), _trig_factor(10.0){
         make_bases(22);
-        widths.set(0,0,0.5);
-        widths.set(0,1,0.5);
+        _widths.set(0,0,0.5);
+        _widths.set(0,1,0.5);
         
-        if(ic>1)widths.multiply_val(1,1,0.25);
-        if(ic>2)widths.multiply_val(2,0,0.25);
+        if(ic>1)_widths.multiply_val(1,1,0.25);
+        if(ic>2)_widths.multiply_val(2,0,0.25);
 }
 
 
@@ -576,7 +587,7 @@ ellipses::ellipses() : chisquared(22){make_bases(13);}
 ellipses::ellipses(int id) : chisquared(id){make_bases(13);}
 
 ellipses::ellipses(int id, int ic) : chisquared(id,ic){
-    //printf("constructed dim %d ncenters %d\n",dim,ncenters);
+    //printf("constructed _dim %d _ncenters %d\n",_dim,_ncenters);
     make_bases(13);
 }
 
@@ -586,9 +597,9 @@ ellipses_integrable::ellipses_integrable() : ellipses(){
     make_bases(-13);
     
     /*int i,j;
-    for(i=1;i<ncenters;i++){
-        for(j=0;j<dim;j++){
-            widths.set(i,j,widths.get_data(0,j));
+    for(i=1;i<_ncenters;i++){
+        for(j=0;j<_dim;j++){
+            _widths.set(i,j,_widths.get_data(0,j));
         }
     }*/
 
@@ -598,9 +609,9 @@ ellipses_integrable::ellipses_integrable(int id) : ellipses(id){
     make_bases(-13);
 
     /*int i,j;
-    for(i=1;i<ncenters;i++){
-        for(j=0;j<dim;j++){
-            widths.set(i,j,widths.get_data(0,j));
+    for(i=1;i<_ncenters;i++){
+        for(j=0;j<_dim;j++){
+            _widths.set(i,j,_widths.get_data(0,j));
         }
     }*/
     
@@ -610,9 +621,9 @@ ellipses_integrable::ellipses_integrable(int id, int ic) : ellipses(id,ic){
     make_bases(-13);
 
     /*int i,j;
-    for(i=1;i<ncenters;i++){
-        for(j=0;j<dim;j++){
-            widths.set(i,j,widths.get_data(0,j));
+    for(i=1;i<_ncenters;i++){
+        for(j=0;j<_dim;j++){
+            _widths.set(i,j,_widths.get_data(0,j));
         }
     }*/
 
@@ -638,28 +649,28 @@ void s_curve::get_trough_points(array_2d<double> &outpoints){
     //first do the points along the S curve
     array_1d<double> a0;
     int i,j;
-    for(i=0;i<dim;i++){
-        a0.set(i,centers.get_data(0,i));
+    for(i=0;i<_dim;i++){
+        a0.set(i,_centers.get_data(0,i));
     }
     
     array_1d<double> vv;
     double theta,chival,xth,yth;
     
     for(theta=-1.0*pi;theta<=1.0*pi+0.001;theta+=0.4*pi){
-        xth=trig_factor*sin(theta)+centers.get_data(0,0);
+        xth=_trig_factor*sin(theta)+_centers.get_data(0,0);
         if(theta!=0.0){
-	    yth=trig_factor*theta*(cos(theta)-1.0)/fabs(theta)+centers.get_data(0,1);
+	    yth=_trig_factor*theta*(cos(theta)-1.0)/fabs(theta)+_centers.get_data(0,1);
         }
         else{
-            yth=centers.get_data(0,1);
+            yth=_centers.get_data(0,1);
         }
 	a0.set(0,xth);
         a0.set(1,yth);
         
-        for(i=0;i<dim;i++){
+        for(i=0;i<_dim;i++){
             vv.set(i,0.0);
-            for(j=0;j<dim;j++){
-                vv.add_val(i,a0.get_data(j)*bases.get_data(j,i));
+            for(j=0;j<_dim;j++){
+                vv.add_val(i,a0.get_data(j)*_bases.get_data(j,i));
             }
         }
         chival=(*this)(vv);
@@ -672,11 +683,11 @@ void s_curve::get_trough_points(array_2d<double> &outpoints){
     }
     
     int k;
-    for(i=1;i<ncenters;i++){
-        for(j=0;j<dim;j++){
+    for(i=1;i<_ncenters;i++){
+        for(j=0;j<_dim;j++){
             vv.set(j,0.0);
-            for(k=0;k<dim;k++){
-                vv.add_val(j,centers.get_data(i,k)*bases.get_data(k,j));
+            for(k=0;k<_dim;k++){
+                vv.add_val(j,_centers.get_data(i,k)*_bases.get_data(k,j));
             }
         }
         
@@ -688,13 +699,13 @@ void s_curve::get_trough_points(array_2d<double> &outpoints){
         outpoints.add_row(vv);
     }
     
-    called=0;
+    _called=0;
 
 }
 
 void s_curve::get_border_points(array_2d<double> &outpoints){
 
-    if(dice==NULL){
+    if(_dice==NULL){
         death_knell("you called build_boundary before making bases");
     }
 
@@ -706,15 +717,15 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     
     array_1d<double> pt,alpha;
     
-    alpha.set_dim(dim);
-    pt.set_dim(dim);
+    alpha.set_dim(_dim);
+    pt.set_dim(_dim);
     
     alpha.set_name("s_curve_border_alpha");
     pt.set_name("s_curve_border_pt");
     
-    centers.set_where("s_curve_border");
-    bases.set_where("s_curve_border");
-    widths.set_where("s_curve_border");
+    _centers.set_where("s_curve_border");
+    _bases.set_where("s_curve_border");
+    _widths.set_where("s_curve_border");
     
     ///////////////below we will do ix=0, iy=1 for the 0th center (the S curve itself)
     ix=0;
@@ -726,27 +737,27 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     
     fWorst=-1.0;
     
-    if(widths.get_data(0,0)<widths.get_data(0,1))ds=0.1*widths.get_data(0,0);
-    else ds=0.1*widths.get_data(0,1);
+    if(_widths.get_data(0,0)<_widths.get_data(0,1))ds=0.1*_widths.get_data(0,0);
+    else ds=0.1*_widths.get_data(0,1);
     
     for(theta=-1.0*pi;theta<=1.01*pi;theta+=0.5*pi){
         if(theta<0.0)dfabsdth=-1.0;
         else dfabsdth=1.0;
     
-        x0=centers.get_data(0,0)+trig_factor*sin(theta);
+        x0=_centers.get_data(0,0)+_trig_factor*sin(theta);
         if(theta!=0.0){
-            y0=centers.get_data(0,1)+trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
+            y0=_centers.get_data(0,1)+_trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
         }
         else{
-            y0=centers.get_data(0,1);
+            y0=_centers.get_data(0,1);
         }
         
         for(ir=0;ir<2;ir++){
 
-            dxdth=trig_factor*cos(theta);
+            dxdth=_trig_factor*cos(theta);
             
             if(theta!=0.0){
-	        dydth=trig_factor*((cos(theta)-1.0)/fabs(theta)-sin(theta)*theta/fabs(theta)
+	        dydth=_trig_factor*((cos(theta)-1.0)/fabs(theta)-sin(theta)*theta/fabs(theta)
 	                   -(cos(theta)-1.0)*dfabsdth/theta);
             }
             else{
@@ -764,20 +775,20 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
             norm=grad[0]*grad[0]+grad[1]*grad[1];
 	    norm=sqrt(norm);
 	
-	    for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+	    for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
 	    
-            for(i=2;i<dim;i++){
-                alphaUp.set(i,centers.get_data(0,i));
-                alphaDown.set(i,centers.get_data(0,i));
+            for(i=2;i<_dim;i++){
+                alphaUp.set(i,_centers.get_data(0,i));
+                alphaDown.set(i,_centers.get_data(0,i));
             }
             
             alphaDown.set(0,x0);
             alphaDown.set(1,y0);
             alphaUp.set(0,x0);
             alphaUp.set(1,y0);
-            for(i=0;i<dim;i++){
+            for(i=0;i<_dim;i++){
                 pt.set(i,0.0);
-                for(j=0;j<dim;j++)pt.add_val(i,alphaDown.get_data(j)*bases.get_data(j,i));
+                for(j=0;j<_dim;j++)pt.add_val(i,alphaDown.get_data(j)*_bases.get_data(j,i));
             }
             fDown=(*this)(pt);
             if(fDown>br){
@@ -790,10 +801,10 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
                 alphaUp.add_val(0,grad[0]*ds/norm);
                 alphaUp.add_val(1,grad[1]*ds/norm);
                 
-                for(i=0;i<dim;i++){
+                for(i=0;i<_dim;i++){
                     pt.set(i,0.0);
-                    for(j=0;j<dim;j++){
-                        pt.add_val(i,alphaUp.get_data(j)*bases.get_data(j,i));
+                    for(j=0;j<_dim;j++){
+                        pt.add_val(i,alphaUp.get_data(j)*_bases.get_data(j,i));
                     }
                 }
                 fUp=(*this)(pt);
@@ -801,40 +812,40 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
             
             if(fUp-br<br-fDown){
                 fNearest=fUp;
-                for(i=0;i<dim;i++){
+                for(i=0;i<_dim;i++){
                     alphaNearest.set(i,alphaUp.get_data(i));
                     vvNearest.set(i,pt.get_data(i));
                 }
             }
             else{
                 fNearest=fDown;
-                for(i=0;i<dim;i++){
+                for(i=0;i<_dim;i++){
                     alphaNearest.set(i,alphaDown.get_data(i));
                     vvNearest.set(i,pt.get_data(i));
                 }
             }
             
             while(fabs(br-fNearest)>tol){
-                for(i=0;i<dim;i++)alpha.set(i,0.5*(alphaUp.get_data(i)+alphaDown.get_data(i)));
-                for(i=0;i<dim;i++){
+                for(i=0;i<_dim;i++)alpha.set(i,0.5*(alphaUp.get_data(i)+alphaDown.get_data(i)));
+                for(i=0;i<_dim;i++){
                     pt.set(i,0.0);
-                    for(j=0;j<dim;j++){
-                        pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+                    for(j=0;j<_dim;j++){
+                        pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
                     }
                 }
                 
                 ftrial=(*this)(pt);
                 
                 if(ftrial<br){
-                    for(i=0;i<dim;i++)alphaDown.set(i,alpha.get_data(i));
+                    for(i=0;i<_dim;i++)alphaDown.set(i,alpha.get_data(i));
                 }
                 else{
-                    for(i=0;i<dim;i++)alphaUp.set(i,alpha.get_data(i));
+                    for(i=0;i<_dim;i++)alphaUp.set(i,alpha.get_data(i));
                 }
                 
                 if(fabs(br-ftrial)<fabs(br-fNearest)){
                     fNearest=ftrial;
-                    for(i=0;i<dim;i++){
+                    for(i=0;i<_dim;i++){
                         alphaNearest.set(i,alpha.get_data(i));
                         vvNearest.set(i,pt.get_data(i));
                     }
@@ -851,23 +862,23 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     
     printf("after 0,1 fworst %e -- %d\n",fWorst,outpoints.get_rows());
     
-    for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+    for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
     
     double th,s2x,s2y,aa,rr;
     int iabort,abort_max=20;
     for(theta=-1.0*pi;theta<=1.5*pi;theta+=2.0*pi){
-        for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+        for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
     
-        x0=centers.get_data(0,0)+trig_factor*sin(theta);
+        x0=_centers.get_data(0,0)+_trig_factor*sin(theta);
         if(theta!=0.0){
-            y0=centers.get_data(0,1)+trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
+            y0=_centers.get_data(0,1)+_trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
         }
         else{
-            y0=centers.get_data(0,1);
+            y0=_centers.get_data(0,1);
         }
         
-        s2x=widths.get_data(0,0)*widths.get_data(0,0);
-        s2y=widths.get_data(0,1)*widths.get_data(0,1);
+        s2x=_widths.get_data(0,0)*_widths.get_data(0,0);
+        s2y=_widths.get_data(0,1)*_widths.get_data(0,1);
         
 	if(theta<0.0){
 	    th=0.0;
@@ -887,9 +898,9 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
 	    alpha.set(0,x0+rr*cos(th));
 	    alpha.set(1,y0+rr*sin(th));
 	
-	    for(i=0;i<dim;i++){
+	    for(i=0;i<_dim;i++){
 		pt.set(i,0.0);
-	        for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+	        for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 	    }
     
             chitest=(*this)(pt);
@@ -914,26 +925,26 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     /////////////////////now do ix=0,1; iy>=2
     double xx,yy,yth,xth;
 
-    for(iy=2;iy<dim;iy++){for(ir=0;ir<2;ir++){
-        for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+    for(iy=2;iy<_dim;iy++){for(ir=0;ir<2;ir++){
+        for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
         for(theta=-1.0*pi;theta<=1.0*pi;theta+=0.5*pi){
-           alpha.set(0,centers.get_data(0,0)+trig_factor*sin(theta));
+           alpha.set(0,_centers.get_data(0,0)+_trig_factor*sin(theta));
            
            if(theta!=0.0){
-               alpha.set(1,centers.get_data(0,1)
-                   +trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
+               alpha.set(1,_centers.get_data(0,1)
+                   +_trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
        
            }
            else{
-               alpha.set(1,centers.get_data(0,1));
+               alpha.set(1,_centers.get_data(0,1));
            }
            
-           if(ir==0)alpha.set(iy,centers.get_data(0,iy)+sqrt(br)*widths.get_data(0,iy));
-           else alpha.set(iy,centers.get_data(0,iy)-sqrt(br)*widths.get_data(0,iy));
+           if(ir==0)alpha.set(iy,_centers.get_data(0,iy)+sqrt(br)*_widths.get_data(0,iy));
+           else alpha.set(iy,_centers.get_data(0,iy)-sqrt(br)*_widths.get_data(0,iy));
        
-           for(i=0;i<dim;i++){
+           for(i=0;i<_dim;i++){
 	       pt.set(i,0.0);
-	       for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+	       for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
            } 
            chitest=(*this)(pt);
            
@@ -963,30 +974,30 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
         }
 
 
-        s2x=widths.get_data(0,ix)*widths.get_data(0,ix);
-        for(iy=2;iy<dim;iy++){
-            s2y=widths.get_data(0,iy)*widths.get_data(0,iy);
-            for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+        s2x=_widths.get_data(0,ix)*_widths.get_data(0,ix);
+        for(iy=2;iy<_dim;iy++){
+            s2y=_widths.get_data(0,iy)*_widths.get_data(0,iy);
+            for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
             for(theta=thetamin;theta<thetamax;theta+=dtheta){
 	     
 	         if(ix==0){
-	             xth=centers.get_data(0,0)+trig_factor*sin(theta);
+	             xth=_centers.get_data(0,0)+_trig_factor*sin(theta);
                      if(theta!=0.0){
-	                 alpha.set(1,centers.get_data(0,1)
-		            +trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
+	                 alpha.set(1,_centers.get_data(0,1)
+		            +_trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
                      }
                      else{
-                         alpha.set(1,centers.get_data(0,1));
+                         alpha.set(1,_centers.get_data(0,1));
                      }
 	         }
 	         else{
                      if(theta!=0.0){
-	                 xth=centers.get_data(0,1)+trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
+	                 xth=_centers.get_data(0,1)+_trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
                      }
                      else{
-                         xth=centers.get_data(0,1);
+                         xth=_centers.get_data(0,1);
                      }
-	             alpha.set(0,centers.get_data(0,0)+trig_factor*sin(theta));
+	             alpha.set(0,_centers.get_data(0,0)+_trig_factor*sin(theta));
 	         }
 	     
 	     
@@ -995,27 +1006,27 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
 		     rr=br/aa;
 		     rr=sqrt(rr);
 		 
-		     alpha.set(iy,centers.get_data(0,iy)+rr*sin(th));
+		     alpha.set(iy,_centers.get_data(0,iy)+rr*sin(th));
 		     alpha.set(ix,xth+rr*cos(th));
 	         
                      if(ix==0){
                          newtheta=find_theta_from_x(alpha.get_data(ix));
                          if(newtheta!=0.0){
-                             alpha.set(1,centers.get_data(0,1)+trig_factor*newtheta*(cos(newtheta)-1.0)/fabs(newtheta));
+                             alpha.set(1,_centers.get_data(0,1)+_trig_factor*newtheta*(cos(newtheta)-1.0)/fabs(newtheta));
                          }
                          else{
-                             alpha.set(1,centers.get_data(0,1));
+                             alpha.set(1,_centers.get_data(0,1));
                          }
                      }
                      else{
                          newtheta=find_theta_from_y(alpha.get_data(ix));
-                         alpha.set(0,centers.get_data(0,0)+trig_factor*sin(newtheta));
+                         alpha.set(0,_centers.get_data(0,0)+_trig_factor*sin(newtheta));
                      }
 		 
-		     for(i=0;i<dim;i++){
+		     for(i=0;i<_dim;i++){
                          pt.set(i,0.0);
-		         for(j=0;j<dim;j++){
-		             pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+		         for(j=0;j<_dim;j++){
+		             pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 		         }
 		     }
 		     chitest=(*this)(pt);
@@ -1033,24 +1044,24 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
     
     printf("after caps fWorst %e -- %d\n",fWorst,outpoints.get_rows());
     
-    for(ic=0;ic<ncenters;ic++){
-        for(ix=0;ix<dim;ix++){
-	    for(iy=ix+1;iy<dim;iy++){
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+	    for(iy=ix+1;iy<_dim;iy++){
 	        if(ic>0 || ix>1){
 		    
-		    for(i=0;i<dim;i++)alpha.set(i,centers.get_data(ic,i));
-		    s2x=power(widths.get_data(ic,ix),2);
-		    s2y=power(widths.get_data(ic,iy),2);
+		    for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(ic,i));
+		    s2x=power(_widths.get_data(ic,ix),2);
+		    s2y=power(_widths.get_data(ic,iy),2);
 		    for(theta=0.0;theta<=1.9*pi;theta+=0.5*pi){
 		        aa=power(cos(theta),2)/s2x+power(sin(theta),2)/s2y;
 			rr=br/aa;
 			rr=sqrt(rr);
-			alpha.set(ix,centers.get_data(ic,ix)+rr*cos(theta));
-			alpha.set(iy,centers.get_data(ic,iy)+rr*sin(theta));
+			alpha.set(ix,_centers.get_data(ic,ix)+rr*cos(theta));
+			alpha.set(iy,_centers.get_data(ic,iy)+rr*sin(theta));
 		        
-			for(i=0;i<dim;i++){
+			for(i=0;i<_dim;i++){
 			    pt.set(i,0.0);
-			    for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+			    for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 			}
 			
 			chitest=(*this)(pt);
@@ -1068,92 +1079,92 @@ void s_curve::get_border_points(array_2d<double> &outpoints){
 	}
     }
     printf("and finally fWorst %e -- %d\n",fWorst,outpoints.get_rows());
-    centers.set_where("nowhere");
-    widths.set_where("nowhere");
-    bases.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _widths.set_where("nowhere");
+    _bases.set_where("nowhere");
   
     
 }
 
 double s_curve::operator()(array_1d<double> &in_pt){
     
-    if(dice==NULL){
+    if(_dice==NULL){
          death_knell("you called operator before making bases");
     } 
     
     
     double before=double(time(NULL));
     
-    called++;
+    _called++;
 
     
     array_1d<double> dd,pt;
-    dd.set_dim(ncenters);
-    pt.set_dim(dim);
+    dd.set_dim(_ncenters);
+    pt.set_dim(_dim);
     
     pt.set_name("s_curve_operator_pt");
     dd.set_name("s_curve_operator_dd");
     
-    centers.set_where("s_curve_operator");
-    widths.set_where("s_curve_operator");
-    bases.set_where("s_curve_operator");
+    _centers.set_where("s_curve_operator");
+    _widths.set_where("s_curve_operator");
+    _bases.set_where("s_curve_operator");
     
     
     double theta,xth,yth,dth,dthmin;
     int i;
     
-    for(i=0;i<dim;i++)pt.set(i,project_to_basis(i,in_pt));
+    for(i=0;i<_dim;i++)pt.set(i,project_to_basis(i,in_pt));
     
-    //for(i=0;i<dim;i++)printf("%e %e\n",pt[i],centers[0][i]);
+    //for(i=0;i<_dim;i++)printf("%e %e\n",pt[i],_centers[0][i]);
     dd.set(0,0.0);
-    for(i=2;i<dim;i++)dd.add_val(0,power((pt.get_data(i)-centers.get_data(0,i))/widths.get_data(0,i),2));
+    for(i=2;i<_dim;i++)dd.add_val(0,power((pt.get_data(i)-_centers.get_data(0,i))/_widths.get_data(0,i),2));
     
     dthmin=-1.0;
     for(theta=-1.0*pi;theta<=1.0*pi;theta+=0.01){
-        xth=trig_factor*sin(theta)+centers.get_data(0,0);
+        xth=_trig_factor*sin(theta)+_centers.get_data(0,0);
         if(theta!=0.0){
-	    yth=trig_factor*theta*(cos(theta)-1.0)/fabs(theta)+centers.get_data(0,1);
+	    yth=_trig_factor*theta*(cos(theta)-1.0)/fabs(theta)+_centers.get_data(0,1);
         }
         else{
-            yth=centers.get_data(0,1);
+            yth=_centers.get_data(0,1);
         }
-	dth=power((xth-pt.get_data(0))/widths.get_data(0,0),2)+power((yth-pt.get_data(1))/widths.get_data(0,1),2);
+	dth=power((xth-pt.get_data(0))/_widths.get_data(0,0),2)+power((yth-pt.get_data(1))/_widths.get_data(0,1),2);
 	
 	if(dthmin<0.0 || dth<dthmin)dthmin=dth;
     }
     dd.add_val(0,dthmin);
     
     int ii;
-    for(ii=1;ii<ncenters;ii++){
+    for(ii=1;ii<_ncenters;ii++){
         dd.set(ii,0.0);
-	for(i=0;i<dim;i++){
-	    dd.add_val(ii,power((pt.get_data(i)-centers.get_data(ii,i))/widths.get_data(ii,i),2));
+	for(i=0;i<_dim;i++){
+	    dd.add_val(ii,power((pt.get_data(i)-_centers.get_data(ii,i))/_widths.get_data(ii,i),2));
 	}
     }
     
     double ddmin;
-    for(ii=0;ii<ncenters;ii++){
+    for(ii=0;ii<_ncenters;ii++){
         if(ii==0 || dd.get_data(ii)<ddmin)ddmin=dd.get_data(ii);
     }
     
-    centers.set_where("nowhere");
-    bases.set_where("nowhere");
-    widths.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _bases.set_where("nowhere");
+    _widths.set_where("nowhere");
     
-    time_spent+=double(time(NULL))-before;
+    _time_spent+=double(time(NULL))-before;
     
     return ddmin;
 }
 
 double s_curve::distance_to_center(int ic, array_1d<double> &in_pt) {
     
-    if(dice==NULL){
+    if(_dice==NULL){
          death_knell("you called operator before making bases");
     } 
     
-    if(ic<0 || ic>=centers.get_rows()){
+    if(ic<0 || ic>=_centers.get_rows()){
         printf("WARNING asked for center %d but max %d\n",
-	ic,centers.get_rows());
+	ic,_centers.get_rows());
 	
 	exit(1);
     }
@@ -1162,37 +1173,37 @@ double s_curve::distance_to_center(int ic, array_1d<double> &in_pt) {
     
     array_1d<double> pt;
     
-    pt.set_dim(dim);
+    pt.set_dim(_dim);
     
     pt.set_name("s_curve_distance_to_center_pt");
    
-    centers.set_where("s_curve_operator");
-    widths.set_where("s_curve_operator");
-    bases.set_where("s_curve_operator");
+    _centers.set_where("s_curve_operator");
+    _widths.set_where("s_curve_operator");
+    _bases.set_where("s_curve_operator");
     
     
     double theta,xth,yth,dth,dthmin,dd;
     int i;
     
-    for(i=0;i<dim;i++)pt.set(i,project_to_basis(i,in_pt));
+    for(i=0;i<_dim;i++)pt.set(i,project_to_basis(i,in_pt));
     
     
-    //for(i=0;i<dim;i++)printf("%e %e\n",pt[i],centers[0][i]);
+    //for(i=0;i<_dim;i++)printf("%e %e\n",pt[i],_centers[0][i]);
     dd=0.0;
     
     if(ic==0){
-        for(i=2;i<dim;i++)dd+=power((pt.get_data(i)-centers.get_data(0,i))/widths.get_data(0,i),2);
+        for(i=2;i<_dim;i++)dd+=power((pt.get_data(i)-_centers.get_data(0,i))/_widths.get_data(0,i),2);
     
         dthmin=-1.0;
         for(theta=-1.0*pi;theta<=1.0*pi;theta+=0.01){
-            xth=trig_factor*sin(theta)+centers.get_data(0,0);
+            xth=_trig_factor*sin(theta)+_centers.get_data(0,0);
             if(theta!=0.0){
-	        yth=trig_factor*theta*(cos(theta)-1.0)/fabs(theta)+centers.get_data(0,1);
+	        yth=_trig_factor*theta*(cos(theta)-1.0)/fabs(theta)+_centers.get_data(0,1);
             }
             else{
-                yth=centers.get_data(0,1);
+                yth=_centers.get_data(0,1);
             }
-	    dth=power((xth-pt.get_data(0))/widths.get_data(0,0),2)+power((yth-pt.get_data(1))/widths.get_data(0,1),2);
+	    dth=power((xth-pt.get_data(0))/_widths.get_data(0,0),2)+power((yth-pt.get_data(1))/_widths.get_data(0,1),2);
 	
 	    if(dthmin<0.0 || dth<dthmin)dthmin=dth;
         }
@@ -1200,26 +1211,26 @@ double s_curve::distance_to_center(int ic, array_1d<double> &in_pt) {
     }
     else{
 
-	for(i=0;i<dim;i++){
-	    dd+=power((pt.get_data(i)-centers.get_data(ic,i))/widths.get_data(ic,i),2);
+	for(i=0;i<_dim;i++){
+	    dd+=power((pt.get_data(i)-_centers.get_data(ic,i))/_widths.get_data(ic,i),2);
 	}
     
     }
     
     dd=sqrt(dd);
     
-    centers.set_where("nowhere");
-    bases.set_where("nowhere");
-    widths.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _bases.set_where("nowhere");
+    _widths.set_where("nowhere");
     
     return dd;
 }
 
 double s_curve::find_theta_from_x(double x){
 
-    double dx=x-centers.get_data(0,0);
+    double dx=x-_centers.get_data(0,0);
     
-    double ratio=dx/trig_factor;
+    double ratio=dx/_trig_factor;
     if(ratio>1.0)ratio=1.0;
     else if(ratio<-1.0)ratio=-1.0;
     
@@ -1229,12 +1240,12 @@ double s_curve::find_theta_from_x(double x){
 }
 
 double s_curve::find_theta_from_y(double y){
-    double dy=y-centers.get_data(0,1);
+    double dy=y-_centers.get_data(0,1);
     double sgn;
     if(dy<0.0)sgn=1.0;
     else sgn=-1.0;
     
-    double ratio=dy/trig_factor;
+    double ratio=dy/_trig_factor;
     if(ratio>2.0)ratio=2.0;
     else if(ratio<-2.0)ratio=-2.0;
     
@@ -1243,7 +1254,7 @@ double s_curve::find_theta_from_y(double y){
 }
 
 void s_curve::build_boundary(double br){
-    if(dice==NULL){
+    if(_dice==NULL){
         death_knell("you called build_boundary before making bases");
     }
 
@@ -1257,15 +1268,15 @@ void s_curve::build_boundary(double br){
     
     array_1d<double> pt,alpha;
     
-    alpha.set_dim(dim);
-    pt.set_dim(dim);
+    alpha.set_dim(_dim);
+    pt.set_dim(_dim);
     
     alpha.set_name("s_curve_build_boundary_alpha");
     pt.set_name("s_curve_build_boundary_pt");
     
-    centers.set_where("s_curve_build_boundary");
-    bases.set_where("s_curve_build_boundary");
-    widths.set_where("s_curve_build_boundary");
+    _centers.set_where("s_curve_build_boundary");
+    _bases.set_where("s_curve_build_boundary");
+    _widths.set_where("s_curve_build_boundary");
     
     ///////////////below we will do ix=0, iy=1 for the 0th center (the S curve itself)
     ix=0;
@@ -1277,26 +1288,26 @@ void s_curve::build_boundary(double br){
     
     fWorst=-1.0;
     
-    if(widths.get_data(0,0)<widths.get_data(0,1))ds=0.1*widths.get_data(0,0);
-    else ds=0.1*widths.get_data(0,1);
+    if(_widths.get_data(0,0)<_widths.get_data(0,1))ds=0.1*_widths.get_data(0,0);
+    else ds=0.1*_widths.get_data(0,1);
     
     for(theta=-1.0*pi;theta<=1.0*pi;theta+=0.01){
         if(theta<0.0)dfabsdth=-1.0;
         else dfabsdth=1.0;
     
-        x0=centers.get_data(0,0)+trig_factor*sin(theta);
+        x0=_centers.get_data(0,0)+_trig_factor*sin(theta);
         if(theta!=0.0){
-            y0=centers.get_data(0,1)+trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
+            y0=_centers.get_data(0,1)+_trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
         }
         else{
-            y0=centers.get_data(0,1);
+            y0=_centers.get_data(0,1);
         }
     
         for(ir=0;ir<2;ir++){
 
-            dxdth=trig_factor*cos(theta);
+            dxdth=_trig_factor*cos(theta);
             if(theta!=0.0){
-	        dydth=trig_factor*((cos(theta)-1.0)/fabs(theta)-sin(theta)*theta/fabs(theta)
+	        dydth=_trig_factor*((cos(theta)-1.0)/fabs(theta)-sin(theta)*theta/fabs(theta)
 	               -(cos(theta)-1.0)*dfabsdth/theta);
             }
             else{
@@ -1314,20 +1325,20 @@ void s_curve::build_boundary(double br){
             norm=grad[0]*grad[0]+grad[1]*grad[1];
 	    norm=sqrt(norm);
 	
-	    for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+	    for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
 	    
-            for(i=2;i<dim;i++){
-                alphaUp.set(i,centers.get_data(0,i));
-                alphaDown.set(i,centers.get_data(0,i));
+            for(i=2;i<_dim;i++){
+                alphaUp.set(i,_centers.get_data(0,i));
+                alphaDown.set(i,_centers.get_data(0,i));
             }
             
             alphaDown.set(0,x0);
             alphaDown.set(1,y0);
             alphaUp.set(0,x0);
             alphaUp.set(1,y0);
-            for(i=0;i<dim;i++){
+            for(i=0;i<_dim;i++){
                 pt.set(i,0.0);
-                for(j=0;j<dim;j++)pt.add_val(i,alphaDown.get_data(j)*bases.get_data(j,i));
+                for(j=0;j<_dim;j++)pt.add_val(i,alphaDown.get_data(j)*_bases.get_data(j,i));
             }
             fDown=(*this)(pt);
             if(fDown>br){
@@ -1340,10 +1351,10 @@ void s_curve::build_boundary(double br){
                 alphaUp.add_val(0,grad[0]*ds/norm);
                 alphaUp.add_val(1,grad[1]*ds/norm);
                 
-                for(i=0;i<dim;i++){
+                for(i=0;i<_dim;i++){
                     pt.set(i,0.0);
-                    for(j=0;j<dim;j++){
-                        pt.add_val(i,alphaUp.get_data(j)*bases.get_data(j,i));
+                    for(j=0;j<_dim;j++){
+                        pt.add_val(i,alphaUp.get_data(j)*_bases.get_data(j,i));
                     }
                 }
                 fUp=(*this)(pt);
@@ -1351,34 +1362,34 @@ void s_curve::build_boundary(double br){
             
             if(fUp-br<br-fDown){
                 fNearest=fUp;
-                for(i=0;i<dim;i++)alphaNearest.set(i,alphaUp.get_data(i));
+                for(i=0;i<_dim;i++)alphaNearest.set(i,alphaUp.get_data(i));
             }
             else{
                 fNearest=fDown;
-                for(i=0;i<dim;i++)alphaNearest.set(i,alphaDown.get_data(i));
+                for(i=0;i<_dim;i++)alphaNearest.set(i,alphaDown.get_data(i));
             }
             
             while(fabs(br-fNearest)>tol){
-                for(i=0;i<dim;i++)alpha.set(i,0.5*(alphaUp.get_data(i)+alphaDown.get_data(i)));
-                for(i=0;i<dim;i++){
+                for(i=0;i<_dim;i++)alpha.set(i,0.5*(alphaUp.get_data(i)+alphaDown.get_data(i)));
+                for(i=0;i<_dim;i++){
                     pt.set(i,0.0);
-                    for(j=0;j<dim;j++){
-                        pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+                    for(j=0;j<_dim;j++){
+                        pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
                     }
                 }
                 
                 ftrial=(*this)(pt);
                 
                 if(ftrial<br){
-                    for(i=0;i<dim;i++)alphaDown.set(i,alpha.get_data(i));
+                    for(i=0;i<_dim;i++)alphaDown.set(i,alpha.get_data(i));
                 }
                 else{
-                    for(i=0;i<dim;i++)alphaUp.set(i,alpha.get_data(i));
+                    for(i=0;i<_dim;i++)alphaUp.set(i,alpha.get_data(i));
                 }
                 
                 if(fabs(br-ftrial)<fabs(br-fNearest)){
                     fNearest=ftrial;
-                    for(i=0;i<dim;i++)alphaNearest.set(i,alpha.get_data(i));
+                    for(i=0;i<_dim;i++)alphaNearest.set(i,alpha.get_data(i));
                 }
             }
             
@@ -1398,23 +1409,23 @@ void s_curve::build_boundary(double br){
     
     printf("after 0,1 fworst %e\n",fWorst);
     
-    for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+    for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
     
     double th,s2x,s2y,aa,rr,thmin,thmax;
     int iabort,abort_max=20;
     for(theta=-1.0*pi;theta<=1.5*pi;theta+=2.0*pi){
-        for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+        for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
     
-        x0=centers.get_data(0,0)+trig_factor*sin(theta);
+        x0=_centers.get_data(0,0)+_trig_factor*sin(theta);
         if(theta!=0.0){
-            y0=centers.get_data(0,1)+trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
+            y0=_centers.get_data(0,1)+_trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
         }
         else{
-            y0=centers.get_data(0,1);
+            y0=_centers.get_data(0,1);
         }
         
-        s2x=widths.get_data(0,0)*widths.get_data(0,0);
-        s2y=widths.get_data(0,1)*widths.get_data(0,1);
+        s2x=_widths.get_data(0,0)*_widths.get_data(0,0);
+        s2y=_widths.get_data(0,1)*_widths.get_data(0,1);
         
 	if(theta<0.0){
 	    thmin=-0.5*pi;
@@ -1438,9 +1449,9 @@ void s_curve::build_boundary(double br){
 	        alpha.set(0,x0+rr*cos(th));
 	        alpha.set(1,y0+rr*sin(th));
 	
-	        for(i=0;i<dim;i++){
+	        for(i=0;i<_dim;i++){
 		    pt.set(i,0.0);
-	            for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+	            for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 	        }
     
                 chitest=(*this)(pt);
@@ -1468,24 +1479,24 @@ void s_curve::build_boundary(double br){
     /////////////////////now do ix=0,1; iy>=2
     double xx,yy,yth,xth;
 
-    for(iy=2;iy<dim;iy++){for(ir=0;ir<2;ir++){
-        for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+    for(iy=2;iy<_dim;iy++){for(ir=0;ir<2;ir++){
+        for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
         for(theta=-1.0*pi;theta<=1.0*pi;theta+=0.01){
-           alpha.set(0,centers.get_data(0,0)+trig_factor*sin(theta));
+           alpha.set(0,_centers.get_data(0,0)+_trig_factor*sin(theta));
            if(theta!=0.0){
-               alpha.set(1,centers.get_data(0,1)
-                   +trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
+               alpha.set(1,_centers.get_data(0,1)
+                   +_trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
            }
            else{
-               alpha.set(1,centers.get_data(0,1));
+               alpha.set(1,_centers.get_data(0,1));
            }
        
-           if(ir==0)alpha.set(iy,centers.get_data(0,iy)+sqrt(br)*widths.get_data(0,iy));
-           else alpha.set(iy,centers.get_data(0,iy)-sqrt(br)*widths.get_data(0,iy));
+           if(ir==0)alpha.set(iy,_centers.get_data(0,iy)+sqrt(br)*_widths.get_data(0,iy));
+           else alpha.set(iy,_centers.get_data(0,iy)-sqrt(br)*_widths.get_data(0,iy));
        
-           for(i=0;i<dim;i++){
+           for(i=0;i<_dim;i++){
 	       pt.set(i,0.0);
-	       for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+	       for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
            } 
            chitest=(*this)(pt);
            
@@ -1516,31 +1527,31 @@ void s_curve::build_boundary(double br){
         }
 
 
-        s2x=widths.get_data(0,ix)*widths.get_data(0,ix);
-        for(iy=2;iy<dim;iy++){
-            s2y=widths.get_data(0,iy)*widths.get_data(0,iy);
-            for(i=0;i<dim;i++)alpha.set(i,centers.get_data(0,i));
+        s2x=_widths.get_data(0,ix)*_widths.get_data(0,ix);
+        for(iy=2;iy<_dim;iy++){
+            s2y=_widths.get_data(0,iy)*_widths.get_data(0,iy);
+            for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(0,i));
             for(theta=thetamin;theta<thetamax;theta+=dtheta){
 	     
 	         if(ix==0){
-	             xth=centers.get_data(0,0)+trig_factor*sin(theta);
+	             xth=_centers.get_data(0,0)+_trig_factor*sin(theta);
                      if(theta!=0.0){
-	                 alpha.set(1,centers.get_data(0,1)
-		            +trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
+	                 alpha.set(1,_centers.get_data(0,1)
+		            +_trig_factor*theta*(cos(theta)-1.0)/fabs(theta));
                      }
                      else{
-                         alpha.set(1,centers.get_data(0,1));
+                         alpha.set(1,_centers.get_data(0,1));
                      }
 	         }
 	         else{
                      if(theta!=0.0){
-	                 xth=centers.get_data(0,1)+trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
+	                 xth=_centers.get_data(0,1)+_trig_factor*theta*(cos(theta)-1.0)/fabs(theta);
                      }
                      else{
-                         xth=centers.get_data(0,1);
+                         xth=_centers.get_data(0,1);
                      }
                      
-	             alpha.set(0,centers.get_data(0,0)+trig_factor*sin(theta));
+	             alpha.set(0,_centers.get_data(0,0)+_trig_factor*sin(theta));
 	         }
 	     
 	     
@@ -1549,28 +1560,28 @@ void s_curve::build_boundary(double br){
 		     rr=br/aa;
 		     rr=sqrt(rr);
 		 
-		     alpha.set(iy,centers.get_data(0,iy)+rr*sin(th));
+		     alpha.set(iy,_centers.get_data(0,iy)+rr*sin(th));
 		     alpha.set(ix,xth+rr*cos(th));
 	             
                      if(ix==0){
                          newtheta=find_theta_from_x(alpha.get_data(ix));
                          if(newtheta!=0.0){
-                             alpha.set(1,centers.get_data(0,1)+trig_factor*newtheta*(cos(newtheta)-1.0)/fabs(newtheta));
+                             alpha.set(1,_centers.get_data(0,1)+_trig_factor*newtheta*(cos(newtheta)-1.0)/fabs(newtheta));
                          }
                          else{
-                             alpha.set(1,centers.get_data(0,1));
+                             alpha.set(1,_centers.get_data(0,1));
                          }
                      }
                      else{
                          newtheta=find_theta_from_y(alpha.get_data(ix));
-                         alpha.set(0,centers.get_data(0,0)+trig_factor*sin(newtheta));
+                         alpha.set(0,_centers.get_data(0,0)+_trig_factor*sin(newtheta));
                      }
                      
 		 
-		     for(i=0;i<dim;i++){
+		     for(i=0;i<_dim;i++){
 			 pt.set(i,0.0);
-		         for(j=0;j<dim;j++){
-		             pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+		         for(j=0;j<_dim;j++){
+		             pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 		         }
 		     }
 		     chitest=(*this)(pt);
@@ -1588,24 +1599,24 @@ void s_curve::build_boundary(double br){
     
     printf("after caps fWorst %e\n",fWorst);
     
-    for(ic=0;ic<ncenters;ic++){
-        for(ix=0;ix<dim;ix++){
-	    for(iy=ix+1;iy<dim;iy++){
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+	    for(iy=ix+1;iy<_dim;iy++){
 	        if(ic>0 || ix>1){
 		    
-		    for(i=0;i<dim;i++)alpha.set(i,centers.get_data(ic,i));
-		    s2x=power(widths.get_data(ic,ix),2);
-		    s2y=power(widths.get_data(ic,iy),2);
+		    for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(ic,i));
+		    s2x=power(_widths.get_data(ic,ix),2);
+		    s2y=power(_widths.get_data(ic,iy),2);
 		    for(theta=0.0;theta<=2.0*pi;theta+=0.01){
 		        aa=power(cos(theta),2)/s2x+power(sin(theta),2)/s2y;
 			rr=br/aa;
 			rr=sqrt(rr);
-			alpha.set(ix,centers.get_data(ic,ix)+rr*cos(theta));
-			alpha.set(iy,centers.get_data(ic,iy)+rr*sin(theta));
+			alpha.set(ix,_centers.get_data(ic,ix)+rr*cos(theta));
+			alpha.set(iy,_centers.get_data(ic,iy)+rr*sin(theta));
 		        
-			for(i=0;i<dim;i++){
+			for(i=0;i<_dim;i++){
 			    pt.set(i,0.0);
-			    for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+			    for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 			}
 			
 			chitest=(*this)(pt);
@@ -1623,16 +1634,16 @@ void s_curve::build_boundary(double br){
 	}
     }
     printf("and finally fWorst %e\n",fWorst);
-    centers.set_where("nowhere");
-    widths.set_where("nowhere");
-    bases.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _widths.set_where("nowhere");
+    _bases.set_where("nowhere");
   
     
 }
 
 double ellipses::operator()(array_1d<double> &in_pt){
     
-    if(dice==NULL){
+    if(_dice==NULL){
          death_knell("you called operator before making bases");
     } 
     
@@ -1641,27 +1652,27 @@ double ellipses::operator()(array_1d<double> &in_pt){
     int ii,ix;
     double dd,ddmin,nn;
     
-    centers.set_where("ellipse_operator");
-    widths.set_where("ellipse_operator");
-    bases.set_where("ellipse_operator");
+    _centers.set_where("ellipse_operator");
+    _widths.set_where("ellipse_operator");
+    _bases.set_where("ellipse_operator");
     
-    called++;
+    _called++;
     
-    for(ii=0;ii<ncenters;ii++){
+    for(ii=0;ii<_ncenters;ii++){
         dd=0.0;
-        for(ix=0;ix<dim;ix++){
+        for(ix=0;ix<_dim;ix++){
 	    nn=project_to_basis(ix,in_pt);
-	    dd+=power((centers.get_data(ii,ix)-nn)/widths.get_data(ii,ix),2);
-	    //printf("%e\n",centers[ii][ix]-nn);
+	    dd+=power((_centers.get_data(ii,ix)-nn)/_widths.get_data(ii,ix),2);
+	    //printf("%e\n",_centers[ii][ix]-nn);
 	}
 	if(ii==0 || dd<ddmin)ddmin=dd;
     }
     
-    centers.set_where("nowhere");
-    widths.set_where("nowhere");
-    bases.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _widths.set_where("nowhere");
+    _bases.set_where("nowhere");
     
-    time_spent+=double(time(NULL))-before;
+    _time_spent+=double(time(NULL))-before;
     
     return ddmin;
     
@@ -1669,7 +1680,7 @@ double ellipses::operator()(array_1d<double> &in_pt){
 
 void ellipses::build_boundary(double br){
 
-    if(dice==NULL){
+    if(_dice==NULL){
          death_knell("you called build_boundary before making bases");
     } 
     
@@ -1680,42 +1691,42 @@ void ellipses::build_boundary(double br){
     double theta,rr,aa,chitest;
     
     /*
-    printf("in build_boundary centers are\n");
-    for(i=0;i<dim;i++){
-        for(j=0;j<ncenters;j++){
-            printf("%e ",centers.get_data(j,i));
+    printf("in build_boundary _centers are\n");
+    for(i=0;i<_dim;i++){
+        for(j=0;j<_ncenters;j++){
+            printf("%e ",_centers.get_data(j,i));
         }
         printf("\n");
     }
     */
     
     array_1d<double> alpha,pt;
-    alpha.set_dim(dim);
-    pt.set_dim(dim);
+    alpha.set_dim(_dim);
+    pt.set_dim(_dim);
     
     pt.set_name("ellipse_build_boundary_pt");
     alpha.set_name("ellipse_build_boundary_alpha");
     
-    centers.set_where("ellipse_build_boundary");
-    bases.set_where("ellipse_build_boundary");
-    widths.set_where("ellipse_build_boundary");
+    _centers.set_where("ellipse_build_boundary");
+    _bases.set_where("ellipse_build_boundary");
+    _widths.set_where("ellipse_build_boundary");
     
     
-    for(ic=0;ic<ncenters;ic++){
-        for(ix=0;ix<dim;ix++){
-            for(iy=ix+1;iy<dim;iy++){
-	        for(i=0;i<dim;i++)alpha.set(i,centers.get_data(ic,i));
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+            for(iy=ix+1;iy<_dim;iy++){
+	        for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(ic,i));
 	        for(theta=0.0;theta<=2.0*pi;theta+=0.01){
-	            aa=power(cos(theta)/widths.get_data(ic,ix),2)+power(sin(theta)/widths.get_data(ic,iy),2);
+	            aa=power(cos(theta)/_widths.get_data(ic,ix),2)+power(sin(theta)/_widths.get_data(ic,iy),2);
 		    rr=br/aa;
 		    rr=sqrt(rr);
-		    alpha.set(ix,centers.get_data(ic,ix)+rr*cos(theta));
-		    alpha.set(iy,centers.get_data(ic,iy)+rr*sin(theta));
+		    alpha.set(ix,_centers.get_data(ic,ix)+rr*cos(theta));
+		    alpha.set(iy,_centers.get_data(ic,iy)+rr*sin(theta));
 		    
 		    
-		    for(i=0;i<dim;i++){
+		    for(i=0;i<_dim;i++){
 		        pt.set(i,0.0);
-			for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+			for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 		    }
 		    
 		    chitest=(*this)(pt);
@@ -1731,15 +1742,15 @@ void ellipses::build_boundary(double br){
         }
     }
     
-    centers.set_where("nowhere");
-    bases.set_where("nowhere");
-    widths.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _bases.set_where("nowhere");
+    _widths.set_where("nowhere");
     
 }
 
 double linear_ellipses::operator()(array_1d<double> &in_pt){
 
-    if(dice==NULL){
+    if(_dice==NULL){
          death_knell("you called operator before making bases");
     } 
     
@@ -1748,33 +1759,33 @@ double linear_ellipses::operator()(array_1d<double> &in_pt){
     int ii,ix;
     double dd,ddmin,nn;
     
-    centers.set_where("linear_ellipse_operator\n");
-    bases.set_where("linear_ellipse_operator\n");
-    widths.set_where("linear_ellipse_operator\n");
+    _centers.set_where("linear_ellipse_operator\n");
+    _bases.set_where("linear_ellipse_operator\n");
+    _widths.set_where("linear_ellipse_operator\n");
     
-    called++;
+    _called++;
     
-    for(ii=0;ii<ncenters;ii++){
+    for(ii=0;ii<_ncenters;ii++){
         dd=0.0;
-	for(ix=0;ix<dim;ix++){
+	for(ix=0;ix<_dim;ix++){
 	    nn=project_to_basis(ix,in_pt);
-	    dd+=power((centers.get_data(ii,ix)-nn)/widths.get_data(ii,ix),2);
+	    dd+=power((_centers.get_data(ii,ix)-nn)/_widths.get_data(ii,ix),2);
 	}
 	
 	if(ii==0 || dd<ddmin)ddmin=dd;
     }
     
-    centers.set_where("nowhere");
-    bases.set_where("nowhere");
-    widths.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _bases.set_where("nowhere");
+    _widths.set_where("nowhere");
     
-    time_spent+=double(time(NULL))-before;
+    _time_spent+=double(time(NULL))-before;
     
     return sqrt(ddmin);
 }
 
 void linear_ellipses::build_boundary(double br){
-    if(dice==NULL){
+    if(_dice==NULL){
          death_knell("you called build_boundary before making bases");
     } 
     
@@ -1787,32 +1798,32 @@ void linear_ellipses::build_boundary(double br){
     
     array_1d<double> alpha,pt;
     
-    alpha.set_dim(dim);
-    pt.set_dim(dim);
+    alpha.set_dim(_dim);
+    pt.set_dim(_dim);
     
     alpha.set_name("linear_ellipse_build_boundary_alpha");
     pt.set_name("linear_ellipse_build_boundary_pt");
     
-    centers.set_where("linear_ellipse_build_boundary");
-    bases.set_where("linear_ellipse_build_boundary");
-    widths.set_where("linear_ellipse_build_boundary");
+    _centers.set_where("linear_ellipse_build_boundary");
+    _bases.set_where("linear_ellipse_build_boundary");
+    _widths.set_where("linear_ellipse_build_boundary");
     
  
     
-    for(ic=0;ic<ncenters;ic++){
-        for(ix=0;ix<dim;ix++){
-	    for(iy=ix+1;iy<dim;iy++){
-	        for(i=0;i<dim;i++)alpha.set(i,centers.get_data(ic,i));
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+	    for(iy=ix+1;iy<_dim;iy++){
+	        for(i=0;i<_dim;i++)alpha.set(i,_centers.get_data(ic,i));
 		for(theta=0.0;theta<=2.0*pi;theta+=0.01){
-		    aa=power(cos(theta)/widths.get_data(ic,ix),2)+power(sin(theta)/widths.get_data(ic,iy),2);
+		    aa=power(cos(theta)/_widths.get_data(ic,ix),2)+power(sin(theta)/_widths.get_data(ic,iy),2);
 		    rr=br*br/aa;
 		    rr=sqrt(rr);
 		    
-		    alpha.set(ix,centers.get_data(ic,ix)+rr*cos(theta));
-		    alpha.set(iy,centers.get_data(ic,iy)+rr*sin(theta));
-		    for(i=0;i<dim;i++){
+		    alpha.set(ix,_centers.get_data(ic,ix)+rr*cos(theta));
+		    alpha.set(iy,_centers.get_data(ic,iy)+rr*sin(theta));
+		    for(i=0;i<_dim;i++){
 		        pt.set(i,0.0);
-			for(j=0;j<dim;j++)pt.add_val(i,alpha.get_data(j)*bases.get_data(j,i));
+			for(j=0;j<_dim;j++)pt.add_val(i,alpha.get_data(j)*_bases.get_data(j,i));
 		    }
 		    chitest=(*this)(pt);
 		    if(fabs(chitest-br)<tol){
@@ -1827,9 +1838,9 @@ void linear_ellipses::build_boundary(double br){
 	}
     }
     
-    centers.set_where("nowhere");
-    bases.set_where("nowhere");
-    widths.set_where("nowhere");
+    _centers.set_where("nowhere");
+    _bases.set_where("nowhere");
+    _widths.set_where("nowhere");
     
 }
 
@@ -1842,36 +1853,36 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
     int i,j;
     /*
     printf("in integrate_boundary, centers are\n");
-    for(i=0;i<dim;i++){
-        for(j=0;j<ncenters;j++){
-            printf("%e ",centers.get_data(j,i));
+    for(i=0;i<_dim;i++){
+        for(j=0;j<_ncenters;j++){
+            printf("%e ",_centers.get_data(j,i));
         }
         printf("\n");
     }
     */
     
-    for(i=0;i<dim;i++){
-        for(j=0;j<dim;j++){
+    for(i=0;i<_dim;i++){
+        for(j=0;j<_dim;j++){
             if(i==j){
-                if(fabs(bases.get_data(i,j)-1.0)>1.0e-6){
-                    printf("WARNING bases %d %d %e\n",i,j,bases.get_data(i,j));
+                if(fabs(_bases.get_data(i,j)-1.0)>1.0e-6){
+                    printf("WARNING bases %d %d %e\n",i,j,_bases.get_data(i,j));
                     exit(1);
                 }
             }
             else{
-                if(fabs(bases.get_data(i,j))>1.0e-6){
-                    printf("WARNING bases %d %d %e\n",i,j,bases.get_data(i,j));
+                if(fabs(_bases.get_data(i,j))>1.0e-6){
+                    printf("WARNING bases %d %d %e\n",i,j,_bases.get_data(i,j));
                     exit(1);
                 }
             }
         }
     }
     
-    /*for(i=0;i<dim;i++){
-        for(j=1;j<ncenters;j++){
-            if(fabs(widths.get_data(0,i)-widths.get_data(j,i))/widths.get_data(0,i)>1.0e-6){
-                printf("WARNING widths do not agree %e %e %d %d\n",
-                widths.get_data(0,i),widths.get_data(j,i),j,i);
+    /*for(i=0;i<_dim;i++){
+        for(j=1;j<_ncenters;j++){
+            if(fabs(_widths.get_data(0,i)-_widths.get_data(j,i))/_widths.get_data(0,i)>1.0e-6){
+                printf("WARNING _widths do not agree %e %e %d %d\n",
+                _widths.get_data(0,i),_widths.get_data(j,i),j,i);
                 exit(1);
             }
         }
@@ -1885,25 +1896,25 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
     
     array_1d<double> l_marginalized_volume;
     
-    for(icenter=0;icenter<ncenters;icenter++){
+    for(icenter=0;icenter<_ncenters;icenter++){
         l_marginalized_volume.set(icenter,0.0);
-        for(i=0;i<dim;i++){
+        for(i=0;i<_dim;i++){
             if(i!=ix1 && i!=ix2){
-                l_marginalized_volume.add_val(icenter,log(widths.get_data(icenter,i)));
+                l_marginalized_volume.add_val(icenter,log(_widths.get_data(icenter,i)));
             }
         }
     }
     
-    /*for(icenter=0;icenter<ncenters;icenter++){
+    /*for(icenter=0;icenter<_ncenters;icenter++){
         printf("l_vol %e \n",l_marginalized_volume.get_data(icenter));
     }*/
     
-    for(icenter=0;icenter<ncenters;icenter++){
-        if(icenter==0 || widths.get_data(icenter,ix1)>xbound)xbound=widths.get_data(icenter,ix1);
-        if(icenter==0 || widths.get_data(icenter,ix1)<xwidth)xwidth=widths.get_data(icenter,ix1);
+    for(icenter=0;icenter<_ncenters;icenter++){
+        if(icenter==0 || _widths.get_data(icenter,ix1)>xbound)xbound=_widths.get_data(icenter,ix1);
+        if(icenter==0 || _widths.get_data(icenter,ix1)<xwidth)xwidth=_widths.get_data(icenter,ix1);
         
-        if(icenter==0 || widths.get_data(icenter,ix2)>ybound)ybound=widths.get_data(icenter,ix2);
-        if(icenter==0 || widths.get_data(icenter,ix2)<ywidth)ywidth=widths.get_data(icenter,ix2);
+        if(icenter==0 || _widths.get_data(icenter,ix2)>ybound)ybound=_widths.get_data(icenter,ix2);
+        if(icenter==0 || _widths.get_data(icenter,ix2)<ywidth)ywidth=_widths.get_data(icenter,ix2);
     }
     
     dexes.set_dim(100);
@@ -1917,23 +1928,23 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
     xstep=0.1*xwidth;
     ystep=0.1*ywidth;
      
-    for(icenter=0;icenter<ncenters;icenter++){
-        //xwidth=widths.get_data(icenter,ix1);
-        //ywidth=widths.get_data(icenter,ix2);
+    for(icenter=0;icenter<_ncenters;icenter++){
+        //xwidth=_widths.get_data(icenter,ix1);
+        //ywidth=_widths.get_data(icenter,ix2);
         
-        //xbound=widths.get_data(icenter,ix1);
-        //ybound=widths.get_data(icenter,ix2);
+        //xbound=_widths.get_data(icenter,ix1);
+        //ybound=_widths.get_data(icenter,ix2);
         
-        for(xx=centers.get_data(icenter,ix1)-spread*xbound;xx<centers.get_data(icenter,ix1)+(spread+0.1)*xbound;xx+=xstep){
-            for(yy=centers.get_data(icenter,ix2)-spread*ybound;yy<centers.get_data(icenter,ix2)+(spread+0.1)*ybound;yy+=ystep){
+        for(xx=_centers.get_data(icenter,ix1)-spread*xbound;xx<_centers.get_data(icenter,ix1)+(spread+0.1)*xbound;xx+=xstep){
+            for(yy=_centers.get_data(icenter,ix2)-spread*ybound;yy<_centers.get_data(icenter,ix2)+(spread+0.1)*ybound;yy+=ystep){
                 
-                for(k=0;k<ncenters;k++){
-                    for(i=0;i<dim;i++)trial.set(i,centers.get_data(k,i));
+                for(k=0;k<_ncenters;k++){
+                    for(i=0;i<_dim;i++)trial.set(i,_centers.get_data(k,i));
                     trial.set(ix1,xx);
                     trial.set(ix2,yy);
                     nn=0.0;
-                    for(i=0;i<dim;i++){
-                        nn+=power((trial.get_data(i)-centers.get_data(k,i))/widths.get_data(k,i),2);
+                    for(i=0;i<_dim;i++){
+                        nn+=power((trial.get_data(i)-_centers.get_data(k,i))/_widths.get_data(k,i),2);
                     }
                     
                     if(k==0 || nn<ddmin){
@@ -1950,10 +1961,10 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
                     
                     printf("%e %e -- %e %e %e %e -- %e %e %e %e\n",
                     xx,yy,
-                    centers.get_data(icenter,ix1),widths.get_data(icenter,ix1),
-                    centers.get_data(icenter,ix2),widths.get_data(icenter,ix2),
-                    centers.get_data(imin,ix1),widths.get_data(imin,ix1),
-                    centers.get_data(imin,ix2),widths.get_data(imin,ix2));
+                    _centers.get_data(icenter,ix1),_widths.get_data(icenter,ix1),
+                    _centers.get_data(icenter,ix2),_widths.get_data(icenter,ix2),
+                    _centers.get_data(imin,ix1),_widths.get_data(imin,ix1),
+                    _centers.get_data(imin,ix2),_widths.get_data(imin,ix2));
                     
                     printf("%e %e\n",ddmin,ddshld);
                     
@@ -1961,7 +1972,7 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
                     exit(1);
                 }*/
                 
-                for(i=0;i<dim;i++)trial.set(i,centers.get_data(icenter,i));
+                for(i=0;i<_dim;i++)trial.set(i,_centers.get_data(icenter,i));
                 trial.set(ix1,xx);
                 trial.set(ix2,yy);
                 
@@ -2086,146 +2097,6 @@ void ellipses_integrable::integrate_boundary(int ix1, int ix2, double lim, char 
     
     fclose(output);
     
-    called=0;
-
-}
-
-jellyBean::~jellyBean(){}
-
-jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
-    //ww is a width in radians
-    //rr is the radius of curvature
-    make_bases(22,0);
-    
-    int ix,iy;
-    
-    for(ix=0;ix<dim;ix++){
-        for(iy=0;iy<dim;iy++){
-            if(ix==iy){
-                bases.set(ix,iy,1.0);
-            }
-            else{
-                bases.set(ix,iy,0.0);
-            }
-        }
-    }
-    
-    time_spent=0.0;
-    called=0;
-    
-    //these are in basis coordinates
-    curvature_center.set_name("jellyBean_curvature_center");
-    radial_direction.set_name("jellyBean_radial_direction");
-    
-    for(ix=0;ix<dim;ix++){
-        centers.set(0,ix,-10.0+20.0*dice->doub());
-        if(ix>0){
-            widths.set(0,ix,dice->doub()*0.5+0.1);
-        }
-    }
-    
-    widths.set(0,0,ww*rr);
-    
-
-    
-    double theta=dice->doub()*2.0*pi;
-    double dx,dy;
-    
-    curvature_radius=rr;
-    
-    dx=curvature_radius*cos(theta);
-    dy=curvature_radius*sin(theta);
-    
-    array_1d<double> projected_center;
-    projected_center.set_name("jellyBean_constructor_projected_center");
-    
-    for(ix=0;ix<dim;ix++){
-        projected_center.set(ix,project_to_basis(ix,centers(0)[0]));
-    }
-    
-    for(ix=0;ix<dim;ix++){
-        curvature_center.set(ix,projected_center.get_data(ix));
-    }
-    
-    curvature_center.add_val(0,dx);
-    curvature_center.add_val(1,dy);
-    
-    radial_direction.set_dim(dim);
-    radial_direction.zero();
-    radial_direction.set(0,-1.0*dx);
-    radial_direction.set(1,-1.0*dy);
-    
-    radial_direction.normalize();
-    
-}
-
-void jellyBean::get_curvature_center(array_1d<double> &out){
-    int ix;
-    for(ix=0;ix<dim;ix++){
-        out.set(ix,project_to_basis(ix,curvature_center));
-    }
-}
-
-double jellyBean::operator()(array_1d<double> &pt){
-    double before=double(time(NULL));
-    array_1d<double> projected_point;
-    
-    projected_point.set_name("jellyBean_operator_projected_point");
-    
-    int ix;
-    for(ix=0;ix<dim;ix++){
-        projected_point.set(ix, project_to_basis(ix,pt));
-    }
-
-    double chisq=0.0;
-    for(ix=2;ix<dim;ix++){
-        chisq+=power((centers.get_data(0,ix)-projected_point.get_data(ix))/widths.get_data(0,ix),2);
-    }
-    
-    if(isnan(chisq)){
-        printf("chisq is nan after simple dims\n");
-        exit(1);
-    }
-    
-    double rr;
-    array_1d<double> dir;
-    dir.set_name("jellyBean_operator_dir");
-    dir.set_dim(dim);
-    dir.zero();
-    dir.set(0,projected_point.get_data(0)-curvature_center.get_data(0));
-    dir.set(1,projected_point.get_data(1)-curvature_center.get_data(1));
-    rr=dir.normalize();
-    
-    chisq+=power((rr-curvature_radius)/widths.get_data(0,1),2);
-    
-    //printf("chisq is %e after rr\n",chisq);
-    
-    if(isnan(chisq)){
-        printf("chisq is nan after radial %e\n",rr);
-        exit(1);
-    }
-    
-    double dot=0.0;
-    for(ix=0;ix<dim;ix++){
-        dot+=dir.get_data(ix)*radial_direction.get_data(ix);
-    }
-    
-    double theta=acos(dot);
-    
-    if(isnan(theta) && dot>0.0){
-        theta=0.0;
-    }
-    else if(isnan(theta) && dot<0.0){
-        theta=pi;
-    }
-    
-    chisq+=power(theta*curvature_radius,2)/widths.get_data(0,0);
-    
-    //printf("chisq is %e after angle\n",chisq);
-    
-    called++;
-    time_spent+=double(time(NULL))-before;
-    
-    return chisq;
+    _called=0;
 
 }

@@ -43,6 +43,7 @@ public:
     double random_double();
     int random_int();
 
+    double raw_evaluate(array_1d<double>&);
     void evaluate(array_1d<double>&, double*, int*);
     virtual double operator()(array_1d<double>&);
     double get_fn(int);

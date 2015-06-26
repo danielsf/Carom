@@ -321,6 +321,10 @@ int chisq_wrapper::get_where_log(int ii){
     return _where_log.get_data(ii);
 }
 
+double chisq_wrapper::raw_evaluate(array_1d<double> &pt){
+    return _chifn[0](pt);
+}
+
 void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     is_it_safe("evaluate");
     
@@ -341,7 +345,7 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     }
     
     double mu;
-    mu=_chifn[0](pt);
+    mu=_chifn[0](pt);    
     value[0]=mu;
     _called++;
     

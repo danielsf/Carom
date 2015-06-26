@@ -30,16 +30,16 @@ double wmap_likelihood::operator()(array_1d<double> &v){
 
   FILE *output;
 
-  for(i=0;i<dim;i++){
-      if((v.get_data(i)<mins.get_data(i) && mins.get_data(i)<exception_value) ||
-      (v.get_data(i)>maxs.get_data(i) && maxs.get_data(i)>-1.0*exception_value)){
-          time_spent+=double(time(NULL))-before;
+  for(i=0;i<_dim;i++){
+      if((v.get_data(i)<_mins.get_data(i) && _mins.get_data(i)<exception_value) ||
+      (v.get_data(i)>_maxs.get_data(i) && _maxs.get_data(i)>-1.0*exception_value)){
+          _time_spent+=double(time(NULL))-before;
 
           return 2.0*exception_value;
       }
   }
 
-  called++;
+  _called++;
 
   while((v.get_data(0)+v.get_data(1))/(v.get_data(2)*v.get_data(2))>1.0){
     v.multiply_val(0,0.9);
@@ -79,7 +79,7 @@ double wmap_likelihood::operator()(array_1d<double> &v){
 
  /////////////////
 
-  time_spent+=double(time(NULL))-before;
+  _time_spent+=double(time(NULL))-before;
 
   //printf("got chisquared %e\n",chisquared);
   return chisquared;
@@ -94,10 +94,10 @@ double wmap_2d_likelihood::operator()(array_1d<double> &pt){
 
    double before=double(time(NULL));
    int i;
-   for(i=0;i<dim;i++){
-        if((pt.get_data(i)<mins.get_data(i) && mins.get_data(i)<exception_value) ||
-        (pt.get_data(i)>maxs.get_data(i) && maxs.get_data(i)>-1.0*exception_value)){
-            time_spent+=double(time(NULL))-before;
+   for(i=0;i<_dim;i++){
+        if((pt.get_data(i)<_mins.get_data(i) && _mins.get_data(i)<exception_value) ||
+        (pt.get_data(i)>_maxs.get_data(i) && _maxs.get_data(i)>-1.0*exception_value)){
+            _time_spent+=double(time(NULL))-before;
 
             return 2.0*exception_value;
         }
@@ -115,8 +115,8 @@ double wmap_2d_likelihood::operator()(array_1d<double> &pt){
     //vv.set(5, 3.070865283499835119e+00);
     vv.set(5, pt.get_data(1));
 
-    called++;
-    time_spent+=double(time(NULL))-before;
+    _called++;
+    _time_spent+=double(time(NULL))-before;
     return _wmap(vv);
 
 

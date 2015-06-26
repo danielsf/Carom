@@ -815,14 +815,14 @@ void node::node_gradient(int dex, array_1d<double> &grad){
 
 }
 
-int node::bisection(array_1d<double> &ll, double fl,
+int node::node_bisection(array_1d<double> &ll, double fl,
                     array_1d<double> &hh, double fh,
                     int doSlope){
 
-        return bisection(ll,fl,hh,fh,doSlope,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
+        return node_bisection(ll,fl,hh,fh,doSlope,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
 }
 
-int node::bisection(array_1d<double> &lowball, double flow,
+int node::node_bisection(array_1d<double> &lowball, double flow,
                     array_1d<double> &highball, double fhigh,
                     int doSlope, double target_value, double tolerance){
 
@@ -1121,11 +1121,12 @@ void node::compass_search(){
             
             iFound=-1;
             if(flow>_chisquared->target() || flow>fhigh){
-                printf("WARNING in compass %e %e %e\n",
-                flow,fhigh,_chisquared->target());
-                exit(1);
+                flow=_chisquared->get_fn(_centerdex);
+                for(i=0;i<_chisquared->get_dim();i++){
+                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                }
             }
-            iFound=bisection(lowball,flow,highball,fhigh,1);
+            iFound=node_bisection(lowball,flow,highball,fhigh,1);
             
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
@@ -1147,7 +1148,7 @@ void node::compass_search(){
                     
                     fhigh=_chisquared->get_fn(iFound);
                     bisection_target=0.5*(_chimin+_chisquared->target());
-                    iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
+                    iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
 
                     if(iFound>=0){
                         _basis_associates.add(iFound);
@@ -1158,7 +1159,7 @@ void node::compass_search(){
                         }
                         fhigh=_chisquared->get_fn(iFound);
                         bisection_target=0.5*(_chimin+fhigh);
-                        iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
+                        iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
                         if(iFound>=0){
                             _basis_associates.add(iFound);
                         }
@@ -1299,11 +1300,13 @@ void node::compass_off_diagonal(){
                     }
                     
                     if(flow>_chisquared->target() || flow>fhigh){
-                        printf("WARNING in off_diag %e %e %e\n",
-                        flow,fhigh,_chisquared->target());
-                        exit(1);
+                        flow=_chisquared->get_fn(_centerdex);
+                        for(i=0;i<_chisquared->get_dim();i++){
+                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                        }
+                        
                     }
-                    iFound=bisection(lowball,flow,highball,fhigh,1);
+                    iFound=node_bisection(lowball,flow,highball,fhigh,1);
                     
                     if(iFound>=0){
                         dmin=0.0;
@@ -1332,7 +1335,7 @@ void node::compass_off_diagonal(){
                             
                             fhigh=_chisquared->get_fn(iFound);
                             bisection_target=0.5*(_chimin+_chisquared->target());
-                            iFound=bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
+                            iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
                             if(iFound>=0){
                                 _basis_associates.add(iFound);
                             }
@@ -2043,7 +2046,7 @@ void node::off_center_compass(int iStart){
                 dx*=2.0;
             }
             
-            iFound=bisection(lowball,flow,highball,fhigh,1);
+            iFound=node_bisection(lowball,flow,highball,fhigh,1);
             
             if(iFound>=0){
                 add_to_boundary(iFound);
@@ -2432,7 +2435,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
             lowball.set(i,_chisquared->get_pt(_centerdex,i));
         }
         
-        iFound=bisection(lowball, flow, midpt, mu, 0);
+        iFound=node_bisection(lowball, flow, midpt, mu, 0);
         if(iFound>=0){
             _ricochet_particles.set(ix,iFound);
             for(i=0;i<_chisquared->get_dim();i++){
@@ -2463,7 +2466,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
             lowball.set(i,_chisquared->get_pt(_centerdex,i));
         }
         
-        iFound=bisection(lowball, flow, origin, mu, 0);
+        iFound=node_bisection(lowball, flow, origin, mu, 0);
         if(iFound>=0){
             _ricochet_particles.set(ix,iFound);
             for(i=0;i<_chisquared->get_dim();i++){
@@ -2629,6 +2632,14 @@ int node::kick_particle(int ix, array_1d<double> &dir){
 }
 
 void node::search(){
+
+    if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
+        simplex_search();
+        if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
+            _active=0;
+            return;
+        }
+    }
 
     double minExpansionFactor=1.001;
  
@@ -2945,7 +2956,7 @@ void node::ricochet(){
            lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
        }
 
-       if(flow>=_chisquared->target()){
+       while(flow>=_chisquared->target()){
            for(i=0;i<_chisquared->get_dim();i++){
                elowball.set(i,_chisquared->get_pt(_centerdex,i));
                ehighball.set(i,lowball.get_data(i));
@@ -2960,10 +2971,11 @@ void node::ricochet(){
            if(eflow>_chisquared->target() || eflow>efhigh){
                printf("WARNING eflow %e %e %e\n",
                eflow,efhigh,_chisquared->target());
+               printf("%e\n",_chisquared->get_fn(_centerdex));
                exit(1);
            }
            
-           iFound=bisection(elowball,eflow,ehighball,efhigh,1);
+           iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
            for(i=0;i<_chisquared->get_dim();i++){
                lowball.set(i,_chisquared->get_pt(iFound,i));
            }
@@ -2972,7 +2984,7 @@ void node::ricochet(){
        }
        
        if(flow>=_chisquared->target()){
-           printf("WARNING in node ricochet flow %e\n",flow);
+           printf("WARNING in node ricochet flow %e; target %e\n",flow,_chisquared->target());
            exit(1);
        }
        
@@ -3003,7 +3015,7 @@ void node::ricochet(){
            exit(1);
        }
        
-       iFound=bisection(lowball,flow,highball,fhigh,0);
+       iFound=node_bisection(lowball,flow,highball,fhigh,0);
        if(iFound>=0){
            distanceMoved.set(ix,node_distance(start_pts(start_pts.get_rows()-1)[0],_chisquared->get_pt(iFound)[0]));
            chiFound.set(ix,_chisquared->get_fn(iFound));

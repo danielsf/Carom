@@ -1,4 +1,4 @@
-#include "chisq.h"
+#include "jellyBean.h"
 #include "kd.h"
 
 int main(){

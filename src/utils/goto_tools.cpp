@@ -514,3 +514,102 @@ int compare_int_arr(array_1d<int> &p1, array_1d<int> &p2){
     return ans;
     
 }
+
+double bisection(function_wrapper &fn,
+                 array_1d<double> &_lowball,
+                 array_1d<double> &_highball,
+                 double target, double tol,
+                 array_1d<double> &found){
+
+
+
+   double mu;
+   int i;
+   array_1d<double> trial,lowball,highball;
+   trial.set_name("global_bisection_trial");
+   lowball.set_name("global_bisection_lowball");
+   highball.set_name("global_bisection_highball");
+   
+   for(i=0;i<_lowball.get_dim();i++){
+       lowball.set(i,_lowball.get_data(i));
+       highball.set(i,_highball.get_data(i));
+   }
+   
+   double flow=fn(lowball);
+   double fhigh=fn(highball);
+   
+   
+   if(flow>fhigh){
+       mu=flow;
+       flow=fhigh;
+       for(i=0;i<lowball.get_dim();i++){
+           trial.set(i,lowball.get_data(i));
+           lowball.set(i,highball.get_data(i));
+       }
+       fhigh=mu;
+       for(i=0;i<lowball.get_dim();i++){
+           highball.set(i,trial.get_data(i));
+       }
+       
+   }
+   
+   if(flow>target){
+       printf("WARNING in bisection lowball %e target %e\n",
+       flow,target);
+       exit(1);
+   }
+   
+   double fout;
+   if(target-flow>fhigh-target){
+       for(i=0;i<lowball.get_dim();i++){
+           found.set(i,highball.get_data(i));
+       }
+       fout=fhigh;
+   }
+   else{
+       for(i=0;i<lowball.get_dim();i++){
+           found.set(i,lowball.get_data(i));
+       }
+       fout=flow;
+   }
+   
+   double err=fabs(fout-target);
+   int ct;
+   double ftrial;
+   for(ct=0;ct<200 && err>tol;ct++){
+       for(i=0;i<lowball.get_dim();i++){
+           trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
+       }
+       
+       ftrial=fn(trial);
+       if(ftrial<target){
+           for(i=0;i<lowball.get_dim();i++){
+               lowball.set(i,trial.get_data(i));
+           }
+           
+           if(target-ftrial<err){
+               for(i=0;i<lowball.get_dim();i++){
+                   found.set(i,trial.get_data(i));
+               }
+               fout=ftrial;
+               err=fabs(target-ftrial);
+           }
+       }
+       else{
+           for(i=0;i<lowball.get_dim();i++){
+               highball.set(i,trial.get_data(i));
+           }
+
+           if(ftrial-target<err){
+               for(i=0;i<lowball.get_dim();i++){
+                   found.set(i,trial.get_data(i));
+               }
+               err=fabs(ftrial-target);
+           }
+           
+       }
+   }
+   
+   return fout;
+
+}

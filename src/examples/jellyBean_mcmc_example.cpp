@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "mcmc/mcmc.h"
-#include "chisq.h"
+#include "jellyBean.h"
 
 
 int main(int iargc, char *argv[]){
@@ -76,7 +76,7 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBean chisq(dim,1.0,20.0);
+jellyBeanData chisq(dim,1,100,0.4,0.4,0.05,20.0);
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;

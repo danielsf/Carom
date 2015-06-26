@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "jellyBean.h"
 #include "carom.h"
 
 int main(int iargc, char *argv[]){
@@ -83,7 +84,9 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBean chisq(dim,1.0,20.0);
+jellyBeanData chisq(dim,1,100,0.4,0.4,0.05,20.0);
+    
+chisq.print_mins();
 
 //declare APS
 //the '20' below is the number of nearest neighbors to use when seeding the
@@ -93,7 +96,7 @@ jellyBean chisq(dim,1.0,20.0);
 //on a 5-dimensional parameter space
 
 carom carom_test;
-carom_test.set_target(delta_chisq);
+carom_test.set_deltachi(delta_chisq);
 carom_test.set_seed(seed);
 carom_test.set_confidence_limit(confidence_limit);
 
@@ -111,8 +114,8 @@ max.set_dim(dim);
 min.set_dim(dim);
 
 for(i=0;i<dim;i++){
-    min.set(i,-30.0);
-    max.set(i,30.0);
+    min.set(i,-80.0);
+    max.set(i,80.0);
 }
 
 
@@ -127,5 +130,6 @@ chisq.reset_timer();
 carom_test.initialize(1000);
 int active_nodes=1;
 carom_test.search(nsamples);
+chisq.print_mins();
 
 }
