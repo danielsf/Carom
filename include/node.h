@@ -54,6 +54,7 @@ private:
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;
+    array_1d<int> _ricochet_candidate_origins,_ricochet_particle_origins;
     array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
@@ -102,6 +103,7 @@ private:
     int t_kick(int,array_1d<double>&);
     int smart_step_kick(int, double, array_1d<double>&);
     void originate_particle(int, array_1d<double>&);
+    void _filter_candidates();
     
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);
