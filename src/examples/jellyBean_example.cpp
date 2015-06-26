@@ -114,8 +114,8 @@ max.set_dim(dim);
 min.set_dim(dim);
 
 for(i=0;i<dim;i++){
-    min.set(i,-30.0);
-    max.set(i,30.0);
+    min.set(i,-80.0);
+    max.set(i,80.0);
 }
 
 

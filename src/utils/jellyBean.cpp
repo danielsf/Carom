@@ -334,7 +334,12 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
         _dir.set(ix,pt.get_data(ix)-_curvature_centers.get_data(ic,ix));
     }
     
-    double radius=_dir.normalize();
+    double radius=0.0;
+    radius+=power(project_to_basis(0,_dir),2);
+    radius+=power(project_to_basis(1,_dir)/5.0,2);
+    radius=sqrt(radius);
+    
+    _dir.normalize();
     
     double dot=0.0;
     for(ix=0;ix<_dim;ix++){

@@ -9,17 +9,17 @@ int main(){
     
     
     array_1d<double> min,max,dx;    
-    min.set(0,-10.0);
-    max.set(0,25.0);
+    min.set(0,-80.0);
+    max.set(0,30.0);
     
-    min.set(1,-13.0);
-    max.set(1,10.0);
+    min.set(1,-20.0);
+    max.set(1,20.0);
     
-    min.set(2,-9.0);
-    max.set(2,14.0);
+    min.set(2,-15.0);
+    max.set(2,20.0);
     
-    min.set(3,-5.0);
-    max.set(3,25.0);
+    min.set(3,-50.0);
+    max.set(3,30.0);
     
     int i;
     for(i=0;i<4;i++){
