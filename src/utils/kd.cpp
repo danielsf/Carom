@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "goto_tools.h"
 #include "kd.h"
 
 kd_tree::~kd_tree(){  
@@ -1335,4 +1334,81 @@ void kd_tree::set_max(int dex, double nn){
 
 void kd_tree::set_min(int dex, double nn){
     mins.set(dex,nn);
+}
+
+
+//////////////////
+void convert_to_boundary(array_2d<double> &pts, double dx, double dy, int dim, array_2d<double> &output){
+    array_1d<double> min,max;
+    min.set_name("boundary_min");
+    max.set_name("boundary_max");
+    int i;
+    min.set(0,0.0);
+    max.set(0,dx);
+    min.set(1,0.0);
+    max.set(1,dy);
+    array_1d<int> neigh;
+    array_1d<double> dd;
+    
+    neigh.set_name("boundary_neigh");
+    dd.set_name("boundary_dd");
+    
+    array_2d<double> boundary;
+    boundary.set_name("boundary_boundary");
+    
+    //first we need to select all of the points that are on the boundary;
+    kd_tree *point_tree;
+    
+    
+    
+    printf("making point_tree with %d %d\n",pts.get_rows(),pts.get_cols());
+    
+    double maxdx=-1.0;
+    
+    point_tree=new kd_tree(pts,min,max);
+    for(i=0;i<pts.get_rows();i++){
+        point_tree->nn_srch(i,5,neigh,dd);
+        
+        if(dd.get_data(4)>maxdx){
+            maxdx=dd.get_data(4);
+        }
+        
+        if(dd.get_data(4)>1.001){
+            boundary.add_row(pts(i)[0]);
+        }
+    }
+    delete point_tree;
+    
+    printf("making boundary with %d %d -- %e\n",boundary.get_rows(), boundary.get_cols(),maxdx);
+    
+    point_tree = new kd_tree(boundary,min,max);
+    
+    int last_dex;
+    array_1d<double> last_point, original_point;
+    last_point.set_name("boundary_last_point");
+    original_point.set_name("boundary_original_point");
+    
+    for(i=0;i<dim;i++){
+        original_point.set(i,boundary.get_data(0,i));
+        last_point.set(i,boundary.get_data(0,i));
+    }
+    last_dex=0;
+    
+    output.reset();
+    output.set_cols(dim);
+    output.add_row(original_point);
+    
+    while(point_tree->get_pts()>1){
+        //printf("removing %d %e %e\n",last_dex,point_tree->get_pt(last_dex,0),point_tree->get_pt(last_dex,1));
+        point_tree->remove(last_dex);
+        point_tree->nn_srch(last_point,1,neigh,dd);
+        output.add_row(point_tree->get_pt(neigh.get_data(0))[0]);
+        last_dex=neigh.get_data(0);
+        point_tree->get_pt(last_dex, last_point);
+    }
+    output.add_row(point_tree->get_pt(0)[0]);
+    output.add_row(original_point);
+    
+    delete point_tree;
+    
 }
