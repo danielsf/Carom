@@ -2263,10 +2263,6 @@ void node::initialize_ricochet(){
     dmu.set_name("node_initialize_ricochet_dmu");
 
     _filter_candidates();
-
-    if(nParticles>_ricochet_candidates.get_dim()){
-        nParticles=_ricochet_candidates.get_dim();
-    }
     
     for(i=0;i<nParticles;i++){
         _ricochet_discovery_dexes.set(i,i);
@@ -2311,6 +2307,7 @@ void node::initialize_ricochet(){
         fprintf(output,"\n");
     }
     fclose(output);
+
 }
 
 int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
@@ -2623,8 +2620,7 @@ void node::originate_particle(int ix, array_1d<double> &dir){
         _filter_candidates();
         
     }
-    
-    
+
     int iChosen=-1,iCandidate=-1;;
     double mu,dmu,dmubest;
     for(i=0;i<_ricochet_candidates.get_dim();i++){
