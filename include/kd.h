@@ -271,6 +271,6 @@ class kd_tree{
 };
 
 
-void convert_to_boundary(array_2d<double>&, double, double, int, array_2d<double>&);
+void convert_to_boundary(array_2d<double>&, double, double, array_2d<double>&);
 
 #endif

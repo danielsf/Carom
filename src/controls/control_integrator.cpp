@@ -406,7 +406,7 @@ void control_integrator::write_output(int xdex, int ydex,
     array_2d<double> boundary;
     boundary.set_name("output_boundary");
     
-    convert_to_boundary(frequentistFullD,_dx.get_data(xdex),_dx.get_data(ydex),2,boundary);
+    convert_to_boundary(frequentistFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
     
     sprintf(outname,"%s_frequentistFullD.txt",outname_root);
     output=fopen(outname,"w");
@@ -427,7 +427,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
-    convert_to_boundary(frequentistFullDrelative,_dx.get_data(xdex),_dx.get_data(ydex),2,boundary);
+    convert_to_boundary(frequentistFullDrelative,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
     
     sprintf(outname,"%s_frequentistFullDrelative.txt",outname_root);
     output=fopen(outname,"w");
@@ -441,7 +441,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
-    convert_to_boundary(frequentist2D,_dx.get_data(xdex),_dx.get_data(ydex),2,boundary);
+    convert_to_boundary(frequentist2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
     
     sprintf(outname,"%s_frequentist2D.txt",outname_root);
     output=fopen(outname,"w");
@@ -455,7 +455,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
-    convert_to_boundary(frequentist2Deff,_dx.get_data(xdex),_dx.get_data(ydex),2,boundary);
+    convert_to_boundary(frequentist2Deff,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
     
     sprintf(outname,"%s_frequentist2Deff.txt",outname_root);
     output=fopen(outname,"w");
@@ -470,7 +470,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
     
     
-    convert_to_boundary(bayesian2D,_dx.get_data(xdex),_dx.get_data(ydex),2,boundary);
+    convert_to_boundary(bayesian2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
     
     sprintf(outname,"%s_bayesian2D.txt",outname_root);
     output=fopen(outname,"w");
@@ -485,7 +485,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
     
     
-    convert_to_boundary(bayesianFullD,_dx.get_data(xdex),_dx.get_data(ydex),2,boundary);
+    convert_to_boundary(bayesianFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
     
     sprintf(outname,"%s_bayesianFullD.txt",outname_root);
     output=fopen(outname,"w");

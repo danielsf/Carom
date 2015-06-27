@@ -1338,7 +1338,8 @@ void kd_tree::set_min(int dex, double nn){
 
 
 //////////////////
-void convert_to_boundary(array_2d<double> &pts, double dx, double dy, int dim, array_2d<double> &output){
+
+void convert_to_boundary(array_2d<double> &pts, double dx, double dy, array_2d<double> &output){
     array_1d<double> min,max;
     min.set_name("boundary_min");
     max.set_name("boundary_max");
@@ -1388,14 +1389,14 @@ void convert_to_boundary(array_2d<double> &pts, double dx, double dy, int dim, a
     last_point.set_name("boundary_last_point");
     original_point.set_name("boundary_original_point");
     
-    for(i=0;i<dim;i++){
+    for(i=0;i<2;i++){
         original_point.set(i,boundary.get_data(0,i));
         last_point.set(i,boundary.get_data(0,i));
     }
     last_dex=0;
     
     output.reset();
-    output.set_cols(dim);
+    output.set_cols(2);
     output.add_row(original_point);
     
     while(point_tree->get_pts()>1){
