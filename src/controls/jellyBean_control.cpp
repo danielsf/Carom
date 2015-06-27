@@ -27,10 +27,10 @@ int main(){
     
     int i;
     for(i=0;i<4;i++){
-        dx.set(i,0.005*(max.get_data(i)-min.get_data(i)));
+        dx.set(i,0.01*(max.get_data(i)-min.get_data(i)));
     }
     
-    control_integrator integrator(chisq,min,max,dx,"controls/jellyBeanData/thinBanana");
+    control_integrator integrator(chisq,min,max,dx,"output/scratch/control");
     integrator.run_analysis();
 
 }

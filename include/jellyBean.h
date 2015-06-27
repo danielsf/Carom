@@ -18,29 +18,45 @@ class jellyBean : public chisquared{
 };
 
 
-class jellyBeanData : public chisquared{
+class chiSquaredData : public chisquared{
 
     public:
-        ~jellyBeanData(){}
-        jellyBeanData(int,int,int,double,double,double,double);
+        chiSquaredData(int, int, int, double);
+        ~chiSquaredData(){};
+
         virtual double operator()(array_1d<double>&);
         void write_data();
         void print_mins();
-
-    private:
+        
+    protected:
         int _ndata;
         double _sig;
-        array_1d<double> _x_values,_y_values,_sigma,_radii;
+        array_1d<double> _x_values,_y_values,_sigma;
         array_1d<double> _mean_parameters,_aux_params;
         array_1d<double> _param_buffer,_projected_pt,_dir;
-        array_2d<double> _curvature_centers,_radial_directions;
 
-        void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 
         double data_function(array_1d<double>&, double);
         
         void initialize_data();
 
+};
+
+class jellyBeanData : public chiSquaredData{
+
+    public:
+        ~jellyBeanData(){}
+        jellyBeanData(int,int,int,double,double,double,double);
+        
+
+    protected:
+        int _ndata;
+        double _sig;
+        array_1d<double> _radii;
+        array_2d<double> _curvature_centers,_radial_directions;
+
+        void convert_params(array_1d<double>&, array_1d<double>&, int);
 };
 
 
