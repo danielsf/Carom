@@ -109,7 +109,7 @@ void array_1d<T>::add_room(int ii){
         buffer=new T[room];
         for(i=0;i<room;i++)buffer[i]=data[i];
         delete [] data;
-        room+=ii;
+        room*=2;
         data=new T[room];
         for(i=0;i<old_room;i++)data[i]=buffer[i];
         delete [] buffer;
@@ -484,7 +484,7 @@ void array_2d<T>::add_row(array_1d<T> &in){
         i=row_room/2;
         if(i<100)i=100;
         
-        row_room+=i;
+        row_room*=2;
         data=new array_1d<T>[row_room];
         for(i=0;i<rows;i++){
             data[i].set_dim(buffer[i].get_dim());
@@ -875,7 +875,7 @@ void asymm_array_2d<T>::add_row(const array_1d<T> &in){
         i=row_room/2;
         if(i<100)i=100;
         
-        row_room+=i;
+        row_room*=2;
         data=new array_1d<T>[row_room];
         
         for(i=0;i<rows;i++){
