@@ -43,4 +43,5 @@ class jellyBeanData : public chisquared{
 
 };
 
+
 #endif

@@ -84,7 +84,7 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBeanData chisq(dim,1,100,0.4,0.4,0.05,20.0);
+jellyBeanData chisq(dim,1,100,0.4,0.4,0.2,20.0);
     
 chisq.print_mins();
 
