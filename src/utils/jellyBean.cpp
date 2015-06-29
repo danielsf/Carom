@@ -151,9 +151,6 @@ chiSquaredData::chiSquaredData(int dd, int cc, int nData, double sigma) : chisqu
     _mean_parameters.set_name("jellyBeanData_mean_parameters");
     _aux_params.set_name("jellyBeanData_aux_parameters");
     _param_buffer.set_name("jellyBeanData_param_buffer");
-    _projected_pt.set_name("jellyBeanData_projected_pt");
-    _dir.set_name("jellyBeanData_global_dir");
-    
     
     make_bases(22,0);
     _ndata=nData;
@@ -326,6 +323,15 @@ double chiSquaredData::operator()(array_1d<double> &pt){
     
     _called++;
     _time_spent+=double(time(NULL))-before;
+    
+    if(isnan(chisq_min)){
+        printf("chisq is nan\n");
+        for(ix=0;ix<_param_buffer.get_dim();ix++){
+            printf("%e\n",_param_buffer.get_data(ix));
+        }
+        exit(1);
+    }
+    
     return chisq_min;
 }
 
@@ -346,10 +352,12 @@ chiSquaredData(dd, cc, nData, sigma){
     _curvature_centers.set_name("jellyBeanData_curvature_center");
     _radial_directions.set_name("jellyBeanData_radial_directions");
     _radii.set_name("jellyBeanData_radii");
-
+    _dir.set_name("jellyBeanData_global_dir");
+    _planar_dir.set_name("jellyBeanData_planar_dir");
 
     _curvature_centers.set_dim(_ncenters,_dim);
     _radial_directions.set_dim(_ncenters,_dim);
+    _planar_dir.set_dim(_dim);
     
     array_1d<double> dir,trial;
     dir.set_name("jellyBeanData_constructor_dir");
@@ -394,6 +402,7 @@ chiSquaredData(dd, cc, nData, sigma){
 
     }
     
+    
 }
 
 
@@ -405,9 +414,28 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
         _dir.set(ix,pt.get_data(ix)-_curvature_centers.get_data(ic,ix));
     }
     
+    int iy;
+    double radial_component,perpendicular_component,mu;
+    _planar_dir.zero();
+    for(ix=0;ix<2;ix++){
+        mu=project_to_basis(ix,_dir);
+        for(iy=0;iy<_dim;iy++){
+            _planar_dir.add_val(iy,mu*_bases.get_data(ix,iy));
+        }
+    }
+    
+    radial_component=0.0;
+    for(ix=0;ix<_dim;ix++){
+        radial_component+=_radial_directions.get_data(ic,ix)*_planar_dir.get_data(ix);
+    }
+    
+    mu=_planar_dir.get_square_norm();
+    perpendicular_component=sqrt(fabs(mu-radial_component*radial_component));
+    
+    
     double radius=0.0;
-    radius+=power(project_to_basis(0,_dir),2);
-    radius+=power(project_to_basis(1,_dir)/5.0,2);
+    radius+=power(radial_component,2);
+    radius+=power(perpendicular_component*3.0,2);
     radius=sqrt(radius);
     
     _dir.normalize();
@@ -431,6 +459,7 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
     for(ix=0;ix<_dim;ix++){
         out.multiply_val(ix,0.01);
     }
+
 
 }
 

@@ -33,7 +33,7 @@ class chiSquaredData : public chisquared{
         double _sig;
         array_1d<double> _x_values,_y_values,_sigma;
         array_1d<double> _mean_parameters,_aux_params;
-        array_1d<double> _param_buffer,_projected_pt,_dir;
+        array_1d<double> _param_buffer;
 
         virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 
@@ -53,7 +53,7 @@ class jellyBeanData : public chiSquaredData{
     protected:
         int _ndata;
         double _sig;
-        array_1d<double> _radii;
+        array_1d<double> _radii,_dir,_planar_dir;
         array_2d<double> _curvature_centers,_radial_directions;
 
         void convert_params(array_1d<double>&, array_1d<double>&, int);
