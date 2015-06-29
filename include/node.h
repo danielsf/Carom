@@ -54,7 +54,6 @@ private:
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;
-    array_1d<int> _ricochet_candidate_origins,_ricochet_particle_origins;
     array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
@@ -62,7 +61,7 @@ private:
     array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
     
-    array_2d<double> _ricochet_velocities;
+    array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _ricochet_strikes;
