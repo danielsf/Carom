@@ -178,7 +178,7 @@ chiSquaredData::chiSquaredData(int dd, int cc, int nData, double sigma) : chisqu
         
         _aux_params.set(aux_ct,_dice->doub()*norm);
         aux_ct++;
-        _aux_params.set(aux_ct,_dice->doub()*30.0);
+        _aux_params.set(aux_ct,_dice->doub()*20.0+26.0);
         aux_ct++;
         
  
@@ -365,7 +365,7 @@ chiSquaredData(dd, cc, nData, sigma){
     
     double curvature_radius=rr;
     
-    double mu;
+    double mu,dot_check;
     int ix,iy,ic;
     for(ic=0;ic<_ncenters;ic++){
         for(ix=0;ix<_dim;ix++){
@@ -399,6 +399,19 @@ chiSquaredData(dd, cc, nData, sigma){
         _widths.set(ic,0,ww);
         
         _widths.set(ic,1,radial*curvature_radius);
+        
+        
+        for(ix=2;ix<_dim;ix++){
+            dot_check=0.0;
+            for(iy=0;iy<_dim;iy++){
+                dot_check+=_radial_directions.get_data(ic,iy)*_bases.get_data(ix,iy);
+            }
+            if(fabs(dot_check)>0.001){
+                printf("WARNING dot_check %d %e\n",ix,dot_check);
+                exit(1);
+            }
+        }
+        
 
     }
     
@@ -408,15 +421,14 @@ chiSquaredData(dd, cc, nData, sigma){
 
 void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
 
-    int ix;
+    int ix,iy;
+    double mu;
     
     for(ix=0;ix<_dim;ix++){
         _dir.set(ix,pt.get_data(ix)-_curvature_centers.get_data(ic,ix));
     }
     
-    int iy;
-    double radial_component,perpendicular_component,mu;
-    _planar_dir.zero();
+    for(ix=0;ix<_dim;ix++)_planar_dir.set(ix,0.0);
     for(ix=0;ix<2;ix++){
         mu=project_to_basis(ix,_dir);
         for(iy=0;iy<_dim;iy++){
@@ -424,29 +436,39 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
         }
     }
     
-    radial_component=0.0;
+    double planar_radius=_planar_dir.normalize();
+    
+    double cos_theta=0.0,sin_theta;
     for(ix=0;ix<_dim;ix++){
-        radial_component+=_radial_directions.get_data(ic,ix)*_planar_dir.get_data(ix);
+        cos_theta+=_planar_dir.get_data(ix)*_radial_directions.get_data(ic,ix);
     }
     
-    mu=_planar_dir.get_square_norm();
-    perpendicular_component=sqrt(fabs(mu-radial_component*radial_component));
-    
-    
-    double radius=0.0;
-    radius+=power(radial_component,2);
-    radius+=power(perpendicular_component*3.0,2);
-    radius=sqrt(radius);
-    
-    _dir.normalize();
-    
-    double dot=0.0;
-    for(ix=0;ix<_dim;ix++){
-        dot+=_dir.get_data(ix)*_radial_directions.get_data(ic,ix);
+    if(fabs(cos_theta)>1.0){
+        if(fabs(cos_theta)>1.001){
+            printf("WARNING somehow cos_theta>1.0 -- %e\n",cos_theta);
+            exit(1);
+        }
+        sin_theta=0.0;
+    }
+    else{
+        sin_theta=sqrt(1.0-cos_theta*cos_theta);
     }
     
-    out.set(0,(1.0-dot)/_widths.get_data(ic,0));
-    out.set(1,(radius-_radii.get_data(ic))/_widths.get_data(ic,1));
+    double x_shldbe,y_shldbe,rsq_shldbe,r_shldbe;
+    rsq_shldbe=power(_radii.get_data(ic),2)/(cos_theta*cos_theta+sin_theta*sin_theta*16.0);
+    r_shldbe=sqrt(rsq_shldbe);
+    
+    x_shldbe=r_shldbe*cos_theta;
+    y_shldbe=r_shldbe*sin_theta;
+    
+    double x_is,y_is,d_radius;
+    x_is=planar_radius*cos_theta;
+    y_is=planar_radius*sin_theta;
+    d_radius=sqrt(power(x_is-x_shldbe,2)+power(y_is-y_shldbe,2));
+    
+    
+    out.set(0,(1.0-cos_theta)/_widths.get_data(ic,0));
+    out.set(1,d_radius/_widths.get_data(ic,1));
     
     for(ix=0;ix<_dim;ix++){
         _dir.set(ix,pt.get_data(ix)-_centers.get_data(ic,ix));
