@@ -3153,6 +3153,32 @@ void node::ricochet(){
        if(_ricochet_strikes.get_data(i)>0)totalNeedKick++;
    }
    
+   int do_off_center,k;
+   trial.reset();
+   for(i=0;i<_ricochet_particles.get_dim();i++){
+       do_off_center=1;
+       for(j=0;j<_chisquared->get_dim();j++){
+           trial.set(j,0.5*(_chisquared->get_pt(_ricochet_particles.get_data(i),j)+_chisquared->get_pt(_centerdex,j)));
+       }
+       evaluate(trial,&mu,&iFound);
+       if(mu<=_chisquared->target()){
+           do_off_center=0;
+       }
+       for(j=0;j<_off_center_origins.get_dim() && do_off_center==1;j++){
+           for(k=0;k<_chisquared->get_dim();k++){
+               trial.set(k,0.5*(_chisquared->get_pt(_ricochet_particles.get_data(i),k)+_chisquared->get_pt(_off_center_origins.get_data(j),k)));
+           }
+           evaluate(trial,&mu,&iFound);
+           if(mu<=_chisquared->target()){
+               do_off_center=0;
+           }
+       }
+       
+       if(do_off_center==1){
+           off_center_compass(_ricochet_particles.get_data(i));
+       }
+   }
+   
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
 }
