@@ -2065,15 +2065,17 @@ void node::off_center_compass(int iStart){
             if(iFound>=0){
                 add_to_boundary(iFound);
                 _off_center_compass_points.add(iFound);
-                _ricochet_candidates.add(iFound);
-                j=_ricochet_candidate_velocities.get_rows();
-                for(i=0;i<_chisquared->get_dim();i++){
-                    _ricochet_candidate_velocities.set(j,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(iStart,i));
-                }
+                if(iFound!=iStart){
+                    _ricochet_candidates.add(iFound);
+                    j=_ricochet_candidate_velocities.get_rows();
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        _ricochet_candidate_velocities.set(j,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(iStart,i));
+                    }
 
-                if(_ricochet_candidates.get_dim()!=_ricochet_candidate_velocities.get_rows()){
-                    printf("WARNING out of sync in off_diag\n");
-                    exit(1);
+                    if(_ricochet_candidates.get_dim()!=_ricochet_candidate_velocities.get_rows()){
+                        printf("WARNING out of sync in off_diag\n");
+                        exit(1);
+                    }
                 }
             }
             
