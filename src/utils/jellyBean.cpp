@@ -485,4 +485,32 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
 
 }
 
+//////////////////////ellipse classes////////////
 
+ellipseData::ellipseData(int dd, int cc, int nData, double sigma) :
+chiSquaredData(dd, cc, nData, sigma){
+
+    _dir.set_name("ellipseData_dir");
+    _projected.set_name("ellipseData_projected");
+    
+    int ix,ic;
+    for(ic=0;ic<_ncenters;ic++){
+        for(ix=0;ix<_dim;ix++){
+            _centers.set(ic,ix,-30.0+60.0*_dice->doub());
+        }
+    }
+}
+
+void ellipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+    
+    int ix;
+    for(ix=0;ix<_dim;ix++){
+        _dir.set(ic,pt.get_data(ix)-_centers.get_data(ic,ix));
+    }
+    
+    project_to_basis(_dir,_projected);
+    
+    for(ix=0;ix<_dim;ix++){
+        out.set(ix,_projected.get_data(ix)/_widths.get_data(ic,ix));
+    }
+}
