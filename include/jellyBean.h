@@ -54,7 +54,7 @@ class jellyBeanData : public chiSquaredData{
         array_1d<double> _radii,_dir,_planar_dir;
         array_2d<double> _curvature_centers,_radial_directions;
 
-        void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 };
 
 class ellipseData : public chiSquaredData{
@@ -66,8 +66,17 @@ class ellipseData : public chiSquaredData{
     protected:
         array_1d<double> _dir,_projected;
         
-        void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 
+};
+
+class nonGaussianEllipseData : public ellipseData{
+    public:
+        ~nonGaussianEllipseData(){}
+        nonGaussianEllipseData(int, int, int, double);
+    
+    protected:
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 };
 
 #endif

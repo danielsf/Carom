@@ -514,3 +514,27 @@ void ellipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, in
         out.set(ix,_projected.get_data(ix)/_widths.get_data(ic,ix));
     }
 }
+
+nonGaussianEllipseData::nonGaussianEllipseData(int i1, int i2, int i3, double d1) : 
+ellipseData(i1, i2, i3, d1){}
+
+void nonGaussianEllipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+
+    int ix;
+    for(ix=0;ix<_dim;ix++){
+        _dir.set(ic,pt.get_data(ix)-_centers.get_data(ic,ix));
+    }
+    
+    project_to_basis(_dir,_projected);
+    
+    
+    for(ix=1;ix<_dim;ix++){
+        out.set(ix,_projected.get_data(ix)/_widths.get_data(ic,ix));
+    }
+    
+    double mu,xx;
+    xx=_projected.get_data(0)/_widths.get_data(ic,0);
+    mu=xx*xx*(xx-0.5)*(xx-0.5);
+    out.set(0,mu);
+    
+}
