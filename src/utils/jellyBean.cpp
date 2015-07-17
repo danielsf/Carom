@@ -505,7 +505,7 @@ void ellipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, in
     
     int ix;
     for(ix=0;ix<_dim;ix++){
-        _dir.set(ic,pt.get_data(ix)-_centers.get_data(ic,ix));
+        _dir.set(ix,pt.get_data(ix)-_centers.get_data(ic,ix));
     }
     
     project_to_basis(_dir,_projected);
@@ -522,7 +522,7 @@ void nonGaussianEllipseData::convert_params(array_1d<double> &pt, array_1d<doubl
 
     int ix;
     for(ix=0;ix<_dim;ix++){
-        _dir.set(ic,pt.get_data(ix)-_centers.get_data(ic,ix));
+        _dir.set(ix,pt.get_data(ix)-_centers.get_data(ic,ix));
     }
     
     project_to_basis(_dir,_projected);
@@ -534,7 +534,11 @@ void nonGaussianEllipseData::convert_params(array_1d<double> &pt, array_1d<doubl
     
     double mu,xx;
     xx=_projected.get_data(0)/_widths.get_data(ic,0);
-    mu=xx*xx*(xx-0.5)*(xx-0.5);
-    out.set(0,mu);
+    if(fabs(xx)<fabs(xx-0.05)){
+        out.set(0,xx);
+    }
+    else{
+        out.set(0,xx-0.05);
+    }
     
 }

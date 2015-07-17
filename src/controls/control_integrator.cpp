@@ -66,7 +66,7 @@ void control_integrator::run_analysis(){
     int ct=0;
     
     double foundMin=exception_value;
-    int total_pts=1;
+    long int total_pts=1;
     array_1d<int> grid_ct;
     grid_ct.set_name("grid_ct");
     
@@ -75,13 +75,13 @@ void control_integrator::run_analysis(){
         grid_ct.set(ix,iy);
         total_pts*=iy;
     }
-    printf("total_pts %d\n",total_pts);
+    printf("total_pts %ld\n",total_pts);
     
     FILE *output;
     
     output=fopen("output/scratch/control_scatter.sav","w");
     
-    int ipt;
+    long int ipt;
     array_1d<int> idx;
     idx.set_name("idx");
     for(ipt=0;ipt<total_pts;ipt++){
@@ -116,7 +116,7 @@ void control_integrator::run_analysis(){
         
                 
         if(ipt%1000000==0 && ipt>0){
-            printf("ct %d good %d in %e %e -- %e\n",
+            printf("ct %ld good %d in %e %e -- %e\n",
             ipt,chi_vals.get_dim(),double(time(NULL))-start,
             (double(time(NULL))-start)/double(ipt),foundMin);
         }

@@ -149,6 +149,16 @@ object/jellyBean.o
 	object/node.o object/carom.o object/jellyBean.o \
 	$(LIBRARIES)
 
+
+ellipse_test: src/examples/ellipse_example.cpp object/carom.o \
+object/jellyBean.o
+	$(gg) -o bin/ellipse_test src/examples/ellipse_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/node.o object/carom.o object/jellyBean.o \
+	$(LIBRARIES)
+
+
 jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/jellyBean.o
 	$(gg) -o bin/jellyBean_bayesianControl src/controls/jellyBeanBayesianControl.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o object/jellyBean.o \
