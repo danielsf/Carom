@@ -12,7 +12,7 @@ int main(int iargc, char *argv[]){
 int i,j;
 int seed=99;
 int dim=5;
-int nsamples=100000;
+int nsamples=-1;
 double delta_chisq=11.0;
 double confidence_limit=0.95;
 
