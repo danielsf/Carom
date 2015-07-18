@@ -2749,27 +2749,6 @@ void node::search(){
        }
     }
     
-    int pad_by;
-    
-    if(_active==0){
-        ibefore=_chisquared->get_called();
-        pad_by=_ct_ricochet/10;
-        volume0=volume();
-        projectedVolume0=projected_volume();
-        initialize_ricochet();
-        while(_chisquared->get_called()-ibefore<pad_by && _active==0){
-            ricochet();
-            volume1=volume();
-            projectedVolume1=projected_volume();
-            if(fabs(volume1-volume0)>maxDeltaV*volume0 ||
-               fabs(projectedVolume1-projectedVolume0)>maxDeltaV*projectedVolume0){
-               
-                _active=1;
-                _since_expansion=0;
-            }
-        }
-    }
-    
     if(_ricochet_particles.get_dim()==0){
         _active=0;
     }
