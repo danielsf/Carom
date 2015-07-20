@@ -1071,9 +1071,11 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 }
 
 void node::compass_search(){
-    
-    int local_center=_centerdex;
-    
+    compass_search(_centerdex);
+}
+
+void node::compass_search(int local_center){
+        
     is_it_safe("compass_search");
     _compass_points.reset();
     _chisquared->set_iWhere(iCompass);

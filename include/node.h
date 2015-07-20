@@ -90,6 +90,7 @@ private:
     void is_it_safe(char*);
     
     void compass_search();
+    void compass_search(int);
     void compass_diagonal(int);
     void off_center_compass(int);
     void initialize_ricochet();
