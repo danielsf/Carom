@@ -1190,12 +1190,12 @@ void node::compass_search(){
     }
     
     printf("before off_diag %d\n",_chisquared->get_called()-ibefore);
-    compass_off_diagonal();
+    compass_diagonal();
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
 
-void node::compass_off_diagonal(){
-    is_it_safe("compass_off_diagonal");
+void node::compass_diagonal(){
+    is_it_safe("compass_diagonal");
     _chisquared->set_iWhere(iCompass);
 
     int ix,iy;
