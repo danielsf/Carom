@@ -1072,6 +1072,8 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::compass_search(){
     
+    int local_center=_centerdex;
+    
     is_it_safe("compass_search");
     _compass_points.reset();
     _chisquared->set_iWhere(iCompass);
@@ -1096,12 +1098,12 @@ void node::compass_search(){
             if(sgn<0.0){
                 flow=_chimin;
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                    lowball.set(i,_chisquared->get_pt(local_center,i));
                 }
             }
             else{
                 for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,_chisquared->get_pt(_centerdex,i)+sgn*dx*_basis_vectors.get_data(ix,i));
+                    trial.set(i,_chisquared->get_pt(local_center,i)+sgn*dx*_basis_vectors.get_data(ix,i));
                 }
                 evaluate(trial,&ftrial,&iFound);
                 
@@ -1122,7 +1124,7 @@ void node::compass_search(){
             if(flow>_chisquared->target()){
                 flow=_chimin;
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                    lowball.set(i,_chisquared->get_pt(local_center,i));
                 }
             }
             
@@ -1137,16 +1139,16 @@ void node::compass_search(){
             
             iFound=-1;
             if(flow>_chisquared->target() || flow>fhigh){
-                flow=_chisquared->get_fn(_centerdex);
+                flow=_chisquared->get_fn(local_center);
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                    lowball.set(i,_chisquared->get_pt(local_center,i));
                 }
             }
             iFound=node_bisection(lowball,flow,highball,fhigh,1);
             
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
-                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i));
+                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(local_center,i)-_chisquared->get_pt(iFound,i));
             }   
             
             dx=fabs(dx);
@@ -1157,7 +1159,7 @@ void node::compass_search(){
                 
                 if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
                     for(i=0;i<_chisquared->get_dim();i++){
-                        lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                        lowball.set(i,_chisquared->get_pt(local_center,i));
                         highball.set(i,_chisquared->get_pt(iFound,i));
                     }
                     
@@ -1169,7 +1171,7 @@ void node::compass_search(){
                         _basis_associates.add(iFound);
 
                         for(i=0;i<_chisquared->get_dim();i++){
-                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                            lowball.set(i,_chisquared->get_pt(local_center,i));
                             highball.set(i,_chisquared->get_pt(iFound,i));
                         }
                         fhigh=_chisquared->get_fn(iFound);
@@ -1190,11 +1192,11 @@ void node::compass_search(){
     }
     
     printf("before off_diag %d\n",_chisquared->get_called()-ibefore);
-    compass_diagonal();
+    compass_diagonal(local_center);
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
 
-void node::compass_diagonal(){
+void node::compass_diagonal(int local_center){
     is_it_safe("compass_diagonal");
     _chisquared->set_iWhere(iCompass);
 
@@ -1275,7 +1277,7 @@ void node::compass_diagonal(){
                     fhigh=-2.0*exception_value;
                     if(dmin<exception_value){
                         for(i=0;i<_chisquared->get_dim();i++){
-                            trial.set(i,_chisquared->get_pt(_centerdex,i)+dmin*dir.get_data(i));
+                            trial.set(i,_chisquared->get_pt(local_center,i)+dmin*dir.get_data(i));
                         }
                         evaluate(trial,&ftrial,&iFound);
                         
@@ -1301,7 +1303,7 @@ void node::compass_diagonal(){
                         startFromMin++;
                         flow=_chimin;
                         for(i=0;i<_chisquared->get_dim();i++){
-                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                            lowball.set(i,_chisquared->get_pt(local_center,i));
                         }
                     }
                     
@@ -1315,9 +1317,9 @@ void node::compass_diagonal(){
                     }
                     
                     if(flow>_chisquared->target() || flow>fhigh){
-                        flow=_chisquared->get_fn(_centerdex);
+                        flow=_chisquared->get_fn(local_center);
                         for(i=0;i<_chisquared->get_dim();i++){
-                            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                            lowball.set(i,_chisquared->get_pt(local_center,i));
                         }
                         
                     }
@@ -1327,12 +1329,12 @@ void node::compass_diagonal(){
                         dmin=0.0;
                         mu=0.0;
                         for(i=0;i<_chisquared->get_dim();i++){
-                            mu+=(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                            mu+=(_chisquared->get_pt(local_center,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
                         }
                         dmin+=mu*mu;
                         mu=0.0;
                         for(i=0;i<_chisquared->get_dim();i++){
-                            mu+=(_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(iy,i);
+                            mu+=(_chisquared->get_pt(local_center,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(iy,i);
                         }
                         dmin+=mu*mu;
                         dmin=sqrt(dmin);
@@ -1343,7 +1345,7 @@ void node::compass_diagonal(){
                         _compass_points.add(iFound);
                         if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
                             for(i=0;i<_chisquared->get_dim();i++){
-                                lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                                lowball.set(i,_chisquared->get_pt(local_center,i));
                                 highball.set(i,_chisquared->get_pt(iFound,i));
                             }
                             
