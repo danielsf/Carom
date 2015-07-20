@@ -37,6 +37,7 @@ void node::initialize(){
     _failed_simplexes=0;
     _failed_kicks=0;
     _successful_kicks=0;
+    _volume_of_last_geom=0.0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -92,6 +93,7 @@ void node::copy(const node &in){
     _since_expansion=in._since_expansion;
     _min_basis_error=in._min_basis_error;
     _min_basis_error_changed=in._min_basis_error_changed;
+    _volume_of_last_geom=in._volume_of_last_geom;
     
     int i,j;
     
@@ -1072,7 +1074,6 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::compass_search(){
     compass_search(_centerdex);
-    compass_search_geometric_center();
 }
 
 void node::compass_search(int local_center){
@@ -1383,7 +1384,10 @@ void node::compass_diagonal(int local_center){
 
 }
 
-void node::compass_search_geometric_center(){    
+void node::compass_search_geometric_center(){   
+    is_it_safe("compass_geometric_center");
+    
+    _chisquared->set_iWhere(iCompass); 
     array_1d<double> geometric_dir,trial,highball,lowball;
     int iFound,i;
     double mu,fhigh,flow,bisection_target,tol;
@@ -1399,10 +1403,7 @@ void node::compass_search_geometric_center(){
     
     evaluate(trial,&mu,&iFound);
     
-    if(iFound<0){
-        return;
-    }
-    else{
+    if(iFound>=0){
         if(mu>_chisquared->target()){
             for(i=0;i<_chisquared->get_dim();i++){
                 lowball.set(i,_chisquared->get_pt(_centerdex,i));
@@ -1422,6 +1423,8 @@ void node::compass_search_geometric_center(){
         }
     
     }
+    
+    _volume_of_last_geom=volume();
     
 }
 
@@ -2769,6 +2772,10 @@ void node::search(){
         _chisquared->could_it_go_lower(_chimin)>0){
         
         simplex_search();
+    }
+    
+    if(volume()>2.0*_volume_of_last_geom){
+        compass_search_geometric_center();
     }
     
 
