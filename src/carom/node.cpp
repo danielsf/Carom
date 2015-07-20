@@ -1159,7 +1159,7 @@ void node::compass_search(int local_center){
                 add_to_boundary(iFound);
                 _compass_points.add(iFound);
                 
-                if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
+                if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                     for(i=0;i<_chisquared->get_dim();i++){
                         lowball.set(i,_chisquared->get_pt(local_center,i));
                         highball.set(i,_chisquared->get_pt(iFound,i));
@@ -1345,7 +1345,7 @@ void node::compass_diagonal(int local_center){
                         
                         add_to_boundary(iFound);
                         _compass_points.add(iFound);
-                        if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target())){
+                        if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                             for(i=0;i<_chisquared->get_dim();i++){
                                 lowball.set(i,_chisquared->get_pt(local_center,i));
                                 highball.set(i,_chisquared->get_pt(iFound,i));
