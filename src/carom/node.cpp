@@ -1072,6 +1072,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::compass_search(){
     compass_search(_centerdex);
+    compass_search_geometric_center();
 }
 
 void node::compass_search(int local_center){
@@ -1380,6 +1381,48 @@ void node::compass_diagonal(int local_center){
     printf("spentHigh %d spentLow %d spentNeither %d\n",spentHigh,spentLow,spentNeither);
     printf("startFromMin %d\n",startFromMin);
 
+}
+
+void node::compass_search_geometric_center(){    
+    array_1d<double> geometric_dir,trial,highball,lowball;
+    int iFound,i;
+    double mu,fhigh,flow,bisection_target,tol;
+    
+    geometric_dir.set_name("compass_search_geometric_dir");
+    trial.set_name("compass_search_trial");
+    
+    iFound=-1;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_min_found.get_data(i)+_max_found.get_data(i)));
+    }
+    
+    evaluate(trial,&mu,&iFound);
+    
+    if(iFound<0){
+        return;
+    }
+    else{
+        if(mu>_chisquared->target()){
+            for(i=0;i<_chisquared->get_dim();i++){
+                lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                highball.set(i,_chisquared->get_pt(iFound,i));
+            }
+            flow=_chisquared->get_fn(_centerdex);
+            fhigh=_chisquared->get_fn(iFound);
+            bisection_target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
+            tol=0.01*(_chisquared->target()-_chisquared->get_fn(_centerdex));
+            
+            iFound=node_bisection(lowball,flow,highball,fhigh,1,bisection_target,tol);
+            
+        }
+        
+        if(iFound>=0 && iFound!=_centerdex){
+            compass_search(iFound);
+        }
+    
+    }
+    
 }
 
 void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
