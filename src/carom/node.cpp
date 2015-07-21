@@ -1897,8 +1897,7 @@ void node::find_bases(){
     highball.set_name("node_find_bases_highball");
     dir.set_name("node_find_bases_dir");
     
-    target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
-    tol=0.01*(_chisquared->target()-_chisquared->get_fn(_centerdex));
+
     
     while(_basis_associates.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
         for(i=0;i<_chisquared->get_dim();i++){
@@ -1920,8 +1919,11 @@ void node::find_bases(){
             evaluate(highball,&fhigh,&iFound);
         }
         
+        target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
+        tol=0.01*(_chisquared->target()-_chisquared->get_fn(_centerdex));
+        
         iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
-        if(iFound>=0 && _chisquared->get_fn(iFound)>_chisquared->get_fn(_centerdex)+tol){
+        if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<0.5*(target-_chisquared->get_fn(_centerdex))){
             _basis_associates.add(iFound);
         }
     }
