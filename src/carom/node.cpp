@@ -2788,6 +2788,13 @@ void node::search(){
     
     ricochet();
 
+    if(_ct_simplex<_ct_ricochet && 
+        _failed_simplexes<3 && 
+        _chisquared->could_it_go_lower(_chimin)>0){
+        
+        simplex_search();
+    }
+    
     
     double tol;
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
@@ -2812,18 +2819,10 @@ void node::search(){
         _active=0;
     }
     
-    if(_ct_simplex<_ct_ricochet && 
-        _failed_simplexes<3 && 
-        _chisquared->could_it_go_lower(_chimin)>0){
-        
-        simplex_search();
-    }
-    
     if(volume()>2.0*_volume_of_last_geom){
         compass_search_geometric_center();
     }
     
-
     if(_ricochet_particles.get_dim()==0){
         printf("deactivating because no particles are worth it\n");
         _active=0;
