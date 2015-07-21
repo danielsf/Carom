@@ -1913,7 +1913,6 @@ void node::find_bases(){
         }
         fhigh=-2.0*exception_value;
         
-
         while(fhigh<target){
             for(i=0;i<_chisquared->get_dim();i++){
                 highball.add_val(i,dir.get_data(i));
@@ -2788,6 +2787,15 @@ void node::search(){
     int ibefore=_chisquared->get_called();
     
     ricochet();
+
+    
+    double tol;
+    tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
+    
+    if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
+        find_bases();
+        compass_search_geometric_center();
+    }
     
     double volume1=volume();
     double projectedVolume1=projected_volume();
