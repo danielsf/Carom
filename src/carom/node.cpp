@@ -1890,6 +1890,43 @@ void node::find_bases(){
         }
     }
     
+    int iFound;
+    double flow,fhigh,target,mu,tol;
+    array_1d<double> lowball,highball,dir;
+    lowball.set_name("node_find_bases_lowball");
+    highball.set_name("node_find_bases_highball");
+    dir.set_name("node_find_bases_dir");
+    
+    target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
+    tol=0.01*(_chisquared->target()-_chisquared->get_fn(_centerdex));
+    
+    while(_basis_associates.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        
+        flow=_chisquared->get_fn(_centerdex);
+        for(i=0;i<_chisquared->get_dim();i++){
+            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+            highball.set(i,_chisquared->get_pt(_centerdex,i));
+        }
+        fhigh=-2.0*exception_value;
+        
+
+        while(fhigh<target){
+            for(i=0;i<_chisquared->get_dim();i++){
+                highball.add_val(i,dir.get_data(i));
+            }
+            evaluate(highball,&fhigh,&iFound);
+        }
+        
+        iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
+        if(iFound>=0 && _chisquared->get_fn(iFound)>_chisquared->get_fn(_centerdex)+tol){
+            _basis_associates.add(iFound);
+        }
+    }
+    
     if(_basis_associates.get_dim()==0){
         printf("WARNING _basis associates is empty\n");
         exit(1);
