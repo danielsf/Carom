@@ -1404,6 +1404,7 @@ void node::compass_search_geometric_center(){
     evaluate(trial,&mu,&iFound);
     
     if(iFound>=0){
+        printf("\nraw geometric center chisq %e\n",_chisquared->get_fn(iFound));
         if(mu>_chisquared->target()){
             for(i=0;i<_chisquared->get_dim();i++){
                 lowball.set(i,_chisquared->get_pt(_centerdex,i));
@@ -1419,6 +1420,9 @@ void node::compass_search_geometric_center(){
         }
         
         if(iFound>=0 && iFound!=_centerdex){
+            for(i=0;i<_chisquared->get_dim();i++){
+                printf("%e %e\n",_chisquared->get_pt(_centerdex,i),_chisquared->get_pt(iFound,i));
+            }
             compass_search(iFound);
         }
     
