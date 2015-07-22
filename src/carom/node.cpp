@@ -1880,12 +1880,7 @@ void node::find_bases(){
     if(_basis_associates.get_dim()==0){
         compass_search();
     }
-    
-    if(_basis_associates.get_dim()==0){
-        printf("WARNING cannot find bases; no associates\n");
-        return;
-    }
-    
+        
     _chimin_bases=_chimin;
     _ellipse_center=_centerdex;
     
@@ -1903,8 +1898,6 @@ void node::find_bases(){
     lowball.set_name("node_find_bases_lowball");
     highball.set_name("node_find_bases_highball");
     dir.set_name("node_find_bases_dir");
-    
-
     
     while(_basis_associates.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
         for(i=0;i<_chisquared->get_dim();i++){
