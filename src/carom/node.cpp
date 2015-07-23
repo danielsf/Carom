@@ -1389,7 +1389,7 @@ void node::compass_search_geometric_center(){
     
     _chisquared->set_iWhere(iCompass); 
     array_1d<double> geometric_dir,trial,highball,lowball;
-    int iFound,i;
+    int iFound,i,j;
     double mu,fhigh,flow,bisection_target,tol;
     
     geometric_dir.set_name("compass_search_geometric_dir");
@@ -1397,8 +1397,14 @@ void node::compass_search_geometric_center(){
     
     iFound=-1;
     
+    trial.set_dim(_chisquared->get_dim());
+    trial.zero();
+    
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_min_found.get_data(i)+_max_found.get_data(i)));
+        mu=0.5*(_projected_max.get_data(i)+_projected_min.get_data(i));
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial.add_val(j,mu*_basis_vectors.get_data(i,j));
+        }
     }
     
     evaluate(trial,&mu,&iFound);
