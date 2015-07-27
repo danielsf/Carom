@@ -23,6 +23,7 @@ void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
     _centerdex=-1;
+    _geo_centerdex=-1;
     _centerdex_basis=-1;
     _min_changed=0;
     _active=1;
@@ -78,6 +79,7 @@ void node::copy(const node &in){
         return;
     }
     _centerdex=in._centerdex;
+    _geo_centerdex=in._geo_centerdex;
     _centerdex_basis=in._centerdex_basis;
     _chimin=in._chimin;
     _chimin_bases=in._chimin_bases;
@@ -1432,6 +1434,7 @@ void node::compass_search_geometric_center(){
             for(i=0;i<_chisquared->get_dim();i++){
                 printf("%e %e\n",_chisquared->get_pt(_centerdex,i),_chisquared->get_pt(iFound,i));
             }
+            _geo_centerdex=iFound;
             compass_search(iFound);
         }
     
@@ -2665,9 +2668,18 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
     int iFound;
     double mu;
     
+    int local_center;
+    
+    if(_geo_centerdex>=0){
+        local_center=_geo_centerdex;
+    }
+    else{
+        local_center=_centerdex;
+    }
+    
     for(i=0;i<_chisquared->get_dim();i++){
            x1=_chisquared->get_pt(_ricochet_particles.get_data(ix),i);
-           trial.set(i,ratio*x1+(1.0-ratio)*_chisquared->get_pt(_centerdex,i));
+           trial.set(i,ratio*x1+(1.0-ratio)*_chisquared->get_pt(local_center,i));
     }
     evaluate(trial,&mu,&iFound);
     if(iFound<0){
@@ -2682,7 +2694,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
      }
      else{
          for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(_centerdex,i));
+             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(local_center,i));
          }
      }
      dir.normalize();

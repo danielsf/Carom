@@ -42,7 +42,7 @@ public:
     int get_successful_kicks();
     
 private:
-    int _centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
+    int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
     double _chimin,_chimin_bases;
