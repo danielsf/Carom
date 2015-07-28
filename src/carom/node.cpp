@@ -2763,7 +2763,6 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
     }
     
     _ricochet_particles.set(ix,iChosen);
-    _ricochet_origins.set(ix,-1);
    
     printf("iCandidate %d -- %d %d\n",iCandidate,_ricochet_candidates.get_dim(),_ricochet_candidate_velocities.get_rows());
     for(i=0;i<_chisquared->get_dim();i++){
@@ -2851,7 +2850,6 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
         return;
     }
     
-    _ricochet_origins.set(ix,-1);
     _ricochet_particles.set(ix,iFound);
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(local_center,i));
@@ -2863,6 +2861,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
 }
 
 void node::_originate_particle_paperwork(int ix, int iChosen){
+    _ricochet_origins.set(ix,-1);
     _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iChosen);
