@@ -2775,6 +2775,10 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
     _ricochet_candidates.remove(iCandidate);
     printf("done with iCandidate\n");
 
+    _originate_particle_paperwork(ix, iChosen);
+}
+
+void node::_originate_particle_paperwork(int ix, int iChosen){
     _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_discoveries.add(_ricochet_discovery_dexes.get_data(ix),iChosen);
@@ -2782,10 +2786,6 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
     _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
     _ricochet_mu.add(_ricochet_discovery_dexes.get_data(ix),-2.0*exception_value);
     _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(ix),-2);
-
-
-    
-
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
