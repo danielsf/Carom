@@ -128,7 +128,7 @@ void carom::write_pts(){
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim());
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%.4e %.4e %d %d -- kicks %d %d ",
+        fprintf(output,"%.4e %.4e %d %d -- kicks: failed %d successful %d ",
         _nodes(i)->projected_volume(),_nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates(),
         _nodes(i)->get_failed_kicks(),_nodes(i)->get_successful_kicks());
         /*for(j=0;j<_chifn.get_dim();j++){
