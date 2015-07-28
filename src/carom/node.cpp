@@ -839,7 +839,12 @@ int node::node_bisection(array_1d<double> &ll, double fl,
                     array_1d<double> &hh, double fh,
                     int doSlope){
 
-        return node_bisection(ll,fl,hh,fh,doSlope,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
+        int iFound;
+        iFound=node_bisection(ll,fl,hh,fh,doSlope,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
+        if(iFound>=0){
+            add_to_boundary(iFound);
+        }
+        return iFound;
 }
 
 int node::node_bisection(array_1d<double> &lowball, double flow,
@@ -1160,7 +1165,6 @@ void node::compass_search(int local_center){
             dx=fabs(dx);
             
             if(iFound>=0){
-                add_to_boundary(iFound);
                 _compass_points.add(iFound);
                 
                 if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
@@ -1347,7 +1351,6 @@ void node::compass_diagonal(int local_center){
                         if(xweight<0.0 && yweight<0.0)dmin_nn=dmin;
                         if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
                         
-                        add_to_boundary(iFound);
                         _compass_points.add(iFound);
                         if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                             for(i=0;i<_chisquared->get_dim();i++){
@@ -2160,7 +2163,6 @@ void node::off_center_compass(int iStart){
             iFound=node_bisection(lowball,flow,highball,fhigh,1);
             
             if(iFound>=0){
-                add_to_boundary(iFound);
                 _off_center_compass_points.add(iFound);
                 if(iFound!=iStart){
                     _ricochet_candidates.add(iFound);
@@ -3144,7 +3146,6 @@ void node::ricochet(){
        if(iFound>=0){
            distanceMoved.set(ix,node_distance(start_pts(start_pts.get_rows()-1)[0],_chisquared->get_pt(iFound)[0]));
            chiFound.set(ix,_chisquared->get_fn(iFound));
-           add_to_boundary(iFound);
  
        }
        else{
