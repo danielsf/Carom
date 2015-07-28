@@ -2400,7 +2400,7 @@ void node::initialize_ricochet(){
         _ricochet_strikes.set(i,0);
         _ricochet_particles.set(i,0);
         _ricochet_velocities.add_row(dir);
-        originate_particle(i,dir);
+        originate_particle_compass(i,dir);
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_velocities.set(i,j,dir.get_data(j));
         }
@@ -2705,7 +2705,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 }
 
 
-void node::originate_particle(int ix, array_1d<double> &dir){
+void node::originate_particle_compass(int ix, array_1d<double> &dir){
 
     //choose new origin
     
@@ -3232,7 +3232,7 @@ void node::ricochet(){
        }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-           originate_particle(i,_ricochet_velocities(i)[0]);
+           originate_particle_compass(i,_ricochet_velocities(i)[0]);
            _ricochet_strikes.set(i,0);
        }
        
