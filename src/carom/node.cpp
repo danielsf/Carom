@@ -2778,6 +2778,90 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
     _originate_particle_paperwork(ix, iChosen);
 }
 
+void node::originate_particle_shooting(int ix, array_1d<double> &dir){
+
+    if(_boundary_points.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
+        originate_particle_compass(ix, dir);
+        return;
+    }
+
+    array_1d<double> local_dir,intermediate_dir;
+    int local_center;
+    
+    local_dir.set_name("node_shooting_local_dir");
+    
+    if(_geo_centerdex>=0 && _chisquared->get_fn(_geo_centerdex)<_chisquared->target()){
+        local_center=_geo_centerdex;
+    }
+    else{
+        local_center=_centerdex;
+    }
+    
+    local_dir.set_dim(_chisquared->get_dim());
+    local_dir.zero();
+    int i,j;
+    //if this doesn't work, try assembling local_dir from
+    //unnormalized vectors pointing from boundary to center
+    //that would give more weight to directions that have
+    //already been explored far afield
+    for(i=0;i<_boundary_points.get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            intermediate_dir.set(j,_chisquared->get_pt(_boundary_points.get_data(i),j)-_chisquared->get_pt(local_center,j));
+        }
+        
+        intermediate_dir.normalize();
+        for(j=0;j<_chisquared->get_dim();j++){
+            local_dir.add_val(j,intermediate_dir.get_data(j));
+        }
+    }
+    
+    
+    double min_norm,local_dir_norm;
+    min_norm=1.0e-10;
+    local_dir_norm=local_dir.normalize();
+    while(local_dir_norm<min_norm){
+        for(i=0;i<_chisquared->get_dim();i++){
+            local_dir.add_val(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        local_dir_norm=local_dir.normalize();
+    }
+    
+    array_1d<double> lowball,highball;
+    double flow,fhigh;
+    lowball.set_name("node_shooting_lowball");
+    highball.set_name("node_shooting_highball");
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,_chisquared->get_pt(local_center,i));
+        highball.set(i,_chisquared->get_pt(local_center,i));
+    }
+    flow=_chisquared->get_fn(local_center);
+    fhigh=-2.0*exception_value;
+    int iFound;
+    while(fhigh<_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.add_val(i,local_dir.get_data(i));
+        }
+        evaluate(highball,&fhigh,&iFound);
+    }
+    
+    iFound=node_bisection(lowball,flow,highball,fhigh,1);
+    
+    if(iFound<0){
+        originate_particle_compass(ix,dir);
+        return;
+    }
+    
+    _ricochet_origins.set(ix,-1);
+    _ricochet_particles.set(ix,iFound);
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(local_center,i));
+    }
+    dir.normalize();
+
+    _originate_particle_paperwork(ix,iFound);
+
+}
+
 void node::_originate_particle_paperwork(int ix, int iChosen){
     _ricochet_grad_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
     _ricochet_dir_norm.add(_ricochet_discovery_dexes.get_data(ix),-1.0);
@@ -3232,7 +3316,7 @@ void node::ricochet(){
        }
        
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-           originate_particle_compass(i,_ricochet_velocities(i)[0]);
+           originate_particle_shooting(i,_ricochet_velocities(i)[0]);
            _ricochet_strikes.set(i,0);
        }
        
