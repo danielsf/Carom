@@ -1968,7 +1968,8 @@ void node::find_bases(){
     changed_bases=0;
     ct=0;
     
-    printf("error0 %e %d\n",error0,_basis_associates.get_dim());
+    printf("error0 %e %d -- vol %e proj %e\n",
+    error0,_basis_associates.get_dim(),volume(),projected_volume());
 
     if(_centerdex!=_centerdex_basis){
         printf("guessing basis from second derivative\n");
@@ -2057,7 +2058,8 @@ void node::find_bases(){
     _found_bases++;
     _min_changed=0;
     _centerdex_basis=_centerdex;
-    printf("done finding bases\n");
+    printf("done finding bases -- vol %e proj %e changed %d\n",
+    volume(),projected_volume(),changed_bases);
     if(errorBest<_min_basis_error){
         _min_basis_error=errorBest;
         _min_basis_error_changed=1;
