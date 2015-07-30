@@ -3164,7 +3164,8 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
 
-    int local_center;
+    int local_center,is_connected,iLowball;
+    double reflection_coeff;
     if(_geo_centerdex>0 && _chisquared->get_fn(_geo_centerdex)<_chisquared->target()){
         local_center=_geo_centerdex;
     }
@@ -3177,6 +3178,8 @@ void node::ricochet(){
        start_pts.add_row(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
+       is_connected=0;
+       iLowball=_ricochet_particles.get_data(ix);
 
        updated=0;
        if(_ricochet_strikes.get_data(ix)>0){
@@ -3212,6 +3215,7 @@ void node::ricochet(){
                lowball.set(i,_chisquared->get_pt(iFound,i));
            }
            flow=_chisquared->get_fn(iFound);
+           iLowball=iFound;
            
        }
        
@@ -3226,6 +3230,16 @@ void node::ricochet(){
 
        if(updated==0){
            node_gradient(_ricochet_particles.get_data(ix),gradient);
+           
+           is_connected=_are_connected(iLowball,local_center);
+
+
+           if(is_connected==0){
+               reflection_coeff=2.0; //full reflection
+           }
+           else{
+               reflection_coeff=1.8;
+           }
        
            gnorm=gradient.normalize();
            component=0.0;
@@ -3234,14 +3248,13 @@ void node::ricochet(){
            }
        
            for(i=0;i<_chisquared->get_dim();i++){
-               dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
+               dir.set(i,_ricochet_velocities.get_data(ix,i)-reflection_coeff*component*gradient.get_data(i));
            }
        
            dirnorm=dir.normalize();
+ 
        }
 
-
-       
        component=1.0;
        while(fhigh<_chisquared->target()){
            for(i=0;i<_chisquared->get_dim();i++){
