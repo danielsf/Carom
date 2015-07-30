@@ -3194,12 +3194,12 @@ void node::ricochet(){
 
        while(flow>=_chisquared->target()){
            for(i=0;i<_chisquared->get_dim();i++){
-               elowball.set(i,_chisquared->get_pt(_centerdex,i));
+               elowball.set(i,_chisquared->get_pt(local_center,i));
                ehighball.set(i,lowball.get_data(i));
                edir.set(i,lowball.get_data(i)-elowball.get_data(i));
            }
            edir.normalize();
-           eflow=_chimin;
+           eflow=_chisquared->get_fn(local_center);
            
            component=1.0;
            efhigh=flow;
@@ -3207,7 +3207,7 @@ void node::ricochet(){
            if(eflow>_chisquared->target() || eflow>efhigh){
                printf("WARNING eflow %e %e %e\n",
                eflow,efhigh,_chisquared->target());
-               printf("%e\n",_chisquared->get_fn(_centerdex));
+               printf("%e\n",_chisquared->get_fn(local_center));
                exit(1);
            }
            
