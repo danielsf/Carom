@@ -2947,11 +2947,8 @@ void node::search(){
     if(volume1>volume0*minExpansionFactor || projectedVolume1>projectedVolume0*minExpansionFactor){
         _since_expansion=0;
     }
-    else{
-        _since_expansion+=_ricochet_particles.get_dim();
-    }
-    
-    if(_since_expansion>6*_chisquared->get_dim()){
+
+    if(_since_expansion>4*_chisquared->get_dim()){
         printf("deactivating because we did not expand\n");
         _active=0;
     }
@@ -3371,6 +3368,7 @@ void node::ricochet(){
            originate_particle_shooting(i,_ricochet_velocities(i)[0]);
            _ricochet_strikes.set(i,0);
            _strikeouts++;
+           _since_expansion++;
        }
        else{
            _successful_ricochets++;
