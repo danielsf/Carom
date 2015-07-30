@@ -2279,8 +2279,6 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     
     ell=mutual_dd_sorted.get_data(k/2);
     
-    
-    
     covar.set_dim(npts,npts);
     covarin.set_dim(npts,npts);
     
