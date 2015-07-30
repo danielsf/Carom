@@ -2917,7 +2917,7 @@ void node::search(){
         }
     }
 
-    double minExpansionFactor=1.001;
+    double minExpansionFactor=1.01;
  
     double projectedVolume0=projected_volume(); 
     double volume0=volume();
