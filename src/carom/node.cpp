@@ -3171,22 +3171,6 @@ void node::ricochet(){
            updated=kick_particle(ix,dir);
        }
 
-       if(updated==0){
-           node_gradient(_ricochet_particles.get_data(ix),gradient);
-       
-           gnorm=gradient.normalize();
-           component=0.0;
-           for(i=0;i<_chisquared->get_dim();i++){
-               component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
-           }
-       
-           for(i=0;i<_chisquared->get_dim();i++){
-               dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
-           }
-       
-           dirnorm=dir.normalize();
-       }
-
        flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
        for(i=0;i<_chisquared->get_dim();i++){
            lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
@@ -3227,6 +3211,24 @@ void node::ricochet(){
        for(i=0;i<_chisquared->get_dim();i++){
            highball.set(i,lowball.get_data(i));
        }
+
+       if(updated==0){
+           node_gradient(_ricochet_particles.get_data(ix),gradient);
+       
+           gnorm=gradient.normalize();
+           component=0.0;
+           for(i=0;i<_chisquared->get_dim();i++){
+               component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
+           }
+       
+           for(i=0;i<_chisquared->get_dim();i++){
+               dir.set(i,_ricochet_velocities.get_data(ix,i)-2.0*component*gradient.get_data(i));
+           }
+       
+           dirnorm=dir.normalize();
+       }
+
+
        
        component=1.0;
        while(fhigh<_chisquared->target()){
