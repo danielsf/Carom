@@ -40,6 +40,8 @@ public:
     
     int get_failed_kicks();
     int get_successful_kicks();
+    int get_strikeouts();
+    int get_successful_ricochets();
     
 private:
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
@@ -52,6 +54,7 @@ private:
     
     double _min_basis_error;
     int _since_expansion,_min_basis_error_changed;
+    int _strikeouts,_successful_ricochets;
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;

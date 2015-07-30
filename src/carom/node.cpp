@@ -39,6 +39,8 @@ void node::initialize(){
     _failed_kicks=0;
     _successful_kicks=0;
     _volume_of_last_geom=0.0;
+    _strikeouts=0;
+    _successful_ricochets=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -96,6 +98,8 @@ void node::copy(const node &in){
     _min_basis_error=in._min_basis_error;
     _min_basis_error_changed=in._min_basis_error_changed;
     _volume_of_last_geom=in._volume_of_last_geom;
+    _strikeouts=in._strikeouts;
+    _successful_ricochets=in._successful_ricochets;
     
     int i,j;
     
@@ -268,6 +272,14 @@ void node::copy(const node &in){
         }
     }
     
+}
+
+int node::get_strikeouts(){
+    return _strikeouts;
+}
+
+int node::get_successful_ricochets(){
+    return _successful_ricochets;
 }
 
 int node::get_failed_kicks(){
@@ -3345,6 +3357,10 @@ void node::ricochet(){
        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
            originate_particle_shooting(i,_ricochet_velocities(i)[0]);
            _ricochet_strikes.set(i,0);
+           _strikeouts++;
+       }
+       else{
+           _successful_ricochets++;
        }
        
        if(iChosen<0 || mu>ddmax){
