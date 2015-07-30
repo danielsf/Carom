@@ -3151,6 +3151,14 @@ void node::ricochet(){
    gradient.set_name("node_ricochet_gradient");
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
+
+    int local_center;
+    if(_geo_centerdex>0 && _chisquared->get_fn(_geo_centerdex)<_chisquared->target()){
+        local_center=_geo_centerdex;
+    }
+    else{
+        local_center=_centerdex;
+    }
    
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
