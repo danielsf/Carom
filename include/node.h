@@ -116,6 +116,8 @@ private:
     double node_second_derivative(int,int,int);
     double node_second_derivative_different(int,int,int);
     double node_second_derivative_same(int,int);
+
+    int _are_connected(int, int);
 };
 
 class arrayOfNodes{

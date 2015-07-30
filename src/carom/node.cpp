@@ -2216,6 +2216,26 @@ double node::apply_quadratic_model(array_1d<double> &pt){
     
 }
 
+int node::_are_connected(int i1, int i2){
+    int iFound,i;
+    double mu;
+    array_1d<double> trial;
+    trial.set_name("node_are_connected_trial");
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_chisquared->get_pt(i1,i)+_chisquared->get_pt(i2,i)));
+    }
+    
+    evaluate(trial,&mu,&iFound);
+    if(mu<=_chisquared->target()){
+         return 1;
+    }
+    else{
+        return 0;
+    }
+    
+}
+
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     is_it_safe("ricochet_model");
 
