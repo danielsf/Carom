@@ -37,13 +37,16 @@ public:
     void print_ricochet_discoveries(char*);
     
     int is_this_an_associate(int);
-    
+
     int get_failed_kicks();
     int get_successful_kicks();
     int get_strikeouts();
     int get_successful_ricochets();
+    void set_id_dex(int);
+    void write_node_log(char*);
     
 private:
+    int _id_dex,_last_wrote_log;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
@@ -76,6 +79,8 @@ private:
     asymm_array_2d<double> _ricochet_distances,_ricochet_grad_norm;
     asymm_array_2d<double> _ricochet_dir_norm,_ricochet_mu;
     asymm_array_2d<int> _ricochet_strike_log;
+    
+    array_2d<int> _ricochet_log;
     
     chisq_wrapper *_chisquared;
     

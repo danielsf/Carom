@@ -41,6 +41,9 @@ void node::initialize(){
     _volume_of_last_geom=0.0;
     _strikeouts=0;
     _successful_ricochets=0;
+    _id_dex=0;
+    _last_wrote_log=0;
+
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -74,6 +77,7 @@ void node::initialize(){
     _ricochet_strike_log.set_name("node_ricochet_strike_log");
     _associates.set_name("node_associates");
     _boundary_points.set_name("node_boundary_points");
+    _ricochet_log.set_name("node_ricochet_log");
 }
 
 void node::copy(const node &in){
@@ -100,6 +104,8 @@ void node::copy(const node &in){
     _volume_of_last_geom=in._volume_of_last_geom;
     _strikeouts=in._strikeouts;
     _successful_ricochets=in._successful_ricochets;
+    _id_dex=in._id_dex;
+    _last_wrote_log=in._last_wrote_log;
     
     int i,j;
     
@@ -272,6 +278,14 @@ void node::copy(const node &in){
         }
     }
     
+    _ricochet_log.reset();
+    _ricochet_log.set_cols(in._ricochet_log.get_cols());
+    for(i=0;i<in._ricochet_log.get_rows();i++){
+        for(j=0;j<in._ricochet_log.get_cols();j++){
+            _ricochet_log.set(i,j,in._ricochet_log.get_data(i,j));
+        }
+    }
+    
 }
 
 int node::get_strikeouts(){
@@ -296,6 +310,10 @@ int node::get_activity(){
 
 int node::get_ct_ricochet(){
     return _ct_ricochet;
+}
+
+void node::set_id_dex(int ii){
+    _id_dex=ii;
 }
 
 void node::set_center(int ix){
@@ -2488,6 +2506,11 @@ void node::initialize_ricochet(){
     }
     fclose(output);
 
+    if(_ricochet_log.get_cols()==0){
+        _ricochet_log.set_cols(_ricochet_particles.get_dim());
+    }
+
+
 }
 
 int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
@@ -3121,7 +3144,7 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
         return 1;
     }
     
-    double dTol=1.0e-5;
+    double dTol=1.0e-2;
     int iy;
     for(iy=0;iy<_ricochet_particles.get_dim();iy++){
         if(iy!=ix){
@@ -3184,12 +3207,19 @@ void node::ricochet(){
    _chisquared->set_iWhere(iRicochet);
    _calls_to_ricochet++;
    
+   int i;
+   array_1d<int> log_row;
+   log_row.set_name("ricochet_log_row");
+   for(i=0;i<_ricochet_log.get_cols();i++){
+       log_row.set(i,-1);
+   }
+   
    int ibefore=_chisquared->get_called();
    
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
    
-   int ix,i,j,iFound,updated;
+   int ix,j,iFound,updated;
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir,kick;
    
@@ -3378,6 +3408,7 @@ void node::ricochet(){
 
        _ricochet_origins.set(ix,_ricochet_particles.get_data(ix));
        _ricochet_particles.set(ix,iFound);
+       log_row.set(ix,iFound);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_velocities.set(ix,i,dir.get_data(i));
            
@@ -3493,6 +3524,8 @@ void node::ricochet(){
        }
    }
    
+   _ricochet_log.add_row(log_row);
+   
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
 }
@@ -3503,6 +3536,55 @@ int node::get_n_particles(){
 
 int node::get_n_candidates(){
     return _ricochet_candidates.get_dim();
+}
+
+void node::write_node_log(char *nameRoot){
+    char outname[letters];
+    sprintf(outname,"%s_node_%d_log.txt",nameRoot,_id_dex);
+    
+    FILE *output;
+    
+    if(_last_wrote_log==0){
+        output=fopen(outname,"w");
+    }
+    else{
+        output=fopen(outname,"a");
+    }
+    
+    double dd;
+    array_1d<double> nn;
+    nn.set_name("node_log_nn");
+    nn.set_dim(_ricochet_particles.get_dim());
+    int i,j,iRow;
+
+    for(iRow=0;iRow<_ricochet_log.get_rows();iRow++){
+        for(i=0;i<_ricochet_log(iRow)->get_dim();i++){
+            nn.set(i,-1.0);
+            for(j=0;j<_ricochet_log(iRow)->get_dim();j++){
+                if(j!=i && _ricochet_log(iRow)->get_data(i)>=0 && _ricochet_log(iRow)->get_data(j)>=0){
+                    dd=node_distance(_ricochet_log(iRow)->get_data(i),_ricochet_log(iRow)->get_data(j));
+                
+                    if(nn.get_data(i)<0.0 || dd<nn.get_data(i)){
+                        nn.set(i,dd);
+                    }
+                }
+            }
+        }
+
+        for(i=0;i<_ricochet_log(iRow)->get_dim();i++){
+            fprintf(output,"%d ",_ricochet_log(iRow)->get_data(i));
+        }
+        fprintf(output," -- ");
+        for(i=0;i<_ricochet_log(iRow)->get_dim();i++){
+            fprintf(output,"%.3e ",nn.get_data(i));
+        }
+        fprintf(output,"\n");
+    }
+    
+    _ricochet_log.reset_preserving_room();
+    _last_wrote_log=_chisquared->get_pts();
+    
+    fclose(output);
 }
 
 void node::print_ricochet_discoveries(char *nameRoot){
@@ -3574,6 +3656,7 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
+    _data[_ct].set_id_dex(_ct);
     
     _data[_ct].find_bases();
 
