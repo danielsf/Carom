@@ -3075,6 +3075,61 @@ void node::simplex_search(){
     
 }
 
+int node::is_it_a_strike(int ix, kd_tree &kd_copy){
+    if(_ricochet_particles.get_data(ix)<0){
+        return 1;
+    }
+    
+    double dist;
+    if(_ricochet_origins.get_data(ix)>=0){
+        dist=node_distance(_ricochet_origins.get_data(ix),_ricochet_particles.get_data(ix));
+        if(dist<1.0e-2){
+            return 1;
+        }
+    }
+    
+    double mu=_chisquared->get_fn(_ricochet_particles.get_data(ix));
+    if(mu<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
+        return 1;
+    }
+    
+    double dTol=1.0e-5;
+    int iy;
+    for(iy=0;iy<_ricochet_particles.get_dim();iy++){
+        if(iy!=ix){
+            dist=node_distance(_ricochet_particles.get_data(ix),_ricochet_particles.get_data(iy));
+        }
+        if(dist<=dTol){
+            return 1;
+        }
+    }
+    
+    array_1d<int> neigh;
+    array_1d<double> dd;
+    neigh.set_name("node_is_it_a_strike_neigh");
+    dd.set_name("node_is_it_a_strike_dd");
+    
+    kd_copy.nn_srch(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],_chisquared->get_dim()+1,neigh,dd);
+    for(iy=0;iy<neigh.get_dim();iy++){
+        dist=node_distance(neigh.get_data(iy),_ricochet_particles.get_data(ix));
+        if(dist<=dTol){
+            return 1;
+        }
+    }
+    
+    mu=ricochet_model(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],kd_copy);
+
+    if(mu>0.0 &&
+        mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
+        mu>_chisquared->chimin()){
+           
+        return 1;
+    }
+       
+
+    return 0;
+}
+
 void node::ricochet(){
     is_it_safe("ricochet");
     
@@ -3328,26 +3383,18 @@ void node::ricochet(){
    double mu;
    int isAStrike;
    for(i=0;i<_ricochet_particles.get_dim();i++){
+       
+       isAStrike=0;
+       if(boundsChanged.get_data(i)==0){
+           isAStrike=is_it_a_strike(i, kd_copy);
+       }
+       
        mu=-2.0*exception_value;
        if(boundsChanged.get_data(i)==0){
            mu=ricochet_model(_chisquared->get_pt(_ricochet_particles.get_data(i))[0],kd_copy);
        }
        _ricochet_mu.add(_ricochet_discovery_dexes.get_data(i),mu);
 
-       isAStrike=0;
-
-       if(boundsChanged.get_data(i)==0 && mu>0.0 &&
-           mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
-           mu>_chisquared->chimin()){
-           
-           isAStrike=1;
-       }
-       
-       if(distanceMoved.get_data(i)<distanceMin ||
-          chiFound.get_data(i)<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
-          
-          isAStrike=1;   
-       }
        
        if(isAStrike==1){
            if(_ricochet_strikes.get_data(i)>0){
