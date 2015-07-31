@@ -3175,15 +3175,9 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
         return 1;
     }
     
-    double dTol=1.0e-2;
-    int iy;
-    for(iy=0;iy<_ricochet_particles.get_dim();iy++){
-        if(iy!=ix){
-            dist=node_distance(_ricochet_particles.get_data(ix),_ricochet_particles.get_data(iy));
-        }
-        if(dist<=dTol){
-            return 1;
-        }
+    dist=_nearest_other_particle(_ricochet_particles.get_data(ix),ix);
+    if(dist<=_node_dd_tol){
+        return 1;
     }
     
     array_1d<int> neigh;
@@ -3192,12 +3186,10 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
     dd.set_name("node_is_it_a_strike_dd");
     
     kd_copy.nn_srch(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],1,neigh,dd);
-    for(iy=0;iy<neigh.get_dim();iy++){
-        dist=node_distance(neigh.get_data(iy),_ricochet_particles.get_data(ix));
-        if(dist<=_node_dd_tol){
-            return 1;
-        }
-    }
+    dist=node_distance(neigh.get_data(0),_ricochet_particles.get_data(ix));
+    if(dist<=_node_dd_tol){
+        return 1;
+     }
     
     mu=ricochet_model(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],kd_copy);
 
