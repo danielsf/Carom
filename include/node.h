@@ -40,6 +40,8 @@ public:
 
     int get_failed_kicks();
     int get_successful_kicks();
+    int get_good_shots();
+    int get_bad_shots();
     int get_strikeouts();
     int get_successful_ricochets();
     void set_id_dex(int);
@@ -58,7 +60,7 @@ private:
     double _min_basis_error;
     double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed;
-    int _strikeouts,_successful_ricochets;
+    int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;

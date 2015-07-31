@@ -43,6 +43,8 @@ void node::initialize(){
     _successful_ricochets=0;
     _id_dex=0;
     _last_wrote_log=0;
+    _good_shots=0;
+    _bad_shots=0;
     _node_dd_tol=1.0e-2;
 
     
@@ -108,6 +110,8 @@ void node::copy(const node &in){
     _id_dex=in._id_dex;
     _last_wrote_log=in._last_wrote_log;
     _node_dd_tol=in._node_dd_tol;
+    _good_shots=in._good_shots;
+    _bad_shots=in._bad_shots;
     
     int i,j;
     
@@ -288,6 +292,14 @@ void node::copy(const node &in){
         }
     }
     
+}
+
+int node::get_good_shots(){
+    return _good_shots;
+}
+
+int node::get_bad_shots(){
+    return _bad_shots;
 }
 
 int node::get_strikeouts(){
@@ -2867,6 +2879,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
 
     if(_boundary_points.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
         originate_particle_compass(ix, dir);
+        _bad_shots++;
         return;
     }
 
@@ -2919,8 +2932,10 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
 
     array_1d<double> pp;
     
+    int random_ct=0;
     //in case we found a point that already existed
     while(iFound>=0 && (iFound<pts0 || dist<_node_dd_tol)){
+        random_ct++;
         pts0=_chisquared->get_pts();
         for(i=0;i<_chisquared->get_dim();i++){
             local_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
@@ -2932,7 +2947,15 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
     
     if(iFound<0){
         originate_particle_compass(ix,dir);
+        _bad_shots++;
         return;
+    }
+
+    if(random_ct==0){
+        _good_shots++;
+    }
+    else{
+        _bad_shots++;
     }
     
     _ricochet_particles.set(ix,iFound);
