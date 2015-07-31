@@ -847,6 +847,35 @@ void node::node_gradient(int dex, array_1d<double> &grad){
 
 }
 
+int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir){
+    array_1d<double> lowball,highball;
+    double flow, fhigh;
+    
+    lowball.set_name("node_bisection_origin_lowball");
+    highball.set_name("node_bisection_origin_highball");
+    
+    if(_chisquared->get_fn(iOrigin)>_chisquared->target()){
+        return -1;
+    }
+    
+    flow=_chisquared->get_fn(iOrigin);
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,_chisquared->get_pt(iOrigin,i));
+        highball.set(i,_chisquared->get_pt(iOrigin,i));
+    }
+    
+    fhigh=-2.0*exception_value;
+    while(fhigh<_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.add_val(i,dir.get_data(i));
+        }
+        evaluate(highball,&fhigh,&i);
+    }
+    
+    return node_bisection(lowball,flow,highball,fhigh,1);
+}
+
 int node::node_bisection(array_1d<double> &ll, double fl,
                     array_1d<double> &hh, double fh,
                     int doSlope){
@@ -2857,25 +2886,24 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
         local_dir_norm=local_dir.normalize();
     }
     
-    array_1d<double> lowball,highball;
-    double flow,fhigh;
-    lowball.set_name("node_shooting_lowball");
-    highball.set_name("node_shooting_highball");
-    for(i=0;i<_chisquared->get_dim();i++){
-        lowball.set(i,_chisquared->get_pt(local_center,i));
-        highball.set(i,_chisquared->get_pt(local_center,i));
-    }
-    flow=_chisquared->get_fn(local_center);
-    fhigh=-2.0*exception_value;
-    int iFound;
-    while(fhigh<_chisquared->target()){
+    int iFound,pts0=_chisquared->get_pts();
+    iFound=node_bisection_origin_dir(local_center,local_dir);
+
+    array_1d<double> pp;
+    
+    //in case we found a point that already existed
+    while(iFound<pts0 && iFound>=0){
+        pts0=_chisquared->get_pts();
         for(i=0;i<_chisquared->get_dim();i++){
-            highball.add_val(i,local_dir.get_data(i));
+            pp.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
-        evaluate(highball,&fhigh,&iFound);
+        pp.normalize();
+        for(i=0;i<_chisquared->get_dim();i++){
+            local_dir.add_val(i,0.1*pp.get_data(i));
+        }
+        iFound=node_bisection_origin_dir(local_center,local_dir);
     }
     
-    iFound=node_bisection(lowball,flow,highball,fhigh,1);
     
     if(iFound<0){
         originate_particle_compass(ix,dir);
