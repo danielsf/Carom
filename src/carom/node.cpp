@@ -43,6 +43,7 @@ void node::initialize(){
     _successful_ricochets=0;
     _id_dex=0;
     _last_wrote_log=0;
+    _node_dd_tol=1.0e-2;
 
     
     _compass_points.set_name("node_compass_points");
@@ -106,6 +107,7 @@ void node::copy(const node &in){
     _successful_ricochets=in._successful_ricochets;
     _id_dex=in._id_dex;
     _last_wrote_log=in._last_wrote_log;
+    _node_dd_tol=in._node_dd_tol;
     
     int i,j;
     
@@ -2911,11 +2913,14 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
     
     int iFound,pts0=_chisquared->get_pts();
     iFound=node_bisection_origin_dir(local_center,local_dir);
+    
+    double dist;
+    dist=_nearest_other_particle(iFound,-1);
 
     array_1d<double> pp;
     
     //in case we found a point that already existed
-    while(iFound<pts0 && iFound>=0){
+    while(iFound>=0 && (iFound<pts0 || dist<_node_dd_tol)){
         pts0=_chisquared->get_pts();
         for(i=0;i<_chisquared->get_dim();i++){
             pp.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
@@ -2925,6 +2930,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
             local_dir.add_val(i,0.1*pp.get_data(i));
         }
         iFound=node_bisection_origin_dir(local_center,local_dir);
+        dist=_nearest_other_particle(iFound,-1);
     }
     
     
@@ -3126,6 +3132,35 @@ void node::simplex_search(){
     
 }
 
+double node::_nearest_other_particle(int target, int ignore_particle){
+    int iy;
+    double dd,ans=2.0*exception_value;
+    for(iy=0;iy<_ricochet_particles.get_dim();iy++){
+        if(iy!=ignore_particle){
+            dd=node_distance(target,_ricochet_particles.get_data(iy));
+            if(dd<ans){
+                ans=dd;
+            }
+        }
+    }
+    
+    int i,j;
+    for(i=0;i<_ricochet_log.get_rows();i++){
+        for(j=0;j<_ricochet_log.get_cols();j++){
+            iy=_ricochet_log.get_data(i,j);
+            if(iy>=0){
+                dd=node_distance(target,iy);
+                if(dd<ans){
+                    ans=dd;
+                }
+            }
+        }
+    }
+    
+    return ans;
+    
+}
+
 int node::is_it_a_strike(int ix, kd_tree &kd_copy){
     if(_ricochet_particles.get_data(ix)<0){
         return 1;
@@ -3134,7 +3169,7 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
     double dist;
     if(_ricochet_origins.get_data(ix)>=0){
         dist=node_distance(_ricochet_origins.get_data(ix),_ricochet_particles.get_data(ix));
-        if(dist<1.0e-2){
+        if(dist<_node_dd_tol){
             return 1;
         }
     }
@@ -3160,10 +3195,10 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
     neigh.set_name("node_is_it_a_strike_neigh");
     dd.set_name("node_is_it_a_strike_dd");
     
-    kd_copy.nn_srch(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],_chisquared->get_dim()+1,neigh,dd);
+    kd_copy.nn_srch(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],1,neigh,dd);
     for(iy=0;iy<neigh.get_dim();iy++){
         dist=node_distance(neigh.get_data(iy),_ricochet_particles.get_data(ix));
-        if(dist<=dTol){
+        if(dist<=_node_dd_tol){
             return 1;
         }
     }

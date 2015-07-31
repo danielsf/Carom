@@ -56,6 +56,7 @@ private:
     int _failed_kicks,_successful_kicks;
     
     double _min_basis_error;
+    double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed;
     int _strikeouts,_successful_ricochets;
     
@@ -117,6 +118,7 @@ private:
     void originate_particle_shooting(int, array_1d<double>&);
     void _originate_particle_paperwork(int, int);
     void _filter_candidates();
+    double _nearest_other_particle(int,int);
     
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);
