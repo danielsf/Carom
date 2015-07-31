@@ -2923,11 +2923,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
     while(iFound>=0 && (iFound<pts0 || dist<_node_dd_tol)){
         pts0=_chisquared->get_pts();
         for(i=0;i<_chisquared->get_dim();i++){
-            pp.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        pp.normalize();
-        for(i=0;i<_chisquared->get_dim();i++){
-            local_dir.add_val(i,0.1*pp.get_data(i));
+            local_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
         iFound=node_bisection_origin_dir(local_center,local_dir);
         dist=_nearest_other_particle(iFound,-1);
