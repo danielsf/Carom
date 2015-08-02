@@ -3203,6 +3203,16 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
         return 1;
     }
     
+    int i;
+    for(i=0;i<_boundary_points.get_dim();i++){
+        if(_boundary_points.get_data(i)!=ix){
+            dist=node_distance(_boundary_points.get_data(i),ix);
+            if(dist<=_node_dd_tol){
+                return 1;
+            }
+        }
+    }
+    
     array_1d<int> neigh;
     array_1d<double> dd;
     neigh.set_name("node_is_it_a_strike_neigh");
