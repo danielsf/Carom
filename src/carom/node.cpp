@@ -2474,13 +2474,7 @@ void node::initialize_ricochet(){
     }
     
     int i;
-    if(_ricochet_particles.get_dim()>0){
-        for(i=0;i<_ricochet_particles.get_dim();i++){
-	    _ricochet_candidates.add(_ricochet_particles.get_data(i));
-            _ricochet_candidate_velocities.add_row(_ricochet_velocities(i)[0]);
-	}
-    }
-    else{
+    if(_ricochet_particles.get_dim()==0){
         _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
     }
     
