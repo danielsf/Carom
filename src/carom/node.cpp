@@ -3185,17 +3185,18 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
         return 1;
     }
     
+    
+    double mu=_chisquared->get_fn(_ricochet_particles.get_data(ix));
+    if(mu<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
+        return 1;
+    }
+    
     double dist;
     if(_ricochet_origins.get_data(ix)>=0){
         dist=node_distance(_ricochet_origins.get_data(ix),_ricochet_particles.get_data(ix));
         if(dist<_node_dd_tol){
             return 1;
         }
-    }
-    
-    double mu=_chisquared->get_fn(_ricochet_particles.get_data(ix));
-    if(mu<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
-        return 1;
     }
     
     dist=_nearest_other_particle(_ricochet_particles.get_data(ix),ix);
