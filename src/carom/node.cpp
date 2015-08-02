@@ -3056,8 +3056,7 @@ void node::search(){
     }
     else{
         _since_expansion++;
-        if(_since_expansion>=3){
-            trim_ricochet();
+        if(_since_expansion>=2){
             _convergence_ct++;
             _since_expansion=0;
         }
