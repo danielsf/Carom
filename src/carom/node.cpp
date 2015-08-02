@@ -3269,7 +3269,7 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
 void node::ricochet(){
     is_it_safe("ricochet");
     
-    if(_ricochet_velocities.get_rows()==0){
+    if(_ricochet_particles.get_dim()==0){
         initialize_ricochet();
     }
     
