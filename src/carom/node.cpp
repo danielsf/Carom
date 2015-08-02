@@ -46,6 +46,7 @@ void node::initialize(){
     _good_shots=0;
     _bad_shots=0;
     _node_dd_tol=1.0e-2;
+    _total_kicks=0;
 
     
     _compass_points.set_name("node_compass_points");
@@ -112,6 +113,7 @@ void node::copy(const node &in){
     _node_dd_tol=in._node_dd_tol;
     _good_shots=in._good_shots;
     _bad_shots=in._bad_shots;
+    _total_kicks=in._total_kicks;
     
     int i,j;
     
@@ -308,6 +310,10 @@ int node::get_strikeouts(){
 
 int node::get_successful_ricochets(){
     return _successful_ricochets;
+}
+
+int node::get_total_kicks(){
+    return _total_kicks;
 }
 
 int node::get_failed_kicks(){
@@ -2980,6 +2986,7 @@ void node::_originate_particle_paperwork(int ix, int iChosen){
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
+    _total_kicks++;
     return step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
 }
 

@@ -38,6 +38,7 @@ public:
     
     int is_this_an_associate(int);
 
+    int get_total_kicks();
     int get_failed_kicks();
     int get_successful_kicks();
     int get_good_shots();
@@ -55,7 +56,7 @@ private:
     double _chimin,_chimin_bases;
     double _volume_of_last_geom;
     
-    int _failed_kicks,_successful_kicks;
+    int _failed_kicks,_successful_kicks,_total_kicks;
     
     double _min_basis_error;
     double _node_dd_tol;

@@ -133,7 +133,8 @@ void carom::write_pts(){
         _nodes(i)->get_bad_shots(),_nodes(i)->get_good_shots(),
         _nodes(i)->get_strikeouts(),_nodes(i)->get_successful_ricochets());
         
-        fprintf(output," kicks: successful %d failed %d",
+        fprintf(output," kicks: total %d successful %d failed %d",
+        _nodes(i)->get_total_kicks(),
         _nodes(i)->get_successful_kicks(),_nodes(i)->get_failed_kicks());
         /*for(j=0;j<_chifn.get_dim();j++){
             fprintf(output,"%.4e ",_nodes(i)->distance_traveled(j));
