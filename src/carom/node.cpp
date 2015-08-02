@@ -3185,7 +3185,6 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
         return 1;
     }
     
-    
     double mu=_chisquared->get_fn(_ricochet_particles.get_data(ix));
     if(mu<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
         return 1;
