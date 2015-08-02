@@ -3169,7 +3169,7 @@ double node::_nearest_other_particle(int target, int ignore_particle){
             iy=_ricochet_log.get_data(i,j);
             if(iy>=0){
                 dd=node_distance(target,iy);
-                if(dd<ans){
+                if(dd<ans && (ignore_particle!=i || dd>1.0e-10)){
                     ans=dd;
                 }
             }
