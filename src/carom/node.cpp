@@ -3292,6 +3292,8 @@ void node::ricochet(){
    double gnorm,dirnorm;
    array_1d<double> gradient,trial,dir,distanceMoved,chiFound;
    array_1d<int> end_pts,boundsChanged;
+   array_1d<int> local_strike_log;
+   int local_pts0;
    
    array_2d<double> start_pts;
    array_1d<double> ricochet_max,ricochet_min,min0,max0;
@@ -3303,6 +3305,11 @@ void node::ricochet(){
    boundsChanged.set_name("node_ricochet_boundsChanges");
    distanceMoved.set_name("node_ricochet_distanceMoved");
    chiFound.set_name("node_ricochet_chiFound");
+   local_strike_log.set_name("local_strike_log");
+   
+   for(i=0;i<_ricochet_particles.get_dim();i++){
+       local_strike_log.set(i,0);
+   }
    
    for(i=0;i<_compass_points.get_dim();i++){
        for(j=0;j<_chisquared->get_dim();j++){
@@ -3341,6 +3348,7 @@ void node::ricochet(){
    
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
+       local_pts0=_chisquared->get_pts();
        start_pts.add_row(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
@@ -3462,9 +3470,6 @@ void node::ricochet(){
        _ricochet_discovery_time.add(_ricochet_discovery_dexes.get_data(ix),_chisquared->get_called());
        end_pts.add(iFound);
 
-       _ricochet_origins.set(ix,_ricochet_particles.get_data(ix));
-       _ricochet_particles.set(ix,iFound);
-       log_row.set(ix,iFound);
        for(i=0;i<_chisquared->get_dim();i++){
            _ricochet_velocities.set(ix,i,dir.get_data(i));
            
@@ -3478,6 +3483,21 @@ void node::ricochet(){
            }
            
        }
+       
+       _ricochet_origins.set(ix,_ricochet_particles.get_data(ix));
+       _ricochet_particles.set(ix,iFound);
+       
+       if(iFound<local_pts0){
+           local_strike_log.set(ix,1);
+       }
+       else if(boundsChanged.get_data(ix)==1){
+           local_strike_log.set(ix,0);
+       }
+       else{
+           local_strike_log.set(ix,is_it_a_strike(ix,kd_copy));
+       }
+       
+       log_row.set(ix,iFound);
        
    }
    
@@ -3499,10 +3519,7 @@ void node::ricochet(){
    int isAStrike;
    for(i=0;i<_ricochet_particles.get_dim();i++){
        
-       isAStrike=0;
-       if(boundsChanged.get_data(i)==0){
-           isAStrike=is_it_a_strike(i, kd_copy);
-       }
+       isAStrike=local_strike_log.get_data(i);
        
        mu=-2.0*exception_value;
        if(boundsChanged.get_data(i)==0){
