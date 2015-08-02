@@ -37,7 +37,10 @@ public:
     void print_ricochet_discoveries(char*);
     
     int is_this_an_associate(int);
+    int find_local_center();
 
+    int get_convergence_ct();
+    int get_total_trimmed();
     int get_total_kicks();
     int get_failed_kicks();
     int get_successful_kicks();
@@ -56,11 +59,11 @@ private:
     double _chimin,_chimin_bases;
     double _volume_of_last_geom;
     
-    int _failed_kicks,_successful_kicks,_total_kicks;
+    int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
     
     double _min_basis_error;
     double _node_dd_tol;
-    int _since_expansion,_min_basis_error_changed;
+    int _since_expansion,_min_basis_error_changed,_convergence_ct;
     int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
     
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
@@ -109,6 +112,7 @@ private:
     void compass_search_geometric_center();
     void off_center_compass(int);
     void initialize_ricochet();
+    void trim_ricochet();
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&, kd_tree&);
     double apply_quadratic_model(array_1d<double>&);

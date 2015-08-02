@@ -1053,7 +1053,27 @@ for(ii=0;ii<10;ii++){
 
 }
 
+array_1d<int> arr;
+arr.add(2);
+arr.add(5);
+arr.add(1);
 
+if(arr.contains(1)!=1){
+    printf("WARNING did not find 1\n");
+    exit(1);
+}
+if(arr.contains(2)!=1){
+    printf("WARNING did not find 2\n");
+    exit(1);
+}
+if(arr.contains(5)!=1){
+    printf("WARNING did not find 5\n");
+    exit(1);
+}
+if(arr.contains(13)!=0){
+    printf("WARNING found 13\n");
+    exit(1);
+}
 
 
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);

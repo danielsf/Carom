@@ -47,7 +47,8 @@ void node::initialize(){
     _bad_shots=0;
     _node_dd_tol=1.0e-2;
     _total_kicks=0;
-
+    _total_trimmed=0;
+    _convergence_ct=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -88,6 +89,7 @@ void node::copy(const node &in){
     if(this==&in){
         return;
     }
+    _convergence_ct=in._convergence_ct;
     _centerdex=in._centerdex;
     _geo_centerdex=in._geo_centerdex;
     _centerdex_basis=in._centerdex_basis;
@@ -114,6 +116,7 @@ void node::copy(const node &in){
     _good_shots=in._good_shots;
     _bad_shots=in._bad_shots;
     _total_kicks=in._total_kicks;
+    _total_trimmed=in._total_trimmed;
     
     int i,j;
     
@@ -296,6 +299,10 @@ void node::copy(const node &in){
     
 }
 
+int node::get_convergence_ct(){
+    return _convergence_ct;
+}
+
 int node::get_good_shots(){
     return _good_shots;
 }
@@ -314,6 +321,10 @@ int node::get_successful_ricochets(){
 
 int node::get_total_kicks(){
     return _total_kicks;
+}
+
+int node::get_total_trimmed(){
+    return _total_trimmed;
 }
 
 int node::get_failed_kicks(){
@@ -2295,6 +2306,15 @@ double node::apply_quadratic_model(array_1d<double> &pt){
     
 }
 
+int node::find_local_center(){
+    if(_geo_centerdex>=0 && _chisquared->get_fn(_geo_centerdex)<=_chisquared->target()){
+        return _geo_centerdex;
+    }
+    else{
+        return _centerdex;
+    }
+}
+
 int node::_are_connected(int i1, int i2){
     int iFound,i;
     double mu;
@@ -3023,21 +3043,29 @@ void node::search(){
         find_bases();
         compass_search_geometric_center();
     }
-    
+
+    if(volume()>2.0*_volume_of_last_geom){
+        compass_search_geometric_center();
+    }
+
     double volume1=volume();
     double projectedVolume1=projected_volume();
     
     if(volume1>volume0*minExpansionFactor || projectedVolume1>projectedVolume0*minExpansionFactor){
         _since_expansion=0;
     }
+    else{
+        _since_expansion++;
+        if(_since_expansion>=3){
+            trim_ricochet();
+            _convergence_ct++;
+            _since_expansion=0;
+        }
+    }
 
-    if(_since_expansion>4*_chisquared->get_dim()){
+    if(_convergence_ct>_chisquared->get_dim()){
         printf("deactivating because we did not expand\n");
         _active=0;
-    }
-    
-    if(volume()>2.0*_volume_of_last_geom){
-        compass_search_geometric_center();
     }
     
     if(_ricochet_particles.get_dim()==0){
@@ -3060,6 +3088,7 @@ void node::search(){
 
            initialize_ricochet();
            _active=1;
+           _convergence_ct=0;
        }
     }
     
@@ -3554,7 +3583,6 @@ void node::ricochet(){
            originate_particle_shooting(i,_ricochet_velocities(i)[0]);
            _ricochet_strikes.set(i,0);
            _strikeouts++;
-           _since_expansion++;
        }
        else{
            _successful_ricochets++;
@@ -3609,6 +3637,50 @@ void node::ricochet(){
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
 }
+
+void node::trim_ricochet(){
+    //be merciless
+    
+    array_1d<int> to_trim;
+    to_trim.set_name("node_trim_to_trim");
+    
+    int local_center;
+    local_center=find_local_center();
+    
+    double d1,d2;
+    
+    int ix,iy,connectivity;
+    int t1,t2;
+    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
+        for(iy=ix+1;iy<_ricochet_particles.get_dim();iy++){
+            t1=_ricochet_particles.get_data(ix);
+            t2=_ricochet_particles.get_data(iy);
+            if(to_trim.contains(ix)==0 && to_trim.contains(iy)==0){
+                connectivity=_are_connected(t1,t2);
+            
+                if(connectivity==1){
+                    d1=node_distance(local_center,t1);
+                    d2=node_distance(local_center,t2);
+                    
+                    if(d1>d2){
+                        to_trim.add(ix);
+                    }
+                    else{
+                        to_trim.add(iy);
+                    }
+                }
+            }
+        }
+    }
+    
+    for(ix=0;ix<to_trim.get_dim();ix++){
+        t1=to_trim.get_data(ix);
+        originate_particle_shooting(t1,_ricochet_velocities(t1)[0]);
+    }
+    
+    _total_trimmed+=to_trim.get_dim();
+}
+
 
 int node::get_n_particles(){
     return _ricochet_particles.get_dim();

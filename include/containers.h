@@ -74,6 +74,16 @@ public:
     /*return a pointer to the data in this array*/
     T* get_ptr();
     
+    inline int contains(T val){
+        int i;
+        for(i=0;i<dim;i++){
+            if(data[i]==val){
+                return 1;
+            }
+        }
+        return 0;
+    }
+    
     /*return the element of the array specified by int*/
     inline T get_data(int dex) const{
 
