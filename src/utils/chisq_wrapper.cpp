@@ -52,6 +52,10 @@ void chisq_wrapper::set_chisquared(chisquared *xx){
     _chifn=xx;
 }
 
+int chisq_wrapper::get_seed(){
+    return _seed;
+}
+
 void chisq_wrapper::set_seed(int i){
     _seed=i;
 }
