@@ -2368,7 +2368,7 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     k=0;
     for(i=0;i<npts;i++){
         for(j=i+1;j<npts;j++){
-            mutual_dd.set(k,_chisquared->distance(neigh.get_data(i),neigh.get_data(j)));
+            mutual_dd.set(k,node_distance(neigh.get_data(i),neigh.get_data(j)));
             mutual_dexes.set(k,k);
             k++;
         }
@@ -2386,7 +2386,7 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     for(i=0;i<npts;i++){
         covar.set(i,i,1.0+nugget);
         for(j=i+1;j<npts;j++){
-            mu=tree.distance(neigh.get_data(i),neigh.get_data(j));
+            mu=node_distance(neigh.get_data(i),neigh.get_data(j));
             covar.set(i,j,exp(-0.5*power(mu/ell,2)));
             covar.set(j,i,covar.get_data(i,j));
         }
@@ -2396,7 +2396,7 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     array_1d<double> qq;
     qq.set_name("node_ricochet_model_qq");
     for(i=0;i<npts;i++){
-        mu=tree.distance(pt,neigh.get_data(i));
+        mu=node_distance(neigh.get_data(i),pt);
         qq.set(i,exp(-0.5*power(mu/ell,2)));
     }
     
@@ -3316,6 +3316,11 @@ void node::ricochet(){
    kick.set_name("node_ricochet_kick");
    
    kd_tree kd_copy(_chisquared->get_tree()[0]);
+   
+   for(i=0;i<_chisquared->get_dim();i++){
+       kd_copy.set_min(i,_min_found.get_data(i));
+       kd_copy.set_max(i,_max_found.get_data(i));
+   }
     
    double dx,x1,x2,y1,y2,component,distanceMin;
    double gnorm,dirnorm;
