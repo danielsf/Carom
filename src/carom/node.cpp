@@ -2790,12 +2790,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
     
     int local_center;
     
-    if(_geo_centerdex>=0){
-        local_center=_geo_centerdex;
-    }
-    else{
-        local_center=_centerdex;
-    }
+    local_center=find_local_center();
     
     for(i=0;i<_chisquared->get_dim();i++){
            x1=_chisquared->get_pt(_ricochet_particles.get_data(ix),i);
@@ -2908,12 +2903,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
     
     local_dir.set_name("node_shooting_local_dir");
     
-    if(_geo_centerdex>=0 && _chisquared->get_fn(_geo_centerdex)<_chisquared->target()){
-        local_center=_geo_centerdex;
-    }
-    else{
-        local_center=_centerdex;
-    }
+    local_center=find_local_center();
     
     local_dir.set_dim(_chisquared->get_dim());
     local_dir.zero();
@@ -3373,12 +3363,7 @@ void node::ricochet(){
 
     int local_center,is_connected,iLowball;
     double reflection_coeff;
-    if(_geo_centerdex>0 && _chisquared->get_fn(_geo_centerdex)<_chisquared->target()){
-        local_center=_geo_centerdex;
-    }
-    else{
-        local_center=_centerdex;
-    }
+    local_center=find_local_center();
    
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
@@ -3605,22 +3590,17 @@ void node::ricochet(){
    }
    
    int do_off_center,k;
+   local_center=find_local_center();
    trial.reset();
    for(i=0;i<_ricochet_particles.get_dim();i++){
        do_off_center=1;
-       for(j=0;j<_chisquared->get_dim();j++){
-           trial.set(j,0.5*(_chisquared->get_pt(_ricochet_particles.get_data(i),j)+_chisquared->get_pt(_centerdex,j)));
-       }
-       evaluate(trial,&mu,&iFound);
-       if(mu<=_chisquared->target()){
+
+       if(_are_connected(_ricochet_particles.get_data(i),local_center)==1){
            do_off_center=0;
        }
+
        for(j=0;j<_off_center_origins.get_dim() && do_off_center==1;j++){
-           for(k=0;k<_chisquared->get_dim();k++){
-               trial.set(k,0.5*(_chisquared->get_pt(_ricochet_particles.get_data(i),k)+_chisquared->get_pt(_off_center_origins.get_data(j),k)));
-           }
-           evaluate(trial,&mu,&iFound);
-           if(mu<=_chisquared->target()){
+           if(_are_connected(_ricochet_particles.get_data(i), _off_center_origins.get_data(j))==1){
                do_off_center=0;
            }
        }
