@@ -1169,6 +1169,24 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
     
 }
 
+void node::add_to_compass(int dex){
+    int local_center=find_local_center();
+    _compass_points.add(dex);
+    
+    array_1d<double> dir;
+    dir.set_name("node_add_to_compass");
+    _ricochet_candidates.add(dex);
+    
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,_chisquared->get_pt(dex,i)-_chisquared->get_pt(local_center,i));
+    }
+    
+    _ricochet_candidate_velocities.add_row(dir);
+    
+
+}
+
 void node::compass_search(){
     compass_search(_centerdex);
 }
@@ -1255,7 +1273,7 @@ void node::compass_search(int local_center){
             dx=fabs(dx);
             
             if(iFound>=0){
-                _compass_points.add(iFound);
+                add_to_compass(iFound);
                 
                 if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                     for(i=0;i<_chisquared->get_dim();i++){
@@ -1441,7 +1459,7 @@ void node::compass_diagonal(int local_center){
                         if(xweight<0.0 && yweight<0.0)dmin_nn=dmin;
                         if(xweight<0.0 && yweight>0.0)dmin_np=dmin;
                         
-                        _compass_points.add(iFound);
+                        add_to_compass(iFound);
                         if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                             for(i=0;i<_chisquared->get_dim();i++){
                                 lowball.set(i,_chisquared->get_pt(local_center,i));
@@ -2474,6 +2492,10 @@ void node::initialize_ricochet(){
     }
     
     int i;
+    array_1d<int> local_ricochet_log;
+    local_ricochet_log.set_name("node_initialize_ricochet_local_ricochet_log");
+    
+    
     if(_ricochet_particles.get_dim()==0){
         _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
     }

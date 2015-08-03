@@ -103,6 +103,7 @@ private:
     void validate_bases(array_2d<double>&, char*);
     void initialize();
     void add_to_boundary(int);
+    void add_to_compass(int);
     
     void is_it_safe(char*);
     
