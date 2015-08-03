@@ -3505,6 +3505,13 @@ void node::ricochet(){
            
        }
        
+       if(flow>_chisquared->target()){
+           flow=_chisquared->get_fn(_centerdex);
+           for(i=0;i<_chisquared->get_dim();i++){
+               lowball.set(i,_chisquared->get_pt(_centerdex,i));
+           }
+       }
+       
        if(flow>_chisquared->target() || flow>fhigh){
            printf("WARNING in ricochet %e %e %e\n",
            flow,fhigh,_chisquared->target());
