@@ -1183,7 +1183,6 @@ void node::add_to_compass(int dex){
     }
     
     _ricochet_candidate_velocities.add_row(dir);
-    
 
 }
 
@@ -2486,17 +2485,17 @@ void node::_filter_candidates(){
 
 void node::initialize_ricochet(){
     is_it_safe("initialize_ricochet");
-    
-    if(_ricochet_candidates.get_dim()==0){
+
+    if(_found_bases==0){
         find_bases();
     }
-    
+
     int i;
     array_1d<int> local_ricochet_log;
     local_ricochet_log.set_name("node_initialize_ricochet_local_ricochet_log");
     
     
-    if(_ricochet_particles.get_dim()==0){
+    if(_ricochet_candidate_velocities.get_cols()==0){
         _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
     }
     
@@ -2517,7 +2516,7 @@ void node::initialize_ricochet(){
     dmu.set_name("node_initialize_ricochet_dmu");
 
     _filter_candidates();
-    
+
     for(i=0;i<nParticles;i++){
         _ricochet_discovery_dexes.set(i,i);
     }
@@ -2532,13 +2531,10 @@ void node::initialize_ricochet(){
     dir.set_dim(_chisquared->get_dim());
     
     for(i=0;i<nParticles;i++){
-        _ricochet_strikes.set(i,0);
-        _ricochet_particles.set(i,0);
-        _ricochet_velocities.add_row(dir);
         originate_particle_compass(i,dir);
-        for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_velocities.set(i,j,dir.get_data(j));
-        }
+        _ricochet_velocities.add_row(dir);
+        _ricochet_strikes.set(i,0);
+        local_ricochet_log.add(_ricochet_particles.get_data(i));
     }
 
     _min_basis_error_changed=0;
@@ -2562,9 +2558,7 @@ void node::initialize_ricochet(){
     }
     fclose(output);
 
-    if(_ricochet_log.get_cols()==0){
-        _ricochet_log.set_cols(_ricochet_particles.get_dim());
-    }
+    _ricochet_log.add_row(local_ricochet_log);
 
 
 }
@@ -2886,14 +2880,38 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
 
     int iChosen=-1,iCandidate=-1;;
     double mu,dmu,dmubest;
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
+    double dist,min_dist,max_min_dist;
+    int local_center;
 
-        dmu=fabs(mu-_chisquared->get_fn(_ricochet_candidates.get_data(i)));
-        if(iChosen<0 || dmu>dmubest){
-            iChosen=_ricochet_candidates.get_data(i);
-            iCandidate=i;
-            dmubest=dmu;
+    if(_ricochet_particles.get_dim()==0){
+        for(i=0;i<_ricochet_candidates.get_dim();i++){
+            mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
+
+            dmu=fabs(mu-_chisquared->get_fn(_ricochet_candidates.get_data(i)));
+            if(iChosen<0 || dmu>dmubest){
+                iChosen=_ricochet_candidates.get_data(i);
+                iCandidate=i;
+                dmubest=dmu;
+            }
+        }
+    }
+    else{
+        local_center=find_local_center();
+        max_min_dist=-2.0*exception_value;
+        for(i=0;i<_ricochet_candidates.get_dim();i++){
+            min_dist=node_distance(_ricochet_candidates.get_data(i),local_center);
+            for(j=0;j<_ricochet_particles.get_dim();j++){
+                dist=node_distance(_ricochet_candidates.get_data(i),_ricochet_particles.get_data(j));
+                if(dist<min_dist){
+                    min_dist=dist;
+                }
+            }
+
+            if(min_dist>max_min_dist){
+                max_min_dist=min_dist;
+                iChosen=_ricochet_candidates.get_data(i);
+                iCandidate=i;
+            }
         }
     }
     
