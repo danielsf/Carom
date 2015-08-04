@@ -1963,28 +1963,52 @@ void node::project_to_bases(array_1d<double> &in, array_1d<double> &out){
     }
 }
 
-void node::recalibrate_projected_max_min(){
-    is_it_safe("recalibrate_projected_max_min");
+void node::recalibrate_max_min(){
+    is_it_safe("recalibrate_max_min");
 
     _projected_max.reset();
     _projected_min.reset();
-    _since_expansion=0;
+    _min_found.reset();
+    _max_found.reset();
     
     array_1d<double> projected;
     projected.set_name("node_recalibrate_projected");
     int i,j;
-    
+    double mu;
+    double tol=0.01;
     
     for(i=0;i<_associates.get_dim();i++){
-        project_to_bases(_chisquared->get_pt(_associates.get_data(i))[0],projected);
-        for(j=0;j<_chisquared->get_dim();j++){
-            if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
-                _projected_min.set(j,projected.get_data(j));
-            }
+        if(_chisquared->get_fn(_associates.get_data(i))<=_chisquared->target()+tol){
+            project_to_bases(_chisquared->get_pt(_associates.get_data(i))[0],projected);
+            for(j=0;j<_chisquared->get_dim();j++){
+                if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
+                    _projected_min.set(j,projected.get_data(j));
+                }
             
-            if(j>=_projected_max.get_dim() || projected.get_data(j)>_projected_max.get_data(j)){
-                _projected_max.set(j,projected.get_data(j));
+                if(j>=_projected_max.get_dim() || projected.get_data(j)>_projected_max.get_data(j)){
+                    _projected_max.set(j,projected.get_data(j));
+                }
+                
+                mu=_chisquared->get_pt(_associates.get_data(i),j);
+                if(j>=_min_found.get_dim() || mu<_min_found.get_data(j)){
+                    _min_found.set(j,mu);
+                }
+                
+                if(j>=_max_found.get_dim() || mu>_max_found.get_data(j)){
+                    _max_found.set(j,mu);
+                }
             }
+        }
+        else{
+            _associates.remove(i);
+            i--;
+        }
+    }
+    
+    for(i=0;i<_boundary_points.get_dim();i++){
+        if(_chisquared->get_fn(_boundary_points.get_data(i))>_chisquared->target()+tol){
+            _boundary_points.remove(i);
+            i--;
         }
     }
 }
@@ -2158,7 +2182,7 @@ void node::find_bases(){
     projected.set_name("node_find_bases_projected");
     
     if(changed_bases==1){
-        recalibrate_projected_max_min();
+        recalibrate_max_min();
     }
    
    
@@ -3044,10 +3068,9 @@ void node::search(){
         }
     }
 
-    double minExpansionFactor=1.01;
- 
     double projectedVolume0=projected_volume(); 
     double volume0=volume();
+    double target0=_chisquared->target();
     int ibefore=_chisquared->get_called();
     
     ricochet();
@@ -3072,10 +3095,14 @@ void node::search(){
         compass_search_geometric_center();
     }
 
+    if(fabs(_chisquared->target()-target0)>0.01){
+        recalibrate_max_min();
+    }
+
     double volume1=volume();
     double projectedVolume1=projected_volume();
     
-    if(volume1>volume0*minExpansionFactor || projectedVolume1>projectedVolume0*minExpansionFactor){
+    if(fabs(volume0-volume1)>0.01*volume0 || fabs(projectedVolume1-projectedVolume0)>projectedVolume0*0.01){
         _since_expansion=0;
         _convergence_ct=0;
     }
@@ -3098,6 +3125,7 @@ void node::search(){
     }
 
     if(_active==0){
+        target0=_chisquared->target();
         volume0=volume();
         projectedVolume0=projected_volume();
         
@@ -3108,11 +3136,15 @@ void node::search(){
         projectedVolume1=projected_volume();
         
         if(fabs(volume0-volume1)>0.01*volume0 ||
-           fabs(projectedVolume0-projectedVolume1)>0.1*projectedVolume0){
+           fabs(projectedVolume0-projectedVolume1)>0.05*projectedVolume0){
 
            initialize_ricochet();
            _active=1;
            _convergence_ct=0;
+           
+           if(fabs(_chisquared->target()-target0)>0.01){
+               recalibrate_max_min();
+           }
        }
     }
     
