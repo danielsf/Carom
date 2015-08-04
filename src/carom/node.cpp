@@ -3077,6 +3077,7 @@ void node::search(){
     
     if(volume1>volume0*minExpansionFactor || projectedVolume1>projectedVolume0*minExpansionFactor){
         _since_expansion=0;
+        _convergence_ct=0;
     }
     else{
         _since_expansion++;
