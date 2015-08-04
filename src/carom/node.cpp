@@ -3334,7 +3334,7 @@ void node::ricochet(){
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
    
-   int ix,j,iFound,updated;
+   int ix,j,iFound;
    double flow,fhigh,eflow,efhigh;
    array_1d<double> lowball,highball,elowball,ehighball,edir,kick;
    
@@ -3401,7 +3401,7 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
 
-    int local_center,is_connected,iLowball;
+    int local_center,is_connected;
     double reflection_coeff;
     local_center=find_local_center();
    
@@ -3412,59 +3412,14 @@ void node::ricochet(){
        flow=2.0*exception_value;
        fhigh=-2.0*exception_value;
        is_connected=0;
-       iLowball=_ricochet_particles.get_data(ix);
 
-       updated=0;
        if(_ricochet_strikes.get_data(ix)>0){
-           updated=kick_particle(ix,dir);
+           kick_particle(ix,dir);
        }
-
-       flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
-       for(i=0;i<_chisquared->get_dim();i++){
-           lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
-       }
-
-       while(flow>=_chisquared->target()){
-           for(i=0;i<_chisquared->get_dim();i++){
-               elowball.set(i,_chisquared->get_pt(local_center,i));
-               ehighball.set(i,lowball.get_data(i));
-               edir.set(i,lowball.get_data(i)-elowball.get_data(i));
-           }
-           edir.normalize();
-           eflow=_chisquared->get_fn(local_center);
-           
-           component=1.0;
-           efhigh=flow;
-
-           if(eflow>_chisquared->target() || eflow>efhigh){
-               printf("WARNING eflow %e %e %e\n",
-               eflow,efhigh,_chisquared->target());
-               printf("%e\n",_chisquared->get_fn(local_center));
-               exit(1);
-           }
-           
-           iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
-           for(i=0;i<_chisquared->get_dim();i++){
-               lowball.set(i,_chisquared->get_pt(iFound,i));
-           }
-           flow=_chisquared->get_fn(iFound);
-           iLowball=iFound;
-           
-       }
-       
-       if(flow>=_chisquared->target()){
-           printf("WARNING in node ricochet flow %e; target %e\n",flow,_chisquared->target());
-           exit(1);
-       }
-       
-       for(i=0;i<_chisquared->get_dim();i++){
-           highball.set(i,lowball.get_data(i));
-       }
-
-       if(updated==0){
+       else{
            node_gradient(_ricochet_particles.get_data(ix),gradient);
            
-           is_connected=_are_connected(iLowball,local_center);
+           is_connected=_are_connected(_ricochet_particles.get_data(ix),local_center);
 
 
            if(is_connected==0){
@@ -3485,30 +3440,59 @@ void node::ricochet(){
            }
        
            dirnorm=dir.normalize();
- 
        }
 
-       component=1.0;
-       while(fhigh<_chisquared->target()){
+       while(flow>_chisquared->target()){
+           flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
            for(i=0;i<_chisquared->get_dim();i++){
-               highball.add_val(i,component*dir.get_data(i));
+               lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
            }
-           evaluate(highball,&fhigh,&j);
-           component*=2.0;
-           
-           if(fhigh<_chisquared->target()){
+
+           while(flow>=_chisquared->target()){
                for(i=0;i<_chisquared->get_dim();i++){
-                   lowball.set(i,highball.get_data(i));
+                   elowball.set(i,_chisquared->get_pt(local_center,i));
+                   ehighball.set(i,lowball.get_data(i));
+                   edir.set(i,lowball.get_data(i)-elowball.get_data(i));
                }
-               flow=fhigh;
-           }
+               edir.normalize();
+               eflow=_chisquared->get_fn(local_center);
            
-       }
+               component=1.0;
+               efhigh=flow;
+
+               if(eflow>_chisquared->target() || eflow>efhigh){
+                   printf("WARNING eflow %e %e %e\n",
+                   eflow,efhigh,_chisquared->target());
+                   printf("%e\n",_chisquared->get_fn(local_center));
+                   exit(1);
+               }
+           
+               iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
+               for(i=0;i<_chisquared->get_dim();i++){
+                   lowball.set(i,_chisquared->get_pt(iFound,i));
+               }
+               flow=_chisquared->get_fn(iFound);           
+           }
        
-       if(flow>_chisquared->target()){
-           flow=_chisquared->get_fn(_centerdex);
            for(i=0;i<_chisquared->get_dim();i++){
-               lowball.set(i,_chisquared->get_pt(_centerdex,i));
+               highball.set(i,lowball.get_data(i));
+           }
+
+           component=1.0;
+           while(fhigh<_chisquared->target()){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   highball.add_val(i,component*dir.get_data(i));
+               }
+               evaluate(highball,&fhigh,&j);
+               component*=2.0;
+           
+               if(fhigh<_chisquared->target()){
+                   for(i=0;i<_chisquared->get_dim();i++){
+                       lowball.set(i,highball.get_data(i));
+                   }
+                   flow=fhigh;
+               }
+           
            }
        }
        
