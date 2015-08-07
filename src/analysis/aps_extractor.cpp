@@ -737,7 +737,7 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
     been_plotted will contain all of the points that finally were output to the output file.
     
     been_plotted_tree will store these in a kd_tree so that, once enough points have been output,
-    we will only output points that are at least a normalized parameter space distance of 0.01 from
+    we will only output points that are at least a normalized parameter space distance of 0.05 from
     each other
     */
     array_2d<double> been_plotted;
@@ -761,11 +761,11 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
         }
         else{
             /*otherwise, only plot the point if the nearest already plotted point is farther away
-            than a normalized parameter space distance of 0.01*/
+            than a normalized parameter space distance of 0.05*/
         
             been_plotted_tree->nn_srch(*to_plot(chosen),1,neigh,ddneigh);
             
-            if(ddneigh.get_data(0)>0.01){
+            if(ddneigh.get_data(0)>0.05){
                 plot_it=1;
             }
             else{
