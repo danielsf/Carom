@@ -3107,11 +3107,7 @@ void node::search(){
         _convergence_ct=0;
     }
     else{
-        _since_expansion++;
-        if(_since_expansion>=2){
-            _convergence_ct++;
-            _since_expansion=0;
-        }
+        _convergence_ct++;
     }
 
     if(_convergence_ct>_chisquared->get_dim()){
