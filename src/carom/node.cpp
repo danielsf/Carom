@@ -30,7 +30,6 @@ void node::initialize(){
     _found_bases=0;
     _ct_ricochet=0;
     _ct_simplex=0;
-    _calls_to_ricochet=0;
     _allowed_ricochet_strikes=3;
     _since_expansion=0;
     _min_basis_error=exception_value;
@@ -49,6 +48,11 @@ void node::initialize(){
     _total_kicks=0;
     _total_trimmed=0;
     _convergence_ct=0;
+    
+    _total_bisections=0;
+    _bisection_calls=0;
+    _total_ricochets=0;
+    _ricochet_calls=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -101,7 +105,6 @@ void node::copy(const node &in){
     _found_bases=in._found_bases;
     _ct_ricochet=in._ct_ricochet;
     _ct_simplex=in._ct_simplex;
-    _calls_to_ricochet=in._calls_to_ricochet;
     _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
     _ellipse_center=in._ellipse_center;
     _since_expansion=in._since_expansion;
@@ -117,6 +120,11 @@ void node::copy(const node &in){
     _bad_shots=in._bad_shots;
     _total_kicks=in._total_kicks;
     _total_trimmed=in._total_trimmed;
+    
+    _total_bisections=in._total_bisections;
+    _total_ricochets=in._total_ricochets;
+    _bisection_calls=in._bisection_calls;
+    _ricochet_calls=in._ricochet_calls;
     
     int i,j;
     
@@ -943,6 +951,8 @@ int node::node_bisection(array_1d<double> &lowball, double flow,
 
     is_it_safe("bisection");
     
+    int ibefore=_chisquared->get_called();
+    
     if(flow>fhigh){
         printf("WARNING in node bisection flow %e fhigh %e\n",flow,fhigh);
         exit(1);
@@ -992,6 +1002,8 @@ int node::node_bisection(array_1d<double> &lowball, double flow,
         ct++;
     }
 
+    _total_bisections++;
+    _bisection_calls+=_chisquared->get_called()-ibefore;
     return iout;
 
 }
@@ -3348,8 +3360,8 @@ void node::ricochet(){
        
    }
    
+   int ibefore=_chisquared->get_called();
    _chisquared->set_iWhere(iRicochet);
-   _calls_to_ricochet++;
    
    int i;
    array_1d<int> log_row;
@@ -3357,8 +3369,6 @@ void node::ricochet(){
    for(i=0;i<_ricochet_log.get_cols();i++){
        log_row.set(i,-1);
    }
-   
-   int ibefore=_chisquared->get_called();
    
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
@@ -3672,6 +3682,9 @@ void node::ricochet(){
    
    _ricochet_log.add_row(log_row);
    
+   _total_ricochets++;
+   _ricochet_calls+=_chisquared->get_called()-ibefore;
+   
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
 }
@@ -3719,6 +3732,21 @@ void node::trim_ricochet(){
     _total_trimmed+=to_trim.get_dim();
 }
 
+int node::get_total_bisections(){
+    return _total_bisections; 
+}
+
+int node::get_bisection_calls(){
+    return _bisection_calls;
+}
+
+int node::get_total_ricochets(){
+    return _total_ricochets;
+}
+
+int node::get_ricochet_calls(){
+    return _ricochet_calls;
+}
 
 int node::get_n_particles(){
     return _ricochet_particles.get_dim();

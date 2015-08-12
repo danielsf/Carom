@@ -150,6 +150,20 @@ void carom::write_pts(){
     printf("\nNODE CENTERS\n");
     for(i=0;i<_nodes.get_dim();i++){
         printf("    %e\n",_chifn.get_fn(_nodes(i)->get_center()));
+        
+        if(_nodes(i)->get_total_bisections()>0){
+            printf("    bisections %d %d %d\n",
+            _nodes(i)->get_total_bisections(),
+            _nodes(i)->get_bisection_calls(),
+            _nodes(i)->get_bisection_calls()/_nodes(i)->get_total_bisections());
+        }
+        
+        if(_nodes(i)->get_total_ricochets()>0){
+            printf("    ricochets %d %d %d\n",
+            _nodes(i)->get_total_ricochets(),
+            _nodes(i)->get_ricochet_calls(),
+            _nodes(i)->get_ricochet_calls()/_nodes(i)->get_total_ricochets());
+        }
     }
 
     _last_written=_chifn.get_called();

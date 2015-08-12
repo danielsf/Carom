@@ -39,6 +39,11 @@ public:
     int is_this_an_associate(int);
     int find_local_center();
 
+    int get_total_bisections();
+    int get_bisection_calls();
+    int get_total_ricochets();
+    int get_ricochet_calls();
+
     int get_convergence_ct();
     int get_total_trimmed();
     int get_total_kicks();
@@ -55,10 +60,11 @@ private:
     int _id_dex,_last_wrote_log;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
-    int _ct_ricochet,_ct_simplex,_calls_to_ricochet;
+    int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases;
     double _volume_of_last_geom;
     
+    int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
     
     double _min_basis_error;
