@@ -172,6 +172,7 @@ void carom::write_pts(){
             printf("    gradient calls %d\n",
             _nodes(i)->get_gradient_calls());
         }
+        printf("\n");
     }
 
     _last_written=_chifn.get_called();
