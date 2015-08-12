@@ -3022,7 +3022,6 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
     
     _ricochet_particles.set(ix,iChosen);
    
-    printf("iCandidate %d -- %d %d\n",iCandidate,_ricochet_candidates.get_dim(),_ricochet_candidate_velocities.get_rows());
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,_ricochet_candidate_velocities.get_data(iCandidate,i));
     }
@@ -3030,7 +3029,6 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
         
     _ricochet_candidate_velocities.remove_row(iCandidate);
     _ricochet_candidates.remove(iCandidate);
-    printf("done with iCandidate\n");
 
     _originate_particle_paperwork(ix, iChosen);
 }
