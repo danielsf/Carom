@@ -138,6 +138,9 @@ private:
     double node_distance(int, int);
     double node_distance(int, array_1d<double>&);
     void node_gradient(int, array_1d<double>&);
+    void _node_2sided_gradient(int,array_1d<double>&);
+    void _node_1sided_gradient(int,array_1d<double>&);
+    
     double node_second_derivative(int,int,int);
     double node_second_derivative_different(int,int,int);
     double node_second_derivative_same(int,int);

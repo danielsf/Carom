@@ -839,6 +839,67 @@ double node::node_second_derivative(int center, int ix, int iy){
 }
 
 void node::node_gradient(int dex, array_1d<double> &grad){
+    _node_2sided_gradient(dex,grad);
+}
+
+void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
+    is_it_safe("node_gradient");
+
+    int i,j,if1,if2;
+    array_1d<double> trial;
+    double norm,x1,x2,y1,y2;
+    trial.set_name("node_node_gradient_trial");
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,_chisquared->get_pt(dex,i));
+    }
+    
+    double dx,dxstart;
+    dxstart=1.0e-2;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        norm=-1.0;
+        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
+            norm=_max_found.get_data(i)-_min_found.get_data(i);
+        }
+        if(!(norm>0.0)){
+           norm = _chisquared->get_max(i)-_chisquared->get_min(i);
+        }
+        
+        dx=dxstart;
+        if1=-1;
+        if2=-1;
+        while((if1<0 || if1==dex) && (if2<0 || if2==dex)){
+            x1=_chisquared->get_pt(dex,i)+dx*norm;
+            trial.set(i,x1);
+            evaluate(trial,&y1,&if1);
+            
+            if(if1<0 && if1!=dex){
+                x2=_chisquared->get_pt(dex,i)-dx*norm;
+                trial.set(i,x2);
+                evaluate(trial,&y2,&if2);
+            }
+            
+            if((if1>=0 && if1!=dex) || (if2>=0 && if2!=dex)){
+                if(if1>=0 && if1!=dex){
+                    grad.set(i,(y1-_chisquared->get_fn(dex))/(x1-_chisquared->get_pt(dex,i)));
+                }
+                else{
+                    grad.set(i,(y2-_chisquared->get_fn(dex))/(x2-_chisquared->get_pt(dex,i)));
+                }
+            }
+            else{
+                printf("%d %d %d\n",if1,if2,dex);
+                dx*=1.5;
+            }
+        }
+        
+        trial.set(i,_chisquared->get_pt(dex,i));
+    }
+
+}
+
+void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
     is_it_safe("node_gradient");
 
     int i,j,if1,if2;
