@@ -53,6 +53,8 @@ void node::initialize(){
     _bisection_calls=0;
     _total_ricochets=0;
     _ricochet_calls=0;
+    _ricochet_bisections=0;
+    _gradient_calls=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -125,6 +127,8 @@ void node::copy(const node &in){
     _total_ricochets=in._total_ricochets;
     _bisection_calls=in._bisection_calls;
     _ricochet_calls=in._ricochet_calls;
+    _ricochet_bisections=in._ricochet_bisections;
+    _gradient_calls=in._gradient_calls;
     
     int i,j;
     
@@ -839,7 +843,9 @@ double node::node_second_derivative(int center, int ix, int iy){
 }
 
 void node::node_gradient(int dex, array_1d<double> &grad){
+    int ibefore=_chisquared->get_called();
     _node_2sided_gradient(dex,grad);
+    _gradient_calls+=_chisquared->get_called()-ibefore;
 }
 
 void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
@@ -3422,6 +3428,7 @@ void node::ricochet(){
    }
    
    int ibefore=_chisquared->get_called();
+   int rbefore=_bisection_calls;
    _chisquared->set_iWhere(iRicochet);
    
    int i;
@@ -3745,6 +3752,7 @@ void node::ricochet(){
    
    _total_ricochets++;
    _ricochet_calls+=_chisquared->get_called()-ibefore;
+   _ricochet_bisections+=_bisection_calls-rbefore;
    
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
@@ -3793,6 +3801,10 @@ void node::trim_ricochet(){
     _total_trimmed+=to_trim.get_dim();
 }
 
+int node::get_gradient_calls(){
+    return _gradient_calls;
+}
+
 int node::get_total_bisections(){
     return _total_bisections; 
 }
@@ -3807,6 +3819,10 @@ int node::get_total_ricochets(){
 
 int node::get_ricochet_calls(){
     return _ricochet_calls;
+}
+
+int node::get_ricochet_bisections(){
+    return _ricochet_bisections;
 }
 
 int node::get_n_particles(){
