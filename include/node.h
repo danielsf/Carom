@@ -43,6 +43,7 @@ public:
     int get_bisection_calls();
     int get_total_ricochets();
     int get_ricochet_calls();
+    int get_ricochet_bisection_calls();
     int get_ricochet_bisections();
     int get_gradient_calls();
 
@@ -67,7 +68,7 @@ private:
     double _volume_of_last_geom;
     
     int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
-    int _ricochet_bisections,_gradient_calls;
+    int _ricochet_bisection_calls,_gradient_calls,_ricochet_bisections;
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
     
     double _min_basis_error;

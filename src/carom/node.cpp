@@ -53,6 +53,7 @@ void node::initialize(){
     _bisection_calls=0;
     _total_ricochets=0;
     _ricochet_calls=0;
+    _ricochet_bisection_calls=0;
     _ricochet_bisections=0;
     _gradient_calls=0;
     
@@ -127,6 +128,7 @@ void node::copy(const node &in){
     _total_ricochets=in._total_ricochets;
     _bisection_calls=in._bisection_calls;
     _ricochet_calls=in._ricochet_calls;
+    _ricochet_bisection_calls=in._ricochet_bisection_calls;
     _ricochet_bisections=in._ricochet_bisections;
     _gradient_calls=in._gradient_calls;
     
@@ -3428,7 +3430,8 @@ void node::ricochet(){
    }
    
    int ibefore=_chisquared->get_called();
-   int rbefore=_bisection_calls;
+   int rcalls_before=_bisection_calls;
+   int rbefore=_total_bisections;
    _chisquared->set_iWhere(iRicochet);
    
    int i;
@@ -3752,7 +3755,8 @@ void node::ricochet(){
    
    _total_ricochets++;
    _ricochet_calls+=_chisquared->get_called()-ibefore;
-   _ricochet_bisections+=_bisection_calls-rbefore;
+   _ricochet_bisection_calls+=_bisection_calls-rcalls_before;
+   _ricochet_bisections+=_total_bisections-rbefore;
    
    printf("    ending ricochet with volume %e -- %d -- %d -- need kick %d\n\n",
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
@@ -3819,6 +3823,10 @@ int node::get_total_ricochets(){
 
 int node::get_ricochet_calls(){
     return _ricochet_calls;
+}
+
+int node::get_ricochet_bisection_calls(){
+    return _ricochet_bisection_calls;
 }
 
 int node::get_ricochet_bisections(){

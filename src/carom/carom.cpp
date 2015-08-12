@@ -164,8 +164,10 @@ void carom::write_pts(){
             _nodes(i)->get_ricochet_calls(),
             _nodes(i)->get_ricochet_calls()/_nodes(i)->get_total_ricochets());
            
-            printf("    ricochet bisections %d\n",
-            _nodes(i)->get_ricochet_bisections());
+            printf("    ricochet bisections %d %d %d\n",
+            _nodes(i)->get_ricochet_bisections(),
+            _nodes(i)->get_ricochet_bisection_calls(),
+            _nodes(i)->get_ricochet_bisection_calls()/_nodes(i)->get_ricochet_bisections());
            
             printf("    gradient calls %d\n",
             _nodes(i)->get_gradient_calls());
