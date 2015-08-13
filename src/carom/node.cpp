@@ -3696,6 +3696,7 @@ void node::ricochet(){
                    highball.add_val(i,component*dir.get_data(i));
                }
                evaluate(highball,&fhigh,&j);
+               component*=2.0;
            
                if(fhigh<_chisquared->target()){
                    for(i=0;i<_chisquared->get_dim();i++){
