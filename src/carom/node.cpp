@@ -1164,8 +1164,6 @@ int node::node_bisection(array_1d<double> &lowball, double flow,
                 highball.set(i,trial.get_data(i));
             }
         }
-
-
         ct++;
     }
 
@@ -1393,7 +1391,7 @@ void node::compass_search(int local_center){
             fhigh=-2.0*exception_value;
 
             if(sgn<0.0){
-                flow=_chimin;
+                flow=_chisquared->get_fn(local_center);
                 for(i=0;i<_chisquared->get_dim();i++){
                     lowball.set(i,_chisquared->get_pt(local_center,i));
                 }
@@ -1419,7 +1417,7 @@ void node::compass_search(int local_center){
             }
 
             if(flow>_chisquared->target()){
-                flow=_chimin;
+                flow=_chisquared->get_fn(local_center);
                 for(i=0;i<_chisquared->get_dim();i++){
                     lowball.set(i,_chisquared->get_pt(local_center,i));
                 }
@@ -1436,9 +1434,9 @@ void node::compass_search(int local_center){
 
             iFound=-1;
             if(flow>_chisquared->target() || flow>fhigh){
-                flow=_chisquared->get_fn(local_center);
+                flow=_chisquared->get_fn(_centerdex);
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(local_center,i));
+                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
                 }
             }
             iFound=node_bisection(lowball,flow,highball,fhigh,1);
