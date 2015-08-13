@@ -846,12 +846,14 @@ double node::node_second_derivative(int center, int ix, int iy){
 
 void node::node_gradient(int dex, array_1d<double> &grad){
     int ibefore=_chisquared->get_called();
-    int tried;
+    int tried=0;
+
     tried=_node_1sided_projected_gradient(dex,grad);
     
     if(tried==0){
         _node_2sided_gradient(dex,grad);
     }
+    
     _gradient_calls+=_chisquared->get_called()-ibefore;
 }
 
