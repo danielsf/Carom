@@ -1066,14 +1066,18 @@ int node::_node_1sided_projected_gradient(int dex, array_1d<double> &grad){
     return 1;
 }
 
-int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir){
+int node::node_bisection_origin_dir(int ii, array_1d<double> &dd){
+    return node_bisection_origin_dir(ii,dd,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
+}
+
+int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir, double target, double tol){
     array_1d<double> lowball,highball;
     double flow, fhigh;
 
     lowball.set_name("node_bisection_origin_lowball");
     highball.set_name("node_bisection_origin_highball");
 
-    if(_chisquared->get_fn(iOrigin)>_chisquared->target()){
+    if(_chisquared->get_fn(iOrigin)>target){
         return -1;
     }
 
@@ -1085,14 +1089,14 @@ int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir){
     }
 
     fhigh=-2.0*exception_value;
-    while(fhigh<_chisquared->target()){
+    while(fhigh<target){
         for(i=0;i<_chisquared->get_dim();i++){
             highball.add_val(i,dir.get_data(i));
         }
         evaluate(highball,&fhigh,&i);
     }
 
-    return node_bisection(lowball,flow,highball,fhigh,1);
+    return node_bisection(lowball,flow,highball,fhigh,1,target,tol);
 }
 
 int node::node_bisection(array_1d<double> &ll, double fl,
@@ -2380,39 +2384,74 @@ void node::firework_search(int iStart){
     node_gradient(iStart,gradient);
     double gnorm;
     gnorm=gradient.normalize();
-    int i;
+    int i,iTrial,i0;
+
+    array_1d<double> trial_dir,trial_pt;
+    trial_dir.set_name("node_firework_trial_dir");
+    trial_pt.set_name("node_firework_trial_pt");
+
+    double dx,dTotal,step;
+    double mu,mubest;
+    int iEnd;
+
+    i0=iStart;
+    if(gnorm>tol){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial_dir.set(i,-1.0*gradient.get_data(i));
+        }
+        iEnd=node_bisection_origin_dir(iStart,trial_dir,_chisquared->get_fn(iStart)+0.1*(_chisquared->target()-_chimin),0.1);
+        printf("iEnd %d\n",iEnd);
+        if(iEnd>=0){
+            dTotal=node_distance(iStart,iEnd);
+            printf("dTotal %e\n",dTotal);
+            mubest=_chisquared->get_fn(i0);
+            if(dTotal>tol){
+                dx=0.1*dTotal;
+                for(step=dx;step<dTotal;step+=dx){
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        trial_pt.set(i,_chisquared->get_pt(i0,i)+step*trial_dir.get_data(i));
+                    }
+                    evaluate(trial_pt,&mu,&iEnd);
+                    if(mu<mubest){
+                        iStart=iEnd;
+                        mubest=mu;
+                    }
+                }
+                if(iStart!=i0){
+                    node_gradient(iStart,gradient);
+                    gnorm=gradient.normalize();
+                }
+
+            }
+        }
+    }
+    _firework_centers.add(iStart);
+    if(_chisquared->get_fn(iStart)>_chisquared->get_fn(i0)-1.0){
+        return;
+    }
+    printf("firework center at %e %e\n",_chisquared->get_fn(iStart),_chisquared->target()-_chisquared->get_fn(iStart));
 
     array_2d<double> dir;
     dir.set_name("node_firework_dir");
     dir.set_cols(_chisquared->get_dim());
 
-    array_1d<double> trial_dir;
-    trial_dir.set_name("node_firework_trial_dir");
 
     int j,k,got_it;
     int abort,max_abort;
-    double mu,component;
+    double component;
 
     max_abort=100;
     abort=0;
 
     if(gnorm>tol){
-        for(i=0;i<_chisquared->get_dim() && abort<max_abort;i++){
+        dir.add_row(gradient);
+        while(dir.get_rows()<_chisquared->get_dim() && abort<max_abort){
             got_it=0;
             abort=0;
             while(got_it==0 && abort<max_abort){
                 for(j=0;j<_chisquared->get_dim();j++){
                     trial_dir.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
                 }
-
-                component=0.0;
-                for(j=0;j<_chisquared->get_dim();j++){
-                    component+=trial_dir.get_data(j)*gradient.get_data(j);
-                }
-                for(j=0;j<_chisquared->get_dim();j++){
-                    trial_dir.subtract_val(j,component*gradient.get_data(j));
-                }
-
                 for(k=0;k<dir.get_rows();k++){
                     component=0.0;
                     for(j=0;j<_chisquared->get_dim();j++){
@@ -2448,17 +2487,16 @@ void node::firework_search(int iStart){
     double sign;
     for(ix=0;ix<_chisquared->get_dim();ix++){
         for(sign=-1.0;sign<1.1;sign+=2.0){
-            for(i=0;i<_chisquared->get_dim();i++){
-                trial_dir.set(i,dir.get_data(ix,i)*sign);
-            }
+            if(ix>0 || sign>0.0){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    trial_dir.set(i,dir.get_data(ix,i)*sign-0.1*gradient.get_data(i));
+                }
 
-            i=node_bisection_origin_dir(iStart,trial_dir);
+                i=node_bisection_origin_dir(iStart,trial_dir);
+            }
 
         }
     }
-
-    _firework_centers.add(iStart);
-
 }
 
 
@@ -3932,24 +3970,32 @@ void node::ricochet(){
        if(_ricochet_strikes.get_data(i)>0)totalNeedKick++;
    }
 
-   int do_off_center,k;
+   int do_off_center,k,iFirework;
    local_center=find_local_center();
    trial.reset();
    for(i=0;i<_ricochet_particles.get_dim();i++){
        do_off_center=1;
 
-       if(_are_connected(_ricochet_particles.get_data(i),local_center)==1){
-           do_off_center=0;
+       if(_firework_centers.get_dim()>0){
+           for(j=0;j<_firework_centers.get_dim() && do_off_center==1;j++){
+               is_connected=_are_connected(_ricochet_particles.get_data(i),_firework_centers.get_data(j));
+               if(is_connected==1){
+                   do_off_center=0;
+               }
+           }
        }
-
-       for(j=0;j<_off_center_origins.get_dim() && do_off_center==1;j++){
-           if(_are_connected(_ricochet_particles.get_data(i), _off_center_origins.get_data(j))==1){
+       else{
+           mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_particles.get_data(i))[0]);
+           if(mu<_chisquared->target()){
                do_off_center=0;
            }
        }
 
        if(do_off_center==1){
-           off_center_compass(_ricochet_particles.get_data(i));
+           iFirework=_ricochet_particles.get_data(i);
+           printf("\ndoing firework %e %d %e\n",volume(),_firework_centers.get_dim(),_chisquared->get_fn(iFirework));
+           firework_search(iFirework);
+
        }
    }
 
