@@ -1142,6 +1142,7 @@ int node::node_bisection(array_1d<double> &lowball, double flow,
                 lowball.set(i,trial.get_data(i));
             }
             took_a_step=1;
+            doSlope=1;
         }
         else{
             fhigh=ftrial;
