@@ -2486,6 +2486,7 @@ void node::firework_search(int iStart){
         for(sign=-1.0;sign<1.1;sign+=2.0){
             if(ix>0 || sign>0.0){
                 for(i=0;i<_chisquared->get_dim();i++){
+                    //node the -0.1*gradient seems to be necessary
                     trial_dir.set(i,dir.get_data(ix,i)*sign-0.1*gradient.get_data(i));
                 }
 
