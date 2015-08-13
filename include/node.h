@@ -39,6 +39,7 @@ public:
     int is_this_an_associate(int);
     int find_local_center();
 
+    int get_highball_calls();
     int get_total_bisections();
     int get_bisection_calls();
     int get_total_ricochets();
@@ -68,6 +69,7 @@ private:
     double _volume_of_last_geom;
     
     int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
+    int _highball_calls;
     int _ricochet_bisection_calls,_gradient_calls,_ricochet_bisections;
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
     

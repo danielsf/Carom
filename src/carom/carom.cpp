@@ -171,6 +171,9 @@ void carom::write_pts(){
            
             printf("    gradient calls %d\n",
             _nodes(i)->get_gradient_calls());
+            
+            printf("    highball calls %d\n",
+            _nodes(i)->get_highball_calls());
         }
         printf("\n");
     }

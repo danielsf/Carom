@@ -56,6 +56,7 @@ void node::initialize(){
     _ricochet_bisection_calls=0;
     _ricochet_bisections=0;
     _gradient_calls=0;
+    _highball_calls=0;
     
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -123,6 +124,7 @@ void node::copy(const node &in){
     _bad_shots=in._bad_shots;
     _total_kicks=in._total_kicks;
     _total_trimmed=in._total_trimmed;
+    _highball_calls=in._highball_calls;
     
     _total_bisections=in._total_bisections;
     _total_ricochets=in._total_ricochets;
@@ -3596,7 +3598,7 @@ void node::ricochet(){
    trial.set_name("node_ricochet_trial");
    dir.set_name("node_ricochet_dir");
 
-    int local_center,is_connected;
+    int local_center,is_connected,highball_call_0;
     double reflection_coeff;
     local_center=find_local_center();
    
@@ -3691,6 +3693,7 @@ void node::ricochet(){
                component=1.0;
            }
            
+           highball_call_0=_chisquared->get_called();
            while(fhigh<_chisquared->target()){
                for(i=0;i<_chisquared->get_dim();i++){
                    highball.add_val(i,component*dir.get_data(i));
@@ -3706,6 +3709,7 @@ void node::ricochet(){
                }
            
            }
+           _highball_calls+=_chisquared->get_called()-highball_call_0;
        }
        
        if(flow>_chisquared->target() || flow>fhigh){
@@ -3905,6 +3909,10 @@ void node::trim_ricochet(){
     }
     
     _total_trimmed+=to_trim.get_dim();
+}
+
+int node::get_highball_calls(){
+    return _highball_calls;
 }
 
 int node::get_gradient_calls(){
