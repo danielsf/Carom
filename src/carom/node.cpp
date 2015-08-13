@@ -3005,6 +3005,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
     if(iFound<0){
         return 0;
     }
+    _ricochet_origins.set(ix,_ricochet_particles.get_data(ix));
     _ricochet_particles.set(ix,iFound);       
            
      if(nearestParticle>=0){
@@ -3597,6 +3598,9 @@ void node::ricochet(){
     double reflection_coeff;
     local_center=find_local_center();
    
+   array_1d<double> scratch;
+   scratch.set_name("node_ricochet_scratch");
+   
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
        local_pts0=_chisquared->get_pts();
@@ -3669,14 +3673,27 @@ void node::ricochet(){
            for(i=0;i<_chisquared->get_dim();i++){
                highball.set(i,lowball.get_data(i));
            }
-
-           component=1.0;
+           
+           if(ix<_ricochet_origins.get_dim() && _ricochet_origins.get_data(ix)>=0){
+               for(i=0;i<_chisquared->get_dim();i++){
+                   scratch.set(i,\
+                   _chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(_ricochet_origins.get_data(ix),i));
+               }
+               component=scratch.normalize()*1.1;
+           }
+           else{
+               component=1.0;
+           }
+           
+           if(component<1.0e-20){
+               component=1.0;
+           }
+           
            while(fhigh<_chisquared->target()){
                for(i=0;i<_chisquared->get_dim();i++){
                    highball.add_val(i,component*dir.get_data(i));
                }
                evaluate(highball,&fhigh,&j);
-               component*=2.0;
            
                if(fhigh<_chisquared->target()){
                    for(i=0;i<_chisquared->get_dim();i++){
