@@ -144,6 +144,7 @@ private:
     void node_gradient(int, array_1d<double>&);
     void _node_2sided_gradient(int,array_1d<double>&);
     void _node_1sided_gradient(int,array_1d<double>&);
+    int _node_1sided_projected_gradient(int,array_1d<double>&);
     
     double node_second_derivative(int,int,int);
     double node_second_derivative_different(int,int,int);

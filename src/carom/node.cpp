@@ -846,7 +846,12 @@ double node::node_second_derivative(int center, int ix, int iy){
 
 void node::node_gradient(int dex, array_1d<double> &grad){
     int ibefore=_chisquared->get_called();
-    _node_2sided_gradient(dex,grad);
+    int tried;
+    tried=_node_1sided_projected_gradient(dex,grad);
+    
+    if(tried==0){
+        _node_2sided_gradient(dex,grad);
+    }
     _gradient_calls+=_chisquared->get_called()-ibefore;
 }
 
@@ -971,6 +976,84 @@ void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
         trial.set(i,_chisquared->get_pt(dex,i));
     }
 
+}
+
+
+int node::_node_1sided_projected_gradient(int dex, array_1d<double> &grad){
+
+    if(_basis_vectors.get_rows()!=_chisquared->get_dim()){
+        return 0;
+    }
+
+    array_1d<double> dir,projected_dir,sign;
+    dir.set_name("node_proj_grad_dir");
+    projected_dir.set_name("node_proj_grad_proj_dir");
+    sign.set_name("node_proj_grad_sign");
+     
+    int local_center,i;
+    local_center=find_local_center();
+    for(i=0;i<_chisquared->get_dim();i++){
+       dir.set(i,_chisquared->get_pt(dex,i)-_chisquared->get_pt(local_center,i));
+    }
+     
+    project_to_bases(dir,projected_dir);
+    for(i=0;i<_chisquared->get_dim();i++){
+        if(projected_dir.get_data(i)<0.0){
+            sign.set(i,1.0);
+        }
+        else{
+            sign.set(i,-1.0);
+        }
+    }
+
+    double dx,dxstart;
+    dxstart=0.01;
+    
+    array_1d<double> trial;
+    trial.set_name("node_proj_grad_trial");
+    
+    double mu,norm,y2;
+    int ix,iFound;
+    
+    for(i=0;i<_chisquared->get_dim();i++){
+        grad.set(i,0.0);
+    }
+    
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        dx=dxstart;
+        
+        norm=1.0;
+        if(ix<_projected_max.get_dim()){
+             if(_projected_max.get_data(ix)-_projected_min.get_data(ix)>0.0){
+                 norm=(_projected_max.get_data(ix)-_projected_min.get_data(ix));
+             }
+        }
+        
+        iFound=-1;
+        while(iFound<0 || iFound==dex){
+            for(i=0;i<_chisquared->get_dim();i++){
+                mu=_chisquared->get_pt(dex,i)+dx*sign.get_data(ix)*norm*_basis_vectors.get_data(ix,i);
+                trial.set(i,mu);
+            }
+            
+            evaluate(trial,&y2,&iFound);
+            
+            if(iFound<0 || iFound==dex){
+                dx*=2.0;
+            }
+            
+            if(dx>10.0*dxstart){
+                return 0;
+            }
+        }
+        
+        mu=(y2-_chisquared->get_fn(dex))/(norm*dx*sign.get_data(ix));
+        for(i=0;i<_chisquared->get_dim();i++){
+            grad.add_val(i,mu*_basis_vectors.get_data(ix,i));
+        }
+    }
+
+    return 1;
 }
 
 int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir){
