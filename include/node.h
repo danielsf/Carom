@@ -79,6 +79,7 @@ private:
     int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
 
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
+    array_1d<int> _firework_centers;
     array_1d<int> _ricochet_candidates,_off_center_origins;
     array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
@@ -151,6 +152,8 @@ private:
     double node_second_derivative(int,int,int);
     double node_second_derivative_different(int,int,int);
     double node_second_derivative_same(int,int);
+
+    void firework_search(int);
 
     int _are_connected(int, int);
 

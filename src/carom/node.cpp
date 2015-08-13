@@ -91,6 +91,7 @@ void node::initialize(){
     _associates.set_name("node_associates");
     _boundary_points.set_name("node_boundary_points");
     _ricochet_log.set_name("node_ricochet_log");
+    _firework_centers.set_name("node_firework_centers");
 }
 
 void node::copy(const node &in){
@@ -164,6 +165,11 @@ void node::copy(const node &in){
         for(j=0;j<in._ricochet_candidate_velocities.get_cols();j++){
             _ricochet_candidate_velocities.set(i,j,in._ricochet_candidate_velocities.get_data(i,j));
         }
+    }
+
+    _firework_centers.reset();
+    for(i=0;i<in._firework_centers.get_dim();i++){
+        _firework_centers.set(i,in._firework_centers.get_data(i));
     }
 
     _off_center_compass_points.reset();
@@ -2365,6 +2371,96 @@ void node::find_bases(){
         _min_basis_error_changed=1;
     }
 }
+
+
+void node::firework_search(int iStart){
+    double tol=1.0e-20;
+    array_1d<double> gradient;
+    gradient.set_name("node_firework_gradient");
+    node_gradient(iStart,gradient);
+    double gnorm;
+    gnorm=gradient.normalize();
+    int i;
+
+    array_2d<double> dir;
+    dir.set_name("node_firework_dir");
+    dir.set_cols(_chisquared->get_dim());
+
+    array_1d<double> trial_dir;
+    trial_dir.set_name("node_firework_trial_dir");
+
+    int j,k,got_it;
+    int abort,max_abort;
+    double mu,component;
+
+    max_abort=100;
+    abort=0;
+
+    if(gnorm>tol){
+        for(i=0;i<_chisquared->get_dim() && abort<max_abort;i++){
+            got_it=0;
+            abort=0;
+            while(got_it==0 && abort<max_abort){
+                for(j=0;j<_chisquared->get_dim();j++){
+                    trial_dir.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+                }
+
+                component=0.0;
+                for(j=0;j<_chisquared->get_dim();j++){
+                    component+=trial_dir.get_data(j)*gradient.get_data(j);
+                }
+                for(j=0;j<_chisquared->get_dim();j++){
+                    trial_dir.subtract_val(j,component*gradient.get_data(j));
+                }
+
+                for(k=0;k<dir.get_rows();k++){
+                    component=0.0;
+                    for(j=0;j<_chisquared->get_dim();j++){
+                        component+=trial_dir.get_data(j)*dir.get_data(k,j);
+                    }
+                    for(j=0;j<_chisquared->get_dim();j++){
+                        trial_dir.subtract_val(j,component*dir.get_data(k,j));
+                    }
+                }
+
+                mu=trial_dir.normalize();
+                if(mu>tol){
+                    dir.add_row(trial_dir);
+                    got_it=1;
+                }
+                else{
+                    abort++;
+                }
+            }
+        }
+    }
+
+    if(dir.get_rows()!=_chisquared->get_dim()){
+        printf("just using bases in firworks %e %d\n",gnorm,abort);
+        for(i=0;i<_chisquared->get_dim();i++){
+            for(j=0;j<_chisquared->get_dim();j++){
+                dir.set(i,j,_basis_vectors.get_data(i,j));
+            }
+        }
+    }
+
+    int ix;
+    double sign;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        for(sign=-1.0;sign<1.1;sign+=2.0){
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial_dir.set(i,dir.get_data(ix,i)*sign);
+            }
+
+            i=node_bisection_origin_dir(iStart,trial_dir);
+
+        }
+    }
+
+    _firework_centers.add(iStart);
+
+}
+
 
 void node::off_center_compass(int iStart){
 
