@@ -1009,7 +1009,7 @@ int node::_node_1sided_projected_gradient(int dex, array_1d<double> &grad){
     }
 
     double dx,dxstart;
-    dxstart=0.01;
+    dxstart=0.001;
     
     array_1d<double> trial;
     trial.set_name("node_proj_grad_trial");
