@@ -8,13 +8,13 @@
 class node{
 
 public:
-    
+
     node();
     node(const node&);
     node& operator=(const node&);
     ~node();
     void copy(const node&);
-    
+
     void set_chisquared(chisq_wrapper*);
     void set_center(int);
     void set_basis(int,int,double);
@@ -31,11 +31,11 @@ public:
     int get_ct_ricochet();
     int get_n_particles();
     int get_n_candidates();
-    
+
     void project_to_bases(array_1d<double>&,array_1d<double>&);
     void recalibrate_max_min();
     void print_ricochet_discoveries(char*);
-    
+
     int is_this_an_associate(int);
     int find_local_center();
 
@@ -59,7 +59,7 @@ public:
     int get_successful_ricochets();
     void set_id_dex(int);
     void write_node_log(char*);
-    
+
 private:
     int _id_dex,_last_wrote_log;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
@@ -67,17 +67,17 @@ private:
     int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases;
     double _volume_of_last_geom;
-    
+
     int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
     int _highball_calls;
     int _ricochet_bisection_calls,_gradient_calls,_ricochet_bisections;
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
-    
+
     double _min_basis_error;
     double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed,_convergence_ct;
     int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
-    
+
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _ricochet_candidates,_off_center_origins;
     array_1d<int> _associates;
@@ -86,27 +86,27 @@ private:
     array_1d<double> _max_found,_min_found,_distance_traveled;
     array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
-    
+
     array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _ricochet_strikes;
     array_1d<int> _boundary_points;
-    
+
     asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
     array_1d<int> _ricochet_discovery_dexes;
     asymm_array_2d<double> _ricochet_distances,_ricochet_grad_norm;
     asymm_array_2d<double> _ricochet_dir_norm,_ricochet_mu;
     asymm_array_2d<int> _ricochet_strike_log;
-    
+
     array_2d<int> _ricochet_log;
-    
+
     chisq_wrapper *_chisquared;
-    
+
     int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int);
     int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int,double,double);
     int node_bisection_origin_dir(int,array_1d<double>&);
-    
+
     void perturb_bases(int,array_1d<double>&,array_2d<double>&);
     double basis_error(array_2d<double>&,array_1d<double>&);
     int findAcceptableCenter();
@@ -116,9 +116,9 @@ private:
     void initialize();
     void add_to_boundary(int);
     void add_to_compass(int);
-    
+
     void is_it_safe(char*);
-    
+
     void compass_search();
     void compass_search(int);
     void compass_diagonal(int);
@@ -129,7 +129,7 @@ private:
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&, kd_tree&);
     double apply_quadratic_model(array_1d<double>&);
-    
+
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
     int t_kick(int,array_1d<double>&);
@@ -139,7 +139,7 @@ private:
     void _originate_particle_paperwork(int, int);
     void _filter_candidates();
     double _nearest_other_particle(int,int);
-    
+
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);
     double node_distance(int, array_1d<double>&);
@@ -147,13 +147,13 @@ private:
     void _node_2sided_gradient(int,array_1d<double>&);
     void _node_1sided_gradient(int,array_1d<double>&);
     int _node_1sided_projected_gradient(int,array_1d<double>&);
-    
+
     double node_second_derivative(int,int,int);
     double node_second_derivative_different(int,int,int);
     double node_second_derivative_same(int,int);
 
     int _are_connected(int, int);
-    
+
     int is_it_a_strike(int, kd_tree&);
 };
 
@@ -162,13 +162,13 @@ class arrayOfNodes{
 public:
     arrayOfNodes();
     ~arrayOfNodes();
-        
+
     void add(int,chisq_wrapper*);
     void add(chisq_wrapper*,int);
     int get_dim();
     void remove(int);
     node* operator()(int);
-        
+
 private:
     node *_data;
     int _ct,_room;
