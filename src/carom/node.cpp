@@ -2417,11 +2417,6 @@ void node::firework_search(int iStart){
                         mubest=mu;
                     }
                 }
-                if(iStart!=i0){
-                    node_gradient(iStart,gradient);
-                    gnorm=gradient.normalize();
-                }
-
             }
         }
     }
@@ -2435,6 +2430,8 @@ void node::firework_search(int iStart){
     dir.set_name("node_firework_dir");
     dir.set_cols(_chisquared->get_dim());
 
+    node_gradient(iStart,gradient);
+    gnorm=gradient.normalize();
 
     int j,k,got_it;
     int abort,max_abort;
