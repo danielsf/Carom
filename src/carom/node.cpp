@@ -1347,20 +1347,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 }
 
 void node::add_to_compass(int dex){
-    int local_center=find_local_center();
     _compass_points.add(dex);
-
-    array_1d<double> dir;
-    dir.set_name("node_add_to_compass");
-    _ricochet_candidates.add(dex);
-
-    int i;
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,_chisquared->get_pt(dex,i)-_chisquared->get_pt(local_center,i));
-    }
-
-    _ricochet_candidate_velocities.add_row(dir);
-
 }
 
 void node::compass_search(){
