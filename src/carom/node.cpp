@@ -24,6 +24,7 @@ void node::initialize(){
     _chimin=2.0*exception_value;
     _centerdex=-1;
     _geo_centerdex=-1;
+    _ellipse_center=-1;
     _centerdex_basis=-1;
     _min_changed=0;
     _active=1;
@@ -3674,7 +3675,7 @@ void node::simplex_search(){
             seed.add_row(_chisquared->get_pt(_ricochet_particles.get_data(i))[0]);
         }
 
-        if(seed.get_rows()<_chisquared->get_dim()+1 && _compass_points.get_dim()>=_chisquared->get_dim()+1){
+        if(seed.get_rows()<_chisquared->get_dim()+1 && _compass_points.get_dim()>=_chisquared->get_dim()+1 && _ellipse_center>=0){
             for(i=0;i<_compass_points.get_dim();i++){
                 dexes.set(i,_compass_points.get_data(i));
                 mu=_chisquared->get_fn(_compass_points.get_data(i));
@@ -3718,7 +3719,6 @@ void node::simplex_search(){
 
         exit(1);
     }
-
     simplex_minimizer ffmin;
     ffmin.set_minmax(simplex_min,simplex_max);
     ffmin.set_chisquared(_chisquared);
