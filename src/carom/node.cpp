@@ -1450,6 +1450,7 @@ void node::compass_search(int local_center){
 
                     if(iFound>=0){
                         _basis_associates.add(iFound);
+                        compass_umbrella(iFound);
 
                         for(i=0;i<_chisquared->get_dim();i++){
                             lowball.set(i,_chisquared->get_pt(local_center,i));
@@ -1472,8 +1473,6 @@ void node::compass_search(int local_center){
         _basis_lengths.set(ix,blength);
     }
 
-    printf("before off_diag %d\n",_chisquared->get_called()-ibefore);
-    compass_diagonal(local_center);
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
 
