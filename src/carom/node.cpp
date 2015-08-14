@@ -4408,8 +4408,8 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
+    _data[_ct].compass_search();
     _data[_ct].simplex_search();
-    _data[_ct].find_bases();
 
     _ct++;
 

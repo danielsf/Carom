@@ -22,6 +22,7 @@ public:
     void evaluate(array_1d<double>&, double*, int*);
     int get_center();
     void find_bases();
+    void compass_search();
     void search();
     void ricochet();
     void simplex_search();
@@ -122,7 +123,6 @@ private:
 
     void is_it_safe(char*);
 
-    void compass_search();
     void compass_search(int);
     void compass_diagonal(int);
     void compass_umbrella(int);
