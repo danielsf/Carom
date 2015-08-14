@@ -124,6 +124,7 @@ private:
     void compass_search();
     void compass_search(int);
     void compass_diagonal(int);
+    void compass_umbrella(int);
     void compass_search_geometric_center();
     void off_center_compass(int);
     void initialize_ricochet();

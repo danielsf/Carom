@@ -1673,6 +1673,132 @@ void node::compass_diagonal(int local_center){
 
 }
 
+void node::compass_umbrella(int iStart){
+
+    array_1d<double> radial;
+    radial.set_name("node_umbrella_radial");
+    array_2d<double> dir;
+    dir.set_name("node_umbrella_dir");
+
+    int i;
+    int local_center=find_local_center();
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        radial.set(i,_chisquared->get_pt(iStart,i)-_chisquared->get_pt(local_center,i));
+    }
+    double radial_norm;
+    radial_norm=radial.normalize();
+    if(radial_norm<1.0e-20){
+        return;
+    }
+
+    array_1d<double> trial_dir;
+    trial_dir.set_name("node_umbrella_trial_dir");
+    double component;
+
+    int j,k;
+
+    dir.set_cols(_chisquared->get_dim());
+    while(dir.get_rows()<_chisquared->get_dim()-1){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+
+        component=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            component+=trial_dir.get_data(i)*radial.get_data(i);
+        }
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial_dir.subtract_val(i,component*radial.get_data(i));
+        }
+
+        for(i=0;i<dir.get_rows();i++){
+            component=0.0;
+            for(j=0;j<_chisquared->get_dim();j++){
+                component+=trial_dir.get_data(j)*dir.get_data(i,j);
+            }
+            for(j=0;j<_chisquared->get_dim();j++){
+                trial_dir.subtract_val(j,component*dir.get_data(i,j));
+            }
+        }
+
+        component=trial_dir.normalize();
+        if(component>1.0e-20){
+            dir.add_row(trial_dir);
+        }
+    }
+
+    double sign,mu;
+    int iFound;
+    array_1d<double> lowball,highball;
+    double flow,fhigh,bisection_target,bisection_tolerance;
+    lowball.set_name("node_umbrella_lowball");
+    highball.set_name("node_umbrella_highball");
+
+    for(i=0;i<dir.get_rows();i++){
+        for(sign=-1.0;sign<1.1;sign+=2.0){
+            for(j=0;j<_chisquared->get_dim();j++){
+                lowball.set(j,_chisquared->get_pt(iStart,j));
+                highball.set(j,_chisquared->get_pt(iStart,j));
+            }
+
+
+            flow=_chisquared->get_fn(iStart);
+            if(flow>_chisquared->target()){
+                return;
+            }
+
+            fhigh=-2.0*exception_value;
+            component=radial_norm;
+            while(fhigh<_chisquared->target()){
+                for(j=0;j<_chisquared->get_dim();j++){
+                    highball.add_val(j,component*sign*dir.get_data(i,j));
+                }
+                component*=2.0;
+                evaluate(highball,&fhigh,&iFound);
+                if(fhigh<_chisquared->target()){
+                    for(j=0;j<_chisquared->get_dim();j++){
+                        lowball.set(j,highball.get_data(j));
+                    }
+                    flow=fhigh;
+                }
+            }
+
+            if(flow>_chisquared->target()){
+                if(_chisquared->get_fn(iStart)>_chisquared->target()){
+                    return;
+                }
+                for(j=0;j<_chisquared->get_dim();j++){
+                    lowball.set(j,_chisquared->get_pt(iStart,j));
+                }
+                flow=_chisquared->get_fn(iStart);
+            }
+
+            iFound=node_bisection(lowball,flow,highball,fhigh,0);
+
+            for(j=0;j<_chisquared->get_dim();j++){
+                trial_dir.set(j,_chisquared->get_pt(iFound,j)-_chisquared->get_pt(iStart,j));
+            }
+
+            component=trial_dir.normalize();
+
+            if(component>1.0e-20){
+                _ricochet_candidates.add(iFound);
+                _ricochet_candidate_velocities.add_row(trial_dir);
+            }
+
+            for(j=0;j<_chisquared->get_dim();j++){
+                trial_dir.set(j,0.5*(_chisquared->get_pt(iStart,j)+_chisquared->get_pt(iFound,j)));
+            }
+            evaluate(trial_dir,&mu,&iFound);
+            if(iFound>=0 && mu<_chisquared->target()){
+                _basis_associates.add(iFound);
+            }
+        }
+    }
+}
+
+
 void node::compass_search_geometric_center(){
     is_it_safe("compass_geometric_center");
 
