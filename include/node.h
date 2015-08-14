@@ -14,6 +14,7 @@ public:
     node& operator=(const node&);
     ~node();
     void copy(const node&);
+    void merge(const node&);
 
     void set_chisquared(chisq_wrapper*);
     void set_center(int);
@@ -171,6 +172,7 @@ public:
     void add(int,chisq_wrapper*);
     void add(chisq_wrapper*,int);
     int get_dim();
+    void cull();
     void remove(int);
     node* operator()(int);
 

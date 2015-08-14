@@ -321,6 +321,28 @@ void node::copy(const node &in){
 
 }
 
+void node::merge(const node &in){
+    if(this==&in){
+        return;
+    }
+
+    int i;
+    for(i=0;i<in._associates.get_dim();i++){
+        if(_associates.contains(in._associates.get_data(i))==0){
+            _associates.add(in._associates.get_data(i));
+        }
+    }
+
+    for(i=0;i<in._boundary_points.get_dim();i++){
+        if(_boundary_points.contains(in._boundary_points.get_data(i))==0){
+            _boundary_points.add(in._boundary_points.get_data(i));
+        }
+    }
+
+
+    recalibrate_max_min();
+}
+
 int node::get_convergence_ct(){
     return _convergence_ct;
 }
@@ -4399,6 +4421,24 @@ void arrayOfNodes::add(chisq_wrapper *g, int i){
 
 int arrayOfNodes::get_dim(){
     return _ct;
+}
+
+void arrayOfNodes::cull(){
+    if(_ct<2){
+        return;
+    }
+
+    int i,j,kill_it;
+    for(i=0;i<_ct;i++){
+        for(j=i+1;j<_ct;j++){
+            kill_it=_data[i].is_this_an_associate(_data[j].get_center());
+            if(kill_it==1){
+                _data[i].merge(_data[j]);
+                remove(j);
+                j--;
+            }
+        }
+    }
 }
 
 void arrayOfNodes::remove(int ii){

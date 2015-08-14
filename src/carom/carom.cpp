@@ -270,7 +270,9 @@ void carom::search(int limit){
     int before,i;
     int active_nodes=0,goon=1,dosimplex;
     
-    while(goon==1){        
+    while(goon==1){
+        _nodes.cull();
+     
         if(_calls_to_simplex>_nodes.get_dim()+2 &&
            _nodes.get_dim()>0){
             dosimplex=0;
