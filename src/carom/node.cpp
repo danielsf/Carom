@@ -1449,7 +1449,9 @@ void node::compass_search(int local_center){
                     iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
 
                     if(iFound>=0){
-                        _basis_associates.add(iFound);
+                        if(_basis_associates.contains(iFound)==0){
+                            _basis_associates.add(iFound);
+                        }
                         compass_umbrella(iFound);
 
                         for(i=0;i<_chisquared->get_dim();i++){
@@ -1459,7 +1461,7 @@ void node::compass_search(int local_center){
                         fhigh=_chisquared->get_fn(iFound);
                         bisection_target=0.5*(_chimin+fhigh);
                         iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
-                        if(iFound>=0){
+                        if(iFound>=0 && _basis_associates.contains(iFound)==0){
                             _basis_associates.add(iFound);
                         }
 
@@ -1631,7 +1633,7 @@ void node::compass_diagonal(int local_center){
                             fhigh=_chisquared->get_fn(iFound);
                             bisection_target=0.5*(_chimin+_chisquared->target());
                             iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
-                            if(iFound>=0){
+                            if(iFound>=0 && _basis_associates.contains(iFound)==0){
                                 _basis_associates.add(iFound);
                             }
 
@@ -1780,7 +1782,7 @@ void node::compass_umbrella(int iStart){
                     trial_dir.set(j,0.5*(_chisquared->get_pt(iStart,j)+_chisquared->get_pt(iFound,j)));
                 }
                 evaluate(trial_dir,&mu,&iFound);
-                if(iFound>=0 && mu<_chisquared->target()){
+                if(iFound>=0 && mu<_chisquared->target() && _basis_associates.contains(iFound)==0){
                     _basis_associates.add(iFound);
                 }
             }
@@ -2360,7 +2362,9 @@ void node::find_bases(){
 
         iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
         if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<0.5*(target-_chisquared->get_fn(_centerdex))){
-            _basis_associates.add(iFound);
+            if(_basis_associates.contains(iFound)==0){
+                _basis_associates.add(iFound);
+            }
         }
     }
 
