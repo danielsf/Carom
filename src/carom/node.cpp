@@ -1776,23 +1776,27 @@ void node::compass_umbrella(int iStart){
 
             iFound=node_bisection(lowball,flow,highball,fhigh,0);
 
-            for(j=0;j<_chisquared->get_dim();j++){
-                trial_dir.set(j,_chisquared->get_pt(iFound,j)-_chisquared->get_pt(iStart,j));
-            }
+            if(iFound>=0){
+                add_to_compass(iFound);
 
-            component=trial_dir.normalize();
+                for(j=0;j<_chisquared->get_dim();j++){
+                    trial_dir.set(j,_chisquared->get_pt(iFound,j)-_chisquared->get_pt(iStart,j));
+                }
 
-            if(component>1.0e-20){
-                _ricochet_candidates.add(iFound);
-                _ricochet_candidate_velocities.add_row(trial_dir);
-            }
+                component=trial_dir.normalize();
 
-            for(j=0;j<_chisquared->get_dim();j++){
-                trial_dir.set(j,0.5*(_chisquared->get_pt(iStart,j)+_chisquared->get_pt(iFound,j)));
-            }
-            evaluate(trial_dir,&mu,&iFound);
-            if(iFound>=0 && mu<_chisquared->target()){
-                _basis_associates.add(iFound);
+                if(component>1.0e-20){
+                    _ricochet_candidates.add(iFound);
+                    _ricochet_candidate_velocities.add_row(trial_dir);
+                }
+
+                for(j=0;j<_chisquared->get_dim();j++){
+                    trial_dir.set(j,0.5*(_chisquared->get_pt(iStart,j)+_chisquared->get_pt(iFound,j)));
+                }
+                evaluate(trial_dir,&mu,&iFound);
+                if(iFound>=0 && mu<_chisquared->target()){
+                    _basis_associates.add(iFound);
+                }
             }
         }
     }
