@@ -3486,20 +3486,19 @@ void node::search(){
         }
     }
 
-    double projectedVolume0=projected_volume();
-    double volume0=volume();
-    double target0=_chisquared->target();
-    int ibefore=_chisquared->get_called();
-
-    ricochet();
-
-    if(_ct_simplex<_ct_ricochet &&
+    if(_ct_simplex<=_ct_ricochet &&
         _failed_simplexes<3 &&
         _chisquared->could_it_go_lower(_chimin)>0){
 
         simplex_search();
     }
 
+    double projectedVolume0=projected_volume();
+    double volume0=volume();
+    double target0=_chisquared->target();
+    int ibefore=_chisquared->get_called();
+
+    ricochet();
 
     double tol;
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
@@ -3573,17 +3572,65 @@ void node::search(){
 
 
 void node::simplex_search(){
-    is_it_safe("simplex_search");
-
-    if(_min_found.get_dim()!=_chisquared->get_dim() || _max_found.get_dim()!=_chisquared->get_dim()){
-        printf("    leaving node simplex search because there are no bounds\n");
-        return;
-    }
-
     printf("    node simplex search\n");
 
-    int center0 = _centerdex;
+    is_it_safe("simplex_search");
+
     int ibefore=_chisquared->get_called();
+    int is_acceptable;
+    int i,j,iFound;
+    double target,tolerance;
+
+    array_1d<double> trial,simplex_min,simplex_max;
+    array_1d<int> found_dexes;
+    trial.set_name("node_simplex_search_trial");
+    simplex_min.set_name("node_simplex_min");
+    simplex_max.set_name("node_simplex_max");
+    found_dexes.set_name("found_dexes");
+
+    if(_min_found.get_dim()==_chisquared->get_dim() && _max_found.get_dim()==_chisquared->get_dim()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            simplex_min.set(i,_min_found.get_data(i));
+            simplex_max.set(i,_max_found.get_data(i));
+        }
+    }
+
+    is_acceptable=0;
+    while(is_acceptable==0){
+        is_acceptable=1;
+        if(simplex_min.get_dim()!=_chisquared->get_dim() || simplex_max.get_dim()!=_chisquared->get_dim()){
+            is_acceptable=0;
+        }
+
+        for(i=0;i<_chisquared->get_dim() && is_acceptable==1;i++){
+            if(simplex_max.get_data(i)-simplex_min.get_data(i)<1.0e-30){
+                is_acceptable=0;
+            }
+        }
+
+        if(is_acceptable==0){
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+            }
+            trial.normalize();
+            target=_chisquared->get_fn(_centerdex)+(_chisquared->target()-_chisquared->chimin());
+            tolerance = 0.01*(_chisquared->target()-_chisquared->chimin());
+            iFound=node_bisection_origin_dir(_centerdex, trial, target, tolerance);
+            if(iFound>=0){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    if(i>=simplex_min.get_dim() || _chisquared->get_pt(iFound,i)<simplex_min.get_data(i)){
+                        simplex_min.set(i,_chisquared->get_pt(iFound,i));
+                    }
+
+                    if(i>=simplex_max.get_dim() || _chisquared->get_pt(iFound,i)>simplex_max.get_data(i)){
+                        simplex_max.set(i,_chisquared->get_pt(iFound,i));
+                    }
+                }
+            }
+        }
+    }
+
+    int center0 = _centerdex;
 
     array_1d<int> dexes;
     array_1d<double> minpt,dmu,dmusorted;
@@ -3594,8 +3641,8 @@ void node::simplex_search(){
     dmu.set_name("node_simplex_search_dmu");
     dmusorted.set_name("node_simplex_search_dmusorted");
 
+
     seed.set_cols(_chisquared->get_dim());
-    int i,j;
     double mu;
 
     _chisquared->set_iWhere(iNodeSimplex);
@@ -3605,7 +3652,7 @@ void node::simplex_search(){
             seed.add_row(_chisquared->get_pt(_ricochet_particles.get_data(i))[0]);
         }
 
-        if(seed.get_rows()<_chisquared->get_dim()+1){
+        if(seed.get_rows()<_chisquared->get_dim()+1 && _compass_points.get_dim()>=_chisquared->get_dim()+1){
             for(i=0;i<_compass_points.get_dim();i++){
                 dexes.set(i,_compass_points.get_data(i));
                 mu=_chisquared->get_fn(_compass_points.get_data(i));
@@ -3614,6 +3661,17 @@ void node::simplex_search(){
             sort_and_check(dmu,dmusorted,dexes);
             for(i=dexes.get_dim()-1;i>=0 && seed.get_rows()<_chisquared->get_dim()+1;i--){
                 seed.add_row(_chisquared->get_pt(dexes.get_data(i))[0]);
+            }
+        }
+
+        while(seed.get_rows()<_chisquared->get_dim()+1){
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial.set(i,simplex_min.get_data(i)+_chisquared->random_double()*(simplex_max.get_data(i)-simplex_min.get_data(i)));
+                trial.add_val(i,normal_deviate(_chisquared->get_dice(),0.0,simplex_max.get_data(i)-simplex_min.get_data(i)));
+            }
+            evaluate(trial,&mu,&iFound);
+            if(iFound>=0){
+                seed.add_row(trial);
             }
         }
 
@@ -3640,7 +3698,7 @@ void node::simplex_search(){
     }
 
     simplex_minimizer ffmin;
-    ffmin.set_minmax(_min_found,_max_found);
+    ffmin.set_minmax(simplex_min,simplex_max);
     ffmin.set_chisquared(_chisquared);
     ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,minpt);
