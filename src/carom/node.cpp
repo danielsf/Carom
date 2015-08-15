@@ -3528,6 +3528,8 @@ void node::search(){
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
         reset_ricochet();
+        find_bases();
+        compass_search_geometric_center();
     }
 
     if(volume()>2.0*_volume_of_last_geom){
