@@ -3670,47 +3670,21 @@ void node::simplex_search(){
 
     _chisquared->set_iWhere(iNodeSimplex);
 
-    if(_ricochet_particles.get_dim()<=_chisquared->get_dim()+1){
-        for(i=0;i<_ricochet_particles.get_dim();i++){
-            seed.add_row(_chisquared->get_pt(_ricochet_particles.get_data(i))[0]);
+    while(seed.get_rows()<_chisquared->get_dim()+1){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        trial.normalize();
+        mu=_chisquared->random_double();
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.multiply_val(i,mu*(simplex_max.get_data(i)-simplex_min.get_data(i)));
+            trial.add_val(i,0.5*(simplex_min.get_data(i)+simplex_max.get_data(i)));
         }
 
-        if(seed.get_rows()<_chisquared->get_dim()+1 && _compass_points.get_dim()>=_chisquared->get_dim()+1 && _ellipse_center>=0){
-            for(i=0;i<_compass_points.get_dim();i++){
-                dexes.set(i,_compass_points.get_data(i));
-                mu=_chisquared->get_fn(_compass_points.get_data(i));
-                dmu.set(i,fabs(mu-apply_quadratic_model(_chisquared->get_pt(_compass_points.get_data(i))[0])));
-            }
-            sort_and_check(dmu,dmusorted,dexes);
-            for(i=dexes.get_dim()-1;i>=0 && seed.get_rows()<_chisquared->get_dim()+1;i--){
-                seed.add_row(_chisquared->get_pt(dexes.get_data(i))[0]);
-            }
+        evaluate(trial,&mu,&iFound);
+        if(iFound>=0){
+            seed.add_row(trial);
         }
-
-        while(seed.get_rows()<_chisquared->get_dim()+1){
-            for(i=0;i<_chisquared->get_dim();i++){
-                trial.set(i,simplex_min.get_data(i)+_chisquared->random_double()*(simplex_max.get_data(i)-simplex_min.get_data(i)));
-                trial.add_val(i,normal_deviate(_chisquared->get_dice(),0.0,simplex_max.get_data(i)-simplex_min.get_data(i)));
-            }
-            evaluate(trial,&mu,&iFound);
-            if(iFound>=0){
-                seed.add_row(trial);
-            }
-        }
-
-    }
-    else{
-        for(i=0;i<_ricochet_particles.get_dim();i++){
-            dexes.set(i,i);
-            mu=_chisquared->get_fn(_ricochet_particles.get_data(i));
-            dmu.set(i,fabs(mu-apply_quadratic_model(_chisquared->get_pt(_ricochet_particles.get_data(i))[0])));
-        }
-        sort_and_check(dmu,dmusorted,dexes);
-
-        for(i=dexes.get_dim()-1;seed.get_rows()<_chisquared->get_dim()+1;i--){
-            seed.add_row(_chisquared->get_pt(_ricochet_particles.get_data(dexes.get_data(i)))[0]);
-        }
-
     }
 
     if(seed.get_rows()!=_chisquared->get_dim()+1){
