@@ -24,6 +24,7 @@ public:
     void find_bases();
     void compass_search();
     void search();
+    void reset_ricochet();
     void ricochet();
     void simplex_search();
     double volume();

@@ -3595,7 +3595,7 @@ void node::search(){
 
 
 void node::simplex_search(){
-    printf("    node simplex search\n");
+    printf("    node simplex search %e\n",_chisquared->get_fn(_centerdex));
 
     is_it_safe("simplex_search");
 
@@ -3795,6 +3795,15 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
 
 
     return 0;
+}
+
+void node::reset_ricochet(){
+    _ricochet_particles.reset();
+    _ricochet_velocities.reset();
+    _ricochet_candidates.reset();
+    _ricochet_candidate_velocities.reset();
+    _ricochet_strikes.reset();
+    _found_bases=0;
 }
 
 void node::ricochet(){
@@ -4382,8 +4391,9 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
-    _data[_ct].compass_search();
+    _data[_ct].ricochet();
     _data[_ct].simplex_search();
+    _data[_ct].reset_ricochet();
 
     _ct++;
 
