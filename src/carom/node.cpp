@@ -3527,8 +3527,7 @@ void node::search(){
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
-        find_bases();
-        compass_search_geometric_center();
+        reset_ricochet();
     }
 
     if(volume()>2.0*_volume_of_last_geom){
@@ -3556,8 +3555,7 @@ void node::search(){
     }
 
     if(_ricochet_particles.get_dim()==0){
-        printf("deactivating because no particles are worth it\n");
-        _active=0;
+        initialize_ricochet();
     }
 
     if(_active==0){
@@ -4391,10 +4389,6 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
-    _data[_ct].ricochet();
-    _data[_ct].simplex_search();
-    _data[_ct].reset_ricochet();
-
     _ct++;
 
 }
