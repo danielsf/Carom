@@ -2819,6 +2819,17 @@ int node::_are_connected(int i1, int i2){
 }
 
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
+    double sig;
+    return _ricochet_model(pt, tree, &sig, 0);
+}
+
+double node::ricochet_model(array_1d<double> &pt, kd_tree &tree,
+                            double *sig){
+    return _ricochet_model(pt, tree, sig, 1);
+}
+
+double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
+                              double *sig, int doSig){
     is_it_safe("ricochet_model");
 
     int npts=_chisquared->get_dim();
@@ -2898,6 +2909,23 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
         for(j=0;j<npts;j++){
             mu+=qq.get_data(i)*covarin.get_data(i,j)*(_chisquared->get_fn(neigh.get_data(j))-qbar.get_data(j));
         }
+    }
+
+    double covar_norm;
+    int ix,jx;
+    if(doSig==1){
+        covar_norm=0.0;
+        sig[0]=0.0;
+        for(i=0;i<npts;i++){
+            ix=neigh.get_data(i);
+            for(j=0;j<npts;j++){
+                jx=neigh.get_data(j);
+                covar_norm+=(_chisquared->get_fn(ix)-fbar)*covarin.get_data(i,j)*(_chisquared->get_fn(jx)-fbar);
+                sig[0]-=qq.get_data(i)*covarin.get_data(i,j)*qq.get_data(j);
+            }
+        }
+        sig[0]+=1.0+nugget;
+        sig[0]*=covar_norm;
     }
 
     return mu;
@@ -3231,6 +3259,111 @@ int node::t_kick(int ix, array_1d<double> &dir){
 
 
     return 1;
+
+}
+
+void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &tree){
+    //in this case iStart will be the actual point's index
+
+    double strad,trial_strad;
+    double mu,sigmasq;
+
+    mu=ricochet_model(_chisquared->get_pt(iStart)[0],tree,&sigmasq);
+    strad=sigmasq-(mu-_chisquared->target())*(mu-_chisquared->target());
+
+    int nsteps=100;
+    int ix;
+
+    array_1d<double>step,trial,pt;
+    step.set_name("node_aps_kick_step");
+    trial.set_name("node_aps_kick_step");
+    pt.set_name("node_aps_kick_pt");
+
+    int i,j;
+    for(i=0;i<_chisquared->get_dim();i++){
+        pt.set(i,_chisquared->get_pt(iStart,i));
+    }
+
+    double radius,norm;
+    int accept,n_accepted;
+
+    n_accepted=0;
+    norm=0.1;
+    for(ix=0;ix<nsteps;ix++){
+        accept=0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        step.normalize();
+        radius=normal_deviate(_chisquared->get_dice(),0.0,1.0);
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
+        }
+        mu=ricochet_model(trial,tree,&sigmasq);
+        trial_strad=sigmasq-(mu-_chisquared->target())*(mu-_chisquared->target());
+        if(trial_strad>strad){
+            accept=1;
+        }
+        else{
+            norm=_chisquared->random_double();
+            if(exp(0.5*(trial_strad-strad))>norm){
+                accept=1;
+            }
+        }
+
+        if(accept==1){
+            n_accepted++;
+            for(i=0;i<_chisquared->get_dim();i++){
+                pt.set(i,trial.get_data(i));
+            }
+            strad=trial_strad;
+        }
+
+    }
+
+    int iEnd;
+    evaluate(pt,&mu,&iEnd);
+    if(iEnd==iStart){
+        printf("aps_kick just ended where it started\n");
+        return;
+    }
+    array_1d<double> dir;
+    dir.set_name("node_aps_kick_dir");
+    double component;
+    if(mu<=_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,_chisquared->get_pt(iEnd,i)-_chisquared->get_pt(iStart,i));
+        }
+        dir.normalize();
+        component=1.0;
+        while(mu<=_chisquared->target()){
+            for(i=0;i<_chisquared->get_dim();i++){
+                pt.add_val(i,component*dir.get_data(i));
+            }
+            evaluate(pt,&mu,&iEnd);
+            component*=2.0;
+        }
+    }
+
+    int iBisection;
+    array_1d<double> start;
+    start.set_name("node_aps_kick_start");
+    for(i=0;i<_chisquared->get_dim();i++){
+        start.set(i,_chisquared->get_pt(iStart,i));
+    }
+    iBisection=node_bisection(start,_chisquared->get_fn(iStart),pt,mu,0);
+
+    if(iBisection==iStart){
+        printf("aps_kick bisection found starting point\n");
+        return;
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir_out.set(i,_chisquared->get_pt(iBisection,i)-_chisquared->get_pt(iStart,i));
+    }
+
+    iFound[0]=iBisection;
+    printf("aps_kick n_accepted %d\n",n_accepted);
 
 }
 
