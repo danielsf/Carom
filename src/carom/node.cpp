@@ -3332,7 +3332,7 @@ void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree 
     double component;
     if(mu<=_chisquared->target()){
         for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,_chisquared->get_pt(iEnd,i)-_chisquared->get_pt(iStart,i));
+            dir.set(i,pt.get_data(i)-_chisquared->get_pt(iStart,i));
         }
         dir.normalize();
         component=1.0;
