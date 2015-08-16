@@ -1763,7 +1763,7 @@ void node::compass_umbrella(int iStart){
             component=radial_norm;
             while(fhigh<_chisquared->target()){
                 for(j=0;j<_chisquared->get_dim();j++){
-                    highball.add_val(j,component*sign*dir.get_data(i,j));
+                    highball.add_val(j,component*(sign*dir.get_data(i,j)+0.1*radial.get_data(j)));
                 }
                 component*=2.0;
                 evaluate(highball,&fhigh,&iFound);
