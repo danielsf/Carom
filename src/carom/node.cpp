@@ -3926,34 +3926,24 @@ void node::ricochet(){
        fhigh=-2.0*exception_value;
        is_connected=0;
 
-       if(_ricochet_strikes.get_data(ix)>0){
-           kick_particle(ix,dir);
+       node_gradient(_ricochet_particles.get_data(ix),gradient);
+
+       is_connected=_are_connected(_ricochet_particles.get_data(ix),local_center);
+
+       reflection_coeff=2.0;
+
+       gnorm=gradient.normalize();
+       component=0.0;
+       for(i=0;i<_chisquared->get_dim();i++){
+           component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
        }
-       else{
-           node_gradient(_ricochet_particles.get_data(ix),gradient);
 
-           is_connected=_are_connected(_ricochet_particles.get_data(ix),local_center);
-
-
-           if(is_connected==0){
-               reflection_coeff=2.0; //full reflection
-           }
-           else{
-               reflection_coeff=1.8;
-           }
-
-           gnorm=gradient.normalize();
-           component=0.0;
-           for(i=0;i<_chisquared->get_dim();i++){
-               component+=_ricochet_velocities.get_data(ix,i)*gradient.get_data(i);
-           }
-
-           for(i=0;i<_chisquared->get_dim();i++){
-               dir.set(i,_ricochet_velocities.get_data(ix,i)-reflection_coeff*component*gradient.get_data(i));
-           }
-
-           dirnorm=dir.normalize();
+       for(i=0;i<_chisquared->get_dim();i++){
+           dir.set(i,_ricochet_velocities.get_data(ix,i)-reflection_coeff*component*gradient.get_data(i));
        }
+
+       dirnorm=dir.normalize();
+
 
        while(flow>_chisquared->target()){
            flow=_chisquared->get_fn(_ricochet_particles.get_data(ix));
