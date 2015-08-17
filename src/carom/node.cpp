@@ -4127,20 +4127,17 @@ void node::ricochet(){
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
        local_pts0=_chisquared->get_pts();
 
-       if(_ricochet_strikes.get_data(ix)==0){
-           iFound=_ricochet(ix,dir);
-       }
-       else{
-           has_been_kicked.set(ix,1);
+       if(_ricochet_strikes.get_data(ix)>0){
            dir.reset();
            kicked=mcmc_kick(_ricochet_particles.get_data(i),&iFound,dir);
            if(kicked==1){
+               has_been_kicked.set(ix,1);
                dir.normalize();
-               for(j=0;j<_chisquared->get_dim();j++){
-                   _ricochet_velocities.set(i,j,dir.get_data(j));
-               }
-               _ricochet_particles.set(i,iFound);
            }
+       }
+
+       if(has_been_kicked.get_data(ix)==0){
+           iFound=_ricochet(ix,dir);
        }
 
        for(i=0;i<_chisquared->get_dim();i++){
