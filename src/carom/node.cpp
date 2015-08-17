@@ -3374,7 +3374,7 @@ void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree 
     }
 
     iFound[0]=iBisection;
-    printf("aps_kick n_accepted %d\n",n_accepted);
+    printf("aps_kick n_accepted %d distance %e\n",n_accepted,node_distance(iStart,iFound[0]));
 
 }
 
