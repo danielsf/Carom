@@ -4325,6 +4325,10 @@ int node::get_bisection_calls(){
     return _bisection_calls;
 }
 
+int node::get_proper_ricochets(){
+    return _proper_ricochets;
+}
+
 int node::get_total_ricochets(){
     return _total_ricochets;
 }
