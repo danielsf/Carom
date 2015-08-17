@@ -2748,18 +2748,29 @@ int node::_are_connected(int i1, int i2){
 
 }
 
+double node::ricochet_model(array_1d<double> &pt, kd_tree &tree,
+                            array_1d<int> &neigh_out){
+    double sig;
+    return _ricochet_model(pt, tree, &sig, 0, neigh_out);
+}
+
+
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree){
     double sig;
-    return _ricochet_model(pt, tree, &sig, 0);
+    array_1d<int> nn;
+    return _ricochet_model(pt, tree, &sig, 0, nn);
 }
 
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree,
                             double *sig){
-    return _ricochet_model(pt, tree, sig, 1);
+
+    array_1d<int> nn;
+    return _ricochet_model(pt, tree, sig, 1, nn);
 }
 
 double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
-                              double *sig, int doSig){
+                              double *sig, int doSig,
+                              array_1d<int> &neigh_out){
     is_it_safe("ricochet_model");
 
     int i;
@@ -2861,6 +2872,9 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
         }
         sig[0]+=1.0+nugget;
         sig[0]*=covar_norm;
+    }
+    for(i=0;i<npts;i++){
+        neigh_out.set(i,neigh.get_data(i));
     }
     return mu;
 }

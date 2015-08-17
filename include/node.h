@@ -126,8 +126,9 @@ private:
     void trim_ricochet();
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&, kd_tree&);
+    double ricochet_model(array_1d<double>&, kd_tree&, array_1d<int>&);
     double ricochet_model(array_1d<double>&, kd_tree&, double*);
-    double _ricochet_model(array_1d<double>&, kd_tree&, double*, int);
+    double _ricochet_model(array_1d<double>&, kd_tree&, double*, int, array_1d<int>&);
     double apply_quadratic_model(array_1d<double>&);
 
     int kick_particle(int, array_1d<double>&);
