@@ -15,7 +15,7 @@ for(i=0;i<120;i++){
     ricochetHist.set(i,0);
     totalHist.set(i,0);
     compassHist.set(i,0);
-    
+
     totalDistChi.set(i,0);
     totalDistLnChi.set(i,0);
 }
@@ -120,18 +120,18 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
         fscanf(input,"%le",&nn);
         vv.set(i,nn);
     }
-    
+
     fscanf(input,"%le",&chival);
     if(chival<chi_min)chi_min=chival;
 
-    
+
     fscanf(input,"%le",&nn);
 
     fscanf(input,"%le",&nn);
 
     fscanf(input,"%d",&j);
 
-}    
+}
 fclose(input);
 printf("chimin %e\n",chi_min);
 
@@ -149,17 +149,17 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
         fscanf(input,"%le",&nn);
         vv.set(i,nn);
     }
-    
+
     fscanf(input,"%le",&chival);
     chisq.add(chival);
-    
+
     fscanf(input,"%le",&nn);
     mu.add(nn);
     fscanf(input,"%le",&nn);
     sig.add(nn);
     fscanf(input,"%d",&j);
     ling.add(j);
-    
+
     hdex=get_dex(lnchi_hist,log(chival-chi_min)+1.0e-6);
 
     if(j==iSimplex){
@@ -174,17 +174,17 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
     else{
         hptr=NULL;
     }
-    
+
     if(hptr!=NULL){
         for(i=hdex;i<hptr->get_dim();i++){
             hptr->add_val(i,1);
         }
     }
-    
+
     for(i=hdex;i<totalHist.get_dim();i++){
         totalHist.add_val(i,1);
     }
-    
+
     if(log(chival-chi_min)+1.0e-6<lnchi_hist.get_data(lnchi_hist.get_dim()-1)+0.1){
         totalDistLnChi.add_val(hdex,1);
     }
@@ -192,7 +192,7 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
         hdex=get_dex(chi_hist,chival-chi_min);
         totalDistChi.add_val(hdex,1);
     }
-    
+
     if(chival<=target_chi){
         for(i=0;i<dim;i++){
             if(vv.get_data(i)<xmin.get_data(i)){
@@ -203,7 +203,7 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
             }
         }
     }
-   
+
 }
 
 fclose(input);
@@ -233,7 +233,7 @@ for(i=0;i<xdexes.get_dim();i++){
 
     sprintf(outname,"%s_%d_%d_frequentist.sav",outputRoot,ix,iy);
     apsExtractor.write_good_points(outname,ix,iy);
-        
+
     //sprintf(outname,"%s_%d_%d_bayesian.sav",outputRoot,ix.get_data(i),iy.get_data(i));
     //apsExtractor.draw_bayesian_bounds(outname,ix.get_data(i),iy.get_data(i),0.95);
 

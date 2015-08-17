@@ -31,7 +31,7 @@ void chain::set_dim(int ii){
     _points.reset();
     _degeneracy.reset();
     _chisquared.reset();
-    
+
     _points.set_cols(_dim);
 }
 
@@ -48,7 +48,7 @@ void chain::set_output_name_root(char *nn){
 }
 
 chain::chain(){
-    initialize();    
+    initialize();
 }
 
 chain::chain(int ii){
@@ -62,28 +62,28 @@ chain::chain(int ii, char *input_name){
 }
 
 void chain::read_chain(char *input_name){
-    
+
     printf("reading %s\n",input_name);
-    
+
     int i,ct;
     double chisq,mu;
     array_1d<double> vv;
     vv.set_name("chain_constructor_vv");
-    
+
     FILE *input;
     input=fopen(input_name,"r");
     while(fscanf(input,"%d",&ct)>0){
         _degeneracy.add(ct);
         fscanf(input,"%le",&chisq);
         _chisquared.add(chisq);
-        
+
         for(i=0;i<_dim;i++){
             fscanf(input,"%le",&mu);
             vv.set(i,mu);
         }
         _points.add_row(vv);
     }
-    
+
     fclose(input);
 }
 
@@ -107,13 +107,13 @@ int chain::is_current_point_valid(){
     if(_current_point.get_dim()==_dim){
         return 1;
     }
-    
+
     return 0;
 }
 
 double chain::get_current_point(int dex){
     verify_dim(dex,"get_current_point");
-    
+
     return _current_point.get_data(dex);
 }
 
@@ -160,10 +160,10 @@ int chain::get_degeneracy(int dex){
 
 void chain::add_point(array_1d<double> &pt, double mu){
     is_dice_safe("add_point");
-    
+
     int i,add_it;
     double roll,ratio;
-    
+
     add_it=0;
 
     if(mu<_current_chi){
@@ -176,7 +176,7 @@ void chain::add_point(array_1d<double> &pt, double mu){
             add_it=1;
         }
     }
-    
+
     if(add_it){
         _points.add_row(pt);
         _chisquared.add(mu);
@@ -199,7 +199,7 @@ void chain::add_point(array_1d<double> &pt, double mu){
             _chisquared.add(mu);
             _degeneracy.add(1);
         }
-        
+
         _current_degeneracy++;
     }
 }
@@ -239,11 +239,11 @@ void chain::write_chain(int dump){
     else{
         write(output_name,1);
     }
-    
+
     _total_written+=_points.get_rows();
-    
+
     int zeropt;
-    
+
     if(dump==1){
         _n_written=0;
         _points.reset_preserving_room();
@@ -257,18 +257,18 @@ void chain::write_chain(int dump){
         _chisquared.add(_current_chi);
         _degeneracy.add(1);
     }
-}    
-    
+}
 
-void chain::write(char *name, int append){  
-    
+
+void chain::write(char *name, int append){
+
     FILE *output;
     if(append==0){
         output=fopen(name,"w");
     }
     else{
         output=fopen(name,"a");
-    }  
+    }
     int i,j;
     for(i=_n_written;i<_points.get_rows();i++){
         fprintf(output,"%d %e ",_degeneracy.get_data(i),_chisquared.get_data(i));
@@ -278,7 +278,7 @@ void chain::write(char *name, int append){
         fprintf(output,"\n");
     }
     fclose(output);
-    
+
 }
 
 void chain::copy(const chain &in){
@@ -303,12 +303,12 @@ void chain::copy(const chain &in){
     for(i=0;i<letters;i++){
         _output_name_root[i]=in._output_name_root[i];
     }
-    
+
     _current_point.reset();
     for(i=0;i<in._current_point.get_dim();i++){
         _current_point.set(i,in._current_point.get_data(i));
     }
-    
+
     _points.set_cols(_dim);
     for(i=0;i<in._points.get_rows();i++){
         _degeneracy.set(i,in._degeneracy.get_data(i));
@@ -326,22 +326,22 @@ void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output){
 void chain::get_thinned_indices(int thinby, int burnin, array_1d<int> &output, int limit){
     output.reset_preserving_room();
     int ct,i,currentDegen,ctStart,total;
-    
+
     if(output.get_dim()!=0){
         printf("WARNING failed to reset output\n");
         exit(1);
     }
-    
+
     ct=0;
     for(i=0;i<_degeneracy.get_dim() && ct+_degeneracy.get_data(i)<burnin;i++){
         ct+=_degeneracy.get_data(i);
     }
-    
-    total=0;       
+
+    total=0;
     ctStart=ct;
     ct=thinby-(burnin-ctStart);
     ctStart=ct;
-     
+
     for(;i<_points.get_rows() && (limit<=0 || total<limit);i++){
         if(ct+_degeneracy.get_data(i)>=thinby){
             currentDegen=_degeneracy.get_data(i);
@@ -366,17 +366,17 @@ int chain::get_thinby(double threshold, int burnin, int step){
 int chain::get_thinby(double threshold, int burnin, int step, int limit){
     ///find the amount to thinby to achieve the specified threshold
     ///burnin is the number of points to discard
-    
+
     if(get_points()==0){
         return -1;
     }
-     
+
     array_1d<double> means,covars,vars;
     int i,j,ix,total;
     means.set_name("chain_get_thinby_means");
     covars.set_name("chain_get_thinby_covars");
     vars.set_name("chain_get_thinby_vars");
-    
+
     array_1d<int> dexes;
     dexes.set_name("chain_get_thinby_dexes");
 
@@ -384,22 +384,22 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
     for(i=0;i<_degeneracy.get_dim();i++){
         total+=_degeneracy.get_data(i);
     }
-   
+
     if(limit>0 && limit+burnin<total){
         total=limit+burnin;
-    } 
-    
+    }
+
     int thinby,thinbyBest,i1,i2,bestPts,maxDex,bestDex,repeats;
     double covarMax,covarMaxBest,mu,varMax,covRat,meanRat,meanVal;
-    
+
     thinbyBest=-1;
     covarMaxBest=2.0*exception_value;
     bestPts=0;
-    
+
     means.set_dim(_dim);
     vars.set_dim(_dim);
     covars.set_dim(_dim);
-    
+
     //printf("in get thinby total %d\n",total);
 
     for(thinby=step;(fabs(threshold-covarMaxBest)>0.1*threshold && covarMaxBest>threshold)
@@ -412,22 +412,22 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                means.add_val(j,_points.get_data(dexes.get_data(i),j));
            }
        }
-       
+
        for(i=0;i<_dim;i++){
            means.divide_val(i,double(dexes.get_dim()));
        }
-       
+
        vars.zero();
        for(i=0;i<dexes.get_dim();i++){
            for(j=0;j<_dim;j++){
                vars.add_val(j,power(means.get_data(j)-_points.get_data(dexes.get_data(i),j),2));
            }
        }
-       
+
        for(i=0;i<_dim;i++){
            vars.divide_val(i,double(dexes.get_dim()-1));
        }
-       
+
        repeats=0;
        covars.zero();
        for(i=0;i<dexes.get_dim()-1;i++){
@@ -438,13 +438,13 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                covars.add_val(j,(means.get_data(j)-_points.get_data(i1,j))*(means.get_data(j)-_points.get_data(i2,j)));
            }
        }
-       
+
        covarMax=-1.0;
        for(i=0;i<_dim;i++){
            if(dexes.get_dim()>2){
                covars.divide_val(i,double(dexes.get_dim()-2));
            }
-           
+
            mu=sqrt(fabs(covars.get_data(i)))/fabs(means.get_data(i));
            //mu=fabs(covars.get_data(i))/fabs(vars.get_data(i));
            if(mu>covarMax && !isnan(mu)){
@@ -455,29 +455,29 @@ int chain::get_thinby(double threshold, int burnin, int step, int limit){
                covarMax=mu;
                maxDex=i;
            }
-           
+
        }
-       
+
        //printf("    thinby %d covar %.3e %.3e -- %d %d %.3e %.3e %.3e\n",thinby,covarMax,meanVal,
        //dexes.get_dim(),repeats,varMax,covRat,meanRat);
-       
+
        if(thinbyBest<0 || covarMax<covarMaxBest){
            thinbyBest=thinby;
            covarMaxBest=covarMax;
            bestPts=dexes.get_dim();
            bestDex=maxDex;
        }
-       
+
     }
-    
+
     //printf("thinby %d best %e pts %d dex %d\n",thinbyBest,covarMaxBest,bestPts,bestDex);
-    
+
     if(thinbyBest<=0){
         thinbyBest = (total-burnin)/10;
     }
     //printf("    thinbyBest %d covarMaxBest %e\n",thinbyBest,covarMaxBest);
     return thinbyBest;
-    
+
 }
 
 
@@ -502,24 +502,24 @@ void arrayOfChains::initialize(int nChains, int dim, Ran *dice){
     _dim=dim;
     _n_chains=nChains;
     _dice=dice;
-    
+
     _data = new chain[_n_chains];
-    
+
     _independent_sample_dexes.set_name("arrayOfChains_independent_sample_dexes");
     _independent_samples.set_name("arrayOfChains_independent_samples");
     _independent_sample_weights.set_name("arrayOfChains_independent_sample_weights");
-    
+
     _contour_maxes.set_name("arrayOfChains_contour_maxes");
     _contour_mins.set_name("arrayOfChains_contour_mins");
-    
+
     int i;
     for(i=0;i<_n_chains;i++){
         _data[i].set_dim(_dim);
         _data[i].set_dice(_dice);
     }
-    
+
     _chisq_guess=-1.0;
-    
+
 }
 
 arrayOfChains::arrayOfChains(int nChains, int dim, Ran *dice){
@@ -532,7 +532,7 @@ int arrayOfChains::get_n_chains(){
 
 arrayOfChains::arrayOfChains(array_2d<double> &pts, array_1d<double> &chisq, Ran *dice){
     initialize(pts.get_rows(),pts.get_cols(),dice);
-    
+
     int i;
     for(i=0;i<_n_chains;i++){
         _data[i].add_point(pts(i)[0],chisq.get_data(i));
@@ -555,9 +555,9 @@ chain* arrayOfChains::operator()(int dex){
 void arrayOfChains::add(array_1d<double> &pt, double mu){
     chain *buffer;
     int i;
-    
+
     buffer=NULL;
-    
+
     if(_n_chains>0){
         buffer=new chain[_n_chains];
         for(i=0;i<_n_chains;i++){
@@ -570,19 +570,19 @@ void arrayOfChains::add(array_1d<double> &pt, double mu){
             printf("WARNING _n_chains is zero but data is not null\n");
             exit(1);
         }
-        
+
         _dim=pt.get_dim();
     }
-    
+
     _data=new chain[_n_chains+1];
-    
+
     if(buffer!=NULL){
         for(i=0;i<_n_chains;i++){
             _data[i].copy(buffer[i]);
         }
         delete [] buffer;
     }
-    
+
     _data[_n_chains].set_dim(_dim);
     _data[_n_chains].set_dice(_dice);
     _data[_n_chains].add_point(pt,mu);
@@ -592,9 +592,9 @@ void arrayOfChains::add(array_1d<double> &pt, double mu){
 void arrayOfChains::add(array_2d<double> &pts, array_1d<double> &mu){
     chain *buffer;
     int i;
-    
+
     buffer=NULL;
-    
+
     if(_n_chains>0){
         buffer=new chain[_n_chains];
         for(i=0;i<_n_chains;i++){
@@ -607,19 +607,19 @@ void arrayOfChains::add(array_2d<double> &pts, array_1d<double> &mu){
             printf("WARNING _n_chains is zero but data is not null\n");
             exit(1);
         }
-        
+
         _dim=pts.get_cols();
     }
-    
+
     _data=new chain[_n_chains+pts.get_rows()];
-    
+
     if(buffer!=NULL){
         for(i=0;i<_n_chains;i++){
             _data[i].copy(buffer[i]);
         }
         delete [] buffer;
     }
-    
+
     int j;
     for(i=0;i<pts.get_rows();i++){
         j=_n_chains+i;
@@ -627,7 +627,7 @@ void arrayOfChains::add(array_2d<double> &pts, array_1d<double> &mu){
         _data[j].set_dice(_dice);
         _data[j].add_point(pts(i)[0],mu.get_data(i));
     }
-    
+
     _n_chains+=pts.get_rows();
 }
 
@@ -635,9 +635,9 @@ void arrayOfChains::remove(int dex){
     verify_chains(dex,"remove");
     chain *buffer;
     buffer=NULL;
-    
+
     int i,j;
-    
+
     if(_n_chains>1){
         buffer=new chain[_n_chains-1];
         for(i=0,j=0;i<_n_chains;i++){
@@ -647,12 +647,12 @@ void arrayOfChains::remove(int dex){
             }
         }
     }
-    
+
     delete [] _data;
     _data=NULL;
-    
+
     _n_chains--;
-    
+
     if(buffer!=NULL){
         _data=new chain[_n_chains];
         for(i=0;i<_n_chains;i++){
@@ -660,7 +660,7 @@ void arrayOfChains::remove(int dex){
         }
         delete [] buffer;
     }
-    
+
 }
 
 int arrayOfChains::get_points(){
@@ -676,7 +676,7 @@ int arrayOfChains::get_thinby(double threshold, double burninDenom){
 
     int i,thinby,thinbyMax,burnin;
     int step,total;
-    
+
     thinbyMax=-1;
     for(i=0;i<_n_chains;i++){
         if(burninDenom>1){
@@ -685,7 +685,7 @@ int arrayOfChains::get_thinby(double threshold, double burninDenom){
         else{
             burnin=0;
         }
-        
+
         total=_data[i].get_points();
         if(total-burnin<=100){
             step=(total-burnin)/20;
@@ -693,28 +693,28 @@ int arrayOfChains::get_thinby(double threshold, double burninDenom){
         else{
             step=10;
         }
-        
+
         if(step==0)step=10;
-        
+
         thinby=_data[i].get_thinby(threshold,burnin,step);
-        
+
         if(thinby>thinbyMax){
             thinbyMax=thinby;
         }
     }
-    
+
     return thinbyMax;
 }
 
 void arrayOfChains::get_covariance_matrix(array_2d<double> &covar){
-    
+
     int iChain,iRow,total_points,i;
-    
+
     array_1d<double> means;
     means.set_name("arrayOfChains_get_covar_means");
     means.set_dim(_dim);
     means.zero();
-    
+
     total_points=0;
     for(iChain=0;iChain<_n_chains;iChain++){
         for(iRow=0;iRow<_data[iChain].get_rows();iRow++){
@@ -724,16 +724,16 @@ void arrayOfChains::get_covariance_matrix(array_2d<double> &covar){
             total_points+=_data[iChain].get_degeneracy(iRow);
         }
     }
-    
+
     for(i=0;i<_dim;i++){
         means.divide_val(i,double(total_points));
     }
-    
-    
+
+
     covar.reset();
     covar.set_dim(_dim,_dim);
     covar.zero();
-    
+
     int ix,iy;
     for(iChain=0;iChain<_n_chains;iChain++){
         for(iRow=0;iRow<_data[iChain].get_rows();iRow++){
@@ -746,8 +746,8 @@ void arrayOfChains::get_covariance_matrix(array_2d<double> &covar){
             }
         }
     }
-    
-    
+
+
     for(ix=0;ix<_dim;ix++){
         for(iy=ix;iy<_dim;iy++){
             covar.divide_val(ix,iy,double(total_points-1));
@@ -763,15 +763,15 @@ void arrayOfChains::use_all(int burnin, int limit){
     _independent_sample_dexes.reset();
     _independent_samples.reset();
     _independent_sample_weights.reset();
-    
+
     int i,total,burned,j;
     int iChain,toburn,touse;
-    
+
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_use_all_temp_dexes");
-    
+
     printf("burn %d lim %d\n",burnin,limit);
-    
+
     for(iChain=0;iChain<_n_chains;iChain++){
         temp_dexes.reset_preserving_room();
         total=0;
@@ -789,38 +789,38 @@ void arrayOfChains::use_all(int burnin, int limit){
                 burned=burnin;
                 total=touse;
             }
-            
+
             //printf("burned %d\n",burned);
         }
-        
+
         //printf("total %d %d %d\n",total,i,_data[iChain].get_rows());
-        
+
         for(;i<_data[iChain].get_rows() && (limit<=0 || total<limit);i++){
 
             total+=_data[iChain].get_degeneracy(i);
             temp_dexes.add(i);
             _independent_sample_weights.add(double(_data[iChain].get_degeneracy(i)));
         }
-        
+
         _independent_sample_dexes.add_row(temp_dexes);
-        
+
     }
-    
+
     printf("ind rows %d\n",_independent_sample_dexes.get_rows());
 }
 
 void arrayOfChains::get_independent_samples(double threshold, int burnin, int limit){
-    
+
     _independent_sample_dexes.reset();
     _independent_samples.reset();
     _independent_sample_weights.reset();
-    
+
     printf("getting independent samples\n");
-    
+
     int ic;
     int thinby,thinbyMax;
     int total, step;
-    
+
     thinbyMax=-1;
     for(ic=0;ic<_n_chains;ic++){
         total=_data[ic].get_points();
@@ -830,22 +830,22 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
         else{
             step=10;
         }
-        
+
         if(step==0){
             step=10;
         }
-    
+
         thinby=_data[ic].get_thinby(threshold,burnin,step,limit);
         if(thinby>thinbyMax){
             thinbyMax=thinby;
         }
     }
-    
+
     printf("thinning by %d\n",thinbyMax);
 
     int iw;
 
-    total=0;    
+    total=0;
     array_1d<int> temp_dexes;
     temp_dexes.set_name("arrayOfChains_temp_dexes");
     for(ic=0;ic<_n_chains;ic++){
@@ -856,16 +856,16 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
         }
         total+=temp_dexes.get_dim();
     }
-    
+
     array_1d<double> means,vars,covars;
     means.set_name("arrayOfChains_get_independent_samples_means");
     vars.set_name("arrayOfChains_get_independent_samples_vars");
     covars.set_name("arrayOfChains_get_independent_samples_covars");
-    
+
     means.set_dim(_dim);
     vars.set_dim(_dim);
     covars.set_dim(_dim);
-    
+
     int i,j,dex;
     for(ic=0;ic<_independent_sample_dexes.get_rows();ic++){
         for(i=0;i<_independent_sample_dexes.get_cols(ic);i++){
@@ -875,13 +875,13 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
             }
         }
     }
-    
+
     for(i=0;i<_dim;i++){
         means.divide_val(i,double(total));
     }
-    
+
     int dex2,covarTotal;
-    
+
     covarTotal=0;
     for(ic=0;ic<_independent_sample_dexes.get_rows();ic++){
         for(i=0;i<_independent_sample_dexes.get_cols(ic);i++){
@@ -899,7 +899,7 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
             }
         }
     }
-    
+
     double covarMax=-1.0;
     for(i=0;i<_dim;i++){
         vars.divide_val(i,double(total-1));
@@ -909,8 +909,8 @@ void arrayOfChains::get_independent_samples(double threshold, int burnin, int li
             covarMax=fabs(covars.get_data(i));
         }
     }
-    
-    
+
+
     printf("%d independent samples -- covar in time %e\n",total,covarMax);
 }
 
@@ -919,9 +919,9 @@ void arrayOfChains::_get_full_independent_samples(){
         printf("WARNING cannot get full independent samples; there are no dexes\n");
         exit(1);
     }
-    
+
     _independent_samples.set_cols(_dim);
-    
+
     int ic,ip,ix,row,dex;
     row=0;
     for(ic=0;ic<_n_chains;ic++){
@@ -933,7 +933,7 @@ void arrayOfChains::_get_full_independent_samples(){
             row++;
         }
     }
-    
+
     printf("set row %d\n",row);
     _density.set_data(&_independent_samples, _independent_sample_weights);
 }
@@ -947,7 +947,7 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
     R.reset();
     V.reset();
     W.reset();
-    
+
     R.set_dim(_dim);
     V.set_dim(_dim);
     W.set_dim(_dim);
@@ -955,29 +955,29 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
     array_1d<double> BoverN,totalMean;
     BoverN.set_name("arrayOfChains_calculate_R_BoverN");
     totalMean.set_name("arrayOfChains_calculate_R_totalMean");
-    
+
     array_2d<double> chainMean;
     chainMean.set_name("arrayOfChains_calculate_R_chainMean");
-    
+
     int ix,ic,ip;
     for(ix=0;ix<_dim;ix++){
         BoverN.set(ix,0.0);
         totalMean.set(ix,0.0);
         W.set(ix,0.0);
     }
-    
+
     chainMean.set_dim(_n_chains,_dim);
     for(ic=0;ic<_n_chains;ic++){
         for(ix=0;ix<_dim;ix++){
             chainMean.set(ic,ix,0.0);
         }
     }
-    
+
     int totalPts,dex;
-    
-    
+
+
     totalPts=0;
-    
+
     for(ic=0;ic<_n_chains;ic++){
         for(ip=0;ip<_independent_sample_dexes.get_cols(ic);ip++){
             totalPts++;
@@ -991,18 +991,18 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
             chainMean.divide_val(ic,ix,double(_independent_sample_dexes.get_cols(ic)));
         }
     }
-    
+
     for(ix=0;ix<_dim;ix++){
         totalMean.divide_val(ix,double(totalPts));
     }
-    
+
     for(ix=0;ix<_dim;ix++){
         for(ic=0;ic<_n_chains;ic++){
             BoverN.add_val(ix,power(chainMean.get_data(ic,ix)-totalMean.get_data(ix),2));
         }
         BoverN.divide_val(ix,double(_n_chains-1));
     }
-    
+
     double mu;
     for(ix=0;ix<_dim;ix++){
         for(ic=0;ic<_n_chains;ic++){
@@ -1016,14 +1016,14 @@ void arrayOfChains::calculate_R(array_1d<double> &R, array_1d<double> &V, array_
         }
         W.divide_val(ix,double(_n_chains));
     }
-    
+
     double nn;
     nn=0.0;
     for(ic=0;ic<_n_chains;ic++){
         nn+=double(_independent_sample_dexes.get_cols(ic));
     }
     nn=nn/double(_n_chains);
-    
+
     double sigmaPlus;
     for(ix=0;ix<_dim;ix++){
         sigmaPlus=(nn-1.0)*W.get_data(ix)/nn + BoverN.get_data(ix);
@@ -1038,15 +1038,15 @@ void arrayOfChains::plot_chisquared_histogram(int limit, double min, double max,
     int iChain,i;
     double cc,mu;
     int dex;
-    
+
     array_1d<int> counts;
-    
+
     for(cc=min;cc<=max;cc+=dx){
         counts.add(0);
     }
-    
+
     printf("in histogram limit %d\n",limit);
-    
+
     globalTotal=0;
     for(iChain=0;iChain<_n_chains;iChain++){
         total=0;
@@ -1054,20 +1054,20 @@ void arrayOfChains::plot_chisquared_histogram(int limit, double min, double max,
             total+=_data[iChain].get_degeneracy(i);
             globalTotal+=_data[iChain].get_degeneracy(i);
             cc=_data[iChain].get_chisquared(i);
-            
+
             mu=(cc-min)/dx;
             dex=int(mu);
-            
+
             if(mu-1.0*dex>0.5){
                 dex++;
             }
-            
+
             if(dex>counts.get_dim()-1){
                 dex=counts.get_dim()-1;
             }
-            
+
             counts.add_val(dex,_data[iChain].get_degeneracy(i));
-            
+
         }
     }
 
@@ -1095,7 +1095,7 @@ double arrayOfChains::get_chimin(){
             }
         }
     }
-    
+
     return chimin;
 }
 
@@ -1106,23 +1106,23 @@ void arrayOfChains::_get_contour_bounds(){
     }
     array_1d<double> chisq_list,chisq_list_sorted;
     array_1d<int> dexes;
-    
+
     _contour_mins.reset();
     _contour_maxes.reset();
-    
+
     chisq_list.set_name("arrayOfChains_get_chisq_guess_chisq_list");
     chisq_list_sorted.set_name("arrayOfChains_get_chisq_guess_sorted");
     dexes.set_name("arrayOfChains_get_chisq_guess_dexes");
-    
+
     int i,j,dex;
-    
+
     for(i=0;i<_dim;i++){
         _contour_maxes.set(i,-2.0*exception_value);
         _contour_mins.set(i,2.0*exception_value);
     }
-    
+
     double total,mu;
-    
+
     total=0.0;
     dex=0;
     for(i=0;i<_independent_sample_dexes.get_rows();i++){
@@ -1141,13 +1141,13 @@ void arrayOfChains::_get_contour_bounds(){
     sum=0.0;
     for(i=0;i<chisq_list_sorted.get_dim() && sum<0.68*total;i++){
         sum+=exp(-0.5*chisq_list_sorted.get_data(i))*_independent_sample_weights.get_data(dexes.get_data(i));
-        
+
         dex=dexes.get_data(i);
         for(ix=0;ix<_dim;ix++){
             if(_independent_samples.get_data(dex,ix)<_contour_mins.get_data(ix)){
                 _contour_mins.set(ix,_independent_samples.get_data(dex,ix));
             }
-            
+
             if(_independent_samples.get_data(dex,ix)>_contour_maxes.get_data(ix)){
                 _contour_maxes.set(ix,_independent_samples.get_data(dex,ix));
             }
@@ -1161,35 +1161,35 @@ void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoo
         printf("WARNING cannot plot contours; no independent samples\n");
         exit(1);
     }
-    
+
     if(_independent_samples.get_rows()==0){
         _get_full_independent_samples();
     }
-    
+
     if(_contour_maxes.get_dim()==0){
         _get_contour_bounds();
     }
-    
+
     double dx,dy;
     double xmax,xmin,ymax,ymin;
     int i,j,dex;
-    
-    
-    
+
+
+
     dx=(_contour_maxes.get_data(ix)-_contour_mins.get_data(ix))/200.0;
     dy=(_contour_maxes.get_data(iy)-_contour_mins.get_data(iy))/200.0;
-    
+
     printf("printing %d %e %d %e\n",ix,dx,iy,dy);
-    
+
     char boundaryName[2*letters],scatterName[2*letters];
     sprintf(boundaryName,"%s_%d_%d_contour.txt",nameRoot,ix,iy);
     sprintf(scatterName,"%s_%d_%d_scatter.txt",nameRoot,ix,iy);
-    
-    
-    
+
+
+
     _density.plot_density(ix,dx,iy,dy,fraction,scatterName,3);
     _density.plot_boundary(ix,dx,iy,dy,fraction,boundaryName,3);
-    
+
 }
 
 int arrayOfChains::get_n_samples(){
@@ -1203,7 +1203,7 @@ double arrayOfChains::get_sample(int dex, int ix){
 double arrayOfChains::acceptance_rate(){
     int ct,rows;
     int i,j;
-    
+
     ct=0;
     rows=0;
     for(i=0;i<_n_chains;i++){
@@ -1212,7 +1212,7 @@ double arrayOfChains::acceptance_rate(){
             ct+=_data[i].get_degeneracy(j);
         }
     }
-    
+
     return double(rows)/double(ct);
 }
 
@@ -1221,7 +1221,7 @@ void arrayOfChains::acceptance_statistics(int burnin, int limit){
     double mean,var;
     int max,nOver5,nOver10;
     int total,burned,startRow,rowCt;
-    
+
     for(iChain=0;iChain<_n_chains;iChain++){
         total=0;
         burned=0;
@@ -1231,13 +1231,13 @@ void arrayOfChains::acceptance_statistics(int burnin, int limit){
         nOver5=0;
         nOver10=0;
         rowCt=0;
-        
+
         for(iRow=0;iRow<_data[iChain].get_rows() && burned<burnin; iRow++){
             burned+=_data[iChain].get_degeneracy(iRow);
         }
-        
+
         startRow=iRow;
-        
+
         for(;iRow<_data[iChain].get_rows() && (limit<=0 || total<limit); iRow++){
             total+=_data[iChain].get_degeneracy(iRow);
             degen=_data[iChain].get_degeneracy(iRow);
@@ -1245,21 +1245,21 @@ void arrayOfChains::acceptance_statistics(int burnin, int limit){
             if(degen>max){
                 max=degen;
             }
-            
+
             if(degen>5){
                 nOver5++;
             }
-            
+
             if(degen>10){
                 nOver10++;
             }
-            
+
             rowCt++;
 
         }
-        
+
         mean=mean/double(rowCt);
-        
+
         total=0;
         rowCt=0;
         for(iRow=startRow;iRow<_data[iChain].get_rows() && (limit<=0 || total<limit); iRow++){
@@ -1268,11 +1268,11 @@ void arrayOfChains::acceptance_statistics(int burnin, int limit){
             rowCt++;
         }
         var=var/double(rowCt-1);
-        
+
         printf("chain %d\n",iChain);
         printf("mean %e var %e sqrt(var) %e\n",mean,var,sqrt(var));
         printf("max %d nOver5 %d nOver10 %d\n\n",max,nOver5,nOver10);
-        
+
     }
-    
+
 }

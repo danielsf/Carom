@@ -59,7 +59,7 @@ for(i=1;i<iargc;i++){
                     nameroot[j]=argv[i][j];
                 }
                 nameroot[j]=0;
-                break;    
+                break;
         }
     }
 }

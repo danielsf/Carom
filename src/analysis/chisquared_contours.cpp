@@ -7,14 +7,14 @@ int get_dex(double value, double min, double dx){
         ii++;
         test+=dx;
     }
-    
+
     if(ii==0) return ii;
-    
+
     if(test-value>0.5*dx){
         ii--;
     }
     return ii;
-    
+
 }
 
 int main(int iargc, char *argv[]){
@@ -25,12 +25,12 @@ int main(int iargc, char *argv[]){
     int dim;
     char input_name[letters],output_root[letters];
     double chisquared_target;
-    
+
     array_1d<int> ix, iy;
     ix.set_name("ix");
     iy.set_name("iy");
-    
-    
+
+
     for(i=1; i<iargc; i++){
         if(argv[i][0]=='-'){
             switch(argv[i][1]){
@@ -79,7 +79,7 @@ int main(int iargc, char *argv[]){
 
     array_1d<double> vv;
     vv.set_name("vv");
-    
+
     char word[letters];
     double mu;
     array_1d<double> min,max;
@@ -87,18 +87,18 @@ int main(int iargc, char *argv[]){
     min.set_name("xmin");
     max.set_name("xmax");
     dx.set_name("dx");
-    
+
     FILE *input;
-    
+
     array_2d<double> raw_points;
     raw_points.set_name("raw_points");
     raw_points.set_cols(dim);
-    
+
     for(i=0;i<dim;i++){
         min.set(i,2.0*exception_value);
         max.set(i,-2.0*exception_value);
     }
-    
+
     input=fopen(input_name,"r");
     for(i=0;i<dim+5;i++){
         fscanf(input,"%s",word);
@@ -109,7 +109,7 @@ int main(int iargc, char *argv[]){
             fscanf(input, "%le",&mu);
             vv.set(i,mu);
         }
-        
+
         fscanf(input,"%le",&mu);
         if(mu<=chisquared_target){
             raw_points.add_row(vv);
@@ -122,21 +122,21 @@ int main(int iargc, char *argv[]){
                 }
             }
         }
-        
+
         for(i=0;i<3;i++)fscanf(input,"%d",&j);
     }
     fclose(input);
-    
+
     printf("raw_points %d %e\n",raw_points.get_rows(),chisquared_target);
-    
+
     for(i=0;i<dim;i++){
         dx.set(i,(max.get_data(i)-min.get_data(i))/double(resolution));
     }
-    
+
     FILE *output;
-    
+
     char output_name[2*letters];
-    
+
     int ii;
     int xdex,ydex;
     int _ix, _iy;
@@ -152,16 +152,16 @@ int main(int iargc, char *argv[]){
     for(ii=0;ii<ix.get_dim();ii++){
         points.reset_preserving_room();
         boundary.reset_preserving_room();
-    
+
         xdex=ix.get_data(ii);
         ydex=iy.get_data(ii);
-        
+
         has_been_plotted.zero();
-        
+
         for(i=0;i<raw_points.get_rows();i++){
             _ix=get_dex(raw_points.get_data(i,xdex),min.get_data(xdex),dx.get_data(xdex));
             _iy=get_dex(raw_points.get_data(i,ydex),min.get_data(ydex),dx.get_data(ydex));
-            
+
             if(has_been_plotted.get_data(_ix,_iy)==0){
                 has_been_plotted.set(_ix,_iy,1);
                 j=points.get_rows();
@@ -169,7 +169,7 @@ int main(int iargc, char *argv[]){
                 points.set(j,1,min.get_data(ydex)+_iy*dx.get_data(ydex));
             }
         }
-        
+
         convert_to_boundary(points,dx.get_data(xdex),dx.get_data(ydex),boundary);
         sprintf(output_name,"%s_cc%.2f_%d_%d.txt",output_root,chisquared_target,xdex,ydex);
         output=fopen(output_name,"w");

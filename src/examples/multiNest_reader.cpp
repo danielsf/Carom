@@ -85,7 +85,7 @@ while(fscanf(input,"%le",&mu)>0){
     for(i=0;i<dim;i++){
         fscanf(input,"%le",&mu);
         vv.set(i,mu);
-        
+
         if(mu<mins.get_data(i))mins.set(i,mu);
         if(mu>maxes.get_data(i))maxes.set(i,mu);
     }
@@ -111,10 +111,10 @@ char outname[2*letters];
 for(i=0;i<xdexes.get_dim();i++){
     ix=xdexes.get_data(i);
     iy=ydexes.get_data(i);
-    
+
     dx=pixelFactor*(maxes.get_data(ix)-mins.get_data(ix));
     dy=pixelFactor*(maxes.get_data(iy)-mins.get_data(iy));
-    
+
     sprintf(outname,"%s_%d_%d_contour.txt",outNameRoot,ix,iy);
     density.plot_boundary(ix,dx,iy,dy,confidenceLimit,outname,3);
     printf("plotted %d %e %d %e\n",ix,dx,iy,dy);

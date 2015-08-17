@@ -29,10 +29,10 @@ double check_inversion(array_2d<double> &m, array_2d<double> &min){
 	if(m.get_rows()!=m.get_cols() || m.get_rows()!=min.get_rows() || min.get_rows()!=min.get_cols()){
 	    printf("WARING you passed %d by %d and %d by %d to check_inversion\n",
 	    m.get_rows(),m.get_cols(),min.get_rows(),min.get_cols());
-	    
+	
 	    m.print_name();
 	    min.print_name();
-	    
+	
 	    exit(1);
 	}
 	
@@ -45,16 +45,16 @@ double check_inversion(array_2d<double> &m, array_2d<double> &min){
 	       for(k=0;k<m.get_rows();k++){
 	           nn+=m.get_data(i,k)*min.get_data(k,j);
 	       }
-	       
+	
 	       if(i==j)err=fabs(1.0-nn);
 	       else{
 	           err=fabs(nn);
 	       }
-	       
+	
 	       if(err>maxerr)maxerr=err;
-	       
+	
 	    }
-	} 
+	}
 	
 	return maxerr;
 
@@ -160,9 +160,9 @@ void invert_lapack(array_2d<double> &matin, array_2d<double> &min, int verb){
 	if(matin.get_rows()!=matin.get_cols()){
 	    printf("WARNING did not pass a symmetric matrix to invert_lapack %d %d\n",
 	    matin.get_rows(),matin.get_cols());
-	    
+	
 	    matin.print_name();
-	    
+	
 	    exit(1);
 	}
 	
@@ -237,29 +237,29 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
 void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<double> &values, double check){
     int ix,iy;
     int batch1=matrix.get_rows()/2;
-    
+
     vectors.set_cols(matrix.get_cols());
     values.set_dim(matrix.get_cols());
-    
+
     array_1d<double> temp_vals;
     temp_vals.set_name("eval_symm_temp_vals");
     array_2d<double> buffer;
     buffer.set_name("eval_symm_buffer");
     buffer.set_cols(matrix.get_cols());
-    
+
     eval_symm_guts(matrix,buffer,temp_vals,batch1,matrix.get_cols(),1,-1.0);
-    
+
     for(ix=0;ix<batch1;ix++){
         values.set(batch1-1-ix,temp_vals.get_data(ix));
         for(iy=0;iy<matrix.get_cols();iy++){
             vectors.set(batch1-1-ix,iy,buffer.get_data(iy,ix));
         }
     }
-    
+
     int batch2=matrix.get_cols()-batch1;
-    
+
     eval_symm_guts(matrix,buffer,temp_vals,batch2,matrix.get_cols(),-1,-1.0);
-    
+
     for(ix=0;ix<batch2;ix++){
         values.set(matrix.get_cols()-1-ix,temp_vals.get_data(ix));
         for(iy=0;iy<matrix.get_cols();iy++){
@@ -267,7 +267,7 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
         }
     }
 
-    
+
     int i,j,k;
     array_1d<double> test,control;
     double dotproduct,err;
@@ -278,7 +278,7 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
             for(j=0;j<matrix.get_cols();j++){
                 control.set(j,vectors.get_data(i,j));
             }
-          
+
             for(j=0;j<matrix.get_cols();j++){
                 test.set(j,0.0);
                 for(k=0;k<matrix.get_cols();k++){
@@ -292,7 +292,7 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
             for(j=0;j<matrix.get_cols();j++){
                 dotproduct+=test.get_data(j)*control.get_data(j);
             }
-          
+
             err=fabs(fabs(dotproduct)-1.0);
 
             if(err>check){
@@ -304,7 +304,7 @@ void eval_symm(array_2d<double> &matrix, array_2d<double> &vectors, array_1d<dou
                 throw -1;
             }
         }
-      
+
     }
 }
 
@@ -333,48 +333,48 @@ int nev, int n, int order, double check){
  double *workd;
  int lworkl;
  double *workl;
- 
+
  int rvec=1;
  char howmny='A';
  int *select;
  double *d;
  double *z;
  int ldz;
- 
+
  int i,j,k,l;
  double junk,sigma;
- 
+
  if(3*nev<n)ncv=3*nev;
  else ncv=n;
- 
+
  lworkl=ncv*(ncv+8);
- 
+
  if(order>0){
   which[0]='L';
  }
  else which[0]='S';
  which[1]='M';
- 
+
  resid=new double[n];
  v=new double[n*ncv];
  workd=new double[3*n];
  workl=new double[lworkl];
- 
+
  select=new int[ncv];
  d=new double[nev];
  z=new double[n*nev];
  ldz=n;
- 
+
  iparam[0]=1;
  iparam[2]=3000;
  iparam[6]=1;
  iparam[3]=1;
- 
+
  while(ido<97){
  dsaupd_(&ido,&bmat,&n,which,&nev,&tol,resid,&ncv,v,&ldv,iparam,ipntr,workd,workl,&lworkl,&info);
- 
+
  //printf("ido %d ipntr0 %d ipntr1 %d\n",ido,ipntr[0],ipntr[1]);
- 
+
   if(ido==1 || ido==-1){
    for(i=0;i<n;i++){
      workd[ipntr[1]+i-1]=0.0;
@@ -396,11 +396,11 @@ int nev, int n, int order, double check){
   }
  }
  if(info!=0){
-     
+
      /*printf("after dsaupd info is %d ido %d ncv %d n %d\n",info,ido,ncv,n);
      printf("iterations %d n %d\n",iparam[2],n);
      printf("iparam5 %d\n",iparam[4]);*/
-     
+
      delete [] resid;
      delete [] v;
      delete [] workd;
@@ -408,7 +408,7 @@ int nev, int n, int order, double check){
      delete [] select;
      delete [] d;
      delete [] z;
-     
+
      throw -1;
  }
 /* for(i=0;i<ncv;i++){
@@ -416,17 +416,17 @@ int nev, int n, int order, double check){
  }
  printf("\n");*/
  dseupd_(&rvec,&howmny,select,d,z,&ldz,&sigma,&bmat,&n,which,&nev,&tol,resid,&ncv,v,&ldv,iparam,ipntr,workd,workl,&lworkl,&info);
- 
+
  if(info!=0){
-    
+
     /*
     printf("after dseupd info is %d ipntr7 %d n %d\n",info,ipntr[7],n);
- 
+
     for(i=0;i<ncv;i++){
        printf("ritzvalue %e\n",workl[ipntr[7]+i]);
     }
     printf("\n");*/
-    
+
     delete [] resid;
     delete [] v;
     delete [] workd;
@@ -434,20 +434,20 @@ int nev, int n, int order, double check){
     delete [] select;
     delete [] d;
     delete [] z;
-    
+
     throw -1;
  }
    for(i=0;i<nev;i++){
     vals.set(i,d[i]);
     //printf("eval%d is %e\n",i,d[i]);
    }
- 
+
  for(i=0;i<nev;i++){
   for(j=0;j<n;j++){
    vecs.set(j,i,z[i*n+j]);
   }
  }
- 
+
  delete [] resid;
  delete [] v;
  delete [] workd;
@@ -455,14 +455,14 @@ int nev, int n, int order, double check){
  delete [] select;
  delete [] d;
  delete [] z;
- 
+
   for(i=0;i<nev;i++){
       if(isnan(vals.get_data(i))){
           //printf("WARNING nan eval\n");
           throw -1;
       }
   }
-  
+
   for(i=0;i<nev;i++){
       for(j=0;j<n;j++){
           if(isnan(vecs.get_data(j,i))){
@@ -471,7 +471,7 @@ int nev, int n, int order, double check){
           }
       }
   }
-  
+
   array_1d<double> test,control;
   double dotproduct,err;
   test.set_name("eval_symm_test");
@@ -481,7 +481,7 @@ int nev, int n, int order, double check){
           for(j=0;j<n;j++){
               control.set(j,vecs.get_data(j,i));
           }
-          
+
           for(j=0;j<n;j++){
               test.set(j,0.0);
               for(k=0;k<n;k++){
@@ -495,17 +495,17 @@ int nev, int n, int order, double check){
           for(j=0;j<n;j++){
               dotproduct+=test.get_data(j)*control.get_data(j);
           }
-          
+
           err=fabs(fabs(dotproduct)-1.0);
-          
+
           if(err>check){
               printf("err %e val %e\n",err,vals.get_data(i));
               throw -1;
           }
       }
-      
+
   }
-  
+
 }
 
 
@@ -513,36 +513,36 @@ int nev, int n, int order, double check){
 double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambda, int n){
  int i,j,k,l;
  double err,maxerr=-1.0,ans;
- 
+
  double *vans;
- 
+
  //vans=new double[n];
- 
+
  //printf("checking %e %e %e\n",vec[0],vec[1],vec[2]);
- 
+
  for(i=0;i<n;i++){
   ans=0.0;
   for(j=0;j<n;j++){
    ans+=matrix.get_data(i,j)*vec.get_data(j);
   }
-  
+
   //printf("%e %e\n",ans/lambda,vec[i]);
-  
+
   ans=ans/lambda;
   err=fabs(ans-vec.get_data(i));
   if(vec.get_data(i)!=0.0)err=err/fabs(vec.get_data(i));
 
   if(err>maxerr)maxerr=err;
 
-  
-  
+
+
  }
- 
- 
+
+
  //if(maxerr<0)printf("lambda is %e\n",lambda);
- 
+
  //delete [] vans;
- 
+
  return maxerr;
 
 }
@@ -550,7 +550,7 @@ double eigen_check(array_2d<double> &matrix, array_1d<double> &vec, double lambd
 double eigen_check_open(double **matrix, double *vec, int n){
  int i,j,k,l;
  double err,maxerr=-1.0,ans,lambda=-1.0e20;
- 
+
  for(i=0;i<n;i++){
   ans=0.0;
   for(j=0;j<n;j++){
@@ -558,20 +558,20 @@ double eigen_check_open(double **matrix, double *vec, int n){
   }
   if(fabs(vec[i])>0.0){
     if(lambda<-1.0e19)lambda=ans/vec[i];
-    
+
     err=fabs((ans/vec[i]-lambda)/lambda);
     if(err>maxerr)maxerr=err;
-  
-  
+
+
   }
-  
+
  // if(maxerr<0.0)printf("err in code %e\n",err);
-  
-  
+
+
  }
- 
+
  //if(maxerr<0)printf("lambda is %e\n",lambda);
- 
+
  printf("lambda is %e\n",lambda);
  return maxerr;
 
@@ -584,7 +584,7 @@ double *dm,*matrix;
 char uplo,order,range,side,trans;
 int info,lda,lwork,n,ldz,ldc;
 int il,iu,m,nsplit;
-double *d, *e, *tau, *work, *z, *c,*w; 
+double *d, *e, *tau, *work, *z, *c,*w;
 double abstol,vl,vu;
 double *vec1,*vec2;
 int *iblock, *isplit, *iwork,*ifail;
@@ -737,79 +737,79 @@ delete [] ifail;
 }
 
 void solve_lapack_nbyn(array_2d<double> &mm, array_1d<double> &yy, array_1d<double> &xx){
-    
+
     if(yy.get_dim()!=mm.get_rows()){
         printf("WARNNG in solve_lapack yy dim %d mm rows %d\n",
 	yy.get_dim(),mm.get_rows());
 	
 	exit(1);
     }
-    
+
     if(mm.get_rows()!=mm.get_cols()){
         printf("WARNING cannot solve non square matrix %d %d\n",
 	mm.get_rows(),mm.get_cols());
 	
 	exit(1);
     }
-    
+
     double *aa;
     int m,n,lda,*ipiv,info;
-    
+
     aa=new double[mm.get_rows()*mm.get_cols()];
-    
+
     int i,j;
     if(mm.get_rows()<mm.get_cols())i=mm.get_rows()+1;
     else i=mm.get_cols()+1;
-    
+
     ipiv=new int[i];
-    
+
     info=0;
     m=mm.get_rows();
     n=mm.get_cols();
     lda=m;
-    
+
     for(i=0;i<mm.get_rows();i++){
         for(j=0;j<mm.get_cols();j++){
 	    aa[j*mm.get_rows()+i]=mm.get_data(i,j);
 	}
     }
-    
+
     dgetrf_(&m,&n,aa,&lda,ipiv,&info);
     if(info!=0){
         printf("WARNING in solve lapack info %d after dgetrf\n",info);
 	exit(1);
     }
-    
+
     int nrhs,ldb;
     double *bb;
     char *T;
-    
+
     bb=new double[mm.get_rows()];
-    
+
     for(i=0;i<mm.get_rows();i++){
         bb[i]=yy.get_data(i);
     }
-    
+
     nrhs=1;
     ldb=mm.get_rows();
-    
+
     T=new char[1];
     T[0]='N';
-    
+
     dgetrs_(T,&n,&nrhs,aa,&lda,ipiv,bb,&ldb,&info);
-    
+
     if(info!=0){
         printf("WARNING in solve lapack info %d after dgetrs\n",info);
 	exit(1);
     }
-    
+
     for(i=0;i<mm.get_rows();i++){
         xx.set(i,bb[i]);
     }
-    
+
     delete [] bb;
     delete [] aa;
     delete [] ipiv;
     delete [] T;
-    
+
 }

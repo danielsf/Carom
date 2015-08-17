@@ -113,7 +113,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
        if(allPointsTree!=NULL){
            delete allPointsTree;
            allPointsTree=NULL;
-       } 
+       }
        if(boundaryPointsTree!=NULL){
            delete boundaryPointsTree;
            boundaryPointsTree=NULL;
@@ -125,58 +125,58 @@ for(ii=0;ii<xdexes.get_dim();ii++){
        dexes.reset_preserving_room();
        chival.reset_preserving_room();
        chival_sorted.reset_preserving_room();
-       
+
        for(i=0;i<dim;i++){
            trial.set(i,true_center.get_data(i));
        }
-       
+
 
        dx=4.0*widths.get_data(ix)/double(dd/2);
        dy=4.0*widths.get_data(iy)/double(dd/2);
-       
+
        xmin=true_center.get_data(ix)-(dd/2)*dx;
        xmax=true_center.get_data(ix)+(dd/2)*dx;
-       
+
        ymin=true_center.get_data(iy)-(dd/2)*dy;
        ymax=true_center.get_data(iy)+(dd/2)*dy;
 
        if(ix==0 && iy==1){
            dx=widths.get_data(1)*4.0/double(dd/2);
            dy=widths.get_data(1)*4.0/double(dd/2);
-           
+
            xmin=2.0*exception_value;
            xmax=-2.0*exception_value;
            ymin=2.0*exception_value;
            ymax=-2.0*exception_value;
-           
+
            for(theta=-4.0*angularWidth;theta<4.0*angularWidth;theta+=0.01){
                for(rval=radiusOfCurvature-(dd/2)*dx;rval<radiusOfCurvature+(dd/2)*dx;rval+=dx){
                    xval=curvature_center.get_data(0)+rval*(
                         radial_direction.get_data(0)*cos(theta)-
                         radial_direction.get_data(1)*sin(theta));
-               
+
                    yval=curvature_center.get_data(1)+rval*(
                         radial_direction.get_data(0)*sin(theta)+
                         radial_direction.get_data(1)*cos(theta));
-               
+
                    if(xval<xmin)xmin=xval;
                    if(xval>xmax)xmax=xval;
                    if(yval<ymin)ymin=yval;
                    if(yval>ymax)ymax=yval;
                }
            }
-       
+
            dy=(ymax-ymin)/double(400);
            dx=(xmax-xmin)/double(400);
-       
+
            globalXmin=xmin;
            globalXmax=xmax;
            globalYmin=ymin;
            globalYmax=ymax;
-           
+
            globalDx=dx;
            globalDy=dy;
-       
+
        }
        else if(ix==0){
            xmin=globalXmin;
@@ -188,19 +188,19 @@ for(ii=0;ii<xdexes.get_dim();ii++){
            xmax=globalYmax;
            dx=globalDy;
        }
-       
+
        rowct=0;
        total=0.0;
-       
-       
+
+
        printf("\nx %e %e %e y %e %e %e\n",xmin,xmax,dx,ymin,ymax,dy);
 
        for(xval=xmin;xval<xmax;xval+=dx){
            trial.set(ix,xval);
            for(yval=ymin;yval<ymax;yval+=dy){
                trial.set(iy,yval);
-               
-               
+
+
                if(ix>=2 || (ix==0 && iy==1)){
                    mu=chisq(trial);
                }
@@ -210,7 +210,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                        trial.set(1,xMargin);
                        mu+=exp(-0.5*chisq(trial))*globalDy;
                    }
-                   
+
                    mu=-2.0*log(mu);
                    trial.set(1,true_center.get_data(1));
                }
@@ -220,18 +220,18 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                        trial.set(0,xMargin);
                        mu+=exp(-0.5*chisq(trial))*globalDx;
                    }
-                   
+
                    mu=-2.0*log(mu);
                    trial.set(0,true_center.get_data(0));
                }
-               
+
                total+=exp(-0.5*mu);
                chival.add(mu);
                xx.set(rowct,0,xval);
                xx.set(rowct,1,yval);
                dexes.add(rowct);
                rowct++;
-           
+
            }
        }
 
@@ -243,18 +243,18 @@ for(ii=0;ii<xdexes.get_dim();ii++){
            sum+=exp(-0.5*chival.get_data(j));
            xxTree.add_row(xx(j)[0]);
        }
-       
+
        if(i>=xx.get_rows())i=xx.get_rows()-1;
-       
+
        printf("%d %d total %e sum %e -- %e %d %e\n",
        ix,iy,total,sum,0.95*total,xxTree.get_rows(),
        chival_sorted.get_data(i));
-      
+
        min.set(0,0.0);
        min.set(1,0.0);
        max.set(0,dx);
        max.set(1,dy);
-       
+
        allPointsTree=new kd_tree(xxTree,min,max);
        for(i=0;i<xxTree.get_rows();i++){
            allPointsTree->nn_srch(xxTree(i)[0],5,neigh,dist);
@@ -262,22 +262,22 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                boundary.add_row(xxTree(i)[0]);
            }
        }
-       
+
        printf("got boundary points %d\n",boundary.get_rows());
-       
+
        boundaryPointsTree=new kd_tree(boundary);
        origin.set(0,boundaryPointsTree->get_pt(0,0));
        origin.set(1,boundaryPointsTree->get_pt(0,1));
        lastpt.set(0,origin.get_data(0));
        lastpt.set(1,origin.get_data(1));
-       
+
        lastdex=0;
        sprintf(filename,"%s_%d_%d_control.txt",outNameRoot,ix,iy);
        output=fopen(filename,"w");
        while(boundaryPointsTree->get_pts()>1){
            fprintf(output,"%e %e\n",lastpt.get_data(0),lastpt.get_data(1));
            boundaryPointsTree->remove(lastdex);
-           
+
            boundaryPointsTree->nn_srch(lastpt,1,neigh,dist);
            lastdex=neigh.get_data(0);
            lastpt.set(0,boundaryPointsTree->get_pt(lastdex,0));
@@ -285,9 +285,9 @@ for(ii=0;ii<xdexes.get_dim();ii++){
        }
        fprintf(output,"%e %e\n",lastpt.get_data(0),lastpt.get_data(1));
        fprintf(output,"%e %e\n",origin.get_data(0),origin.get_data(1));
-       
+
        fclose(output);
-    
+
 }
 
 

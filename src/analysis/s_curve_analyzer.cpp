@@ -16,7 +16,7 @@ for(i=0;i<120;i++){
     ricochetHist.set(i,0);
     totalHist.set(i,0);
     compassHist.set(i,0);
-    
+
     totalDistChi.set(i,0);
     totalDistLnChi.set(i,0);
 }
@@ -89,24 +89,24 @@ while(fscanf(input,"%le",&nn)>0){
         fscanf(input,"%le",&nn);
         vv.set(i,nn);
     }
-    
+
     chitrue=chifn(vv);
-    
+
     fscanf(input,"%le",&chival);
     chisq.add(chival);
-    
+
     if(fabs(chitrue-chival)>maxerr){
         maxerr=fabs(chitrue-chival);
         printf("    maxerr %e %e %e\n",maxerr,chitrue,chival);
     }
-    
+
     fscanf(input,"%le",&nn);
     mu.add(nn);
     fscanf(input,"%le",&nn);
     sig.add(nn);
     fscanf(input,"%d",&j);
     ling.add(j);
-    
+
     hdex=get_dex(lnchi_hist,log(chival));
     //printf("log %e hdex %d\n",log(chival),hdex);
     if(j==iSimplex){
@@ -121,14 +121,14 @@ while(fscanf(input,"%le",&nn)>0){
     else{
         printf("WARNING ling %d\n",j);
     }
-    
+
     for(i=hdex;i<hptr->get_dim();i++){
         hptr->add_val(i,1);
     }
     for(i=hdex;i<totalHist.get_dim();i++){
         totalHist.add_val(i,1);
     }
-    
+
     if(log(chival)<lnchi_hist.get_data(lnchi_hist.get_dim()-1)+0.1){
         totalDistLnChi.add_val(hdex,1);
     }
@@ -136,7 +136,7 @@ while(fscanf(input,"%le",&nn)>0){
         hdex=get_dex(chi_hist,chival);
         totalDistChi.add_val(hdex,1);
     }
-    
+
     if(chival<=delta_chi){
         for(i=0;i<dim;i++){
             if(vv.get_data(i)<xmin.get_data(i)){
@@ -147,12 +147,12 @@ while(fscanf(input,"%le",&nn)>0){
             }
         }
     }
-    
-    
+
+
     for(i=0;i<dim;i++){
         vvprojected.set(i,chifn.project_to_basis(i,vv));
     }
-    
+
     for(i=0;i<dim;i++)fprintf(output,"%le ",vvprojected.get_data(i));
     fprintf(output,"%le %le %le %d\n",
         chisq.get_data(chisq.get_dim()-1),
@@ -191,7 +191,7 @@ for(i=0;i<ix.get_dim();i++){
 
     sprintf(outname,"%s_%d_%d_frequentist.sav",outputRoot,ix.get_data(i),iy.get_data(i));
     apsExtractor.write_good_points(outname,ix.get_data(i),iy.get_data(i));
-        
+
     //sprintf(outname,"%s_%d_%d_bayesian.sav",outputRoot,ix.get_data(i),iy.get_data(i));
     //apsExtractor.draw_bayesian_bounds(outname,ix.get_data(i),iy.get_data(i),0.95);
 

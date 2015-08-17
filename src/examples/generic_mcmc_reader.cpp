@@ -72,12 +72,12 @@ for(i=1;i<iargc;i++){
                 xdexes.add(atoi(argv[i]));
                 i++;
                 ydexes.add(atoi(argv[i]));
-                break; 
+                break;
             case 'p':
                 i++;
                 confidenceLimit=atof(argv[i]);
-                break;   
-        
+                break;
+
         }
     }
 }

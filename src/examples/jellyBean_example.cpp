@@ -67,7 +67,7 @@ for(i=1;i<iargc;i++){
                 }
                 timingname[j]=0;
                 break;
-    
+
         }
     }
 }
@@ -85,7 +85,7 @@ printf("seed %d\n",seed);
 //ellipses_integrable chisq(dim,ncenters);
 
 jellyBeanData chisq(dim,1,100,0.4,0.4,0.02,20.0);
-    
+
 chisq.print_mins();
 
 //declare APS
