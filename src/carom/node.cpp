@@ -3278,6 +3278,7 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
 
     _total_kicks++;
 
+    double time_before=double(time(NULL));
     double strad,trial_strad;
     double mu,sigmasq;
 
@@ -3376,7 +3377,8 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
     }
 
     iFound[0]=iBisection;
-    printf("aps_kick n_accepted %d distance %e\n",n_accepted,node_distance(iStart,iFound[0]));
+    printf("aps_kick n_accepted %d distance %e -- %e\n",
+    n_accepted,node_distance(iStart,iFound[0]),double(time(NULL))-time_before);
 
     return 1;
 
