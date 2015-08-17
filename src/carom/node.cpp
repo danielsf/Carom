@@ -3717,7 +3717,7 @@ void node::search(){
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
-        reset_ricochet();
+        //reset_ricochet();
         find_bases();
         compass_search_geometric_center();
     }
