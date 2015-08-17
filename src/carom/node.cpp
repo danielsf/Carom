@@ -3210,7 +3210,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     double strad,trial_strad;
     double mu,distance_wgt;
 
-    distance_wgt=10.0;
+    distance_wgt=_chisquared->target()-_chisquared->chimin();
 
     int i;
     array_1d<double> min_cache,max_cache;
