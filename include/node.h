@@ -29,7 +29,6 @@ public:
     void simplex_search();
     double volume();
     double projected_volume();
-    double distance_traveled(int);
     int get_activity();
     int get_ct_ricochet();
     int get_n_particles();
@@ -37,7 +36,6 @@ public:
 
     void project_to_bases(array_1d<double>&,array_1d<double>&);
     void recalibrate_max_min();
-    void print_ricochet_discoveries(char*);
 
     int is_this_an_associate(int);
     int find_local_center();
@@ -87,7 +85,7 @@ private:
     array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
-    array_1d<double> _max_found,_min_found,_distance_traveled;
+    array_1d<double> _max_found,_min_found;
     array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
 
@@ -96,12 +94,6 @@ private:
     array_1d<int> _ricochet_origins;
     array_1d<int> _ricochet_strikes;
     array_1d<int> _boundary_points;
-
-    asymm_array_2d<int> _ricochet_discoveries,_ricochet_discovery_time;
-    array_1d<int> _ricochet_discovery_dexes;
-    asymm_array_2d<double> _ricochet_distances,_ricochet_grad_norm;
-    asymm_array_2d<double> _ricochet_dir_norm,_ricochet_mu;
-    asymm_array_2d<int> _ricochet_strike_log;
 
     array_2d<int> _ricochet_log;
 

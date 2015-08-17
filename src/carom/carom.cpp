@@ -184,7 +184,6 @@ void carom::write_pts(){
     
     for(i=0;i<_nodes.get_dim();i++){
         sprintf(nodeName,"%s_node_%d",_outname,i);
-        _nodes(i)->print_ricochet_discoveries(nodeName);
         _nodes(i)->write_node_log(_outname);
         
     }
