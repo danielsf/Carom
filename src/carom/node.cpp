@@ -4129,7 +4129,7 @@ void node::ricochet(){
 
        if(_ricochet_strikes.get_data(ix)>0){
            dir.reset();
-           kicked=mcmc_kick(_ricochet_particles.get_data(i),&iFound,dir);
+           kicked=mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir);
            if(kicked==1){
                has_been_kicked.set(ix,1);
                dir.normalize();
