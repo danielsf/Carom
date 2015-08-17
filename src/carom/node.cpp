@@ -3276,6 +3276,8 @@ int node::t_kick(int ix, array_1d<double> &dir){
 void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &tree){
     //in this case iStart will be the actual point's index
 
+    _total_kicks++;
+
     double strad,trial_strad;
     double mu,sigmasq;
 
@@ -4245,32 +4247,28 @@ void node::ricochet(){
            }
            _ricochet_strikes.add_val(i,1);
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),_ricochet_strikes.get_data(i));
+           if(_ricochet_strikes.get_data(i)<_allowed_ricochet_strikes){
+               dir.reset();
+               aps_kick(_ricochet_particles.get_data(i),&iFound,dir,kd_copy);
+               dir.normalize();
+               for(j=0;j<_chisquared->get_dim();j++){
+                   _ricochet_velocities.set(i,j,dir.get_data(j));
+               }
+           }
+           else{
+               originate_particle_shooting(i,_ricochet_velocities(i)[0]);
+               _ricochet_strikes.set(i,0);
+               _strikeouts++;
+           }
        }
        else{
+           _successful_ricochets++;
            if(_ricochet_strikes.get_data(i)>0){
                _successful_kicks++;
            }
            _ricochet_strikes.set(i,0);
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),0);
        }
-
-       if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-           originate_particle_shooting(i,_ricochet_velocities(i)[0]);
-           _ricochet_strikes.set(i,0);
-           _strikeouts++;
-       }
-       else{
-           _successful_ricochets++;
-       }
-
-       if(iChosen<0 || mu>ddmax){
-           iChosen=i;
-           ddmax=mu;
-           for(j=0;j<_chisquared->get_dim();j++){
-               trial.set(j,0.5*(start_pts.get_data(i,j)+_chisquared->get_pt(end_pts.get_data(i),j)));
-           }
-       }
-
    }
 
    _ct_ricochet+=_chisquared->get_called()-ibefore;
