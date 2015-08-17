@@ -59,6 +59,7 @@ public:
     int get_bad_shots();
     int get_strikeouts();
     int get_successful_ricochets();
+    int get_proper_ricochets();
     void set_id_dex(int);
     void write_node_log(char*);
 
@@ -74,6 +75,7 @@ private:
     int _highball_calls;
     int _ricochet_bisection_calls,_gradient_calls,_ricochet_bisections;
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
+    int _proper_ricochets;
 
     double _min_basis_error;
     double _node_dd_tol;

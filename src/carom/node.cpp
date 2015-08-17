@@ -58,6 +58,7 @@ void node::initialize(){
     _ricochet_bisections=0;
     _gradient_calls=0;
     _highball_calls=0;
+    _proper_ricochets=0;
 
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
@@ -126,6 +127,7 @@ void node::copy(const node &in){
     _ricochet_bisection_calls=in._ricochet_bisection_calls;
     _ricochet_bisections=in._ricochet_bisections;
     _gradient_calls=in._gradient_calls;
+    _proper_ricochets=in._proper_ricochets;
 
     int i,j;
 
@@ -3204,8 +3206,6 @@ int node::t_kick(int ix, array_1d<double> &dir){
 int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     //in this case iStart will be the actual point's index
 
-    _total_kicks++;
-
     double time_before=double(time(NULL));
     double strad,trial_strad;
     double mu,distance_wgt;
@@ -3609,7 +3609,6 @@ void node::_originate_particle_paperwork(int ix, int iChosen){
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
-    _total_kicks++;
     return step_kick(ix,1.0-0.1*_ricochet_strikes.get_data(ix),dir);
 }
 
@@ -4149,7 +4148,7 @@ void node::ricochet(){
        local_pts0=_chisquared->get_pts();
 
        if(_ricochet_strikes.get_data(ix)>0){
-           dir.reset();
+           _total_kicks++;
            kicked=mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir);
            if(kicked==1){
                has_been_kicked.set(ix,1);
@@ -4158,6 +4157,7 @@ void node::ricochet(){
        }
 
        if(has_been_kicked.get_data(ix)==0){
+           _proper_ricochets++;
            iFound=_ricochet(ix,dir);
        }
 
