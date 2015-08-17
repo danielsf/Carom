@@ -26,6 +26,7 @@ public:
     void search();
     void reset_ricochet();
     void ricochet();
+    int _ricochet(int, array_1d<double>&);
     void simplex_search();
     double volume();
     double projected_volume();
