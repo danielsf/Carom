@@ -3337,6 +3337,7 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
 
     int iEnd;
     evaluate(pt,&mu,&iEnd);
+    double first_found=mu;
     if(iEnd==iStart){
         printf("aps_kick just ended where it started\n");
         return 0;
@@ -3379,6 +3380,7 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
     iFound[0]=iBisection;
     printf("aps_kick n_accepted %d distance %e -- %e\n",
     n_accepted,node_distance(iStart,iFound[0]),double(time(NULL))-time_before);
+    printf("first found %e\n",mu);
 
     return 1;
 
