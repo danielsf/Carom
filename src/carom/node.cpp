@@ -3208,7 +3208,9 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
 
     double time_before=double(time(NULL));
     double strad,trial_strad;
-    double mu;
+    double mu,distance_wgt;
+
+    distance_wgt=10.0;
 
     int i;
     array_1d<double> min_cache,max_cache;
@@ -3219,8 +3221,13 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         _chisquared->get_tree()->set_max(i,_max_found.get_data(i));
     }
 
-    mu=ricochet_model(_chisquared->get_pt(iStart)[0],_chisquared->get_tree()[0]);
-    strad=mu;
+    array_1d<int> neigh;
+    neigh.set_name("node_mcmc_kick_neigh");
+
+    mu=ricochet_model(_chisquared->get_pt(iStart)[0],
+                      _chisquared->get_tree()[0],
+                      neigh);
+    strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));
 
     int ix;
 
@@ -3251,8 +3258,8 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
         }
-        mu=ricochet_model(trial,_chisquared->get_tree()[0]);
-        trial_strad=mu;
+        mu=ricochet_model(trial,_chisquared->get_tree()[0],neigh);
+        trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
         if(trial_strad<strad){
             accept=1;
         }
