@@ -4204,18 +4204,7 @@ void node::ricochet(){
                _failed_kicks++;
            }
            _ricochet_strikes.add_val(i,1);
-           if(_ricochet_strikes.get_data(i)<_allowed_ricochet_strikes){
-               dir.reset();
-               kicked=mcmc_kick(_ricochet_particles.get_data(i),&iFound,dir);
-               if(kicked==1){
-                   dir.normalize();
-                   for(j=0;j<_chisquared->get_dim();j++){
-                       _ricochet_velocities.set(i,j,dir.get_data(j));
-                   }
-                   _ricochet_particles.set(i,iFound);
-               }
-           }
-           else{
+           if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
                originate_particle_shooting(i,_ricochet_velocities(i)[0]);
                _ricochet_strikes.set(i,0);
                _strikeouts++;
