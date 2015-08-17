@@ -139,7 +139,7 @@ private:
 
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
-    void aps_kick(int, int*, array_1d<double>&, kd_tree&);
+    int aps_kick(int, int*, array_1d<double>&, kd_tree&);
     int t_kick(int,array_1d<double>&);
     int smart_step_kick(int, double, array_1d<double>&);
     void originate_particle_compass(int, array_1d<double>&);

@@ -3273,7 +3273,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
 
 }
 
-void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &tree){
+int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &tree){
     //in this case iStart will be the actual point's index
 
     _total_kicks++;
@@ -3338,7 +3338,7 @@ void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree 
     evaluate(pt,&mu,&iEnd);
     if(iEnd==iStart){
         printf("aps_kick just ended where it started\n");
-        return;
+        return 0;
     }
     array_1d<double> dir;
     dir.set_name("node_aps_kick_dir");
@@ -3368,7 +3368,7 @@ void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree 
 
     if(iBisection==iStart){
         printf("aps_kick bisection found starting point\n");
-        return;
+        return 0;
     }
 
     for(i=0;i<_chisquared->get_dim();i++){
@@ -3377,6 +3377,8 @@ void node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree 
 
     iFound[0]=iBisection;
     printf("aps_kick n_accepted %d distance %e\n",n_accepted,node_distance(iStart,iFound[0]));
+
+    return 1;
 
 }
 
@@ -4229,7 +4231,7 @@ void node::ricochet(){
 
    iChosen=-1;
    double mu;
-   int isAStrike;
+   int isAStrike,kicked;
    for(i=0;i<_ricochet_particles.get_dim();i++){
 
        isAStrike=local_strike_log.get_data(i);
@@ -4249,10 +4251,13 @@ void node::ricochet(){
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),_ricochet_strikes.get_data(i));
            if(_ricochet_strikes.get_data(i)<_allowed_ricochet_strikes){
                dir.reset();
-               aps_kick(_ricochet_particles.get_data(i),&iFound,dir,kd_copy);
-               dir.normalize();
-               for(j=0;j<_chisquared->get_dim();j++){
-                   _ricochet_velocities.set(i,j,dir.get_data(j));
+               kicked=aps_kick(_ricochet_particles.get_data(i),&iFound,dir,kd_copy);
+               if(kicked==1){
+                   dir.normalize();
+                   for(j=0;j<_chisquared->get_dim();j++){
+                       _ricochet_velocities.set(i,j,dir.get_data(j));
+                   }
+                   _ricochet_particles.set(i,iFound);
                }
            }
            else{
