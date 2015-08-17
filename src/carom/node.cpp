@@ -2857,11 +2857,6 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
 
     tree.nn_srch(pt,npts+1,neigh,dd);
 
-    if(_boundary_points.get_dim()<npts){
-        printf("WARNING not enough boundary points\n");
-        exit(1);
-    }
-
     if(dd.get_data(0)<1.0e-20){
         neigh.remove(0);
         dd.remove(0);
