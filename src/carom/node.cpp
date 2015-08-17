@@ -2843,6 +2843,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
                               double *sig, int doSig){
     is_it_safe("ricochet_model");
 
+    int i;
     int npts=_chisquared->get_dim();
     double ell;
     array_2d<double> covar,covarin;
@@ -2856,6 +2857,11 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
 
     tree.nn_srch(pt,npts+1,neigh,dd);
 
+    if(_boundary_points.get_dim()<npts){
+        printf("WARNING not enough boundary points\n");
+        exit(1);
+    }
+
     if(dd.get_data(0)<1.0e-20){
         neigh.remove(0);
         dd.remove(0);
@@ -2868,7 +2874,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     mutual_dd_sorted.set_name("node_ricochet_mutual_dd_sorted");
     mutual_dexes.set_name("node_ricochet_mutual_dexes");
 
-    int i,j,k;
+    int j,k;
 
     k=0;
     for(i=0;i<npts;i++){
@@ -2882,7 +2888,6 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     sort_and_check(mutual_dd,mutual_dd_sorted,mutual_dexes);
 
     ell=mutual_dd_sorted.get_data(k/2);
-
     covar.set_dim(npts,npts);
     covarin.set_dim(npts,npts);
 
@@ -2907,12 +2912,17 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
 
     double fbar;
     fbar=apply_quadratic_model(pt);
-
+    /*fbar=0.0;
+    for(i=0;i<npts;i++){
+        fbar+=_chisquared->get_fn(neigh.get_data(i));
+    }
+    fbar=fbar/double(npts);*/
 
     array_1d<double> qbar;
     qbar.set_name("node_ricochet_model_qbar");
     for(i=0;i<npts;i++){
         qbar.set(i,apply_quadratic_model(tree.get_pt(neigh.get_data(i))[0]));
+        //qbar.set(i,fbar);
     }
 
     mu=fbar;
@@ -2938,7 +2948,6 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
         sig[0]+=1.0+nugget;
         sig[0]*=covar_norm;
     }
-
     return mu;
 }
 
@@ -3273,27 +3282,35 @@ int node::t_kick(int ix, array_1d<double> &dir){
 
 }
 
-int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &tree){
+int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     //in this case iStart will be the actual point's index
 
     _total_kicks++;
 
     double time_before=double(time(NULL));
     double strad,trial_strad;
-    double mu,sigmasq;
+    double mu;
 
-    mu=ricochet_model(_chisquared->get_pt(iStart)[0],tree,&sigmasq);
-    strad=sigmasq-(mu-_chisquared->target())*(mu-_chisquared->target());
+    int i;
+    array_1d<double> min_cache,max_cache;
+    for(i=0;i<_chisquared->get_dim();i++){
+        min_cache.set(i,_chisquared->get_tree()->get_min(i));
+        max_cache.set(i,_chisquared->get_tree()->get_max(i));
+        _chisquared->get_tree()->set_min(i,_min_found.get_data(i));
+        _chisquared->get_tree()->set_max(i,_max_found.get_data(i));
+    }
 
-    int nsteps=100;
+    mu=ricochet_model(_chisquared->get_pt(iStart)[0],_chisquared->get_tree()[0]);
+    strad=mu;
+
     int ix;
 
     array_1d<double>step,trial,pt;
-    step.set_name("node_aps_kick_step");
-    trial.set_name("node_aps_kick_step");
-    pt.set_name("node_aps_kick_pt");
+    step.set_name("node_mcmc_kick_step");
+    trial.set_name("node_mcmc_kick_step");
+    pt.set_name("node_mcmc_kick_pt");
 
-    int i,j;
+    int j;
     for(i=0;i<_chisquared->get_dim();i++){
         pt.set(i,_chisquared->get_pt(iStart,i));
     }
@@ -3301,9 +3318,11 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
     double radius,norm;
     int accept,n_accepted;
 
+    int max_steps=100;
+
     n_accepted=0;
     norm=0.1;
-    for(ix=0;ix<nsteps;ix++){
+    for(ix=0;ix<max_steps;ix++){
         accept=0;
         for(i=0;i<_chisquared->get_dim();i++){
             step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
@@ -3313,14 +3332,14 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
         }
-        mu=ricochet_model(trial,tree,&sigmasq);
-        trial_strad=sigmasq-(mu-_chisquared->target())*(mu-_chisquared->target());
-        if(trial_strad>strad){
+        mu=ricochet_model(trial,_chisquared->get_tree()[0]);
+        trial_strad=mu;
+        if(trial_strad<strad){
             accept=1;
         }
         else{
             norm=_chisquared->random_double();
-            if(exp(0.5*(trial_strad-strad))>norm){
+            if(exp(-0.5*(trial_strad-strad))>norm){
                 accept=1;
             }
         }
@@ -3338,12 +3357,17 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
     int iEnd;
     evaluate(pt,&mu,&iEnd);
     double first_found=mu;
+    double first_predicted=strad;
     if(iEnd==iStart){
-        printf("aps_kick just ended where it started\n");
+        //printf("mcmc_kick just ended where it started\n");
+        for(i=0;i<_chisquared->get_dim();i++){
+            _chisquared->get_tree()->set_min(i,min_cache.get_data(i));
+            _chisquared->get_tree()->set_max(i,max_cache.get_data(i));
+        }
         return 0;
     }
     array_1d<double> dir;
-    dir.set_name("node_aps_kick_dir");
+    dir.set_name("node_mcmc_kick_dir");
     double component;
     if(mu<=_chisquared->target()){
         for(i=0;i<_chisquared->get_dim();i++){
@@ -3362,14 +3386,28 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
 
     int iBisection;
     array_1d<double> start;
-    start.set_name("node_aps_kick_start");
+    start.set_name("node_mcmc_kick_start");
     for(i=0;i<_chisquared->get_dim();i++){
         start.set(i,_chisquared->get_pt(iStart,i));
     }
     iBisection=node_bisection(start,_chisquared->get_fn(iStart),pt,mu,0);
 
     if(iBisection==iStart){
-        printf("aps_kick bisection found starting point\n");
+        //printf("mcmc_kick bisection found starting point\n");
+        for(i=0;i<_chisquared->get_dim();i++){
+            _chisquared->get_tree()->set_min(i,min_cache.get_data(i));
+            _chisquared->get_tree()->set_max(i,max_cache.get_data(i));
+        }
+        return 0;
+    }
+
+    if(iBisection<0){
+        //printf("mcmc_kick bisection returned %d %e %e %e\n",
+        //iBisection,_chisquared->get_fn(iStart),mu,_chisquared->target());
+        for(i=0;i<_chisquared->get_dim();i++){
+            _chisquared->get_tree()->set_min(i,min_cache.get_data(i));
+            _chisquared->get_tree()->set_max(i,max_cache.get_data(i));
+        }
         return 0;
     }
 
@@ -3378,9 +3416,14 @@ int node::aps_kick(int iStart, int *iFound, array_1d<double> &dir_out, kd_tree &
     }
 
     iFound[0]=iBisection;
-    printf("aps_kick n_accepted %d distance %e -- %e\n",
-    n_accepted,node_distance(iStart,iFound[0]),double(time(NULL))-time_before);
-    printf("first found %e\n",first_found);
+    //printf("mcmc_kick n_accepted %d distance %e -- %e\n",
+    //n_accepted,node_distance(iStart,iFound[0]),double(time(NULL))-time_before);
+    //printf("first found %e -- %e %d\n",first_found,first_predicted,iFound[0]);
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        _chisquared->get_tree()->set_min(i,min_cache.get_data(i));
+        _chisquared->get_tree()->set_max(i,max_cache.get_data(i));
+    }
 
     return 1;
 
@@ -3957,6 +4000,7 @@ void node::reset_ricochet(){
 }
 
 void node::ricochet(){
+    printf("starting ricochet\n");
     is_it_safe("ricochet");
 
     if(_ricochet_particles.get_dim()==0){
@@ -4233,11 +4277,13 @@ void node::ricochet(){
        exit(1);
    }
 
+
+    _total_ricochets+=_ricochet_particles.get_dim();
+
    iChosen=-1;
    double mu;
    int isAStrike,kicked;
    for(i=0;i<_ricochet_particles.get_dim();i++){
-
        isAStrike=local_strike_log.get_data(i);
 
        mu=-2.0*exception_value;
@@ -4255,7 +4301,7 @@ void node::ricochet(){
            _ricochet_strike_log.add(_ricochet_discovery_dexes.get_data(i),_ricochet_strikes.get_data(i));
            if(_ricochet_strikes.get_data(i)<_allowed_ricochet_strikes){
                dir.reset();
-               kicked=aps_kick(_ricochet_particles.get_data(i),&iFound,dir,kd_copy);
+               kicked=mcmc_kick(_ricochet_particles.get_data(i),&iFound,dir);
                if(kicked==1){
                    dir.normalize();
                    for(j=0;j<_chisquared->get_dim();j++){
@@ -4319,7 +4365,6 @@ void node::ricochet(){
 
    _ricochet_log.add_row(log_row);
 
-   _total_ricochets++;
    _ricochet_calls+=_chisquared->get_called()-ibefore;
    _ricochet_bisection_calls+=_bisection_calls-rcalls_before;
    _ricochet_bisections+=_total_bisections-rbefore;
