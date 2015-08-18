@@ -274,7 +274,19 @@ void node::merge(const node &in){
         }
     }
 
+    int old_n_particles=_ricochet_particles.get_dim();
+    int j;
+    for(i=0;i<in._ricochet_particles.get_dim();i++){
+        _ricochet_particles.add(in._ricochet_particles.get_data(i));
+        for(j=0;j<_chisquared->get_dim();j++){
+            _ricochet_velocities.set(old_n_particles+i,j,in._ricochet_velocities.get_data(i,j));
+        }
+        _ricochet_origins.add(in._ricochet_origins.get_data(i));
+        _ricochet_strikes.add(in._ricochet_strikes.get_data(i));
+    }
 
+    _ricochet_log.reset();
+    _ricochet_log.set_cols(_ricochet_particles.get_dim());
     recalibrate_max_min();
 }
 
@@ -3114,6 +3126,10 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
 
     int nParticles=2*_chisquared->get_dim();
+    if(_ricochet_log.get_cols()!=0){
+        nParticles=_ricochet_log.get_cols();
+    }
+
 
     array_1d<int> dexes;
     array_1d<double> dmu;
