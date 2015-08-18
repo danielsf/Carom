@@ -19,7 +19,7 @@ subroutine wmaplikeness_actual(cltt,clte,clee,clbb,likeout)
 	!rather than pixel space.
 	
 	use_TT               = .true.
-	use_TE               = .false. 
+	use_TE               = .false.
 	use_lowl_TT          = .false.
 	use_lowl_pol         = .false.
 	use_TT_beam_ptsrc    = .true.
