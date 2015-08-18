@@ -2764,6 +2764,90 @@ int node::_are_connected(int i1, int i2){
 
 }
 
+
+double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
+
+    double flow,fhigh;
+    array_1d<double> lowball, highball;
+    lowball.set_name("evaluate_dir_lowball");
+    highball.set_name("evaluate_dir_highball");
+
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,_chisquared->get_pt(iStart,i));
+        highball.set(i,_chisquared->get_pt(iStart,i));
+    }
+
+    flow=ricochet_model(lowball);
+    double target;
+    if(flow<_chisquared->target()){
+        target=_chisquared->target();
+    }
+    else{
+        target=flow+0.1*(_chisquared->target()-_chisquared->chimin());
+    }
+
+    double component=1.0;
+    fhigh=-2.0*exception_value;
+    while(fhigh<target){
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.add_val(i,component*dir_in.get_data(i));
+        }
+        fhigh=ricochet_model(highball);
+    }
+
+    array_1d<double> trial,best_pt;
+    double ftrial,dfbest;
+    trial.set_name("evaluate_dir_trial");
+    best_pt.set_name("evaluate_dir_best_pt");
+    if(fabs(flow-target)<fabs(fhigh-ftrial)){
+        dfbest=fabs(flow-target);
+        for(i=0;i<_chisquared->get_dim();i++){
+            best_pt.set(i,lowball.get_data(i));
+        }
+    }
+    else{
+        dfbest=fabs(fhigh-target);
+        for(i=0;i<_chisquared->get_dim();i++){
+            best_pt.set(i,highball.get_data(i));
+        }
+    }
+
+    double tol=1.0e-10;
+    double distance=node_distance(lowball,highball);
+    while(distance>tol){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
+        }
+        ftrial=ricochet_model(trial);
+        if(ftrial<target){
+            for(i=0;i<_chisquared->get_dim();i++){
+                lowball.set(i,trial.get_data(i));
+            }
+        }
+        else{
+            for(i=0;i<_chisquared->get_dim();i++){
+                highball.set(i,trial.get_data(i));
+            }
+        }
+
+        if(fabs(ftrial-target)<dfbest){
+            dfbest=fabs(ftrial-target);
+            for(i=0;i<_chisquared->get_dim();i++){
+                best_pt.set(i,trial.get_data(i));
+            }
+        }
+
+        distance=node_distance(lowball,highball);
+    }
+
+    //double sigma;
+    array_1d<int> neigh;
+    ftrial=ricochet_model(best_pt,neigh);
+    return node_distance(neigh.get_data(0),best_pt);
+
+}
+
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree,
                             array_1d<int> &neigh_out){
     double sig;
@@ -2782,6 +2866,22 @@ double node::ricochet_model(array_1d<double> &pt, kd_tree &tree,
 
     array_1d<int> nn;
     return _ricochet_model(pt, tree, sig, 1, nn);
+}
+
+double node::ricochet_model(array_1d<double> &pt){
+    array_1d<int> neigh;
+    double sig;
+    return _ricochet_model(pt,_chisquared->get_tree()[0],&sig,0,neigh);
+}
+
+double node::ricochet_model(array_1d<double> &pt, array_1d<int> &neigh){
+    double sig;
+    return _ricochet_model(pt,_chisquared->get_tree()[0],&sig,0,neigh);
+}
+
+double node::ricochet_model(array_1d<double> &pt, double *sig){
+    array_1d<int> neigh;
+    return _ricochet_model(pt,_chisquared->get_tree()[0],sig,1,neigh);
 }
 
 double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
@@ -4086,6 +4186,155 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
 
 }
 
+int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
+    array_1d<double> gradient;
+    array_1d<double> old_dir;
+    gradient.set_name("_ricochet_gradient");
+    old_dir.set_name("_ricochet_old_dir");
+
+    double grad_component;
+
+    array_1d<double> dir,scratch;
+    dir.set_name("_ricochet_dir");
+    scratch.set_name("_ricochet_scratch");
+
+    int i,j;
+
+    node_gradient(_ricochet_particles.get_data(iparticle),gradient);
+
+    gradient.normalize();
+    grad_component=0.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        grad_component+=_ricochet_velocities.get_data(iparticle,i)*gradient.get_data(i);
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        old_dir.set(i,_ricochet_velocities.get_data(iparticle,i)-grad_component*gradient.get_data(i));
+    }
+
+    array_1d<double> trial_dir,best_dir;
+    double fbest_dir,f_dir;
+
+    for(i=0;i<=10;i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial_dir.set(j,old_dir.get_data(j)-i*0.1*grad_component*gradient.get_data(j));
+        }
+        f_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
+        if(i==0 || f_dir>fbest_dir){
+            fbest_dir=f_dir;
+            for(j=0;j<_chisquared->get_dim();j++){
+                best_dir.set(j,trial_dir.get_data(j));
+            }
+        }
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,best_dir.get_data(i));
+    }
+    dir.normalize();
+
+    double eflow,efhigh;
+    array_1d<double> elowball,ehighball,edir;
+    array_1d<double> lowball,highball;
+    elowball.set_name("_ricochet_elowball");
+    ehighball.set_name("_ricochet_ehighball");
+    edir.set_name("_ricochet_edir");
+    lowball.set_name("_ricochet_lowball");
+    highball.set_name("_ricochet_highball");
+
+    double flow,fhigh;
+    int iFound,local_center;
+    double component;
+
+    local_center=find_local_center();
+    flow=2.0*exception_value;
+    fhigh=-2.0*exception_value;
+
+    while(flow>_chisquared->target()){
+        flow=_chisquared->get_fn(_ricochet_particles.get_data(iparticle));
+        for(i=0;i<_chisquared->get_dim();i++){
+            lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(iparticle),i));
+        }
+
+        while(flow>=_chisquared->target()){
+            for(i=0;i<_chisquared->get_dim();i++){
+                elowball.set(i,_chisquared->get_pt(local_center,i));
+                ehighball.set(i,lowball.get_data(i));
+                edir.set(i,lowball.get_data(i)-elowball.get_data(i));
+            }
+            edir.normalize();
+            eflow=_chisquared->get_fn(local_center);
+
+            component=1.0;
+            efhigh=flow;
+
+            if(eflow>_chisquared->target() || eflow>efhigh){
+                printf("WARNING eflow %e %e %e\n",
+                eflow,efhigh,_chisquared->target());
+                printf("%e\n",_chisquared->get_fn(local_center));
+                exit(1);
+            }
+
+            iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
+            for(i=0;i<_chisquared->get_dim();i++){
+                lowball.set(i,_chisquared->get_pt(iFound,i));
+            }
+            flow=_chisquared->get_fn(iFound);
+        }
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.set(i,lowball.get_data(i));
+        }
+
+        if(iparticle<_ricochet_origins.get_dim() && _ricochet_origins.get_data(iparticle)>=0){
+            for(i=0;i<_chisquared->get_dim();i++){
+                scratch.set(i,\
+               _chisquared->get_pt(_ricochet_particles.get_data(iparticle),i)-_chisquared->get_pt(_ricochet_origins.get_data(iparticle),i));
+            }
+            component=scratch.normalize()*1.1;
+        }
+        else{
+            component=1.0;
+        }
+
+        if(component<1.0e-20){
+            component=1.0;
+        }
+
+        while(fhigh<_chisquared->target()){
+            for(i=0;i<_chisquared->get_dim();i++){
+                highball.add_val(i,component*dir.get_data(i));
+            }
+            evaluate(highball,&fhigh,&j);
+            component*=2.0;
+
+            if(fhigh<_chisquared->target()){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    lowball.set(i,highball.get_data(i));
+                }
+                flow=fhigh;
+            }
+
+        }
+    }
+
+    if(flow>_chisquared->target() || flow>fhigh){
+        printf("WARNING in ricochet %e %e %e\n",
+        flow,fhigh,_chisquared->target());
+        exit(1);
+    }
+
+    iFound=node_bisection(lowball,flow,highball,fhigh,0);
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir_out.set(i,dir.get_data(i));
+    }
+
+    return iFound;
+
+}
+
+
 
 void node::ricochet(){
     printf("starting ricochet\n");
@@ -4201,7 +4450,7 @@ void node::ricochet(){
 
        if(has_been_kicked.get_data(ix)==0){
            _proper_ricochets++;
-           iFound=_ricochet(ix,dir);
+           iFound=_adaptive_ricochet(ix,dir);
        }
 
        for(i=0;i<_chisquared->get_dim();i++){

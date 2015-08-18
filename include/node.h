@@ -27,6 +27,7 @@ public:
     void reset_ricochet();
     void ricochet();
     int _ricochet(int, array_1d<double>&);
+    int _adaptive_ricochet(int, array_1d<double>&);
     void simplex_search();
     double volume();
     double projected_volume();
@@ -107,6 +108,8 @@ private:
     int node_bisection_origin_dir(int,array_1d<double>&);
     int node_bisection_origin_dir(int,array_1d<double>&,double,double);
 
+    double evaluate_dir(int,array_1d<double>&);
+
     void perturb_bases(int,array_1d<double>&,array_2d<double>&);
     double basis_error(array_2d<double>&,array_1d<double>&);
     int findAcceptableCenter();
@@ -127,6 +130,9 @@ private:
     void initialize_ricochet();
     void trim_ricochet();
     double ricochet_distance(int,int);
+    double ricochet_model(array_1d<double>&);
+    double ricochet_model(array_1d<double>&,array_1d<int>&);
+    double ricochet_model(array_1d<double>&,double*);
     double ricochet_model(array_1d<double>&, kd_tree&);
     double ricochet_model(array_1d<double>&, kd_tree&, array_1d<int>&);
     double ricochet_model(array_1d<double>&, kd_tree&, double*);
