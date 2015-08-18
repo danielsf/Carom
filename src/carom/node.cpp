@@ -3972,7 +3972,7 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
 
     node_gradient(_ricochet_particles.get_data(iparticle),gradient);
 
-    reflection_coeff=2.0;
+    reflection_coeff=1.8;
 
     gnorm=gradient.normalize();
     component=0.0;
