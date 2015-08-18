@@ -2794,7 +2794,16 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     double ell;
     array_2d<double> covar,covarin;
     array_1d<int> neigh;
-    array_1d<double> dd;
+    array_1d<double> dd,min_cache,max_cache;
+
+    min_cache.set_name("node_ricochet_model_min_cache");
+    max_cache.set_name("node_ricochet_model_max_cache");
+    for(i=0;i<_chisquared->get_dim();i++){
+        min_cache.set(i,tree.get_min(i));
+        max_cache.set(i,tree.get_max(i));
+        tree.set_min(i,_min_found.get_data(i));
+        tree.set_max(i,_max_found.get_data(i));
+    }
 
     covar.set_name("node_ricochet_model_covar");
     covarin.set_name("node_ricochet_model_covarin");
@@ -2892,6 +2901,12 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     for(i=0;i<npts;i++){
         neigh_out.set(i,neigh.get_data(i));
     }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        tree.set_min(i,min_cache.get_data(i));
+        tree.set_max(i,max_cache.get_data(i));
+    }
+
     return mu;
 }
 
