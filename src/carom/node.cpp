@@ -1063,11 +1063,6 @@ int node::node_bisection(array_1d<double> &lowball_in, double flow,
 
     int ibefore=_chisquared->get_called();
 
-    if(flow>fhigh){
-        printf("WARNING in node bisection flow %e fhigh %e\n",flow,fhigh);
-        exit(1);
-    }
-
     array_1d<double> lowball,highball;
     lowball.set_name("node_bisection_lowball");
     highball.set_name("node_bisection_highball");
@@ -1078,6 +1073,25 @@ int node::node_bisection(array_1d<double> &lowball_in, double flow,
         highball.set(i,highball_in.get_data(i));
     }
 
+    array_1d<double> e_dir;
+    double component;
+    e_dir.set_name("node_bisection_e_dir");
+
+    if(flow>fhigh || fhigh<target_value){
+        printf("WARNING in node bisection flow %e fhigh %e\n",flow,fhigh);
+        for(i=0;i<_chisquared->get_dim();i++){
+            e_dir.set(i,highball.get_data(i)-lowball.get_data(i));
+        }
+        e_dir.normalize();
+        component=1.0;
+        while(fhigh<flow || fhigh<target_value){
+             for(i=0;i<_chisquared->get_dim();i++){
+                 highball.add_val(i,component*e_dir.get_data(i));
+             }
+             component*=2.0;
+             evaluate(highball,&fhigh,&i);
+        }
+    }
 
     double ftrial;
     array_1d<double> trial;
