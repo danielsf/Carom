@@ -3324,13 +3324,37 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         }
     }
 
-    int iBisection;
+    int local_center;
+    array_1d<double> e_dir;
+    double e_dir_norm,dx,fstart;
+    e_dir.set_name("mcmc_kick_e_dir");
+
     array_1d<double> start;
     start.set_name("node_mcmc_kick_start");
-    for(i=0;i<_chisquared->get_dim();i++){
-        start.set(i,_chisquared->get_pt(iStart,i));
+    if(_chisquared->get_fn(iStart)<_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+           start.set(i,_chisquared->get_pt(iStart,i));
+        }
+        fstart=_chisquared->get_fn(iStart);
     }
-    iBisection=node_bisection(start,_chisquared->get_fn(iStart),pt,mu,0);
+    else{
+        local_center=find_local_center();
+        for(i=0;i<_chisquared->get_dim();i++){
+            e_dir.set(i,_chisquared->get_pt(iStart,i)-_chisquared->get_pt(local_center,i));
+        }
+        e_dir_norm=e_dir.normalize();
+        fstart=_chisquared->get_fn(iStart);
+        for(dx=0.1*e_dir_norm;dx<e_dir_norm*1.05 && fstart>_chisquared->target();dx+=0.1*e_dir_norm){
+            for(i=0;i<_chisquared->get_dim();i++){
+               start.set(i,_chisquared->get_pt(iStart,i)+dx*e_dir.get_data(i));
+            }
+            evaluate(start,&fstart,&i);
+        }
+    }
+
+
+    int iBisection;
+    iBisection=node_bisection(start,fstart,pt,mu,0);
 
     if(iBisection==iStart){
         //printf("mcmc_kick bisection found starting point\n");
