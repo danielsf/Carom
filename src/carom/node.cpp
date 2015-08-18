@@ -3356,18 +3356,8 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     int iBisection;
     iBisection=node_bisection(start,fstart,pt,mu,0);
 
-    if(iBisection==iStart){
+    if(iBisection==iStart || iBisection<0){
         //printf("mcmc_kick bisection found starting point\n");
-        for(i=0;i<_chisquared->get_dim();i++){
-            _chisquared->get_tree()->set_min(i,min_cache.get_data(i));
-            _chisquared->get_tree()->set_max(i,max_cache.get_data(i));
-        }
-        return 0;
-    }
-
-    if(iBisection<0){
-        //printf("mcmc_kick bisection returned %d %e %e %e\n",
-        //iBisection,_chisquared->get_fn(iStart),mu,_chisquared->target());
         for(i=0;i<_chisquared->get_dim();i++){
             _chisquared->get_tree()->set_min(i,min_cache.get_data(i));
             _chisquared->get_tree()->set_max(i,max_cache.get_data(i));
