@@ -432,7 +432,7 @@ void array_2d<T>::add_row(array_1d<T> &in){
     }
 
     if(cols>0 && cols!=in.get_dim()){
-        printf("dying from add_row %d %d\n",cols,in.get_dim());
+        printf("dying from add_row cols are: %d but got: %d\n",cols,in.get_dim());
         die(-2,0);
     }
 
