@@ -2845,6 +2845,7 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
     array_1d<int> neigh;
     ftrial=ricochet_model(best_pt,neigh);
     return node_distance(neigh.get_data(0),best_pt);
+    //return sigma;
 
 }
 
@@ -2889,8 +2890,8 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
                               array_1d<int> &neigh_out){
     is_it_safe("ricochet_model");
 
-    int i;
-    int npts=_chisquared->get_dim();
+    int i,j,k;
+    int npts=2*_chisquared->get_dim();
     double ell;
     array_2d<double> covar,covarin;
     array_1d<int> neigh;
@@ -2910,21 +2911,56 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     neigh.set_name("node_ricochet_model_neigh");
     dd.set_name("node_ricochet_model_dd");
 
-    tree.nn_srch(pt,npts+1,neigh,dd);
+    array_1d<int> raw_neigh;
+    array_1d<double> raw_dd;
 
-    if(dd.get_data(0)<1.0e-20){
-        neigh.remove(0);
-        dd.remove(0);
+    tree.nn_srch(pt,2*npts,raw_neigh,raw_dd);
+
+    if(raw_dd.get_data(0)<1.0e-20){
+        raw_neigh.remove(0);
+        raw_dd.remove(0);
     }
 
+    neigh.add(raw_neigh.get_data(0));
+    dd.add(raw_dd.get_data(0));
+    double test_dd,test_ddmin;
+    int use_it;
+    for(i=1;i<raw_neigh.get_dim() && neigh.get_dim()<npts;i++){
+        use_it=0;
+        if(raw_neigh.get_dim()-i<=npts-neigh.get_dim()){
+            use_it=1;
+        }
+        else{
+            test_ddmin=2.0*exception_value;
+            for(j=0;j<neigh.get_dim();j++){
+                test_dd=node_distance(raw_neigh.get_data(i),neigh.get_data(j));
+                if(test_dd<test_ddmin){
+                    test_ddmin=test_dd;
+                }
+            }
+            if(test_ddmin>0.001){
+                use_it=1;
+            }
+        }
+
+        if(use_it==1){
+            neigh.add(raw_neigh.get_data(i));
+            dd.add(raw_dd.get_data(j));
+        }
+    }
+
+    if(neigh.get_dim()!=npts){
+        printf("WARNING in ricochet model neigh %d shldbe %d\n",
+        neigh.get_dim(),npts);
+
+        exit(1);
+    }
     array_1d<double> mutual_dd,mutual_dd_sorted;
     array_1d<int> mutual_dexes;
 
     mutual_dd.set_name("node_ricochet_model_mutual_dd");
     mutual_dd_sorted.set_name("node_ricochet_mutual_dd_sorted");
     mutual_dexes.set_name("node_ricochet_mutual_dexes");
-
-    int j,k;
 
     k=0;
     for(i=0;i<npts;i++){
@@ -4213,15 +4249,29 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     }
 
     array_1d<double> trial_dir,best_dir;
-    double fbest_dir,f_dir;
+    double fbest_dir,f_dir,best_theta;
 
-    for(i=0;i<=10;i++){
+    double theta,costheta,sintheta;
+
+    best_theta=-10.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial_dir.set(i,old_dir.get_data(i)-grad_component*gradient.get_data(i));
+        best_dir.set(i,trial_dir.get_data(i));
+    }
+    fbest_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
+
+    old_dir.normalize();
+    for(i=1;i<=10;i++){
+        theta=i*0.5*pi/10.0;
+        costheta=cos(theta);
+        sintheta=sin(theta);
         for(j=0;j<_chisquared->get_dim();j++){
-            trial_dir.set(j,old_dir.get_data(j)-i*0.1*grad_component*gradient.get_data(j));
+            trial_dir.set(j,costheta*old_dir.get_data(j)-sintheta*gradient.get_data(j));
         }
         f_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
-        if(i==0 || f_dir>fbest_dir){
+        if(f_dir>fbest_dir){
             fbest_dir=f_dir;
+            best_theta=theta;
             for(j=0;j<_chisquared->get_dim();j++){
                 best_dir.set(j,trial_dir.get_data(j));
             }
@@ -4301,7 +4351,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
             component=1.0;
         }
 
-        while(fhigh<_chisquared->target()){
+        while(fhigh<_chisquared->target()+1.0){
             for(i=0;i<_chisquared->get_dim();i++){
                 highball.add_val(i,component*dir.get_data(i));
             }
