@@ -3390,6 +3390,8 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     double strad,trial_strad;
     double mu,distance_wgt;
 
+    int local_center=find_local_center();
+
     distance_wgt=_chisquared->target()-_chisquared->chimin();
 
     int i;
@@ -3404,10 +3406,15 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     array_1d<int> neigh;
     neigh.set_name("node_mcmc_kick_neigh");
 
-    mu=ricochet_model(_chisquared->get_pt(iStart)[0],
+    /*mu=ricochet_model(_chisquared->get_pt(iStart)[0],
                       _chisquared->get_tree()[0],
                       neigh);
-    strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));
+    strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));*/
+
+    double sigma;
+    ricochet_model(_chisquared->get_pt(local_center)[0],&sigma);
+    //strad=mu-distance_wgt*sqrt(fabs(sigma));
+    strad=fabs(mu-_chisquared->target())-sqrt(fabs(sigma));
 
     int ix;
 
@@ -3418,7 +3425,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
 
     int j;
     for(i=0;i<_chisquared->get_dim();i++){
-        pt.set(i,_chisquared->get_pt(iStart,i));
+        pt.set(i,_chisquared->get_pt(local_center,i));
     }
 
     double radius,norm;
@@ -3438,8 +3445,10 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
         }
-        mu=ricochet_model(trial,_chisquared->get_tree()[0],neigh);
-        trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
+        mu=ricochet_model(trial,&sigma);
+        //trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
+        //trial_strad=mu-distance_wgt*sqrt(fabs(sigma));
+        trial_strad=fabs(mu-_chisquared->target())-sqrt(fabs(sigma));
         if(trial_strad<strad){
             accept=1;
         }
@@ -3490,7 +3499,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         }
     }
 
-    int local_center;
     array_1d<double> e_dir;
     double e_dir_norm,dx,fstart;
     e_dir.set_name("mcmc_kick_e_dir");
@@ -3504,7 +3512,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         fstart=_chisquared->get_fn(iStart);
     }
     else{
-        local_center=find_local_center();
         for(i=0;i<_chisquared->get_dim();i++){
             e_dir.set(i,_chisquared->get_pt(iStart,i)-_chisquared->get_pt(local_center,i));
         }
