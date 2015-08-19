@@ -3145,8 +3145,14 @@ void node::initialize_ricochet(){
 
     dir.set_dim(_chisquared->get_dim());
 
+    int iFound,local_center;
+
+    local_center=find_local_center();
+
     for(i=0;i<nParticles;i++){
-        originate_particle_compass(i,dir);
+        //originate_particle_compass(i,dir);
+        mcmc_kick(local_center,&iFound,dir);
+        _ricochet_particles.set(i,iFound);
         _ricochet_velocities.add_row(dir);
         _ricochet_strikes.set(i,0);
         local_ricochet_log.add(_ricochet_particles.get_data(i));
@@ -3412,7 +3418,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));*/
 
     double sigma;
-    ricochet_model(_chisquared->get_pt(local_center)[0],&sigma);
+    ricochet_model(_chisquared->get_pt(iStart)[0],&sigma);
     //strad=mu-distance_wgt*sqrt(fabs(sigma));
     strad=fabs(mu-_chisquared->target())-sqrt(fabs(sigma));
 
@@ -3425,13 +3431,13 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
 
     int j;
     for(i=0;i<_chisquared->get_dim();i++){
-        pt.set(i,_chisquared->get_pt(local_center,i));
+        pt.set(i,_chisquared->get_pt(iStart,i));
     }
 
     double radius,norm;
     int accept,n_accepted;
 
-    int max_steps=100;
+    int max_steps=1000;
 
     n_accepted=0;
     norm=0.1;
@@ -4569,7 +4575,12 @@ void node::ricochet(){
            }
            _ricochet_strikes.add_val(i,1);
            if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-               originate_particle_shooting(i,_ricochet_velocities(i)[0]);
+               //originate_particle_shooting(i,_ricochet_velocities(i)[0]);
+               mcmc_kick(local_center,&iFound,dir);
+               for(j=0;j<_chisquared->get_dim();j++){
+                   _ricochet_velocities.set(i,j,dir.get_data(j));
+               }
+               _ricochet_particles.set(i,iFound);
                _ricochet_strikes.set(i,0);
                _strikeouts++;
            }
