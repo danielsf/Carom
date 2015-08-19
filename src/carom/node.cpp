@@ -3168,7 +3168,7 @@ void node::initialize_ricochet(){
 
     for(i=0;i<nParticles;i++){
         //originate_particle_compass(i,dir);
-        mcmc_kick(local_center,&iFound,dir);
+        mcmc_kick(local_center,&iFound,dir,1000);
         _ricochet_particles.set(i,iFound);
         _ricochet_origins.set(i,iFound);
         _ricochet_velocities.add_row(dir);
@@ -3407,7 +3407,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
 
 }
 
-int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
+int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_steps){
     //in this case iStart will be the actual point's index
 
     double time_before=double(time(NULL));
@@ -3454,8 +3454,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
 
     double radius,norm;
     int accept,n_accepted;
-
-    int max_steps=1000;
 
     n_accepted=0;
     norm=0.1;
@@ -4537,7 +4535,7 @@ void node::ricochet(){
 
        if(_ricochet_strikes.get_data(ix)>0){
            _total_kicks++;
-           kicked=mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir);
+           kicked=mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir,100);
            if(kicked==1){
                has_been_kicked.set(ix,1);
                dir.normalize();
@@ -4594,7 +4592,7 @@ void node::ricochet(){
            _ricochet_strikes.add_val(i,1);
            if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
                //originate_particle_shooting(i,_ricochet_velocities(i)[0]);
-               mcmc_kick(local_center,&iFound,dir);
+               mcmc_kick(local_center,&iFound,dir,1000);
                for(j=0;j<_chisquared->get_dim();j++){
                    _ricochet_velocities.set(i,j,dir.get_data(j));
                }
