@@ -2799,6 +2799,8 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         target=flow+0.1*(_chisquared->target()-_chisquared->chimin());
     }
 
+    printf("    in evaluate_dir flow %e target %e\n",flow,target);
+
     double component=1.0;
     fhigh=-2.0*exception_value;
     while(fhigh<target){
@@ -2807,6 +2809,8 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         }
         fhigh=ricochet_model(highball);
     }
+
+    printf("    printf fhigh %e\n",fhigh);
 
     array_1d<double> trial,best_pt;
     double ftrial,dfbest;
@@ -2828,6 +2832,7 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
     double tol=1.0e-10;
     double distance=node_distance(lowball,highball);
     while(distance>tol){
+        //printf("    distance %e dfbest %e flow %e %e %e\n",distance,dfbest,flow,fhigh,target);
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
         }
@@ -2854,6 +2859,7 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
     }
 
     //double sigma;
+    printf("    getting final evaluation score\n");
     array_1d<int> neigh;
     ftrial=ricochet_model(best_pt,neigh);
     return node_distance(neigh.get_data(0),best_pt);
@@ -4239,12 +4245,13 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
 }
 
 int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
+    printf("starting adaptive ricochet\n");
     array_1d<double> gradient;
     array_1d<double> old_dir;
     gradient.set_name("_ricochet_gradient");
     old_dir.set_name("_ricochet_old_dir");
 
-    double grad_component;
+    double grad_component,gnorm;
 
     array_1d<double> dir,scratch;
     dir.set_name("_ricochet_dir");
@@ -4254,7 +4261,8 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
 
     node_gradient(_ricochet_particles.get_data(iparticle),gradient);
 
-    gradient.normalize();
+    gnorm=gradient.normalize();
+    printf("gnorm %e\n",gnorm);
     grad_component=0.0;
     for(i=0;i<_chisquared->get_dim();i++){
         grad_component+=_ricochet_velocities.get_data(iparticle,i)*gradient.get_data(i);
@@ -4276,6 +4284,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     }
     fbest_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
 
+    printf("evaluating directions\n");
     old_dir.normalize();
     for(i=1;i<=10;i++){
         theta=i*0.5*pi/10.0;
@@ -4284,6 +4293,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         for(j=0;j<_chisquared->get_dim();j++){
             trial_dir.set(j,costheta*old_dir.get_data(j)-sintheta*gradient.get_data(j));
         }
+        printf("    trial_dir_norm %e\n",trial_dir.get_norm());
         f_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
         if(f_dir>fbest_dir){
             fbest_dir=f_dir;
@@ -4294,10 +4304,11 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         }
     }
 
+    double dirnorm;
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,best_dir.get_data(i));
     }
-    dir.normalize();
+    dirnorm=dir.normalize();
 
     double eflow,efhigh;
     array_1d<double> elowball,ehighball,edir;
@@ -4316,6 +4327,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     flow=2.0*exception_value;
     fhigh=-2.0*exception_value;
 
+    printf("setting flow and fhigh -- dirnorm %e\n",dirnorm);
     while(flow>_chisquared->target()){
         flow=_chisquared->get_fn(_ricochet_particles.get_data(iparticle));
         for(i=0;i<_chisquared->get_dim();i++){
@@ -4390,11 +4402,15 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         exit(1);
     }
 
+    printf("time for bisection\n");
+
     iFound=node_bisection(lowball,flow,highball,fhigh,0);
 
     for(i=0;i<_chisquared->get_dim();i++){
         dir_out.set(i,dir.get_data(i));
     }
+
+    printf("adaptive ricochet found %d\n",iFound);
 
     return iFound;
 
