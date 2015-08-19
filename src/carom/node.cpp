@@ -19,6 +19,10 @@ node& node::operator=(const node &in){
     return *this;
 }
 
+void node::deactivate(){
+    _active=0;
+}
+
 void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
@@ -4856,12 +4860,15 @@ void arrayOfNodes::cull(){
 
     int i,j,kill_it;
     for(i=0;i<_ct;i++){
-        for(j=i+1;j<_ct;j++){
-            kill_it=_data[i].is_this_an_associate(_data[j].get_center());
-            if(kill_it==1){
-                _data[i].merge(_data[j]);
-                remove(j);
-                j--;
+        if(_data[i].get_activity()==1){
+            for(j=i+1;j<_ct;j++){
+                if(_data[j].get_activity()==1){
+                    kill_it=_data[i].is_this_an_associate(_data[j].get_center());
+                    if(kill_it==1){
+                        _data[i].merge(_data[j]);
+                        _data[j].deactivate();
+                    }
+                }
             }
         }
     }

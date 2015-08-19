@@ -15,6 +15,7 @@ public:
     ~node();
     void copy(const node&);
     void merge(const node&);
+    void deactivate();
 
     void initialize_ricochet();
 
