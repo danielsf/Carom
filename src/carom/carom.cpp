@@ -358,7 +358,7 @@ void carom::assess_node(int dex){
     keep_it=1;
     for(ix=0;ix<_nodes.get_dim() && keep_it==1;ix++){
 
-        isAssociate=_nodes(ix)->is_this_an_associate(dex);
+        isAssociate=_nodes(ix)->is_this_an_associate_gross(dex);
 
         if(isAssociate==1){
             keep_it=0;

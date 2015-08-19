@@ -288,6 +288,7 @@ void node::merge(const node &in){
     _ricochet_log.reset();
     _ricochet_log.set_cols(_ricochet_particles.get_dim());
     recalibrate_max_min();
+    _active=1;
 }
 
 int node::get_convergence_ct(){
@@ -456,6 +457,22 @@ void node::is_it_safe(char *word){
         printf("velocities %d\n",_ricochet_candidate_velocities.get_rows());
         exit(1);
     }
+}
+
+int node::is_this_an_associate_gross(int dex){
+    array_1d<double> trial;
+    trial.set_name("node_is_this_associate_gross_trial");
+    double mu;
+    int iFound;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_chisquared->get_pt(dex,i)+_chisquared->get_pt(_centerdex,i)));
+    }
+    evaluate(trial,&mu,&iFound);
+    if(mu<=_chisquared->target()){
+         return 1;
+    }
+    return 0;
 }
 
 int node::is_this_an_associate(int dex){
@@ -3153,6 +3170,7 @@ void node::initialize_ricochet(){
         //originate_particle_compass(i,dir);
         mcmc_kick(local_center,&iFound,dir);
         _ricochet_particles.set(i,iFound);
+        _ricochet_origins.set(i,iFound);
         _ricochet_velocities.add_row(dir);
         _ricochet_strikes.set(i,0);
         local_ricochet_log.add(_ricochet_particles.get_data(i));
@@ -4820,6 +4838,7 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
+    _data[_ct].initialize_ricochet();
     _ct++;
 
 }

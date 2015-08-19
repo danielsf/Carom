@@ -16,6 +16,8 @@ public:
     void copy(const node&);
     void merge(const node&);
 
+    void initialize_ricochet();
+
     void set_chisquared(chisq_wrapper*);
     void set_center(int);
     void set_basis(int,int,double);
@@ -40,6 +42,7 @@ public:
     void recalibrate_max_min();
 
     int is_this_an_associate(int);
+    int is_this_an_associate_gross(int);
     int find_local_center();
 
     int get_highball_calls();
@@ -127,7 +130,6 @@ private:
     void compass_umbrella(int);
     void compass_search_geometric_center();
     void off_center_compass(int);
-    void initialize_ricochet();
     void trim_ricochet();
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&);
