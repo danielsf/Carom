@@ -2858,12 +2858,12 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         distance=node_distance(lowball,highball);
     }
 
-    //double sigma;
+    double sigma;
     printf("    getting final evaluation score\n");
-    array_1d<int> neigh;
-    ftrial=ricochet_model(best_pt,neigh);
-    return node_distance(neigh.get_data(0),best_pt);
-    //return sigma;
+    //array_1d<int> neigh;
+    ftrial=ricochet_model(best_pt,&sigma);
+    //return node_distance(neigh.get_data(0),best_pt);
+    return sigma;
 
 }
 
