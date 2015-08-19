@@ -3039,7 +3039,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
             ix=neigh.get_data(i);
             for(j=0;j<npts;j++){
                 jx=neigh.get_data(j);
-                covar_norm+=(_chisquared->get_fn(ix)-fbar)*covarin.get_data(i,j)*(_chisquared->get_fn(jx)-fbar);
+                covar_norm+=(_chisquared->get_fn(ix)-qbar.get_data(i))*covarin.get_data(i,j)*(_chisquared->get_fn(jx)-qbar.get_data(j));
                 sig[0]-=qq.get_data(i)*covarin.get_data(i,j)*qq.get_data(j);
             }
         }
