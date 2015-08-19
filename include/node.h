@@ -70,6 +70,7 @@ public:
 
 private:
     int _id_dex,_last_wrote_log;
+    int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ct_ricochet,_ct_simplex;

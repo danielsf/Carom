@@ -30,6 +30,7 @@ void node::initialize(){
     _geo_centerdex=-1;
     _ellipse_center=-1;
     _centerdex_basis=-1;
+    _first_centerdex=-1;
     _min_changed=0;
     _active=1;
     _found_bases=0;
@@ -97,6 +98,7 @@ void node::copy(const node &in){
     }
     _convergence_ct=in._convergence_ct;
     _centerdex=in._centerdex;
+    _first_centerdex=in._first_centerdex;
     _geo_centerdex=in._geo_centerdex;
     _centerdex_basis=in._centerdex_basis;
     _chimin=in._chimin;
@@ -345,6 +347,7 @@ void node::set_id_dex(int ii){
 
 void node::set_center(int ix){
     _centerdex=ix;
+    _first_centerdex=ix;
     _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
@@ -470,7 +473,7 @@ int node::is_this_an_associate_gross(int dex){
     int iFound;
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_chisquared->get_pt(dex,i)+_chisquared->get_pt(_centerdex,i)));
+        trial.set(i,0.5*(_chisquared->get_pt(dex,i)+_chisquared->get_pt(_first_centerdex,i)));
     }
     evaluate(trial,&mu,&iFound);
     if(mu<=_chisquared->target()){
@@ -534,6 +537,9 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
             _chimin=value[0];
             _centerdex=dex[0];
             _min_changed=1;
+            if(_first_centerdex<0 || _id_dex==0){
+                _first_centerdex=dex[0];
+            }
         }
 
         if(value[0]<=_chisquared->target()){
