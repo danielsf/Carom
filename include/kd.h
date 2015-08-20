@@ -47,6 +47,8 @@ class kd_tree{
         ~kd_tree();
         
         void copy(const kd_tree&);
+        void write_to_file(char*);
+        void read_from_file(char*);
         
         /*
         These routines provide the back end for building the KD tree

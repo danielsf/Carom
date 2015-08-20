@@ -30,6 +30,80 @@ kd_tree::kd_tree(array_2d<double> &mm, array_1d<double> &nmin, array_1d<double> 
     build_tree(mm,nmin,nmax);
 }
 
+void kd_tree::write_to_file(char *out_name){
+
+    FILE *output;
+    output=fopen(out_name,"w");
+    fprintf(output,"%d\n",data.get_cols());
+    fprintf(output,"%d\n",data.get_rows());
+    fprintf(output,"%d\n",masterparent);
+    fprintf(output,"%e\n",tol);
+    fprintf(output,"%d\n",nkernel);
+    int i,j;
+    for(i=0;i<mins.get_dim();i++){
+        fprintf(output,"%e %e\n",mins.get_data(i),maxs.get_data(i));
+    }
+    for(i=0;i<data.get_rows();i++){
+        for(j=0;j<data.get_cols();j++){
+            fprintf(output,"%e ",data.get_data(i,j));
+        }
+        fprintf(output,"\n");
+    }
+    for(i=0;i<tree.get_rows();i++){
+        for(j=0;j<tree.get_cols();j++){
+            fprintf(output,"%d ",tree.get_data(i,j));
+        }
+        fprintf(output,"\n");
+    }
+    fclose(output);
+
+}
+
+void kd_tree::read_from_file(char *in_name){
+    FILE *input;
+    input=fopen(in_name,"r");
+    int dim,pts;
+    fscanf(input,"%d",&dim);
+    fscanf(input,"%d",&pts);
+    fscanf(input,"%d",&masterparent);
+    fscanf(input,"%le",&tol);
+    fscanf(input,"%d",&nkernel);
+
+    data.reset();
+    data.set_dim(pts,dim);
+    tree.reset();
+    tree.set_dim(pts,4);
+
+    int i,j,ix;
+    double mu;
+
+    for(i=0;i<dim;i++){
+        fscanf(input,"%le",&mu);
+        mins.set(i,mu);
+        fscanf(input,"%le",&mu);
+        maxs.set(i,mu);
+    }
+
+    for(i=0;i<pts;i++){
+        for(j=0;j<dim;j++){
+            fscanf(input,"%le",&mu);
+            data.set(i,j,mu);
+        }
+    }
+
+    for(i=0;i<pts;i++){
+        for(j=0;j<4;j++){
+            fscanf(input,"%d",&ix);
+            tree.set(i,j,ix);
+        }
+    }
+
+    fclose(input);
+
+    check_tree();
+
+}
+
 void kd_tree::copy(const kd_tree &in){
     search_time=in.search_time;
     search_time_solo=in.search_time_solo;
