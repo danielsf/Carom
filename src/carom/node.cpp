@@ -4272,6 +4272,8 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         old_dir.set(i,_ricochet_velocities.get_data(iparticle,i)-grad_component*gradient.get_data(i));
     }
 
+    printf("old_dir norm %e\n",old_dir.get_norm());
+
     array_1d<double> trial_dir,best_dir;
     double fbest_dir,f_dir,best_theta;
 
