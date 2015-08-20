@@ -49,6 +49,9 @@ class elliptical_model{
             }
             fprintf(output,"\n");
         }
+        for(i=0;i<_fn->get_dim();i++){
+            fprintf(output,"%e\n",_fn->get_data(i));
+        }
         fclose(output);
     }
 
