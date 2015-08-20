@@ -32,6 +32,24 @@ class elliptical_model{
         tree.write_to_file(out_name);
     }
 
+    void output_model(char *out_name){
+        FILE *output;
+        output=fopen(out_name,"w");
+
+        int i,j;
+        fprintf(output,"%d",_data->get_cols());
+        for(i=0;i<_data->get_cols();i++){
+            frpintf(output,"%e\n",_model_coeffs.get_data(i));
+        }
+        for(i=0;i<_data->get_cols();i++){
+            for(j=0;j<_data->get_cols();j++){
+                fprintf(output,"%e ",_bases.get_data(i,j));
+            }
+            fprintf(output,"\n");
+        }
+        fclose(output);
+    }
+
     private:
 
         array_2d<double> *_data;
