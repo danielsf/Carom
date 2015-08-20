@@ -16,7 +16,11 @@ class elliptical_model{
             _basis_mm.set_name("mm");
             _basis_vv.set_name("vv");
             _basis_bb.set_name("bb");
+            _min.set_name("min");
+            _max.set_name("max");
             _dice=new Ran(42);
+
+            _prepare();
         }
 
      ~elliptical_model(){
@@ -28,6 +32,7 @@ class elliptical_model{
         array_2d<double> *_data;
         array_2d<double> _bases;
         array_1d<double> _model_coeffs;
+        array_1d<double> _min,_max;
         array_1d<double> *_fn;
         array_1d<int> _basis_associates;
 
@@ -38,10 +43,21 @@ class elliptical_model{
         double _target;
         Ran *_dice;
 
+        void _prepare();
         double basis_error(array_2d<double>&, array_1d<double>&);
         void perturb_bases(int,array_1d<double>&,array_2d<double>&);
         void validate_bases(array_2d<double>&, char*);
         void find_bases();
+
+        double distance(int i1, int i2){
+            double ans=0.0;
+            int i;
+            for(i=0;i<_data->get_cols();i++){
+                ans+=power((_data->get_data(i1,i)-_data->get_data(i2,i))/(_max.get_data(i)-_min.get_data(i)),2);
+            }
+            return sqrt(ans);
+        }
+
 
         void project_to_bases(array_1d<double> &in, array_1d<double> &out){
              int i;
@@ -62,6 +78,67 @@ class elliptical_model{
             }
         }
 };
+
+
+void elliptical_model::_prepare(){
+    _mindex=-1;
+    int i,j;
+    double min_val;
+    for(i=0;i<_fn->get_dim();i++){
+        if(_mindex<0 || _fn->get_data(i)<min_val){
+            min_val=_fn->get_data(i);
+            _mindex=i;
+        }
+    }
+    for(i=0;i<_data->get_cols();i++){
+        for(j=0;j<_data->get_cols();j++){
+            if(i==j){
+                _bases.set(i,j,1.0);
+            }
+            else{
+                _bases.set(i,j,0.0);
+            }
+        }
+    }
+
+    for(i=0;i<_data->get_cols();i++){
+        _min.set(i,2.0*exception_value);
+        _max.set(i,-2.0*exception_value);
+    }
+
+    for(i=0;i<_data->get_rows();i++){
+        if(_fn->get_data(i)<=_target){
+            for(j=0;j<_data->get_cols();j++){
+                if(_data->get_data(i,j)<_min.get_data(j)){
+                    _min.set(j,_data->get_data(i,j));
+                }
+                if(_data->get_data(i,j)>_max.get_data(j)){
+                    _max.set(j,_data->get_data(i,j));
+                }
+            }
+        }
+    }
+
+    double tol=0.1*(_target-_fn->get_data(_mindex));
+    double midpt=0.5*(_target+_fn->get_data(_mindex));
+    double dd,ddmin;
+    for(i=0;i<_fn->get_dim();i++){
+        if(fabs(_fn->get_data(i)-_target)<1.0e-2 || fabs(_fn->get_data(i)-midpt)<tol){
+            ddmin=2.0*exception_value;
+            for(j=0;j<_basis_associates.get_dim();j++){
+                dd=distance(_basis_associates.get_data(j),i);
+                if(dd<ddmin){
+                    ddmin=dd;
+                }
+            }
+            if(ddmin>0.1){
+                _basis_associates.add(i);
+            }
+        }
+    }
+    printf("_basis_associates %d\n",_basis_associates.get_dim());
+}
+
 
 double elliptical_model::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_model){
 
