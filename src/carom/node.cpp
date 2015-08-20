@@ -2799,7 +2799,7 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         target=flow+0.1*(_chisquared->target()-_chisquared->chimin());
     }
 
-    printf("    in evaluate_dir flow %e target %e\n",flow,target);
+    printf("    in evaluate_dir flow %e target %e dirnorm %e\n",flow,target,dir_in.get_norm());
 
     double component=1.0;
     fhigh=-2.0*exception_value;
