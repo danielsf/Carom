@@ -252,6 +252,13 @@ object/wmap_likelihood_function.o
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 
+create_training: likelihoods/create_training_wmap_likelihood.cpp \
+object/containers.o object/goto_tools.o object/kd.o
+	$(gg) -o bin/create_training \
+	likelihoods/create_training_wmap_likelihood.cpp \
+	object/containers.o object/goto_tools.o object/kd.o \
+	$(LIBRARIES)
+
 all:
 	make test_containers
 	make test_kd
