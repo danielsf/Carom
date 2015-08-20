@@ -27,6 +27,8 @@ class elliptical_model{
           delete _dice;
      }
 
+    void find_bases();
+
     void output_tree(char *out_name){
         kd_tree tree(_data[0]);
         tree.write_to_file(out_name);
@@ -39,7 +41,7 @@ class elliptical_model{
         int i,j;
         fprintf(output,"%d",_data->get_cols());
         for(i=0;i<_data->get_cols();i++){
-            frpintf(output,"%e\n",_model_coeffs.get_data(i));
+            fprintf(output,"%e\n",_model_coeffs.get_data(i));
         }
         for(i=0;i<_data->get_cols();i++){
             for(j=0;j<_data->get_cols();j++){
@@ -70,7 +72,6 @@ class elliptical_model{
         double basis_error(array_2d<double>&, array_1d<double>&);
         void perturb_bases(int,array_1d<double>&,array_2d<double>&);
         void validate_bases(array_2d<double>&, char*);
-        void find_bases();
 
         double distance(int i1, int i2){
             double ans=0.0;
@@ -477,6 +478,41 @@ int main(int iargc, char *argv[]){
         exit(1);
     }
 
+
+    char word[letters];
+    FILE *input;
+    array_2d<double> data;
+    array_1d<double> chisq;
+    int dim=6;
+    double mu,target;
+
+    target=1283.1;
+    data.set_cols(dim);
+
+    input=fopen(in_name,"r");
+    for(i=0;i<dim+5;i++){
+        fscanf(input,"%s",word);
+    }
+
+    for(i=0;fscanf(input,"%le",&mu)>0;i++){
+        data.set(i,0,mu);
+        for(j=1;j<dim;j++){
+            fscanf(input,"%le",&mu);
+            data.set(i,j,mu);
+        }
+        fscanf(input,"%le",&mu);
+        chisq.add(mu);
+        for(j=0;j<3;j++){
+             fscanf(input,"%le",&mu);
+        }
+    }
+    fclose(input);
+
+    printf("pts %d\n",data.get_rows());
+    elliptical_model model(&data,&chisq,target);
+    model.find_bases();
+    model.output_model(out_name);
+    model.output_tree(tree_name);
 
 
 }
