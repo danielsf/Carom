@@ -19,17 +19,18 @@ class elliptical_model{
             _min.set_name("min");
             _max.set_name("max");
             _dice=new Ran(42);
-            _kptr=NULL;
 
             _prepare();
         }
 
      ~elliptical_model(){
           delete _dice;
-          if(_kptr!=NULL){
-              delete _kptr;
-          }
      }
+
+    void output_tree(char *out_name){
+        kd_tree tree(_data[0]);
+        tree.write_to_file(out_name);
+    }
 
     private:
 
@@ -46,7 +47,6 @@ class elliptical_model{
         int _mindex;
         double _target;
         Ran *_dice;
-        kd_tree *_kptr;
 
         void _prepare();
         double basis_error(array_2d<double>&, array_1d<double>&);
@@ -86,9 +86,6 @@ class elliptical_model{
 
 
 void elliptical_model::_prepare(){
-
-    _kptr=new kd_tree(_data[0]);
-    _kptr->check_tree();
 
     _mindex=-1;
     int i,j;
