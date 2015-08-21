@@ -30,7 +30,7 @@ class elliptical_model{
     void find_bases();
 
     void output_tree(char *out_name){
-        kd_tree tree(_data[0]);
+        kd_tree tree(_data[0],_min,_max);
         tree.write_to_file(out_name);
     }
 
@@ -147,11 +147,12 @@ void elliptical_model::_prepare(){
         }
     }
 
-    double tol=0.1*(_target-_fn->get_data(_mindex));
+    double tol=0.01*(_target-_fn->get_data(_mindex));
     double midpt=0.5*(_target+_fn->get_data(_mindex));
+    double maxpt=_target;//0.25*_target+0.75*_fn->get_data(_mindex);
     double dd,ddmin;
     for(i=0;i<_fn->get_dim();i++){
-        if(fabs(_fn->get_data(i)-_target)<1.0e-2 || fabs(_fn->get_data(i)-midpt)<tol){
+        if(fabs(_fn->get_data(i)-maxpt)<tol || fabs(_fn->get_data(i)-midpt)<tol){
             ddmin=2.0*exception_value;
             for(j=0;j<_basis_associates.get_dim();j++){
                 dd=distance(_basis_associates.get_data(j),i);
@@ -159,7 +160,7 @@ void elliptical_model::_prepare(){
                     ddmin=dd;
                 }
             }
-            if(ddmin>0.1){
+            if(ddmin>0.01){
                 _basis_associates.add(i);
             }
         }
@@ -355,10 +356,12 @@ void elliptical_model::find_bases(){
 
     int ct,idim,aborted,max_abort,total_aborted,changed_bases;
     double error0,error,errorBest,stdev,stdevlim,error1;
+    double stdevstart;
 
-    stdev=0.1/sqrt(double(_data->get_cols()));
+    stdevstart=0.1/sqrt(double(_data->get_cols()));
+    stdev=stdevstart;
     stdevlim=1.0e-5/sqrt(double(_data->get_cols()));
-    max_abort=_data->get_cols()*100;
+    max_abort=_data->get_cols()*1000;
 
     error=basis_error(_bases,_model_coeffs);
     error0=error;
@@ -371,7 +374,7 @@ void elliptical_model::find_bases(){
 
     printf("error0 %e %d\n",error0,_basis_associates.get_dim());
 
-    while(stdev>stdevlim && aborted<max_abort){
+    while(aborted<max_abort){
         ct++;
         idim=-1;
         while(idim>=_data->get_cols() || idim<0){
@@ -417,9 +420,13 @@ void elliptical_model::find_bases(){
             error1=errorBest;
             printf("    ct %d error %e from %e min %e\n",ct,errorBest,error0,_fn->get_data(_mindex));
         }
+
+        if(stdev<stdevlim){
+            stdev*=2.0;
+        }
     }
     printf("    ct %d error %e from %e min %e\n",ct,errorBest,error0,_fn->get_data(_mindex));
-
+    printf("    ended %d %d; %e %e\n",aborted,max_abort,stdev,stdevlim);
 }
 
 
