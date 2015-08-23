@@ -2826,9 +2826,21 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         target=flow+0.1*(_chisquared->target()-_chisquared->chimin());
     }
 
-
     int ct;
     double component=1.0;
+
+    double f_max;
+    for(i=0;i<_chisquared->get_dim();i++){
+        if(fabs(dir_in.get_data(i))>1.0e-20){
+            if(i==0 || fabs(dir_in.get_data(i))>f_max){
+                if(_max_found.get_data(i)-_min_found.get_data(i)>1.0e-20){
+                    f_max=fabs(dir_in.get_data(i));
+                    component=0.1*(_max_found.get_data(i)-_min_found.get_data(i));
+                }
+            }
+        }
+    }
+
     fhigh=-2.0*exception_value;
     for(ct=0;fhigh<target && ct<100;ct++){
         for(i=0;i<_chisquared->get_dim();i++){
