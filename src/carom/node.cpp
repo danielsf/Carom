@@ -19,6 +19,10 @@ node& node::operator=(const node &in){
     return *this;
 }
 
+void node::deactivate(){
+    _active=0;
+}
+
 void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
@@ -26,6 +30,7 @@ void node::initialize(){
     _geo_centerdex=-1;
     _ellipse_center=-1;
     _centerdex_basis=-1;
+    _first_centerdex=-1;
     _min_changed=0;
     _active=1;
     _found_bases=0;
@@ -93,6 +98,7 @@ void node::copy(const node &in){
     }
     _convergence_ct=in._convergence_ct;
     _centerdex=in._centerdex;
+    _first_centerdex=in._first_centerdex;
     _geo_centerdex=in._geo_centerdex;
     _centerdex_basis=in._centerdex_basis;
     _chimin=in._chimin;
@@ -288,6 +294,7 @@ void node::merge(const node &in){
     _ricochet_log.reset();
     _ricochet_log.set_cols(_ricochet_particles.get_dim());
     recalibrate_max_min();
+    _active=1;
 }
 
 int node::get_convergence_ct(){
@@ -340,6 +347,7 @@ void node::set_id_dex(int ii){
 
 void node::set_center(int ix){
     _centerdex=ix;
+    _first_centerdex=ix;
     _min_changed=1;
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
@@ -458,6 +466,22 @@ void node::is_it_safe(char *word){
     }
 }
 
+int node::is_this_an_associate_gross(int dex){
+    array_1d<double> trial;
+    trial.set_name("node_is_this_associate_gross_trial");
+    double mu;
+    int iFound;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_chisquared->get_pt(dex,i)+_chisquared->get_pt(_first_centerdex,i)));
+    }
+    evaluate(trial,&mu,&iFound);
+    if(mu<=_chisquared->target()){
+         return 1;
+    }
+    return 0;
+}
+
 int node::is_this_an_associate(int dex){
 
     double dd,ddmin;
@@ -513,6 +537,9 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
             _chimin=value[0];
             _centerdex=dex[0];
             _min_changed=1;
+            if(_first_centerdex<0 || _id_dex==0){
+                _first_centerdex=dex[0];
+            }
         }
 
         if(value[0]<=_chisquared->target()){
@@ -2799,7 +2826,6 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         target=flow+0.1*(_chisquared->target()-_chisquared->chimin());
     }
 
-    printf("    in evaluate_dir flow %e target %e\n",flow,target);
 
     int ct;
     double component=1.0;
@@ -2816,8 +2842,6 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         //return a bad value, since we cannot seem to get fhigh to work
         return -2.0*exception_value;
     }
-
-    printf("    printf fhigh %e\n",fhigh);
 
     array_1d<double> trial,best_pt;
     double ftrial,dfbest;
@@ -2839,7 +2863,6 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
     double tol=1.0e-10;
     double distance=node_distance(lowball,highball);
     while(distance>tol){
-        //printf("    distance %e dfbest %e flow %e %e %e\n",distance,dfbest,flow,fhigh,target);
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
         }
@@ -2865,13 +2888,11 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
         distance=node_distance(lowball,highball);
     }
 
-    //double sigma;
-    printf("    getting final evaluation score\n");
-    array_1d<int> neigh;
-    ftrial=ricochet_model(best_pt,neigh);
-    return node_distance(neigh.get_data(0),best_pt);
-    //return sigma;
-
+    double sigma;
+    //array_1d<int> neigh;
+    ftrial=ricochet_model(best_pt,&sigma);
+    //return node_distance(neigh.get_data(0),best_pt);
+    return sigma;
 }
 
 double node::ricochet_model(array_1d<double> &pt, kd_tree &tree,
@@ -3159,8 +3180,15 @@ void node::initialize_ricochet(){
 
     dir.set_dim(_chisquared->get_dim());
 
+    int iFound,local_center;
+
+    local_center=find_local_center();
+
     for(i=0;i<nParticles;i++){
-        originate_particle_compass(i,dir);
+        //originate_particle_compass(i,dir);
+        mcmc_kick(local_center,&iFound,dir,1000);
+        _ricochet_particles.set(i,iFound);
+        _ricochet_origins.set(i,iFound);
         _ricochet_velocities.add_row(dir);
         _ricochet_strikes.set(i,0);
         local_ricochet_log.add(_ricochet_particles.get_data(i));
@@ -3397,12 +3425,14 @@ int node::t_kick(int ix, array_1d<double> &dir){
 
 }
 
-int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
+int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_steps){
     //in this case iStart will be the actual point's index
 
     double time_before=double(time(NULL));
     double strad,trial_strad;
     double mu,distance_wgt;
+
+    int local_center=find_local_center();
 
     distance_wgt=_chisquared->target()-_chisquared->chimin();
 
@@ -3418,10 +3448,15 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     array_1d<int> neigh;
     neigh.set_name("node_mcmc_kick_neigh");
 
-    mu=ricochet_model(_chisquared->get_pt(iStart)[0],
+    /*mu=ricochet_model(_chisquared->get_pt(iStart)[0],
                       _chisquared->get_tree()[0],
                       neigh);
-    strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));
+    strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));*/
+
+    double sigma;
+    ricochet_model(_chisquared->get_pt(iStart)[0],&sigma);
+    //strad=mu-distance_wgt*sqrt(fabs(sigma));
+    strad=fabs(mu-_chisquared->target())-sqrt(fabs(sigma));
 
     int ix;
 
@@ -3438,8 +3473,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
     double radius,norm;
     int accept,n_accepted;
 
-    int max_steps=100;
-
     n_accepted=0;
     norm=0.1;
     for(ix=0;ix<max_steps;ix++){
@@ -3452,8 +3485,10 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
         }
-        mu=ricochet_model(trial,_chisquared->get_tree()[0],neigh);
-        trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
+        mu=ricochet_model(trial,&sigma);
+        //trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
+        //trial_strad=mu-distance_wgt*sqrt(fabs(sigma));
+        trial_strad=fabs(mu-_chisquared->target())-sqrt(fabs(sigma));
         if(trial_strad<strad){
             accept=1;
         }
@@ -3504,7 +3539,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         }
     }
 
-    int local_center;
     array_1d<double> e_dir;
     double e_dir_norm,dx,fstart;
     e_dir.set_name("mcmc_kick_e_dir");
@@ -3518,7 +3552,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out){
         fstart=_chisquared->get_fn(iStart);
     }
     else{
-        local_center=find_local_center();
         for(i=0;i<_chisquared->get_dim();i++){
             e_dir.set(i,_chisquared->get_pt(iStart,i)-_chisquared->get_pt(local_center,i));
         }
@@ -4252,13 +4285,12 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
 }
 
 int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
-    printf("starting adaptive ricochet\n");
     array_1d<double> gradient;
     array_1d<double> old_dir;
     gradient.set_name("_ricochet_gradient");
     old_dir.set_name("_ricochet_old_dir");
 
-    double grad_component,gnorm;
+    double grad_component;
 
     array_1d<double> dir,scratch;
     dir.set_name("_ricochet_dir");
@@ -4268,8 +4300,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
 
     node_gradient(_ricochet_particles.get_data(iparticle),gradient);
 
-    gnorm=gradient.normalize();
-    printf("gnorm %e\n",gnorm);
+    gradient.normalize();
     grad_component=0.0;
     for(i=0;i<_chisquared->get_dim();i++){
         grad_component+=_ricochet_velocities.get_data(iparticle,i)*gradient.get_data(i);
@@ -4291,7 +4322,6 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     }
     fbest_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
 
-    printf("evaluating directions\n");
     old_dir.normalize();
     for(i=1;i<=10;i++){
         theta=i*0.5*pi/10.0;
@@ -4300,7 +4330,6 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         for(j=0;j<_chisquared->get_dim();j++){
             trial_dir.set(j,costheta*old_dir.get_data(j)-sintheta*gradient.get_data(j));
         }
-        printf("    trial_dir_norm %e\n",trial_dir.get_norm());
         f_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
         if(f_dir>fbest_dir){
             fbest_dir=f_dir;
@@ -4311,11 +4340,10 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         }
     }
 
-    double dirnorm;
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,best_dir.get_data(i));
     }
-    dirnorm=dir.normalize();
+    dir.normalize();
 
     double eflow,efhigh;
     array_1d<double> elowball,ehighball,edir;
@@ -4334,7 +4362,6 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     flow=2.0*exception_value;
     fhigh=-2.0*exception_value;
 
-    printf("setting flow and fhigh -- dirnorm %e\n",dirnorm);
     while(flow>_chisquared->target()){
         flow=_chisquared->get_fn(_ricochet_particles.get_data(iparticle));
         for(i=0;i<_chisquared->get_dim();i++){
@@ -4409,15 +4436,11 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         exit(1);
     }
 
-    printf("time for bisection\n");
-
     iFound=node_bisection(lowball,flow,highball,fhigh,0);
 
     for(i=0;i<_chisquared->get_dim();i++){
         dir_out.set(i,dir.get_data(i));
     }
-
-    printf("adaptive ricochet found %d\n",iFound);
 
     return iFound;
 
@@ -4530,7 +4553,7 @@ void node::ricochet(){
 
        if(_ricochet_strikes.get_data(ix)>0){
            _total_kicks++;
-           kicked=mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir);
+           kicked=mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir,100);
            if(kicked==1){
                has_been_kicked.set(ix,1);
                dir.normalize();
@@ -4586,7 +4609,12 @@ void node::ricochet(){
            }
            _ricochet_strikes.add_val(i,1);
            if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-               originate_particle_shooting(i,_ricochet_velocities(i)[0]);
+               //originate_particle_shooting(i,_ricochet_velocities(i)[0]);
+               mcmc_kick(local_center,&iFound,dir,1000);
+               for(j=0;j<_chisquared->get_dim();j++){
+                   _ricochet_velocities.set(i,j,dir.get_data(j));
+               }
+               _ricochet_particles.set(i,iFound);
                _ricochet_strikes.set(i,0);
                _strikeouts++;
            }
@@ -4826,6 +4854,7 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
+    _data[_ct].initialize_ricochet();
     _ct++;
 
 }
@@ -4845,12 +4874,15 @@ void arrayOfNodes::cull(){
 
     int i,j,kill_it;
     for(i=0;i<_ct;i++){
-        for(j=i+1;j<_ct;j++){
-            kill_it=_data[i].is_this_an_associate(_data[j].get_center());
-            if(kill_it==1){
-                _data[i].merge(_data[j]);
-                remove(j);
-                j--;
+        if(_data[i].get_activity()==1){
+            for(j=i+1;j<_ct;j++){
+                if(_data[j].get_activity()==1){
+                    kill_it=_data[i].is_this_an_associate(_data[j].get_center());
+                    if(kill_it==1){
+                        _data[i].merge(_data[j]);
+                        _data[j].deactivate();
+                    }
+                }
             }
         }
     }

@@ -15,6 +15,9 @@ public:
     ~node();
     void copy(const node&);
     void merge(const node&);
+    void deactivate();
+
+    void initialize_ricochet();
 
     void set_chisquared(chisq_wrapper*);
     void set_center(int);
@@ -40,6 +43,7 @@ public:
     void recalibrate_max_min();
 
     int is_this_an_associate(int);
+    int is_this_an_associate_gross(int);
     int find_local_center();
 
     int get_highball_calls();
@@ -66,6 +70,7 @@ public:
 
 private:
     int _id_dex,_last_wrote_log;
+    int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ct_ricochet,_ct_simplex;
@@ -127,7 +132,6 @@ private:
     void compass_umbrella(int);
     void compass_search_geometric_center();
     void off_center_compass(int);
-    void initialize_ricochet();
     void trim_ricochet();
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&);
@@ -141,7 +145,7 @@ private:
 
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
-    int mcmc_kick(int, int*, array_1d<double>&);
+    int mcmc_kick(int, int*, array_1d<double>&, int);
     int t_kick(int,array_1d<double>&);
     int smart_step_kick(int, double, array_1d<double>&);
     void originate_particle_compass(int, array_1d<double>&);
