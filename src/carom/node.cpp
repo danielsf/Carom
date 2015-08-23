@@ -2801,13 +2801,20 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
 
     printf("    in evaluate_dir flow %e target %e dirnorm %e\n",flow,target,dir_in.get_norm());
 
+    int ct;
     double component=1.0;
     fhigh=-2.0*exception_value;
-    while(fhigh<target){
+    for(ct=0;fhigh<target && ct<100;ct++){
         for(i=0;i<_chisquared->get_dim();i++){
             highball.add_val(i,component*dir_in.get_data(i));
         }
         fhigh=ricochet_model(highball);
+        component*=0.0;
+    }
+
+    if(fhigh<target){
+        //return a bad value, since we cannot seem to get fhigh to work
+        return -2.0*exception_value;
     }
 
     printf("    printf fhigh %e\n",fhigh);
