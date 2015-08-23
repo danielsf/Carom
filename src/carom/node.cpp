@@ -2835,7 +2835,7 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
             highball.add_val(i,component*dir_in.get_data(i));
         }
         fhigh=ricochet_model(highball);
-        component*=0.0;
+        component*=2.0;
     }
 
     if(fhigh<target){
