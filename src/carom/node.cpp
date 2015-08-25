@@ -3500,21 +3500,23 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
         }
         step.normalize();
 
-        coulomb_step.zero();
-        for(ib=0;ib<_boundary_points.get_dim();ib++){
-            rr=node_distance(_boundary_points.get_data(ib),pt);
-            if(rr>1.0e-20){
-                for(i=0;i<_chisquared->get_dim();i++){
-                    coulomb_step.add_val(i,(pt.get_data(i)-_chisquared->get_pt(_boundary_points.get_data(ib),i))/(rr*rr));
+        if(ix>20){
+            coulomb_step.zero();
+            for(ib=0;ib<_boundary_points.get_dim();ib++){
+                rr=node_distance(_boundary_points.get_data(ib),pt);
+                if(rr>1.0e-20){
+                    for(i=0;i<_chisquared->get_dim();i++){
+                        coulomb_step.add_val(i,(pt.get_data(i)-_chisquared->get_pt(_boundary_points.get_data(ib),i))/(rr*rr));
+                    }
                 }
             }
-        }
-        coulomb_step.normalize();
+            coulomb_step.normalize();
 
-        for(i=0;i<_chisquared->get_dim();i++){
-            step.add_val(i,10.0*coulomb_step.get_data(i));
+            for(i=0;i<_chisquared->get_dim();i++){
+                step.add_val(i,10.0*coulomb_step.get_data(i));
+            }
+            step.normalize();
         }
-        step.normalize();
 
         radius=normal_deviate(_chisquared->get_dice(),0.0,1.0);
         for(i=0;i<_chisquared->get_dim();i++){
