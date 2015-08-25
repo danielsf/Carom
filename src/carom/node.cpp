@@ -2953,7 +2953,9 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     double ell;
     array_2d<double> covar,covarin;
     array_1d<int> neigh;
-    array_1d<double> dd,min_cache,max_cache;
+    array_1d<double> dd,min_cache,max_cache,fn_array;
+
+    fn_array.set_name("node_ricochet_model_fn_array");
 
     min_cache.set_name("node_ricochet_model_min_cache");
     max_cache.set_name("node_ricochet_model_max_cache");
@@ -3020,6 +3022,35 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     mutual_dd_sorted.set_name("node_ricochet_mutual_dd_sorted");
     mutual_dexes.set_name("node_ricochet_mutual_dexes");
 
+    double max_dfn=-1.0;
+    for(i=0;i<npts;i++){
+        ell=_chisquared->get_fn(neigh.get_data(i))-apply_quadratic_model(_chisquared->get_pt(neigh.get_data(i))[0]);
+        if(_chisquared->get_fn(neigh.get_data(i))<exception_value && ell>max_dfn){
+            max_dfn=ell;
+        }
+    }
+
+    if(max_dfn<0.0){
+        max_dfn*=(-1.0);
+    }
+
+    double mu;
+    for(i=0;i<npts;i++){
+        ell=_chisquared->get_fn(neigh.get_data(i));
+        if(ell<exception_value){
+            fn_array.set(i,ell);
+        }
+        else{
+            mu=max_dfn+fabs(apply_quadratic_model(_chisquared->get_pt(neigh.get_data(i))[0]));
+            if(mu>_chisquared->target()){
+                fn_array.set(i,mu);
+            }
+            else{
+                fn_array.set(i,max_dfn+_chisquared->target());
+            }
+        }
+    }
+
     k=0;
     for(i=0;i<npts;i++){
         for(j=i+1;j<npts;j++){
@@ -3035,7 +3066,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     covar.set_dim(npts,npts);
     covarin.set_dim(npts,npts);
 
-    double mu,nugget;
+    double nugget;
     nugget=1.0e-4;
     for(i=0;i<npts;i++){
         covar.set(i,i,1.0+nugget);
@@ -3072,7 +3103,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     mu=fbar;
     for(i=0;i<npts;i++){
         for(j=0;j<npts;j++){
-            mu+=qq.get_data(i)*covarin.get_data(i,j)*(_chisquared->get_fn(neigh.get_data(j))-qbar.get_data(j));
+            mu+=qq.get_data(i)*covarin.get_data(i,j)*(fn_array.get_data(j)-qbar.get_data(j));
         }
     }
 
@@ -3085,7 +3116,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
             ix=neigh.get_data(i);
             for(j=0;j<npts;j++){
                 jx=neigh.get_data(j);
-                covar_norm+=(_chisquared->get_fn(ix)-qbar.get_data(i))*covarin.get_data(i,j)*(_chisquared->get_fn(jx)-qbar.get_data(j));
+                covar_norm+=(fn_array.get_data(i)-qbar.get_data(i))*covarin.get_data(i,j)*(fn_array.get_data(j)-qbar.get_data(j));
                 sig[0]-=qq.get_data(i)*covarin.get_data(i,j)*qq.get_data(j);
             }
         }

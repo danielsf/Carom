@@ -357,20 +357,19 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
         _ct_where.add_val(_iWhere,1);
     }
 
-    if(mu<exception_value){
-        _kptr->add(pt);
-        _fn.add(mu);
-        dex[0]=_kptr->get_pts()-1;
-        _where_log.set(dex[0],_iWhere);
+    _kptr->add(pt);
+    _fn.add(mu);
+    dex[0]=_kptr->get_pts()-1;
+    _where_log.set(dex[0],_iWhere);
 
-        if(mu<_chimin){
-            _chimin=mu;
-            _mindex=_kptr->get_pts();
-            if(_adaptive_target==1){
-                _target=_chimin+_deltachi;
-            }
+    if(mu<_chimin){
+        _chimin=mu;
+        _mindex=_kptr->get_pts();
+        if(_adaptive_target==1){
+            _target=_chimin+_deltachi;
         }
     }
+
 }
 
 int chisq_wrapper::get_called(){
