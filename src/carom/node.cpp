@@ -3512,7 +3512,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
         coulomb_step.normalize();
 
         for(i=0;i<_chisquared->get_dim();i++){
-            step.add_val(i,coulomb_step.get_data(i));
+            step.add_val(i,10.0*coulomb_step.get_data(i));
         }
         step.normalize();
 
