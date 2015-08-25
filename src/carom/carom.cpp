@@ -5,6 +5,7 @@ carom::carom(){
     _last_written=0;
     _ct_simplex=0;
     _ct_node=0;
+    _unique_nodes=0;
     _calls_to_simplex=0;
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
@@ -116,7 +117,7 @@ void carom::write_pts(){
         output=fopen(_timingname,"a");
     }
 
-    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d -- ",
+    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d %d -- ",
         _chifn.get_called(),
         _chifn.chimin(),
         double(time(NULL))-_time_started,
@@ -127,7 +128,7 @@ void carom::write_pts(){
         _chifn.get_ct_where(iSimplex),
         _chifn.get_ct_where(iRicochet),
         _chifn.get_ct_where(iCompass),
-        _calls_to_simplex,_nodes.get_dim());
+        _calls_to_simplex,_nodes.get_dim(),_unique_nodes);
     for(i=0;i<_nodes.get_dim();i++){
         fprintf(output,"%.4e %.4e %d %d -- convergence %d ricochets %d kicks %d",
         _nodes(i)->projected_volume(),
@@ -281,7 +282,7 @@ void carom::search(int limit){
     while(goon==1){
         _nodes.cull();
 
-        if(_calls_to_simplex>_nodes.get_dim()+2 &&
+        if(_calls_to_simplex>_unique_nodes+2 &&
            _nodes.get_dim()>0){
             dosimplex=0;
         }
@@ -319,7 +320,7 @@ void carom::search(int limit){
         }
 
         if(active_nodes==0 &&
-           _calls_to_simplex>_nodes.get_dim()+2 &&
+           _calls_to_simplex>_unique_nodes+2 &&
            _nodes.get_dim()>0){
             goon=0;
             write_pts();
@@ -329,7 +330,6 @@ void carom::search(int limit){
             goon=0;
             write_pts();
         }
-
     }
 }
 
@@ -347,10 +347,11 @@ void carom::assess_node(int dex){
 
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
         _nodes.add(dex,&_chifn);
+        _unique_nodes++;
         return;
     }
 
-    int keep_it,i,ix,iFound,isAssociate;
+    int keep_it,i,ix,iFound,isAssociate,is_unique;
     double ftrial;
     array_1d<double> trial;
     trial.set_name("carom_assess_node_trial");
@@ -372,7 +373,16 @@ void carom::assess_node(int dex){
     }
 
     if(keep_it==1){
+        is_unique=1;
+        for(ix=0;ix<_nodes.get_dim() && is_unique==1;ix++){
+            if(_nodes(ix)->is_this_an_associate(dex)==1){
+                is_unique=0;
+            }
+        }
         _nodes.add(dex,&_chifn);
+        if(is_unique==1){
+            _unique_nodes++;
+        }
     }
 
 }
