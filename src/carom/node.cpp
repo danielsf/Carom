@@ -3485,14 +3485,44 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
     double radius,norm;
     int accept,n_accepted;
 
+    array_1d<double> coulomb_step;
+    double rr;
+    int ib;
+    coulomb_step.set_name("node_mcmc_kick_coulomb_step");
+    coulomb_step.set_dim(_chisquared->get_dim());
+
     n_accepted=0;
     norm=0.1;
     for(ix=0;ix<max_steps;ix++){
         accept=0;
+        if(iStart!=local_center || ix!=0){
+            for(i=0;i<_chisquared->get_dim();i++){
+                step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+            }
+            step.normalize();
+        }
+        else{
+            for(i=0;i<_chisquared->get_dim();i++){
+                step.set(i,_chisquared->get_pt(local_center,i)-pt.get_data(i));
+            }
+        }
+
+        coulomb_step.zero();
+        for(ib=0;ib<_boundary_points.get_dim();ib++){
+            rr=node_distance(_boundary_points.get_data(ib),pt);
+            if(rr>1.0e-20){
+                for(i=0;i<_chisquared->get_dim();i++){
+                    coulomb_step.add_val(i,(pt.get_data(i)-_chisquared->get_pt(_boundary_points.get_data(ib),i))/(rr*rr));
+                }
+            }
+        }
+        coulomb_step.normalize();
+
         for(i=0;i<_chisquared->get_dim();i++){
-            step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+            step.add_val(i,coulomb_step.get_data(i));
         }
         step.normalize();
+
         radius=normal_deviate(_chisquared->get_dice(),0.0,1.0);
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
