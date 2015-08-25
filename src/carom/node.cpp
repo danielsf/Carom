@@ -3495,17 +3495,10 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
     norm=0.1;
     for(ix=0;ix<max_steps;ix++){
         accept=0;
-        if(iStart!=local_center || ix!=0){
-            for(i=0;i<_chisquared->get_dim();i++){
-                step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-            }
-            step.normalize();
+        for(i=0;i<_chisquared->get_dim();i++){
+            step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
-        else{
-            for(i=0;i<_chisquared->get_dim();i++){
-                step.set(i,_chisquared->get_pt(local_center,i)-pt.get_data(i));
-            }
-        }
+        step.normalize();
 
         coulomb_step.zero();
         for(ib=0;ib<_boundary_points.get_dim();ib++){
