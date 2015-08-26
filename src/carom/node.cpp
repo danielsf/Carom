@@ -3228,8 +3228,8 @@ void node::initialize_ricochet(){
     local_center=find_local_center();
 
     for(i=0;i<nParticles;i++){
-        //originate_particle_compass(i,dir);
-        mcmc_kick(local_center,&iFound,dir,1000);
+        iFound=originate_particle_compass(dir);
+        //mcmc_kick(local_center,&iFound,dir,1000);
         _ricochet_particles.set(i,iFound);
         _ricochet_origins.set(i,iFound);
         _ricochet_velocities.add_row(dir);
@@ -3731,7 +3731,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 }
 
 
-void node::originate_particle_compass(int ix, array_1d<double> &dir){
+int node::originate_particle_compass(array_1d<double> &dir){
 
     //choose new origin
 
@@ -3812,8 +3812,6 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
         }
     }
 
-    _ricochet_particles.set(ix,iChosen);
-
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,_ricochet_candidate_velocities.get_data(iCandidate,i));
     }
@@ -3822,13 +3820,16 @@ void node::originate_particle_compass(int ix, array_1d<double> &dir){
     _ricochet_candidate_velocities.remove_row(iCandidate);
     _ricochet_candidates.remove(iCandidate);
 
-    _originate_particle_paperwork(ix, iChosen);
+    return iChosen;
 }
 
 void node::originate_particle_shooting(int ix, array_1d<double> &dir){
+    printf("WARNING originate_particle_shooting is no longer safe\n");
+    printf("the emergency use of originate_particle_compass is deprecated\n");
+    exit(1);
 
     if(_boundary_points.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
-        originate_particle_compass(ix, dir);
+        //originate_particle_compass(ix, dir);
         _bad_shots++;
         return;
     }
@@ -3891,7 +3892,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
 
 
     if(iFound<0){
-        originate_particle_compass(ix,dir);
+        //originate_particle_compass(ix,dir);
         _bad_shots++;
         return;
     }
