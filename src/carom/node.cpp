@@ -3921,11 +3921,17 @@ void node::search(){
         }
     }
 
+    double min_before;
+    min_before=_chimin;
+
     if(_ct_simplex<=_ct_ricochet &&
         _failed_simplexes<3 &&
         _chisquared->could_it_go_lower(_chimin)>0){
 
         simplex_search();
+        if(_chimin-min_before>0.2*(_chisquared->target()-_chisquared->chimin())){
+            reset_ricochet();
+        }
     }
 
     double projectedVolume0=projected_volume();
