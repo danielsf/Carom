@@ -1460,19 +1460,6 @@ void node::compass_search(int local_center){
                         if(_basis_associates.contains(iFound)==0){
                             _basis_associates.add(iFound);
                         }
-                        compass_umbrella(iFound);
-
-                        for(i=0;i<_chisquared->get_dim();i++){
-                            lowball.set(i,_chisquared->get_pt(local_center,i));
-                            highball.set(i,_chisquared->get_pt(iFound,i));
-                        }
-                        fhigh=_chisquared->get_fn(iFound);
-                        bisection_target=0.5*(_chimin+fhigh);
-                        iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
-                        if(iFound>=0 && _basis_associates.contains(iFound)==0){
-                            _basis_associates.add(iFound);
-                        }
-
                     }
 
                 }
@@ -1482,6 +1469,8 @@ void node::compass_search(int local_center){
         }
         _basis_lengths.set(ix,blength);
     }
+
+    compass_diagonal(local_center);
 
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
 }
