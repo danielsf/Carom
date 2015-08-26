@@ -104,7 +104,7 @@ private:
     array_1d<int> _ricochet_strikes;
     array_1d<int> _boundary_points;
 
-    array_2d<int> _ricochet_log;
+    asymm_array_2d<int> _ricochet_log;
 
     chisq_wrapper *_chisquared;
 

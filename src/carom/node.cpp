@@ -252,12 +252,15 @@ void node::copy(const node &in){
         _ricochet_strikes.set(i,in._ricochet_strikes.get_data(i));
     }
 
+    array_1d<int> local_row;
+    local_row.set_name("node_copy_local_row");
     _ricochet_log.reset();
-    _ricochet_log.set_cols(in._ricochet_log.get_cols());
     for(i=0;i<in._ricochet_log.get_rows();i++){
-        for(j=0;j<in._ricochet_log.get_cols();j++){
-            _ricochet_log.set(i,j,in._ricochet_log.get_data(i,j));
+        local_row.reset();
+        for(j=0;j<in._ricochet_log.get_cols(i);j++){
+            local_row.set(j,in._ricochet_log.get_data(i,j));
         }
+        _ricochet_log.add_row(local_row);
     }
 
 }
@@ -291,8 +294,6 @@ void node::merge(const node &in){
         _ricochet_strikes.add(in._ricochet_strikes.get_data(i));
     }
 
-    _ricochet_log.reset();
-    _ricochet_log.set_cols(_ricochet_particles.get_dim());
     recalibrate_max_min();
     _active=1;
 }
@@ -3192,8 +3193,8 @@ void node::initialize_ricochet(){
     _ricochet_velocities.set_cols(_chisquared->get_dim());
 
     int nParticles=2*_chisquared->get_dim();
-    if(_ricochet_log.get_cols()!=0){
-        nParticles=_ricochet_log.get_cols();
+    if(_ricochet_log.get_rows()!=0){
+        nParticles=_ricochet_log.get_cols(_ricochet_log.get_rows()-1);
     }
 
 
@@ -4143,7 +4144,7 @@ double node::_nearest_other_particle(int target, int ignore_particle){
 
     int i,j;
     for(i=0;i<_ricochet_log.get_rows();i++){
-        for(j=0;j<_ricochet_log.get_cols();j++){
+        for(j=0;j<_ricochet_log.get_cols(i);j++){
             iy=_ricochet_log.get_data(i,j);
             if(iy>=0){
                 dd=node_distance(target,iy);
@@ -4544,7 +4545,7 @@ void node::ricochet(){
    int i;
    array_1d<int> log_row;
    log_row.set_name("ricochet_log_row");
-   for(i=0;i<_ricochet_log.get_cols();i++){
+   for(i=0;i<_ricochet_particles.get_dim();i++){
        log_row.set(i,-1);
    }
 
@@ -4846,7 +4847,7 @@ void node::write_node_log(char *nameRoot){
     int i,j,iRow;
 
     for(iRow=0;iRow<_ricochet_log.get_rows();iRow++){
-        for(i=0;i<_ricochet_log(iRow)->get_dim();i++){
+        for(i=0;i<_ricochet_log.get_cols(iRow);i++){
             nn.set(i,-1.0);
             for(j=0;j<_ricochet_log(iRow)->get_dim();j++){
                 if(j!=i && _ricochet_log(iRow)->get_data(i)>=0 && _ricochet_log(iRow)->get_data(j)>=0){
@@ -4859,17 +4860,17 @@ void node::write_node_log(char *nameRoot){
             }
         }
 
-        for(i=0;i<_ricochet_log(iRow)->get_dim();i++){
+        for(i=0;i<_ricochet_log.get_cols(iRow);i++){
             fprintf(output,"%d ",_ricochet_log(iRow)->get_data(i));
         }
         fprintf(output," -- ");
-        for(i=0;i<_ricochet_log(iRow)->get_dim();i++){
+        for(i=0;i<_ricochet_log.get_cols(iRow);i++){
             fprintf(output,"%.3e ",nn.get_data(i));
         }
         fprintf(output,"\n");
     }
 
-    _ricochet_log.reset_preserving_room();
+    _ricochet_log.reset();
     _last_wrote_log=_chisquared->get_pts();
 
     fclose(output);
