@@ -4627,7 +4627,7 @@ void node::ricochet(){
 
        if(has_been_kicked.get_data(ix)==0){
            _proper_ricochets++;
-           iFound=_adaptive_ricochet(ix,dir);
+           iFound=_ricochet(ix,dir);
        }
 
        for(i=0;i<_chisquared->get_dim();i++){
