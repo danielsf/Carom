@@ -4611,6 +4611,8 @@ void node::ricochet(){
     double reflection_coeff;
     local_center=find_local_center();
 
+    int abort_kicks;
+
    array_1d<double> scratch;
    scratch.set_name("node_ricochet_scratch");
 
@@ -4630,6 +4632,15 @@ void node::ricochet(){
        if(has_been_kicked.get_data(ix)==0){
            _proper_ricochets++;
            iFound=_ricochet(ix,dir);
+       }
+
+       for(abort_kicks=0;iFound<0 && abort_kicks<100;abort_kicks++){
+           mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir,100);
+       }
+
+       if(abort_kicks>=100){
+           printf("WARNING abort kicks %d without iFound>0 \n",abort_kicks);
+           exit(1);
        }
 
        for(i=0;i<_chisquared->get_dim();i++){
