@@ -3777,7 +3777,8 @@ int node::originate_particle_compass(array_1d<double> &dir){
         iFound=node_bisection(lowball,flow,highball,fhigh,1,target,0.01);
 
         if(iFound>=0){
-            off_center_compass(iFound);
+            //off_center_compass(iFound);
+            firework_search(iFound, 0);
         }
 
         _filter_candidates();
