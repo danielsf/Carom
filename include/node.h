@@ -167,6 +167,7 @@ private:
     double node_second_derivative_same(int,int);
 
     void firework_search(int);
+    void firework_search(int,int);
 
     int _are_connected(int, int);
 
