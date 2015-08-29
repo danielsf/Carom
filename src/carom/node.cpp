@@ -2620,7 +2620,7 @@ void node::firework_search(int iStart, int refineCenter){
                     candidate_ct=_ricochet_candidates.get_dim();
                     _ricochet_candidates.add(i);
                     for(j=0;j<_chisquared->get_dim();j++){
-                        _ricochet_velocities.set(candidate_ct,j,_chisquared->get_pt(i,j)-_chisquared->get_pt(iStart,j));
+                        _ricochet_candidate_velocities.set(candidate_ct,j,_chisquared->get_pt(i,j)-_chisquared->get_pt(iStart,j));
                     }
                 }
             }
