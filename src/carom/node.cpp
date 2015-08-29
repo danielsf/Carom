@@ -2636,10 +2636,40 @@ void node::off_center_compass(int iStart){
         return;
     }
 
-    int i,j,goAhead;
+    int ix;
+    int i,j,k,goAhead;
     double dd,ddmin;
 
     _chisquared->set_iWhere(iCompass);
+
+
+    array_2d<double> dir;
+    dir.set_name("off_center_compass_directions");
+    array_1d<double> trial_dir;
+    trial_dir.set_name("off_center_compass_trial_dir");
+    dir.set_cols(_chisquared->get_dim());
+
+    double component,norm;
+
+    while(dir.get_rows()<_chisquared->get_dim()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        for(i=0;i<dir.get_rows();i++){
+            component=0.0;
+            for(j=0;j<_chisquared->get_dim();j++){
+                component+=trial_dir.get_data(j)*dir.get_data(i,j);
+            }
+            for(j=0;j<_chisquared->get_dim();j++){
+                trial_dir.subtract_val(j,component*dir.get_data(i,j));
+            }
+        }
+        norm=trial_dir.normalize();
+        if(norm>1.0e-20){
+            dir.add_row(trial_dir);
+        }
+    }
+
 
     ddmin=1.0e-3;
     goAhead=1;
@@ -2669,7 +2699,6 @@ void node::off_center_compass(int iStart){
     highball.set_name("node_off_center_compass_highball");
     trial.set_name("node_off_center_compass_trial");
 
-    int ix;
     double sgn;
     for(ix=0;ix<_chisquared->get_dim();ix++){
         dx=1.0;
@@ -2692,7 +2721,7 @@ void node::off_center_compass(int iStart){
 
             if(sgn>0.0){
                 for(i=0;i<_chisquared->get_dim();i++){
-                   trial.set(i,_chisquared->get_pt(iStart,i)+dx*sgn*_basis_vectors.get_data(ix,i));
+                   trial.set(i,_chisquared->get_pt(iStart,i)+dx*sgn*dir.get_data(ix,i));
                 }
                 evaluate(trial,&ftrial,&iFound);
 
@@ -2719,7 +2748,7 @@ void node::off_center_compass(int iStart){
 
             while(fhigh<_chisquared->target()){
                 for(i=0;i<_chisquared->get_dim();i++){
-                    highball.set(i,lowball.get_data(i)+dx*sgn*_basis_vectors.get_data(ix,i));
+                    highball.set(i,lowball.get_data(i)+dx*sgn*dir.get_data(ix,i));
                 }
                 evaluate(highball,&fhigh,&iFound);
                 dx+=1.0;
@@ -2747,7 +2776,7 @@ void node::off_center_compass(int iStart){
             if(sgn<0.0 && iFound>=0 && iFound!=iStart){
                 dx=0.0;
                 for(i=0;i<_chisquared->get_dim();i++){
-                    dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                    dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*dir.get_data(ix,i);
                 }
                 if(dx<0.0){
                     dx*=-1.0;
@@ -3777,8 +3806,8 @@ int node::originate_particle_compass(array_1d<double> &dir){
         iFound=node_bisection(lowball,flow,highball,fhigh,1,target,0.01);
 
         if(iFound>=0){
-            //off_center_compass(iFound);
-            firework_search(iFound, 0);
+            off_center_compass(iFound);
+            //firework_search(iFound, 0);
         }
 
         _filter_candidates();
