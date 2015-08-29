@@ -4372,9 +4372,42 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     }
 
     for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,_ricochet_velocities.get_data(iparticle,i)-2.0*grad_component*gradient.get_data(i));
+        old_dir.set(i,_ricochet_velocities.get_data(iparticle,i)-grad_component*gradient.get_data(i));
     }
 
+    array_1d<double> trial_dir,best_dir;
+    double fbest_dir,f_dir,best_theta;
+
+    double theta,costheta,sintheta;
+
+    best_theta=-10.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial_dir.set(i,old_dir.get_data(i)-grad_component*gradient.get_data(i));
+        best_dir.set(i,trial_dir.get_data(i));
+    }
+    fbest_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
+
+    old_dir.normalize();
+    for(i=1;i<=10;i++){
+        theta=i*0.5*pi/10.0;
+        costheta=cos(theta);
+        sintheta=sin(theta);
+        for(j=0;j<_chisquared->get_dim();j++){
+            trial_dir.set(j,costheta*old_dir.get_data(j)-sintheta*gradient.get_data(j));
+        }
+        f_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
+        if(f_dir>fbest_dir){
+            fbest_dir=f_dir;
+            best_theta=theta;
+            for(j=0;j<_chisquared->get_dim();j++){
+                best_dir.set(j,trial_dir.get_data(j));
+            }
+        }
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,best_dir.get_data(i));
+    }
     dir.normalize();
 
     double eflow,efhigh;
