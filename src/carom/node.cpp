@@ -1051,7 +1051,12 @@ int node::_node_1sided_projected_gradient(int dex, array_1d<double> &grad){
 }
 
 int node::node_bisection_origin_dir(int ii, array_1d<double> &dd){
-    return node_bisection_origin_dir(ii,dd,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
+    int iFound;
+    iFound=node_bisection_origin_dir(ii,dd,_chisquared->target(),0.01*(_chisquared->target()-_chimin));
+    if(iFound>=0){
+        add_to_boundary(iFound);
+    }
+    return iFound;
 }
 
 int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir, double target, double tol){
