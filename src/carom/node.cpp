@@ -2521,10 +2521,8 @@ void node::firework_search(int iStart){
             trial_dir.set(i,-1.0*gradient.get_data(i));
         }
         iEnd=node_bisection_origin_dir(iStart,trial_dir,_chisquared->get_fn(iStart)+0.1*(_chisquared->target()-_chimin),0.1);
-        printf("iEnd %d\n",iEnd);
         if(iEnd>=0){
             dTotal=node_distance(iStart,iEnd);
-            printf("dTotal %e\n",dTotal);
             mubest=_chisquared->get_fn(i0);
             if(dTotal>tol){
                 dx=0.1*dTotal;
@@ -2601,7 +2599,7 @@ void node::firework_search(int iStart){
         }
     }
 
-    int ix;
+    int ix,candidate_ct;
     double sign;
     for(ix=0;ix<_chisquared->get_dim();ix++){
         for(sign=-1.0;sign<1.1;sign+=2.0){
@@ -2612,6 +2610,13 @@ void node::firework_search(int iStart){
                 }
 
                 i=node_bisection_origin_dir(iStart,trial_dir);
+                if(i>=0){
+                    candidate_ct=_ricochet_candidates.get_dim();
+                    _ricochet_candidates.add(i);
+                    for(j=0;j<_chisquared->get_dim();j++){
+                        _ricochet_velocities.set(candidate_ct,j,_chisquared->get_pt(i,j)-_chisquared->get_pt(iStart,j));
+                    }
+                }
             }
 
         }
