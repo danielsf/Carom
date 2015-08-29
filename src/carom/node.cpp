@@ -3787,10 +3787,12 @@ int node::originate_particle_compass(array_1d<double> &dir){
         max_min_dist=-2.0*exception_value;
         for(i=0;i<_ricochet_candidates.get_dim();i++){
             min_dist=node_distance(_ricochet_candidates.get_data(i),local_center);
-            for(j=0;j<_ricochet_particles.get_dim();j++){
-                dist=node_distance(_ricochet_candidates.get_data(i),_ricochet_particles.get_data(j));
-                if(dist<min_dist){
-                    min_dist=dist;
+            for(j=0;j<_boundary_points.get_dim();j++){
+                if(_boundary_points.get_data(j)!=_ricochet_candidates.get_data(i)){
+                    dist=node_distance(_ricochet_candidates.get_data(i),_boundary_points.get_data(j));
+                    if(dist<min_dist){
+                        min_dist=dist;
+                    }
                 }
             }
 
