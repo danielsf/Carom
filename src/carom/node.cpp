@@ -3738,13 +3738,16 @@ int node::originate_particle_compass(array_1d<double> &dir){
     array_1d<double> lowball, highball,random_dir;
     double flow, fhigh,target;
     int iFound,i,j;
+    int local_center;
+
+    local_center=find_local_center();
 
     while(_ricochet_candidates.get_dim()<2*_chisquared->get_dim()){
         lowball.set_name("node_originate_lowball");
         highball.set_name("node_originate_highball");
         random_dir.set_name("node_originate_random_dir");
 
-        target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
+        target=0.5*(_chisquared->get_fn(local_center)+_chisquared->target());
 
         for(i=0;i<_chisquared->get_dim();i++){
             random_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
@@ -3753,8 +3756,8 @@ int node::originate_particle_compass(array_1d<double> &dir){
 
         flow=_chisquared->get_fn(_centerdex);
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(_centerdex,i));
-            highball.set(i,_chisquared->get_pt(_centerdex,i));
+            lowball.set(i,_chisquared->get_pt(local_center,i));
+            highball.set(i,_chisquared->get_pt(local_center,i));
         }
 
         fhigh=-2.0*exception_value;
@@ -3778,7 +3781,6 @@ int node::originate_particle_compass(array_1d<double> &dir){
     int iChosen=-1,iCandidate=-1;;
     double mu,dmu,dmubest;
     double dist,min_dist,max_min_dist;
-    int local_center;
 
     if(_ricochet_particles.get_dim()==0){
         for(i=0;i<_ricochet_candidates.get_dim();i++){
