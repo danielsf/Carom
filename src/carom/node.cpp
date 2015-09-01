@@ -4270,6 +4270,8 @@ void node::reset_ricochet(){
     _ricochet_particles.reset();
     _ricochet_velocities.reset();
     _ricochet_strikes.reset();
+    _ricochet_candidates.reset();
+    _ricochet_candidate_velocities.reset();
     _found_bases=0;
 }
 
