@@ -4804,47 +4804,47 @@ void node::ricochet(){
    volume(),r_called,_ricochet_particles.get_dim(),totalNeedKick);
 }
 
-void node::trim_ricochet(){
+void node::trim_ricochet(int n_to_trim){
     //be merciless
 
-    array_1d<int> to_trim;
-    to_trim.set_name("node_trim_to_trim");
+    int i,j,k;
+    array_1d<double> nn_dist,nn_dist_sorted;
+    array_1d<int> nn_dist_dex;
+    nn_dist.set_name("trim_ricochet_nn_dist");
+    nn_dist_sorted.set_name("trim_ricochet_nn_dist_sorted");
+    nn_dist_dex.set_name("trim_ricochet_nn_dist_dex");
 
-    int local_center;
-    local_center=find_local_center();
-
-    double d1,d2;
-
-    int ix,iy,connectivity;
-    int t1,t2;
-    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
-        for(iy=ix+1;iy<_ricochet_particles.get_dim();iy++){
-            t1=_ricochet_particles.get_data(ix);
-            t2=_ricochet_particles.get_data(iy);
-            if(to_trim.contains(ix)==0 && to_trim.contains(iy)==0){
-                connectivity=_are_connected(t1,t2);
-
-                if(connectivity==1){
-                    d1=node_distance(local_center,t1);
-                    d2=node_distance(local_center,t2);
-
-                    if(d1>d2){
-                        to_trim.add(ix);
-                    }
-                    else{
-                        to_trim.add(iy);
-                    }
+    int ip,ib;
+    double dd,ddmin;
+    for(i=0;i<_ricochet_particles.get_dim();i++){
+        ip=_ricochet_particles.get_data(i);
+        ddmin=2.0*exception_value;
+        for(j=0;j<_boundary_points.get_dim();j++){
+            ib=_boundary_points.get_data(j);
+            if(ib!=ip){
+                dd=node_distance(ip,ib);
+                if(dd<ddmin){
+                    ddmin=dd;
                 }
             }
         }
+        nn_dist.add(ddmin);
+        nn_dist_dex.add(i);
     }
+    sort_and_check(nn_dist,nn_dist_sorted,nn_dist_dex);
 
-    for(ix=0;ix<to_trim.get_dim();ix++){
-        t1=to_trim.get_data(ix);
-        originate_particle_shooting(t1,_ricochet_velocities(t1)[0]);
+    int iFound;
+    array_1d<double> dir;
+    dir.set_name("trim_ricochet_dir");
+    for(i=0;i<n_to_trim;i++){
+        ip=nn_dist_dex.get_data(i);
+        iFound=originate_particle_compass(dir);
+        _ricochet_particles.set(ip,iFound);
+        _ricochet_origins.set(ip,iFound);
+        for(j=0;j<_chisquared->get_dim();j++){
+            _ricochet_velocities.set(ip,j,dir.get_data(j));
+        }
     }
-
-    _total_trimmed+=to_trim.get_dim();
 }
 
 int node::get_highball_calls(){
