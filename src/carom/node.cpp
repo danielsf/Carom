@@ -3777,7 +3777,7 @@ int node::originate_particle_compass(array_1d<double> &dir){
 
     local_center=find_local_center();
 
-    while(_ricochet_candidates.get_dim()<2*_chisquared->get_dim()){
+    while(_ricochet_candidates.get_dim()<_ricochet_particles.get_dim()+2*_chisquared->get_dim()){
         lowball.set_name("node_originate_lowball");
         highball.set_name("node_originate_highball");
         random_dir.set_name("node_originate_random_dir");
