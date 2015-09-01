@@ -4736,7 +4736,8 @@ void node::ricochet(){
            _ricochet_strikes.add_val(i,1);
            if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
                //originate_particle_shooting(i,_ricochet_velocities(i)[0]);
-               mcmc_kick(local_center,&iFound,dir,1000);
+               //mcmc_kick(local_center,&iFound,dir,1000);
+               iFound=originate_particle_compass(dir);
                for(j=0;j<_chisquared->get_dim();j++){
                    _ricochet_velocities.set(i,j,dir.get_data(j));
                }
