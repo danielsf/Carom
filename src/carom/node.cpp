@@ -248,15 +248,9 @@ void node::copy(const node &in){
         _ricochet_particles.set(i,in._ricochet_particles.get_data(i));
     }
 
-    array_1d<int> local_row;
-    local_row.set_name("node_copy_local_row");
     _ricochet_log.reset();
-    for(i=0;i<in._ricochet_log.get_rows();i++){
-        local_row.reset();
-        for(j=0;j<in._ricochet_log.get_cols(i);j++){
-            local_row.set(j,in._ricochet_log.get_data(i,j));
-        }
-        _ricochet_log.add_row(local_row);
+    for(i=0;i<in._ricochet_log.get_dim();i++){
+        _ricochet_log.add(in._ricochet_log.get_data(i));
     }
 
 }
@@ -3203,6 +3197,25 @@ void node::_filter_candidates(){
 
 }
 
+void node::set_particle(int ip, int ii, array_1d<double> &dir){
+
+    if(_ricochet_particles.get_dim()>ip){
+        _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
+    }
+    else{
+        _ricochet_origins.set(ip,ii);
+    }
+
+    _ricochet_particles.set(ip,ii);
+    _ricochet_log.add(ii);
+
+    int j;
+    for(j=0;j<_chisquared->get_dim();j++){
+        _ricochet_velocities.set(ip,j,dir.get_data(j));
+    }
+
+}
+
 void node::initialize_ricochet(){
     is_it_safe("initialize_ricochet");
 
@@ -3211,23 +3224,19 @@ void node::initialize_ricochet(){
     }
 
     int i;
-    array_1d<int> local_ricochet_log;
-    local_ricochet_log.set_name("node_initialize_ricochet_local_ricochet_log");
-
 
     if(_ricochet_candidate_velocities.get_cols()==0){
         _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
     }
 
+    int nParticles=2*_chisquared->get_dim();
+    if(_ricochet_particles.get_dim()>nParticles){
+        nParticles=_ricochet_particles.get_dim();
+    }
+
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
-
-    int nParticles=2*_chisquared->get_dim();
-    if(_ricochet_log.get_rows()!=0){
-        nParticles=_ricochet_log.get_cols(_ricochet_log.get_rows()-1);
-    }
-
 
     array_1d<int> dexes;
     array_1d<double> dmu;
@@ -3251,10 +3260,7 @@ void node::initialize_ricochet(){
     for(i=0;i<nParticles;i++){
         iFound=originate_particle_compass(dir);
         //mcmc_kick(local_center,&iFound,dir,1000);
-        _ricochet_particles.set(i,iFound);
-        _ricochet_origins.set(i,iFound);
-        _ricochet_velocities.add_row(dir);
-        local_ricochet_log.add(_ricochet_particles.get_data(i));
+        set_particle(i,iFound,dir);
     }
 
     _min_basis_error_changed=0;
@@ -3278,12 +3284,12 @@ void node::initialize_ricochet(){
     }
     fclose(output);
 
-    _ricochet_log.add_row(local_ricochet_log);
-
-
 }
 
 int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
+    printf("WARNING smart_step_kick is not safe against the new set_particle formalism\n");
+    exit(1);
+
     array_1d<double> radial;
     radial.set_name("node_smart_step_kick_radial");
     int i;
@@ -3382,6 +3388,9 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
 }
 
 int node::t_kick(int ix, array_1d<double> &dir){
+    printf("WARNING t_kick is not safe against the new set_particles formalism\n");
+    exit(1);
+
 
     if(_ricochet_origins.get_dim()<=ix ||
        _ricochet_origins.get_data(ix)<0 ||
@@ -3685,6 +3694,9 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
 }
 
 int node::step_kick(int ix, double ratio, array_1d<double> &dir){
+    printf("WARNING step_kick is not safe against the new set_particles formalism\n");
+    exit(1);
+
 
     int i,nearestParticle;
     double x1,x2,ddbest,ddmin,dd;
@@ -4186,14 +4198,12 @@ double node::_nearest_other_particle(int target, int ignore_particle){
     }
 
     int i,j;
-    for(i=0;i<_ricochet_log.get_rows();i++){
-        for(j=0;j<_ricochet_log.get_cols(i);j++){
-            iy=_ricochet_log.get_data(i,j);
-            if(iy>=0){
-                dd=node_distance(target,iy);
-                if(dd<ans && (ignore_particle!=i || dd>1.0e-10)){
-                    ans=dd;
-                }
+    for(i=0;i<_ricochet_log.get_dim();i++){
+        iy=_ricochet_log.get_data(i);
+        if(iy!=target){
+            dd=node_distance(target,iy);
+            if(dd<ans && (ignore_particle!=i || dd>1.0e-10)){
+                ans=dd;
             }
         }
     }
@@ -4587,11 +4597,6 @@ void node::ricochet(){
    _chisquared->set_iWhere(iRicochet);
 
    int i;
-   array_1d<int> log_row;
-   log_row.set_name("ricochet_log_row");
-   for(i=0;i<_ricochet_particles.get_dim();i++){
-       log_row.set(i,-1);
-   }
 
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
@@ -4660,14 +4665,7 @@ void node::ricochet(){
            exit(1);
        }
 
-       for(i=0;i<_chisquared->get_dim();i++){
-           _ricochet_velocities.set(ix,i,dir.get_data(i));
-
-       }
-
-       _ricochet_origins.set(ix,_ricochet_particles.get_data(ix));
-       _ricochet_particles.set(ix,iFound);
-       log_row.set(ix,iFound);
+       set_particle(ix,iFound,dir);
 
    }
 
@@ -4710,8 +4708,6 @@ void node::ricochet(){
 
        }
    }
-
-   _ricochet_log.add_row(log_row);
 
    _ricochet_calls+=_chisquared->get_called()-ibefore;
    _ricochet_bisection_calls+=_bisection_calls-rcalls_before;
@@ -4756,11 +4752,7 @@ void node::trim_ricochet(int n_to_trim){
     for(i=0;i<n_to_trim;i++){
         ip=nn_dist_dex.get_data(i);
         iFound=originate_particle_compass(dir);
-        _ricochet_particles.set(ip,iFound);
-        _ricochet_origins.set(ip,iFound);
-        for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_velocities.set(ip,j,dir.get_data(j));
-        }
+        set_particle(ip,iFound,dir);
     }
 }
 
@@ -4821,34 +4813,10 @@ void node::write_node_log(char *nameRoot){
         output=fopen(outname,"a");
     }
 
-    double dd;
-    array_1d<double> nn;
-    nn.set_name("node_log_nn");
-    nn.set_dim(_ricochet_particles.get_dim());
-    int i,j,iRow;
+    int i;
 
-    for(iRow=0;iRow<_ricochet_log.get_rows();iRow++){
-        for(i=0;i<_ricochet_log.get_cols(iRow);i++){
-            nn.set(i,-1.0);
-            for(j=0;j<_ricochet_log(iRow)->get_dim();j++){
-                if(j!=i && _ricochet_log(iRow)->get_data(i)>=0 && _ricochet_log(iRow)->get_data(j)>=0){
-                    dd=node_distance(_ricochet_log(iRow)->get_data(i),_ricochet_log(iRow)->get_data(j));
-
-                    if(nn.get_data(i)<0.0 || dd<nn.get_data(i)){
-                        nn.set(i,dd);
-                    }
-                }
-            }
-        }
-
-        for(i=0;i<_ricochet_log.get_cols(iRow);i++){
-            fprintf(output,"%d ",_ricochet_log(iRow)->get_data(i));
-        }
-        fprintf(output," -- ");
-        for(i=0;i<_ricochet_log.get_cols(iRow);i++){
-            fprintf(output,"%.3e ",nn.get_data(i));
-        }
-        fprintf(output,"\n");
+    for(i=0;i<_ricochet_log.get_dim();i++){
+        fprintf(output,"%d\n",_ricochet_log.get_data(i));
     }
 
     _ricochet_log.reset();

@@ -104,7 +104,7 @@ private:
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;
 
-    asymm_array_2d<int> _ricochet_log;
+    array_1d<int> _ricochet_log;
 
     chisq_wrapper *_chisquared;
 
@@ -133,6 +133,7 @@ private:
     void compass_search_geometric_center();
     void off_center_compass(int);
     void trim_ricochet(int);
+    void set_particle(int,int,array_1d<double>&);
     double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&);
     double ricochet_model(array_1d<double>&,array_1d<int>&);
