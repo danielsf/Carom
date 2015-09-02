@@ -2660,7 +2660,7 @@ void node::off_center_compass(int iStart){
 
     ddmin=1.0e-3;
     goAhead=1;
-    for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
+    /*for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
         dd=node_distance(iStart,_off_center_origins.get_data(i));
         if(dd<ddmin){
             goAhead=0;
@@ -2673,7 +2673,7 @@ void node::off_center_compass(int iStart){
 
     if(goAhead==0){
         return;
-    }
+    }*/
 
     _off_center_origins.add(iStart);
     int ibefore=_chisquared->get_called();
@@ -3795,6 +3795,7 @@ int node::originate_particle_compass(array_1d<double> &dir){
             //firework_search(iFound, 0);
         }*/
 
+        local_center=find_local_center();
         off_center_compass(local_center);
         _filter_candidates();
 
