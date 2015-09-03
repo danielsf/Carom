@@ -89,6 +89,7 @@ void node::initialize(){
     _associates.set_name("node_associates");
     _boundary_points.set_name("node_boundary_points");
     _ricochet_log.set_name("node_ricochet_log");
+    _ricochet_candidate_log.set_name("node_ricochet_candidate_log");
     _firework_centers.set_name("node_firework_centers");
 }
 
@@ -251,6 +252,11 @@ void node::copy(const node &in){
     _ricochet_log.reset();
     for(i=0;i<in._ricochet_log.get_dim();i++){
         _ricochet_log.add(in._ricochet_log.get_data(i));
+    }
+
+    _ricochet_candidate_log.reset();
+    for(i=0;i<in._ricochet_candidate_log.get_dim();i++){
+        _ricochet_candidate_log.add(in._ricochet_candidate_log.get_data(i));
     }
 
 }
@@ -1759,6 +1765,7 @@ void node::compass_umbrella(int iStart){
 
                 if(component>1.0e-20){
                     _ricochet_candidates.add(iFound);
+                    _ricochet_candidate_log.add(iFound);
                     _ricochet_candidate_velocities.add_row(trial_dir);
                 }
 
@@ -2600,6 +2607,7 @@ void node::firework_search(int iStart, int refineCenter){
                 if(i>=0){
                     candidate_ct=_ricochet_candidates.get_dim();
                     _ricochet_candidates.add(i);
+                    _ricochet_candidate_log.add(i);
                     for(j=0;j<_chisquared->get_dim();j++){
                         _ricochet_candidate_velocities.set(candidate_ct,j,_chisquared->get_pt(i,j)-_chisquared->get_pt(iStart,j));
                     }
@@ -2742,6 +2750,7 @@ void node::off_center_compass(int iStart){
                 _off_center_compass_points.add(iFound);
                 if(iFound!=iStart){
                     _ricochet_candidates.add(iFound);
+                    _ricochet_candidate_log.add(iFound);
                     j=_ricochet_candidate_velocities.get_rows();
                     for(i=0;i<_chisquared->get_dim();i++){
                         _ricochet_candidate_velocities.set(j,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(iStart,i));
@@ -4819,10 +4828,27 @@ void node::write_node_log(char *nameRoot){
         fprintf(output,"%d\n",_ricochet_log.get_data(i));
     }
 
+    fclose(output);
+
     _ricochet_log.reset();
+
+    sprintf(outname,"%s_node_candidate_%d_log.txt",nameRoot,_id_dex);
+    if(_last_wrote_log==0){
+        output=fopen(outname,"w");
+    }
+    else{
+        output=fopen(outname,"a");
+    }
+
+    for(i=0;i<_ricochet_candidate_log.get_dim();i++){
+        fprintf(output,"%d\n",_ricochet_candidate_log.get_data(i));
+    }
+    fclose(output);
+
+    _ricochet_candidate_log.reset();
+
     _last_wrote_log=_chisquared->get_pts();
 
-    fclose(output);
 }
 
 ///////////////arrayOfNodes code below//////////
