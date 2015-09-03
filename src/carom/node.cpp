@@ -2625,6 +2625,8 @@ void node::off_center_compass(int iStart){
         return;
     }
 
+    printf("\noff center compass begins\n");
+
     int ix;
     int i,j,k,goAhead;
     double dd,ddmin;
@@ -2745,6 +2747,11 @@ void node::off_center_compass(int iStart){
             }
 
             iFound=node_bisection(lowball,flow,highball,fhigh,1);
+            printf("iFound %d iStart %d ff %e\n",iFound,iStart,_chisquared->get_fn(iFound));
+            for(i=0;i<_chisquared->get_dim();i++){
+                printf("%.3e ",sgn*dir.get_data(ix,i));
+            }
+            printf("\n");
 
             if(iFound>=0){
                 _off_center_compass_points.add(iFound);
@@ -2778,7 +2785,7 @@ void node::off_center_compass(int iStart){
         }
     }
 
-    printf("    done with off-center compass %d -- %d %d -- volume %e\n",
+    printf("    done with off-center compass %d -- %d %d -- volume %e\n\n",
     _chisquared->get_called()-ibefore,iStart,_centerdex,volume());
 
 }
