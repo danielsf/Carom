@@ -2661,6 +2661,15 @@ void node::off_center_compass(int iStart){
         }
     }
 
+    for(i=0;i<dir.get_cols();i++){
+        norm=_max_found.get_data(i)-_min_found.get_data(i);
+        if(norm<1.0e-20){
+            norm=1.0;
+        }
+        for(j=0;j<dir.get_rows();j++){
+            dir.multiply_val(j,i,norm);
+        }
+    }
 
     ddmin=1.0e-3;
     goAhead=1;
