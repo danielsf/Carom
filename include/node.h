@@ -33,6 +33,7 @@ public:
     int _adaptive_ricochet(int, array_1d<double>&);
     void simplex_search();
     double volume();
+    double get_norm(int);
     double projected_volume();
     int get_activity();
     int get_ct_ricochet();

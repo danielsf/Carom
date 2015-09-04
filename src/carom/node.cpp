@@ -347,6 +347,20 @@ void node::set_id_dex(int ii){
     _id_dex=ii;
 }
 
+double node::get_norm(int dex){
+    if(dex>=_max_found.get_dim() || dex>=_min_found.get_dim()){
+        return 1.0;
+    }
+
+    double ans;
+    ans=_max_found.get_data(dex)-_min_found.get_data(dex);
+    if(ans<1.0e-20){
+        return 1.0;
+    }
+
+    return ans;
+}
+
 void node::set_center(int ix){
     _centerdex=ix;
     _first_centerdex=ix;
