@@ -106,6 +106,7 @@ private:
 
     array_1d<int> _ricochet_log;
     array_1d<int> _ricochet_candidate_log;
+    array_1d<int> _compass_log;
 
     chisq_wrapper *_chisquared;
 

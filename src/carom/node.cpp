@@ -90,6 +90,7 @@ void node::initialize(){
     _boundary_points.set_name("node_boundary_points");
     _ricochet_log.set_name("node_ricochet_log");
     _ricochet_candidate_log.set_name("node_ricochet_candidate_log");
+    _compass_log.set_name("node_compass_log");
     _firework_centers.set_name("node_firework_centers");
 }
 
@@ -257,6 +258,11 @@ void node::copy(const node &in){
     _ricochet_candidate_log.reset();
     for(i=0;i<in._ricochet_candidate_log.get_dim();i++){
         _ricochet_candidate_log.add(in._ricochet_candidate_log.get_data(i));
+    }
+
+    _compass_log.reset();
+    for(i=0;i<in._compass_log.get_dim();i++){
+        _compass_log.add(in._compass_log.get_data(i));
     }
 
 }
@@ -1349,6 +1355,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::add_to_compass(int dex){
     _compass_points.add(dex);
+    _compass_log.add(dex);
 }
 
 void node::compass_search(){
@@ -4860,8 +4867,21 @@ void node::write_node_log(char *nameRoot){
         fprintf(output,"%d\n",_ricochet_candidate_log.get_data(i));
     }
     fclose(output);
-
     _ricochet_candidate_log.reset();
+
+    sprintf(outname,"%s_node_compass_%d_log.txt",nameRoot,_id_dex);
+    if(_last_wrote_log==0){
+        output=fopen(outname,"w");
+    }
+    else{
+        output=fopen(outname,"a");
+    }
+
+    for(i=0;i<_compass_log.get_dim();i++){
+        fprintf(output,"%d\n",_compass_log.get_data(i));
+    }
+    fclose(output);
+    _compass_log.reset();
 
     _last_wrote_log=_chisquared->get_pts();
 
