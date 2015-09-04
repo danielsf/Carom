@@ -92,6 +92,9 @@ void node::initialize(){
     _ricochet_candidate_log.set_name("node_ricochet_candidate_log");
     _compass_log.set_name("node_compass_log");
     _firework_centers.set_name("node_firework_centers");
+    _true_min.set_name("node_true_min");
+    _true_max.set_name("node_true_max");
+    _transform.set_name("node_transform");
 }
 
 void node::copy(const node &in){
@@ -216,6 +219,21 @@ void node::copy(const node &in){
         for(j=0;j<in._basis_vectors.get_cols();j++){
             _basis_vectors.set(i,j,in._basis_vectors.get_data(i,j));
         }
+    }
+
+    _true_min.reset();
+    for(i=0;i<in._true_min.get_dim();i++){
+        _true_min.set(i,in._true_min.get_data(i));
+    }
+
+    _true_max.reset();
+    for(i=0;i<in._true_max.get_dim();i++){
+        _true_max.set(i,in._true_max.get_data(i));
+    }
+
+    _transform.reset();
+    for(i=0;i<in._transform.get_dim();i++){
+        _transform.set(i,in._transform.get_data(i));
     }
 
     _min_found.reset();
@@ -389,6 +407,11 @@ void node::set_chisquared(chisq_wrapper *cc){
             }
         }
     }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        _transform.set(i,1.0);
+    }
+
 }
 
 int node::get_center(){
@@ -397,7 +420,7 @@ int node::get_center(){
 
 double node::volume(){
     is_it_safe("volume");
-    if(_min_found.get_dim()!=_chisquared->get_dim() || _max_found.get_dim()!=_chisquared->get_dim()){
+    if(_true_min.get_dim()!=_chisquared->get_dim() || _true_max.get_dim()!=_chisquared->get_dim()){
         return 0.0;
     }
 
@@ -405,7 +428,7 @@ double node::volume(){
     int i;
     ans=1.0;
     for(i=0;i<_chisquared->get_dim();i++){
-        ans*=(_max_found.get_data(i)-_min_found.get_data(i));
+        ans*=(_true_max.get_data(i)-_true_min.get_data(i));
     }
 
     return ans;
@@ -481,7 +504,7 @@ int node::is_this_an_associate_gross(int dex){
     int iFound;
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_chisquared->get_pt(dex,i)+_chisquared->get_pt(_first_centerdex,i)));
+        trial.set(i,0.5*(get_pt(dex,i)+get_pt(_first_centerdex,i)));
     }
     evaluate(trial,&mu,&iFound);
     if(mu<=_chisquared->target()){
@@ -516,7 +539,7 @@ int node::is_this_an_associate(int dex){
     array_1d<double> trial;
     trial.set_name("node_is_this_trial");
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_chisquared->get_pt(ibest,i)+_chisquared->get_pt(dex,i)));
+        trial.set(i,0.5*(get_pt(ibest,i)+get_pt(dex,i)));
     }
     double mu;
     int newDex,j;
@@ -531,10 +554,73 @@ int node::is_this_an_associate(int dex){
 
 }
 
-void node::evaluate(array_1d<double> &pt, double *value, int *dex){
+double node::get_pt(int dex, int ii){
+    return _chisquared->get_pt(dex, ii)/_transform.get_data(ii);
+}
+
+void node::transform_pt_to_node(array_1d<double> &pt_in, array_1d<double> &pt_out){
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        pt_out.set(i,pt_in.get_data(i)/_transform.get_data(i));
+    }
+}
+
+void node::transform_pt_to_truth(array_1d<double> &pt_in, array_1d<double> &pt_out){
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        pt_out.set(i,pt_in.get_data(i)*_transform.get_data(i));
+    }
+}
+
+void node::set_transform(){
+    int i;
+    for(i=0;i<_min_found.get_dim();i++){
+        _min_found.multiply_val(i,_transform.get_data(i));
+    }
+    for(i=0;i<_max_found.get_dim();i++){
+        _max_found.multiply_val(i,_transform.get_data(i));
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        _transform.set(i,1.0);
+    }
+    double ans;
+    for(i=0;i<_true_max.get_dim();i++){
+        ans=_true_max.get_data(i)-_true_min.get_data(i);
+        if(ans>1.0e-20){
+            _transform.set(i,ans);
+        }
+    }
+
+    for(i=0;i<_min_found.get_dim();i++){
+        _min_found.divide_val(i,_transform.get_data(i));
+    }
+    for(i=0;i<_max_found.get_dim();i++){
+        _max_found.divide_val(i,_transform.get_data(i));
+    }
+
+    _projected_max.reset();
+    _projected_min.reset();
+}
+
+void node::get_true_pt(int i1, array_1d<double> &pt_out){
+    array_1d<double> pt;
+    pt.set_name("get_true_pt_pt");
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        pt.set(i,get_pt(i1,i));
+    }
+    transform_pt_to_truth(pt,pt_out);
+}
+
+void node::evaluate(array_1d<double> &pt_in, double *value, int *dex){
     is_it_safe("evaluate");
 
-    _chisquared->evaluate(pt,value,dex);
+    array_1d<double> pt_true;
+    pt_true.set_name("evaluate_pt_true");
+
+    transform_pt_to_truth(pt_in,pt_true);
+    _chisquared->evaluate(pt_true,value,dex);
 
     int i,j;
     array_1d<double> projected;
@@ -560,17 +646,27 @@ void node::evaluate(array_1d<double> &pt, double *value, int *dex){
                 _associates.add(dex[0]);
             }
 
-            for(i=0;i<pt.get_dim();i++){
-                if(i>=_min_found.get_dim() || pt.get_data(i)<_min_found.get_data(i)){
-                    _min_found.set(i,pt.get_data(i));
+            for(i=0;i<pt_true.get_dim();i++){
+                if(i>=_true_min.get_dim() || pt_true.get_data(i)<_true_min.get_data(i)){
+                    _true_min.set(i,pt_true.get_data(i));
                 }
 
-                if(i>=_max_found.get_dim() || pt.get_data(i)>=_max_found.get_data(i)){
-                    _max_found.set(i,pt.get_data(i));
+                if(i>=_true_max.get_dim() || pt_true.get_data(i)>_true_max.get_data(i)){
+                    _true_max.set(i,pt_true.get_data(i));
                 }
             }
 
-            project_to_bases(pt,projected);
+            for(i=0;i<pt_in.get_dim();i++){
+                if(i>=_min_found.get_dim() || pt_in.get_data(i)<_min_found.get_data(i)){
+                    _min_found.set(i,pt_in.get_data(i));
+                }
+
+                if(i>=_max_found.get_dim() || pt_in.get_data(i)>_max_found.get_data(i)){
+                    _max_found.set(i,pt_in.get_data(i));
+                }
+            }
+
+            project_to_bases(pt_in,projected);
             for(i=0;i<projected.get_dim();i++){
                 if(i>=_projected_min.get_dim() || projected.get_data(i)<_projected_min.get_data(i)){
                     _projected_min.set(i,projected.get_data(i));
@@ -602,11 +698,22 @@ double node::node_distance(array_1d<double> &p1, array_1d<double> &p2){
 }
 
 double node::node_distance(int i1, int i2){
-    return node_distance(_chisquared->get_pt(i1)[0], _chisquared->get_pt(i2)[0]);
+    array_1d<double> p1, p2;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        p1.set(i,get_pt(i1,i));
+        p2.set(i,get_pt(i2,i));
+    }
+    return node_distance(p1,p2);
 }
 
 double node::node_distance(int i1, array_1d<double> &p2){
-    return node_distance(p2, _chisquared->get_pt(i1)[0]);
+    array_1d<double> p1;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        p1.set(i,get_pt(i1,i));
+    }
+    return node_distance(p2, p1);
 }
 
 double node::node_second_derivative_different(int center, int ix, int iy){
@@ -641,7 +748,7 @@ double node::node_second_derivative_different(int center, int ix, int iy){
 
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,_chisquared->get_pt(center,i));
+        trial.set(i,get_pt(center,i));
     }
 
     double xp,xm,yp,ym,fpp,fmp,fpm,fmm;
@@ -657,11 +764,11 @@ double node::node_second_derivative_different(int center, int ix, int iy){
          proceed=0;
 
          while(proceed==0){
-             xp=_chisquared->get_pt(center,ix)+dx*xnorm;
-             xm=_chisquared->get_pt(center,ix)-dx*xnorm;
+             xp=get_pt(center,ix)+dx*xnorm;
+             xm=get_pt(center,ix)-dx*xnorm;
 
-             yp=_chisquared->get_pt(center,iy)+dx*ynorm;
-             ym=_chisquared->get_pt(center,iy)-dx*ynorm;
+             yp=get_pt(center,iy)+dx*ynorm;
+             ym=get_pt(center,iy)-dx*ynorm;
 
              xpBound=_chisquared->in_bounds(ix,xp);
              xmBound=_chisquared->in_bounds(ix,xm);
@@ -678,27 +785,27 @@ double node::node_second_derivative_different(int center, int ix, int iy){
 
              proceed=1;
              if(xpBound==0){
-                 xcenter=_chisquared->get_pt(center,ix)-1.5*dx*xnorm;
+                 xcenter=get_pt(center,ix)-1.5*dx*xnorm;
                  proceed=0;
              }
              else if(xmBound==0){
-                 xcenter=_chisquared->get_pt(center,ix)+1.5*dx*xnorm;
+                 xcenter=get_pt(center,ix)+1.5*dx*xnorm;
                  proceed=0;
              }
              else{
-                 xcenter=_chisquared->get_pt(center,ix);
+                 xcenter=get_pt(center,ix);
              }
 
              if(ypBound==0){
-                 ycenter=_chisquared->get_pt(center,iy)-1.5*dx*ynorm;
+                 ycenter=get_pt(center,iy)-1.5*dx*ynorm;
                  proceed=0;
              }
              else if(ymBound==0){
-                 ycenter=_chisquared->get_pt(center,iy)+1.5*dx*ynorm;
+                 ycenter=get_pt(center,iy)+1.5*dx*ynorm;
                  proceed=0;
              }
              else{
-                 ycenter=_chisquared->get_pt(center,iy);
+                 ycenter=get_pt(center,iy);
              }
 
              if(proceed==0){
@@ -768,7 +875,7 @@ double node::node_second_derivative_same(int center, int ix){
     array_1d<double> trial;
     trial.set_name("node_second_derivative_same_trial");
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,_chisquared->get_pt(center,i));
+        trial.set(i,get_pt(center,i));
     }
 
     int proceed;
@@ -778,10 +885,10 @@ double node::node_second_derivative_same(int center, int ix){
     while(ifpp==center || ifpp==ifmm || ifmm==center){
         proceed=0;
         while(proceed==0){
-            xp=_chisquared->get_pt(center,ix)+dx*xnorm;
-            xm=_chisquared->get_pt(center,ix)-dx*xnorm;
-            xpp=_chisquared->get_pt(center,ix)+2.0*dx*xnorm;
-            xmm=_chisquared->get_pt(center,ix)-2.0*dx*xnorm;
+            xp=get_pt(center,ix)+dx*xnorm;
+            xm=get_pt(center,ix)-dx*xnorm;
+            xpp=get_pt(center,ix)+2.0*dx*xnorm;
+            xmm=get_pt(center,ix)-2.0*dx*xnorm;
 
             xppBound = _chisquared->in_bounds(ix,xpp);
             xmmBound = _chisquared->in_bounds(ix,xmm);
@@ -792,11 +899,11 @@ double node::node_second_derivative_same(int center, int ix){
 
             proceed=1;
             if(xppBound==0){
-                xcenter=_chisquared->get_pt(center,ix)-2.5*dx*xnorm;
+                xcenter=get_pt(center,ix)-2.5*dx*xnorm;
                 proceed=0;
             }
             else if(xmmBound==0){
-                xcenter=_chisquared->get_pt(center,ix)+2.5*dx*xnorm;
+                xcenter=get_pt(center,ix)+2.5*dx*xnorm;
                 proceed=0;
             }
 
@@ -865,7 +972,7 @@ void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
     trial.set_name("node_node_gradient_trial");
 
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,_chisquared->get_pt(dex,i));
+        trial.set(i,get_pt(dex,i));
     }
 
     double dx,dxstart;
@@ -884,22 +991,22 @@ void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
         if1=-1;
         if2=-1;
         while((if1<0 || if1==dex) && (if2<0 || if2==dex)){
-            x1=_chisquared->get_pt(dex,i)+dx*norm;
+            x1=get_pt(dex,i)+dx*norm;
             trial.set(i,x1);
             evaluate(trial,&y1,&if1);
 
             if(if1<0 && if1!=dex){
-                x2=_chisquared->get_pt(dex,i)-dx*norm;
+                x2=get_pt(dex,i)-dx*norm;
                 trial.set(i,x2);
                 evaluate(trial,&y2,&if2);
             }
 
             if((if1>=0 && if1!=dex) || (if2>=0 && if2!=dex)){
                 if(if1>=0 && if1!=dex){
-                    grad.set(i,(y1-_chisquared->get_fn(dex))/(x1-_chisquared->get_pt(dex,i)));
+                    grad.set(i,(y1-_chisquared->get_fn(dex))/(x1-get_pt(dex,i)));
                 }
                 else{
-                    grad.set(i,(y2-_chisquared->get_fn(dex))/(x2-_chisquared->get_pt(dex,i)));
+                    grad.set(i,(y2-_chisquared->get_fn(dex))/(x2-get_pt(dex,i)));
                 }
             }
             else{
@@ -908,7 +1015,7 @@ void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
             }
         }
 
-        trial.set(i,_chisquared->get_pt(dex,i));
+        trial.set(i,get_pt(dex,i));
     }
 
 }
@@ -922,7 +1029,7 @@ void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
     trial.set_name("node_node_gradient_trial");
 
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,_chisquared->get_pt(dex,i));
+        trial.set(i,get_pt(dex,i));
     }
 
     double dx,dxstart;
@@ -941,22 +1048,22 @@ void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
         if1=-1;
         if2=-1;
         while(if1==if2){
-            x1=_chisquared->get_pt(dex,i)+dx*norm;
+            x1=get_pt(dex,i)+dx*norm;
             trial.set(i,x1);
             evaluate(trial,&y1,&if1);
 
-            x2=_chisquared->get_pt(dex,i)-dx*norm;
+            x2=get_pt(dex,i)-dx*norm;
             trial.set(i,x2);
             evaluate(trial,&y2,&if2);
 
             if((if1<0 && if2>=0) or (if2<0 && if1>=0)){
                 if(if1<0){
-                    x1=_chisquared->get_pt(dex,i);
+                    x1=get_pt(dex,i);
                     y1=_chisquared->get_fn(dex);
                     if1=dex;
                 }
                 else{
-                    x2=_chisquared->get_pt(dex,i);
+                    x2=get_pt(dex,i);
                     y2=_chisquared->get_fn(dex);
                     if2=dex;
                 }
@@ -974,7 +1081,7 @@ void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
             }
         }
 
-        trial.set(i,_chisquared->get_pt(dex,i));
+        trial.set(i,get_pt(dex,i));
     }
 
 }
@@ -994,7 +1101,7 @@ int node::_node_1sided_projected_gradient(int dex, array_1d<double> &grad){
     int local_center,i;
     local_center=find_local_center();
     for(i=0;i<_chisquared->get_dim();i++){
-       dir.set(i,_chisquared->get_pt(dex,i)-_chisquared->get_pt(local_center,i));
+       dir.set(i,get_pt(dex,i)-get_pt(local_center,i));
     }
 
     project_to_bases(dir,projected_dir);
@@ -1033,7 +1140,7 @@ int node::_node_1sided_projected_gradient(int dex, array_1d<double> &grad){
         iFound=-1;
         while(iFound<0 || iFound==dex){
             for(i=0;i<_chisquared->get_dim();i++){
-                mu=_chisquared->get_pt(dex,i)+dx*sign.get_data(ix)*norm*_basis_vectors.get_data(ix,i);
+                mu=get_pt(dex,i)+dx*sign.get_data(ix)*norm*_basis_vectors.get_data(ix,i);
                 trial.set(i,mu);
             }
 
@@ -1080,8 +1187,8 @@ int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir, double t
     flow=_chisquared->get_fn(iOrigin);
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        lowball.set(i,_chisquared->get_pt(iOrigin,i));
-        highball.set(i,_chisquared->get_pt(iOrigin,i));
+        lowball.set(i,get_pt(iOrigin,i));
+        highball.set(i,get_pt(iOrigin,i));
     }
 
     fhigh=-2.0*exception_value;
@@ -1321,7 +1428,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
         for(i=0;i<_chisquared->get_dim();i++){
             mu=0.0;
             for(j=0;j<_chisquared->get_dim();j++){
-                mu+=(_chisquared->get_pt(_basis_associates.get_data(ix),j)-_chisquared->get_pt(_centerdex,j))*trial_bases.get_data(i,j);
+                mu+=(get_pt(_basis_associates.get_data(ix),j)-get_pt(_centerdex,j))*trial_bases.get_data(i,j);
             }
             _basis_ddsq.set(ix,i,mu*mu);
         }
@@ -1402,12 +1509,12 @@ void node::compass_search(int local_center){
             if(sgn<0.0){
                 flow=_chisquared->get_fn(local_center);
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(local_center,i));
+                    lowball.set(i,get_pt(local_center,i));
                 }
             }
             else{
                 for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,_chisquared->get_pt(local_center,i)+sgn*dx*_basis_vectors.get_data(ix,i));
+                    trial.set(i,get_pt(local_center,i)+sgn*dx*_basis_vectors.get_data(ix,i));
                 }
                 evaluate(trial,&ftrial,&iFound);
 
@@ -1428,7 +1535,7 @@ void node::compass_search(int local_center){
             if(flow>_chisquared->target()){
                 flow=_chisquared->get_fn(local_center);
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(local_center,i));
+                    lowball.set(i,get_pt(local_center,i));
                 }
             }
 
@@ -1445,14 +1552,14 @@ void node::compass_search(int local_center){
             if(flow>_chisquared->target() || flow>fhigh){
                 flow=_chisquared->get_fn(_centerdex);
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(_centerdex,i));
+                    lowball.set(i,get_pt(_centerdex,i));
                 }
             }
             iFound=node_bisection(lowball,flow,highball,fhigh,1);
 
             dx=0.0;
             for(i=0;i<_chisquared->get_dim();i++){
-                dx+=_basis_vectors.get_data(ix,i)*(_chisquared->get_pt(local_center,i)-_chisquared->get_pt(iFound,i));
+                dx+=_basis_vectors.get_data(ix,i)*(get_pt(local_center,i)-get_pt(iFound,i));
             }
 
             dx=fabs(dx);
@@ -1462,8 +1569,8 @@ void node::compass_search(int local_center){
 
                 if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                     for(i=0;i<_chisquared->get_dim();i++){
-                        lowball.set(i,_chisquared->get_pt(local_center,i));
-                        highball.set(i,_chisquared->get_pt(iFound,i));
+                        lowball.set(i,get_pt(local_center,i));
+                        highball.set(i,get_pt(iFound,i));
                     }
 
                     fhigh=_chisquared->get_fn(iFound);
@@ -1520,7 +1627,7 @@ void node::compass_diagonal(int local_center){
         if(_compass_points.get_dim()>i && _compass_points.get_dim()>j){
             dx=0.0;
             for(k=0;k<_chisquared->get_dim();k++){
-                dx+=0.5*(_chisquared->get_pt(j,k)-_chisquared->get_pt(i,k))*_basis_vectors.get_data(ix,k);
+                dx+=0.5*(get_pt(j,k)-get_pt(i,k))*_basis_vectors.get_data(ix,k);
             }
         }
 
@@ -1536,7 +1643,7 @@ void node::compass_diagonal(int local_center){
             if(_compass_points.get_dim()>i && _compass_points.get_dim()>j){
                 dy=0.0;
                 for(k=0;k<_chisquared->get_dim();k++){
-                    dy+=0.5*(_chisquared->get_pt(j,k)-_chisquared->get_pt(i,k))*_basis_vectors.get_data(iy,k);
+                    dy+=0.5*(get_pt(j,k)-get_pt(i,k))*_basis_vectors.get_data(iy,k);
                 }
             }
 
@@ -1570,7 +1677,7 @@ void node::compass_diagonal(int local_center){
                     fhigh=-2.0*exception_value;
                     if(dmin<exception_value){
                         for(i=0;i<_chisquared->get_dim();i++){
-                            trial.set(i,_chisquared->get_pt(local_center,i)+dmin*dir.get_data(i));
+                            trial.set(i,get_pt(local_center,i)+dmin*dir.get_data(i));
                         }
                         evaluate(trial,&ftrial,&iFound);
 
@@ -1596,7 +1703,7 @@ void node::compass_diagonal(int local_center){
                         startFromMin++;
                         flow=_chimin;
                         for(i=0;i<_chisquared->get_dim();i++){
-                            lowball.set(i,_chisquared->get_pt(local_center,i));
+                            lowball.set(i,get_pt(local_center,i));
                         }
                     }
 
@@ -1612,7 +1719,7 @@ void node::compass_diagonal(int local_center){
                     if(flow>_chisquared->target() || flow>fhigh){
                         flow=_chisquared->get_fn(local_center);
                         for(i=0;i<_chisquared->get_dim();i++){
-                            lowball.set(i,_chisquared->get_pt(local_center,i));
+                            lowball.set(i,get_pt(local_center,i));
                         }
 
                     }
@@ -1622,12 +1729,12 @@ void node::compass_diagonal(int local_center){
                         dmin=0.0;
                         mu=0.0;
                         for(i=0;i<_chisquared->get_dim();i++){
-                            mu+=(_chisquared->get_pt(local_center,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
+                            mu+=(get_pt(local_center,i)-get_pt(iFound,i))*_basis_vectors.get_data(ix,i);
                         }
                         dmin+=mu*mu;
                         mu=0.0;
                         for(i=0;i<_chisquared->get_dim();i++){
-                            mu+=(_chisquared->get_pt(local_center,i)-_chisquared->get_pt(iFound,i))*_basis_vectors.get_data(iy,i);
+                            mu+=(get_pt(local_center,i)-get_pt(iFound,i))*_basis_vectors.get_data(iy,i);
                         }
                         dmin+=mu*mu;
                         dmin=sqrt(dmin);
@@ -1637,8 +1744,8 @@ void node::compass_diagonal(int local_center){
                         add_to_compass(iFound);
                         if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
                             for(i=0;i<_chisquared->get_dim();i++){
-                                lowball.set(i,_chisquared->get_pt(local_center,i));
-                                highball.set(i,_chisquared->get_pt(iFound,i));
+                                lowball.set(i,get_pt(local_center,i));
+                                highball.set(i,get_pt(iFound,i));
                             }
 
                             fhigh=_chisquared->get_fn(iFound);
@@ -1683,7 +1790,7 @@ void node::compass_umbrella(int iStart){
     int local_center=find_local_center();
 
     for(i=0;i<_chisquared->get_dim();i++){
-        radial.set(i,_chisquared->get_pt(iStart,i)-_chisquared->get_pt(local_center,i));
+        radial.set(i,get_pt(iStart,i)-get_pt(local_center,i));
     }
     double radial_norm;
     radial_norm=radial.normalize();
@@ -1737,8 +1844,8 @@ void node::compass_umbrella(int iStart){
     for(i=0;i<dir.get_rows();i++){
         for(sign=-1.0;sign<1.1;sign+=2.0){
             for(j=0;j<_chisquared->get_dim();j++){
-                lowball.set(j,_chisquared->get_pt(iStart,j));
-                highball.set(j,_chisquared->get_pt(iStart,j));
+                lowball.set(j,get_pt(iStart,j));
+                highball.set(j,get_pt(iStart,j));
             }
 
 
@@ -1768,7 +1875,7 @@ void node::compass_umbrella(int iStart){
                     return;
                 }
                 for(j=0;j<_chisquared->get_dim();j++){
-                    lowball.set(j,_chisquared->get_pt(iStart,j));
+                    lowball.set(j,get_pt(iStart,j));
                 }
                 flow=_chisquared->get_fn(iStart);
             }
@@ -1779,7 +1886,7 @@ void node::compass_umbrella(int iStart){
                 add_to_compass(iFound);
 
                 for(j=0;j<_chisquared->get_dim();j++){
-                    trial_dir.set(j,_chisquared->get_pt(iFound,j)-_chisquared->get_pt(iStart,j));
+                    trial_dir.set(j,get_pt(iFound,j)-get_pt(iStart,j));
                 }
 
                 component=trial_dir.normalize();
@@ -1791,7 +1898,7 @@ void node::compass_umbrella(int iStart){
                 }
 
                 for(j=0;j<_chisquared->get_dim();j++){
-                    trial_dir.set(j,0.5*(_chisquared->get_pt(iStart,j)+_chisquared->get_pt(iFound,j)));
+                    trial_dir.set(j,0.5*(get_pt(iStart,j)+get_pt(iFound,j)));
                 }
                 evaluate(trial_dir,&mu,&iFound);
                 if(iFound>=0 && mu<_chisquared->target() && _basis_associates.contains(iFound)==0){
@@ -1831,12 +1938,12 @@ void node::compass_search_geometric_center(){
     if(iFound>=0){
         printf("\nraw geometric center chisq %e\n",_chisquared->get_fn(iFound));
         for(i=0;i<_chisquared->get_dim();i++){
-            printf("    %e\n",_chisquared->get_pt(iFound,i));
+            printf("    %e\n",get_pt(iFound,i));
         }
         if(mu>_chisquared->target()){
             for(i=0;i<_chisquared->get_dim();i++){
-                lowball.set(i,_chisquared->get_pt(_centerdex,i));
-                highball.set(i,_chisquared->get_pt(iFound,i));
+                lowball.set(i,get_pt(_centerdex,i));
+                highball.set(i,get_pt(iFound,i));
             }
             flow=_chisquared->get_fn(_centerdex);
             fhigh=_chisquared->get_fn(iFound);
@@ -1849,7 +1956,7 @@ void node::compass_search_geometric_center(){
 
         if(iFound>=0 && iFound!=_centerdex){
             for(i=0;i<_chisquared->get_dim();i++){
-                printf("%e %e\n",_chisquared->get_pt(_centerdex,i),_chisquared->get_pt(iFound,i));
+                printf("%e %e\n",get_pt(_centerdex,i),get_pt(iFound,i));
             }
             _geo_centerdex=iFound;
             compass_search(iFound);
@@ -1876,7 +1983,7 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
     fcenter=_chisquared->get_fn(iCenter);
 
     for(i=0;i<_chisquared->get_dim();i++){
-        center.set(i,_chisquared->get_pt(iCenter,i));
+        center.set(i,get_pt(iCenter,i));
         norm.set(i,-1.0);
         if(_max_found.get_dim()>i && _min_found.get_dim()>i){
             norm.set(i,_max_found.get_data(i)-_min_found.get_data(i));
@@ -2142,7 +2249,7 @@ int node::findAcceptableCenter(){
     movement.set_name("node_findAcceptableCenter_movement");
 
     for(i=0;i<_chisquared->get_dim();i++){
-        center.set(i,_chisquared->get_pt(ans,i));
+        center.set(i,get_pt(ans,i));
     }
 
     ct=0;
@@ -2284,9 +2391,18 @@ void node::recalibrate_max_min(){
     double mu;
     double tol=0.01;
 
+    array_1d<double> trial;
+    trial.set_name("recalibrate_trial");
+    int ix;
+
     for(i=0;i<_associates.get_dim();i++){
         if(_chisquared->get_fn(_associates.get_data(i))<=_chisquared->target()+tol){
-            project_to_bases(_chisquared->get_pt(_associates.get_data(i))[0],projected);
+
+            for(ix=0;ix<_chisquared->get_dim();ix++){
+                trial.set(ix, get_pt(_associates.get_data(i),ix));
+            }
+            project_to_bases(trial,projected);
+
             for(j=0;j<_chisquared->get_dim();j++){
                 if(j>=_projected_min.get_dim() || projected.get_data(j)<_projected_min.get_data(j)){
                     _projected_min.set(j,projected.get_data(j));
@@ -2296,7 +2412,7 @@ void node::recalibrate_max_min(){
                     _projected_max.set(j,projected.get_data(j));
                 }
 
-                mu=_chisquared->get_pt(_associates.get_data(i),j);
+                mu=get_pt(_associates.get_data(i),j);
                 if(j>=_min_found.get_dim() || mu<_min_found.get_data(j)){
                     _min_found.set(j,mu);
                 }
@@ -2357,8 +2473,8 @@ void node::find_bases(){
 
         flow=_chisquared->get_fn(_centerdex);
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(_centerdex,i));
-            highball.set(i,_chisquared->get_pt(_centerdex,i));
+            lowball.set(i,get_pt(_centerdex,i));
+            highball.set(i,get_pt(_centerdex,i));
         }
         fhigh=-2.0*exception_value;
 
@@ -2398,6 +2514,8 @@ void node::find_bases(){
     stdev=0.1/sqrt(double(_chisquared->get_dim()));
     stdevlim=1.0e-5/sqrt(double(_chisquared->get_dim()));
     max_abort=_chisquared->get_dim()*100;
+
+    set_transform();
 
     error=basis_error(_basis_vectors,_basis_model);
     error0=error;
@@ -2542,7 +2660,7 @@ void node::firework_search(int iStart, int refineCenter){
                     dx=0.1*dTotal;
                     for(step=dx;step<dTotal;step+=dx){
                         for(i=0;i<_chisquared->get_dim();i++){
-                            trial_pt.set(i,_chisquared->get_pt(i0,i)+step*trial_dir.get_data(i));
+                            trial_pt.set(i,get_pt(i0,i)+step*trial_dir.get_data(i));
                         }
                         evaluate(trial_pt,&mu,&iEnd);
                         if(mu<mubest){
@@ -2630,7 +2748,7 @@ void node::firework_search(int iStart, int refineCenter){
                     _ricochet_candidates.add(i);
                     _ricochet_candidate_log.add(i);
                     for(j=0;j<_chisquared->get_dim();j++){
-                        _ricochet_candidate_velocities.set(candidate_ct,j,_chisquared->get_pt(i,j)-_chisquared->get_pt(iStart,j));
+                        _ricochet_candidate_velocities.set(candidate_ct,j,get_pt(i,j)-get_pt(iStart,j));
                     }
                 }
             }
@@ -2729,7 +2847,7 @@ void node::off_center_compass(int iStart){
 
             if(_chisquared->get_fn(iStart)>_chisquared->target()){
                 for(i=0;i<_chisquared->get_dim();i++){
-                    trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iStart,i)));
+                    trial.set(i,0.5*(get_pt(_centerdex,i)+get_pt(iStart,i)));
                 }
                 evaluate(trial,&ftrial,&iFound);
                 if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
@@ -2742,7 +2860,7 @@ void node::off_center_compass(int iStart){
 
             if(sgn>0.0){
                 for(i=0;i<_chisquared->get_dim();i++){
-                   trial.set(i,_chisquared->get_pt(iStart,i)+dx*sgn*dir.get_data(ix,i));
+                   trial.set(i,get_pt(iStart,i)+dx*sgn*dir.get_data(ix,i));
                 }
                 evaluate(trial,&ftrial,&iFound);
 
@@ -2763,7 +2881,7 @@ void node::off_center_compass(int iStart){
             if(flow>_chisquared->target()){
                 flow=_chisquared->get_fn(iStart);
                 for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,_chisquared->get_pt(iStart,i));
+                    lowball.set(i,get_pt(iStart,i));
                 }
             }
 
@@ -2790,7 +2908,7 @@ void node::off_center_compass(int iStart){
                     _ricochet_candidate_log.add(iFound);
                     j=_ricochet_candidate_velocities.get_rows();
                     for(i=0;i<_chisquared->get_dim();i++){
-                        _ricochet_candidate_velocities.set(j,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(iStart,i));
+                        _ricochet_candidate_velocities.set(j,i,get_pt(iFound,i)-get_pt(iStart,i));
                     }
 
                     if(_ricochet_candidates.get_dim()!=_ricochet_candidate_velocities.get_rows()){
@@ -2803,7 +2921,7 @@ void node::off_center_compass(int iStart){
             if(sgn<0.0 && iFound>=0 && iFound!=iStart){
                 dx=0.0;
                 for(i=0;i<_chisquared->get_dim();i++){
-                    dx+=(_chisquared->get_pt(iStart,i)-_chisquared->get_pt(iFound,i))*dir.get_data(ix,i);
+                    dx+=(get_pt(iStart,i)-get_pt(iFound,i))*dir.get_data(ix,i);
                 }
                 if(dx<0.0){
                     dx*=-1.0;
@@ -2820,6 +2938,16 @@ void node::off_center_compass(int iStart){
 
 }
 
+double node::apply_quadratic_model(int i1){
+    array_1d<double> pt;
+    int i;
+    pt.set_name("apply_quadratic_model_pt");
+    for(i=0;i<_chisquared->get_dim();i++){
+        pt.set(i,get_pt(i1,i));
+    }
+    return apply_quadratic_model(pt);
+}
+
 double node::apply_quadratic_model(array_1d<double> &pt){
     is_it_safe("apply_quadratic_model");
     int ix,j;
@@ -2828,7 +2956,7 @@ double node::apply_quadratic_model(array_1d<double> &pt){
     for(ix=0;ix<_basis_vectors.get_rows();ix++){
         mu=0.0;
         for(j=0;j<_chisquared->get_dim();j++){
-            mu+=(pt.get_data(j)-_chisquared->get_pt(_ellipse_center,j))*_basis_vectors.get_data(ix,j);
+            mu+=(pt.get_data(j)-get_pt(_ellipse_center,j))*_basis_vectors.get_data(ix,j);
         }
         ans+=_basis_model.get_data(ix)*mu*mu;
     }
@@ -2852,7 +2980,7 @@ int node::_are_connected(int i1, int i2){
     trial.set_name("node_are_connected_trial");
 
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_chisquared->get_pt(i1,i)+_chisquared->get_pt(i2,i)));
+        trial.set(i,0.5*(get_pt(i1,i)+get_pt(i2,i)));
     }
 
     evaluate(trial,&mu,&iFound);
@@ -2875,8 +3003,8 @@ double node::evaluate_dir(int iStart, array_1d<double> &dir_in){
 
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        lowball.set(i,_chisquared->get_pt(iStart,i));
-        highball.set(i,_chisquared->get_pt(iStart,i));
+        lowball.set(i,get_pt(iStart,i));
+        highball.set(i,get_pt(iStart,i));
     }
 
     flow=ricochet_model(lowball);
@@ -3036,7 +3164,11 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     array_1d<int> raw_neigh;
     array_1d<double> raw_dd;
 
-    tree.nn_srch(pt,2*npts,raw_neigh,raw_dd);
+    array_1d<double> pt_true;
+    pt_true.set_name("node_ricochet_model_pt_true");
+    transform_pt_to_truth(pt,pt_true);
+
+    tree.nn_srch(pt_true,2*npts,raw_neigh,raw_dd);
 
     if(raw_dd.get_data(0)<1.0e-20){
         raw_neigh.remove(0);
@@ -3086,7 +3218,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
 
     double max_dfn=-1.0;
     for(i=0;i<npts;i++){
-        ell=_chisquared->get_fn(neigh.get_data(i))-apply_quadratic_model(_chisquared->get_pt(neigh.get_data(i))[0]);
+        ell=_chisquared->get_fn(neigh.get_data(i))-apply_quadratic_model(neigh.get_data(i));
         if(_chisquared->get_fn(neigh.get_data(i))<exception_value && ell>max_dfn){
             max_dfn=ell;
         }
@@ -3103,7 +3235,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
             fn_array.set(i,ell);
         }
         else{
-            mu=max_dfn+fabs(apply_quadratic_model(_chisquared->get_pt(neigh.get_data(i))[0]));
+            mu=max_dfn+fabs(apply_quadratic_model(neigh.get_data(i)));
             if(mu>_chisquared->target()){
                 fn_array.set(i,mu);
             }
@@ -3158,7 +3290,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     array_1d<double> qbar;
     qbar.set_name("node_ricochet_model_qbar");
     for(i=0;i<npts;i++){
-        qbar.set(i,apply_quadratic_model(tree.get_pt(neigh.get_data(i))[0]));
+        qbar.set(i,apply_quadratic_model(neigh.get_data(i)));
         //qbar.set(i,fbar);
     }
 
@@ -3287,7 +3419,7 @@ void node::initialize_ricochet(){
     output=fopen("ricochet_particles.sav","w");
     for(ix=0;ix<_ricochet_particles.get_dim();ix++){
         for(i=0;i<_chisquared->get_dim();i++){
-            fprintf(output,"%e ",_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+            fprintf(output,"%e ",get_pt(_ricochet_particles.get_data(ix),i));
         }
         fprintf(output,"\n");
     }
@@ -3295,7 +3427,7 @@ void node::initialize_ricochet(){
     output=fopen("compass_points.sav","w");
     for(ix=0;ix<_compass_points.get_dim();ix++){
         for(i=0;i<_chisquared->get_dim();i++){
-            fprintf(output,"%e ",_chisquared->get_pt(_compass_points.get_data(ix),i));
+            fprintf(output,"%e ",get_pt(_compass_points.get_data(ix),i));
         }
         fprintf(output,"\n");
     }
@@ -3312,7 +3444,7 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
     int i;
     double mu;
     for(i=0;i<_chisquared->get_dim();i++){
-        radial.set(i,_chisquared->get_pt(_centerdex,i)-_chisquared->get_pt(_ricochet_particles.get_data(ix),i));
+        radial.set(i,get_pt(_centerdex,i)-get_pt(_ricochet_particles.get_data(ix),i));
     }
     mu=radial.normalize();
 
@@ -3326,7 +3458,7 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
     int iFound;
 
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,ratio*_chisquared->get_pt(_ricochet_particles.get_data(ix),i)+(1.0-ratio)*_chisquared->get_pt(_centerdex,i));
+        trial.set(i,ratio*get_pt(_ricochet_particles.get_data(ix),i)+(1.0-ratio)*get_pt(_centerdex,i));
     }
     evaluate(trial,&mu,&iFound);
 
@@ -3342,7 +3474,7 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
     int j,k;
     for(i=0;i<_ricochet_candidates.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
-            trial.set(j,_chisquared->get_pt(_ricochet_candidates.get_data(i),j)-_chisquared->get_pt(_ricochet_particles.get_data(ix),j));
+            trial.set(j,get_pt(_ricochet_candidates.get_data(i),j)-get_pt(_ricochet_particles.get_data(ix),j));
         }
         mu=trial.normalize();
         if(mu>1.0e-20){
@@ -3352,7 +3484,7 @@ int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
 
     for(i=0;i<_boundary_points.get_dim();i++){
         for(k=0;k<_chisquared->get_dim();k++){
-            trial.set(k,_chisquared->get_pt(_boundary_points.get_data(i),k)-_chisquared->get_pt(_ricochet_particles.get_data(ix),k));
+            trial.set(k,get_pt(_boundary_points.get_data(i),k)-get_pt(_ricochet_particles.get_data(ix),k));
         }
         mu=trial.normalize();
         if(mu>1.0e-20){
@@ -3428,7 +3560,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
     midpt.set_name("node_t_kick_midpt");
 
     for(i=0;i<_chisquared->get_dim();i++){
-        midpt.set(i,0.5*(_chisquared->get_pt(i1,i)+_chisquared->get_pt(i0,i)));
+        midpt.set(i,0.5*(get_pt(i1,i)+get_pt(i0,i)));
     }
 
     double mu;
@@ -3445,14 +3577,14 @@ int node::t_kick(int ix, array_1d<double> &dir){
     if(mu>_chisquared->target()){
         flow=_chisquared->get_fn(_centerdex);
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+            lowball.set(i,get_pt(_centerdex,i));
         }
 
         iFound=node_bisection(lowball, flow, midpt, mu, 0);
         if(iFound>=0){
             _ricochet_particles.set(ix,iFound);
             for(i=0;i<_chisquared->get_dim();i++){
-                _ricochet_velocities.set(ix,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(_centerdex,i));
+                _ricochet_velocities.set(ix,i,get_pt(iFound,i)-get_pt(_centerdex,i));
             }
             _ricochet_velocities(ix)->normalize();
         }
@@ -3464,7 +3596,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
     array_1d<double> origin;
     origin.set_name("node_t_kick_origin");
     for(i=0;i<_chisquared->get_dim();i++){
-        origin.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(iMid,i)));
+        origin.set(i,0.5*(get_pt(_centerdex,i)+get_pt(iMid,i)));
     }
 
     evaluate(origin,&mu,&iOrigin);
@@ -3476,14 +3608,14 @@ int node::t_kick(int ix, array_1d<double> &dir){
     if(mu>_chisquared->target()){
         flow=_chisquared->get_fn(_centerdex);
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(_centerdex,i));
+            lowball.set(i,get_pt(_centerdex,i));
         }
 
         iFound=node_bisection(lowball, flow, origin, mu, 0);
         if(iFound>=0){
             _ricochet_particles.set(ix,iFound);
             for(i=0;i<_chisquared->get_dim();i++){
-                _ricochet_velocities.set(ix,i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(_centerdex,i));
+                _ricochet_velocities.set(ix,i,get_pt(iFound,i)-get_pt(_centerdex,i));
             }
             _ricochet_velocities(ix)->normalize();
         }
@@ -3495,7 +3627,7 @@ int node::t_kick(int ix, array_1d<double> &dir){
     trial.set_name("node_t_kick_trial");
     double dnorm;
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,_chisquared->get_pt(i1,i)-_chisquared->get_pt(i0,i));
+        trial.set(i,get_pt(i1,i)-get_pt(i0,i));
     }
 
     dnorm=trial.normalize();
@@ -3537,13 +3669,18 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
     array_1d<int> neigh;
     neigh.set_name("node_mcmc_kick_neigh");
 
-    /*mu=ricochet_model(_chisquared->get_pt(iStart)[0],
+    /*mu=ricochet_model(get_pt(iStart)[0],
                       _chisquared->get_tree()[0],
                       neigh);
     strad=mu-distance_wgt*node_distance(iStart,neigh.get_data(0));*/
 
     double sigma;
-    ricochet_model(_chisquared->get_pt(iStart)[0],&sigma);
+    array_1d<double> model_pt;
+    model_pt.set_name("node_mcmc_kick_model_pt");
+    for(i=0;i<_chisquared->get_dim();i++){
+        model_pt.set(i,get_pt(iStart,i));
+    }
+    ricochet_model(model_pt,&sigma);
     //strad=mu-distance_wgt*sqrt(fabs(sigma));
     strad=fabs(mu-_chisquared->target())-sqrt(fabs(sigma));
 
@@ -3556,7 +3693,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
 
     int j;
     for(i=0;i<_chisquared->get_dim();i++){
-        pt.set(i,_chisquared->get_pt(iStart,i));
+        pt.set(i,get_pt(iStart,i));
     }
 
     double radius,norm;
@@ -3583,7 +3720,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
                 rr=node_distance(_boundary_points.get_data(ib),pt);
                 if(rr>1.0e-20){
                     for(i=0;i<_chisquared->get_dim();i++){
-                        coulomb_step.add_val(i,(pt.get_data(i)-_chisquared->get_pt(_boundary_points.get_data(ib),i))/(rr*rr));
+                        coulomb_step.add_val(i,(pt.get_data(i)-get_pt(_boundary_points.get_data(ib),i))/(rr*rr));
                     }
                 }
             }
@@ -3640,7 +3777,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
     double component;
     if(mu<=_chisquared->target()){
         for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,pt.get_data(i)-_chisquared->get_pt(iStart,i));
+            dir.set(i,pt.get_data(i)-get_pt(iStart,i));
         }
         dir.normalize();
         component=1.0;
@@ -3661,19 +3798,19 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
     start.set_name("node_mcmc_kick_start");
     if(_chisquared->get_fn(iStart)<_chisquared->target()){
         for(i=0;i<_chisquared->get_dim();i++){
-           start.set(i,_chisquared->get_pt(iStart,i));
+           start.set(i,get_pt(iStart,i));
         }
         fstart=_chisquared->get_fn(iStart);
     }
     else{
         for(i=0;i<_chisquared->get_dim();i++){
-            e_dir.set(i,_chisquared->get_pt(iStart,i)-_chisquared->get_pt(local_center,i));
+            e_dir.set(i,get_pt(iStart,i)-get_pt(local_center,i));
         }
         e_dir_norm=e_dir.normalize();
         fstart=_chisquared->get_fn(iStart);
         for(dx=0.1*e_dir_norm;dx<e_dir_norm*1.05 && fstart>_chisquared->target();dx+=0.1*e_dir_norm){
             for(i=0;i<_chisquared->get_dim();i++){
-               start.set(i,_chisquared->get_pt(iStart,i)+dx*e_dir.get_data(i));
+               start.set(i,get_pt(iStart,i)+dx*e_dir.get_data(i));
             }
             evaluate(start,&fstart,&i);
         }
@@ -3693,7 +3830,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
     }
 
     for(i=0;i<_chisquared->get_dim();i++){
-        dir_out.set(i,_chisquared->get_pt(iBisection,i)-_chisquared->get_pt(iStart,i));
+        dir_out.set(i,get_pt(iBisection,i)-get_pt(iStart,i));
     }
 
     iFound[0]=iBisection;
@@ -3721,7 +3858,7 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
     ddmin=1.0e-10;
 
     for(i=0;i<_ricochet_candidates.get_dim();i++){
-        dd=node_distance(_ricochet_candidates.get_data(i), _chisquared->get_pt(_ricochet_particles.get_data(ix))[0]);
+        dd=node_distance(_ricochet_candidates.get_data(i), _ricochet_particles.get_data(ix));
         if(dd>ddmin){
             if(nearestParticle<0 || dd<ddbest){
                 ddbest=dd;
@@ -3754,8 +3891,8 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
     local_center=find_local_center();
 
     for(i=0;i<_chisquared->get_dim();i++){
-           x1=_chisquared->get_pt(_ricochet_particles.get_data(ix),i);
-           trial.set(i,ratio*x1+(1.0-ratio)*_chisquared->get_pt(local_center,i));
+           x1=get_pt(_ricochet_particles.get_data(ix),i);
+           trial.set(i,ratio*x1+(1.0-ratio)*get_pt(local_center,i));
     }
     evaluate(trial,&mu,&iFound);
     if(iFound<0){
@@ -3766,12 +3903,12 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 
      if(nearestParticle>=0){
          for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(nearestParticle,i));
+             dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(nearestParticle,i));
          }
      }
      else{
          for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,_chisquared->get_pt(_ricochet_particles.get_data(ix),i)-_chisquared->get_pt(local_center,i));
+             dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(local_center,i));
          }
      }
      dir.normalize();
@@ -3805,8 +3942,8 @@ int node::originate_particle_compass(array_1d<double> &dir){
 
         flow=_chisquared->get_fn(_centerdex);
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(local_center,i));
-            highball.set(i,_chisquared->get_pt(local_center,i));
+            lowball.set(i,get_pt(local_center,i));
+            highball.set(i,get_pt(local_center,i));
         }
 
         fhigh=-2.0*exception_value;
@@ -3836,7 +3973,7 @@ int node::originate_particle_compass(array_1d<double> &dir){
 
     if(_ricochet_particles.get_dim()==0){
         for(i=0;i<_ricochet_candidates.get_dim();i++){
-            mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_candidates.get_data(i))[0]);
+            mu=apply_quadratic_model(_ricochet_candidates.get_data(i));
 
             dmu=fabs(mu-_chisquared->get_fn(_ricochet_candidates.get_data(i)));
             if(iChosen<0 || dmu>dmubest){
@@ -3906,7 +4043,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
     //already been explored far afield
     for(i=0;i<_boundary_points.get_dim();i++){
         for(j=0;j<_chisquared->get_dim();j++){
-            intermediate_dir.set(j,_chisquared->get_pt(_boundary_points.get_data(i),j)-_chisquared->get_pt(local_center,j));
+            intermediate_dir.set(j,get_pt(_boundary_points.get_data(i),j)-get_pt(local_center,j));
         }
 
         intermediate_dir.normalize();
@@ -3962,7 +4099,7 @@ void node::originate_particle_shooting(int ix, array_1d<double> &dir){
 
     _ricochet_particles.set(ix,iFound);
     for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,_chisquared->get_pt(iFound,i)-_chisquared->get_pt(local_center,i));
+        dir.set(i,get_pt(iFound,i)-get_pt(local_center,i));
     }
     dir.normalize();
 
@@ -3979,6 +4116,8 @@ int node::kick_particle(int ix, array_1d<double> &dir){
 }
 
 void node::search(){
+
+    printf("calling node search\n");
 
     if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
         simplex_search();
@@ -4132,12 +4271,12 @@ void node::simplex_search(){
             iFound=node_bisection_origin_dir(_centerdex, trial, target, tolerance);
             if(iFound>=0){
                 for(i=0;i<_chisquared->get_dim();i++){
-                    if(i>=simplex_min.get_dim() || _chisquared->get_pt(iFound,i)<simplex_min.get_data(i)){
-                        simplex_min.set(i,_chisquared->get_pt(iFound,i));
+                    if(i>=simplex_min.get_dim() || get_pt(iFound,i)<simplex_min.get_data(i)){
+                        simplex_min.set(i,get_pt(iFound,i));
                     }
 
-                    if(i>=simplex_max.get_dim() || _chisquared->get_pt(iFound,i)>simplex_max.get_data(i)){
-                        simplex_max.set(i,_chisquared->get_pt(iFound,i));
+                    if(i>=simplex_max.get_dim() || get_pt(iFound,i)>simplex_max.get_data(i)){
+                        simplex_max.set(i,get_pt(iFound,i));
                     }
                 }
             }
@@ -4267,13 +4406,17 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
     neigh.set_name("node_is_it_a_strike_neigh");
     dd.set_name("node_is_it_a_strike_dd");
 
-    kd_copy.nn_srch(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],1,neigh,dd);
+    array_1d<double> true_pt;
+    true_pt.set_name("node_is_it_a_strike_true_pt");
+    get_true_pt(_ricochet_particles.get_data(ix),true_pt);
+
+    kd_copy.nn_srch(true_pt,1,neigh,dd);
     dist=node_distance(neigh.get_data(0),_ricochet_particles.get_data(ix));
     if(dist<=_node_dd_tol){
         return 1;
      }
 
-    mu=ricochet_model(_chisquared->get_pt(_ricochet_particles.get_data(ix))[0],kd_copy);
+    mu=ricochet_model(true_pt,kd_copy);
 
     if(mu>0.0 &&
         mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
@@ -4339,12 +4482,12 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
     while(flow>_chisquared->target()){
         flow=_chisquared->get_fn(_ricochet_particles.get_data(iparticle));
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(iparticle),i));
+            lowball.set(i,get_pt(_ricochet_particles.get_data(iparticle),i));
         }
 
         while(flow>=_chisquared->target()){
             for(i=0;i<_chisquared->get_dim();i++){
-                elowball.set(i,_chisquared->get_pt(local_center,i));
+                elowball.set(i,get_pt(local_center,i));
                 ehighball.set(i,lowball.get_data(i));
                 edir.set(i,lowball.get_data(i)-elowball.get_data(i));
             }
@@ -4363,7 +4506,7 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
 
             iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
             for(i=0;i<_chisquared->get_dim();i++){
-                lowball.set(i,_chisquared->get_pt(iFound,i));
+                lowball.set(i,get_pt(iFound,i));
             }
             flow=_chisquared->get_fn(iFound);
         }
@@ -4375,7 +4518,7 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
         if(iparticle<_ricochet_origins.get_dim() && _ricochet_origins.get_data(iparticle)>=0){
             for(i=0;i<_chisquared->get_dim();i++){
                 scratch.set(i,\
-               _chisquared->get_pt(_ricochet_particles.get_data(iparticle),i)-_chisquared->get_pt(_ricochet_origins.get_data(iparticle),i));
+               get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_ricochet_origins.get_data(iparticle),i));
             }
             component=scratch.normalize()*1.1;
         }
@@ -4501,12 +4644,12 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
     while(flow>_chisquared->target()){
         flow=_chisquared->get_fn(_ricochet_particles.get_data(iparticle));
         for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,_chisquared->get_pt(_ricochet_particles.get_data(iparticle),i));
+            lowball.set(i,get_pt(_ricochet_particles.get_data(iparticle),i));
         }
 
         while(flow>=_chisquared->target()){
             for(i=0;i<_chisquared->get_dim();i++){
-                elowball.set(i,_chisquared->get_pt(local_center,i));
+                elowball.set(i,get_pt(local_center,i));
                 ehighball.set(i,lowball.get_data(i));
                 edir.set(i,lowball.get_data(i)-elowball.get_data(i));
             }
@@ -4525,7 +4668,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
 
             iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
             for(i=0;i<_chisquared->get_dim();i++){
-                lowball.set(i,_chisquared->get_pt(iFound,i));
+                lowball.set(i,get_pt(iFound,i));
             }
             flow=_chisquared->get_fn(iFound);
         }
@@ -4537,7 +4680,7 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
         if(iparticle<_ricochet_origins.get_dim() && _ricochet_origins.get_data(iparticle)>=0){
             for(i=0;i<_chisquared->get_dim();i++){
                 scratch.set(i,\
-               _chisquared->get_pt(_ricochet_particles.get_data(iparticle),i)-_chisquared->get_pt(_ricochet_origins.get_data(iparticle),i));
+               get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_ricochet_origins.get_data(iparticle),i));
             }
             component=scratch.normalize()*1.1;
         }
@@ -4641,11 +4784,11 @@ void node::ricochet(){
 
    for(i=0;i<_compass_points.get_dim();i++){
        for(j=0;j<_chisquared->get_dim();j++){
-           if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)<ricochet_min.get_data(j)){
-               ricochet_min.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
+           if(i==0 || get_pt(_compass_points.get_data(i),j)<ricochet_min.get_data(j)){
+               ricochet_min.set(j,get_pt(_compass_points.get_data(i),j));
            }
-           if(i==0 || _chisquared->get_pt(_compass_points.get_data(i),j)>ricochet_max.get_data(j)){
-               ricochet_max.set(j,_chisquared->get_pt(_compass_points.get_data(i),j));
+           if(i==0 || get_pt(_compass_points.get_data(i),j)>ricochet_max.get_data(j)){
+               ricochet_max.set(j,get_pt(_compass_points.get_data(i),j));
            }
        }
    }
@@ -4712,7 +4855,7 @@ void node::ricochet(){
            }
        }
        else{
-           mu=apply_quadratic_model(_chisquared->get_pt(_ricochet_particles.get_data(i))[0]);
+           mu=apply_quadratic_model(_ricochet_particles.get_data(i));
            if(mu<_chisquared->target()){
                do_off_center=0;
            }
@@ -4915,7 +5058,9 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
+    printf("time to initialize ricochet\n");
     _data[_ct].initialize_ricochet();
+    printf("done with that\n");
     _ct++;
 
 }

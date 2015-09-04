@@ -100,6 +100,8 @@ private:
     array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
 
+    array_1d<double> _true_min,_true_max,_transform;
+
     array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
@@ -145,6 +147,7 @@ private:
     double ricochet_model(array_1d<double>&, kd_tree&, double*);
     double _ricochet_model(array_1d<double>&, kd_tree&, double*, int, array_1d<int>&);
     double apply_quadratic_model(array_1d<double>&);
+    double apply_quadratic_model(int);
 
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
@@ -175,6 +178,11 @@ private:
     int _are_connected(int, int);
 
     int is_it_a_strike(int, kd_tree&);
+    double get_pt(int,int);
+    void transform_pt_to_node(array_1d<double>&,array_1d<double>&);
+    void transform_pt_to_truth(array_1d<double>&,array_1d<double>&);
+    void get_true_pt(int,array_1d<double>&);
+    void set_transform();
 };
 
 class arrayOfNodes{
