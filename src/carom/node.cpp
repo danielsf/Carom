@@ -3183,35 +3183,6 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
     return mu;
 }
 
-double node::ricochet_distance(int i1, int i2){
-    is_it_safe("ricochet_distance");
-
-    if(_basis_lengths.get_dim()!=_chisquared->get_dim()){
-        printf("WARNING in node::ricochet_distance basis_lengths.dim %d need %d\n",
-        _basis_lengths.get_dim(),_chisquared->get_dim());
-
-        exit(1);
-    }
-
-    double mu,ell,dd=0.0;
-    int ix,i;
-    for(ix=0;ix<_chisquared->get_dim();ix++){
-        mu=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            mu+=(_chisquared->get_pt(i1,i)-_chisquared->get_pt(i2,i))*_basis_vectors.get_data(ix,i);
-        }
-
-        if(_basis_lengths.get_data(ix)>1.0e-10){
-            dd+=power(mu/_basis_lengths.get_data(ix),2);
-        }
-        else{
-            dd+=mu*mu;
-        }
-
-    }
-    return sqrt(dd);
-}
-
 void node::add_to_boundary(int dex){
     _boundary_points.add(dex);
 }

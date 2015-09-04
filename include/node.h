@@ -136,7 +136,6 @@ private:
     void off_center_compass(int);
     void trim_ricochet(int);
     void set_particle(int,int,array_1d<double>&);
-    double ricochet_distance(int,int);
     double ricochet_model(array_1d<double>&);
     double ricochet_model(array_1d<double>&,array_1d<int>&);
     double ricochet_model(array_1d<double>&,double*);
