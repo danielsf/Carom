@@ -581,16 +581,22 @@ void node::set_transform(){
         _max_found.multiply_val(i,_transform.get_data(i));
     }
 
-    for(i=0;i<_chisquared->get_dim();i++){
-        _transform.set(i,1.0);
-    }
-    double ans;
-    for(i=0;i<_true_max.get_dim();i++){
-        ans=_true_max.get_data(i)-_true_min.get_data(i);
-        if(ans>1.0e-20){
-            _transform.set(i,ans);
+    int ix;
+    int j;
+    double ct;
+    for(ix=0;ix<_chisquared->get_dim();ix++){
+        _transform.set(ix,0.0);
+        ct=0.0;
+        for(i=0;i<_boundary_points.get_dim();i++){
+            for(j=i+1;j<_boundary_points.get_dim();j++){
+                ct+=1.0;
+                _transform.add_val(ix,fabs(_chisquared->get_pt(_boundary_points.get_data(i),ix)
+                                            -_chisquared->get_pt(_boundary_points.get_data(j),ix)));
+            }
         }
+        _transform.divide_val(ix,ct);
     }
+
 
     for(i=0;i<_min_found.get_dim();i++){
         _min_found.divide_val(i,_transform.get_data(i));
@@ -599,18 +605,13 @@ void node::set_transform(){
         _max_found.divide_val(i,_transform.get_data(i));
     }
 
-    _projected_max.reset();
-    _projected_min.reset();
 }
 
 void node::get_true_pt(int i1, array_1d<double> &pt_out){
-    array_1d<double> pt;
-    pt.set_name("get_true_pt_pt");
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        pt.set(i,get_pt(i1,i));
+        pt_out.set(i,_chisquared->get_pt(i1,i));
     }
-    transform_pt_to_truth(pt,pt_out);
 }
 
 void node::evaluate(array_1d<double> &pt_in, double *value, int *dex){
@@ -2608,10 +2609,7 @@ void node::find_bases(){
     array_1d<double> projected;
     projected.set_name("node_find_bases_projected");
 
-    if(changed_bases==1){
-        recalibrate_max_min();
-    }
-
+    recalibrate_max_min();
 
     _found_bases++;
     _min_changed=0;
