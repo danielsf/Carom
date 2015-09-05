@@ -4239,10 +4239,10 @@ void node::simplex_search(){
     simplex_max.set_name("node_simplex_max");
     found_dexes.set_name("found_dexes");
 
-    if(_min_found.get_dim()==_chisquared->get_dim() && _max_found.get_dim()==_chisquared->get_dim()){
+    if(_true_min.get_dim()==_chisquared->get_dim() && _true_max.get_dim()==_chisquared->get_dim()){
         for(i=0;i<_chisquared->get_dim();i++){
-            simplex_min.set(i,_min_found.get_data(i));
-            simplex_max.set(i,_max_found.get_data(i));
+            simplex_min.set(i,_true_min.get_data(i));
+            simplex_max.set(i,_true_max.get_data(i));
         }
     }
 
@@ -4270,11 +4270,11 @@ void node::simplex_search(){
             if(iFound>=0){
                 for(i=0;i<_chisquared->get_dim();i++){
                     if(i>=simplex_min.get_dim() || get_pt(iFound,i)<simplex_min.get_data(i)){
-                        simplex_min.set(i,get_pt(iFound,i));
+                        simplex_min.set(i,_chisquared->get_pt(iFound,i));
                     }
 
                     if(i>=simplex_max.get_dim() || get_pt(iFound,i)>simplex_max.get_data(i)){
-                        simplex_max.set(i,get_pt(iFound,i));
+                        simplex_max.set(i,_chisquared->get_pt(iFound,i));
                     }
                 }
             }
@@ -4298,6 +4298,9 @@ void node::simplex_search(){
 
     _chisquared->set_iWhere(iNodeSimplex);
 
+    array_1d<double> pt_node;
+    pt_node.set_name("node_simplex_pt_node");
+
     while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
@@ -4309,7 +4312,9 @@ void node::simplex_search(){
             trial.add_val(i,0.5*(simplex_min.get_data(i)+simplex_max.get_data(i)));
         }
 
-        evaluate(trial,&mu,&iFound);
+        transform_pt_to_node(trial, pt_node);
+
+        evaluate(pt_node,&mu,&iFound);
         if(iFound>=0){
             seed.add_row(trial);
         }
@@ -4327,7 +4332,9 @@ void node::simplex_search(){
     ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,minpt);
 
-    evaluate(minpt,&mu,&i);
+    transform_pt_to_node(minpt, pt_node);
+
+    evaluate(pt_node,&mu,&i);
 
     _ct_simplex+=_chisquared->get_called()-ibefore;
     if(_centerdex==center0){
