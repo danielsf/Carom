@@ -686,13 +686,10 @@ void node::evaluate(array_1d<double> &pt_in, double *value, int *dex){
 
 double node::node_distance(array_1d<double> &p1, array_1d<double> &p2){
     int i;
-    double norm,ans;
+    double ans;
     ans=0.0;
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=_max_found.get_data(i)-_min_found.get_data(i);
-        if(norm>0.0){
-            ans+=power((p1.get_data(i)-p2.get_data(i))/norm,2);
-        }
+        ans+=power((p1.get_data(i)-p2.get_data(i))/get_norm(i),2);
     }
     return sqrt(ans);
 
@@ -721,21 +718,8 @@ double node::node_second_derivative_different(int center, int ix, int iy){
     is_it_safe("node_second_derivative_different");
 
     double xnorm,ynorm;
-    xnorm=-1.0;
-    ynorm=-1.0;
-    if(_max_found.get_dim()>ix && _min_found.get_dim()>ix){
-        xnorm=_max_found.get_data(ix)-_min_found.get_data(ix);
-    }
-    if(!(xnorm>0.0)){
-        xnorm=_chisquared->get_max(ix)-_chisquared->get_min(ix);
-    }
-
-    if(_max_found.get_dim()>iy && _min_found.get_dim()>iy){
-        ynorm=_max_found.get_data(iy)-_min_found.get_data(iy);
-    }
-    if(!(ynorm>0.0)){
-        ynorm=_chisquared->get_max(iy)-_chisquared->get_min(iy);
-    }
+    xnorm=get_norm(ix);
+    ynorm=get_norm(iy);
 
     int ifpp,ifpm,ifmp,ifmm;
     ifpp=-1;
@@ -855,13 +839,7 @@ double node::node_second_derivative_same(int center, int ix){
 
     double xnorm;
 
-    xnorm=-1.0;
-    if(_max_found.get_dim()>ix && _min_found.get_dim()>ix){
-        xnorm=_max_found.get_data(ix)-_min_found.get_data(ix);
-    }
-    if(!(xnorm>0.0)){
-        xnorm=_chisquared->get_max(ix)-_chisquared->get_min(ix);
-    }
+    xnorm=get_norm(ix);
 
     double dx;
     dx=1.0e-2;
@@ -980,13 +958,7 @@ void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
     dxstart=1.0e-2;
 
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=-1.0;
-        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
-            norm=_max_found.get_data(i)-_min_found.get_data(i);
-        }
-        if(!(norm>0.0)){
-           norm = _chisquared->get_max(i)-_chisquared->get_min(i);
-        }
+        norm=get_norm(i);
 
         dx=dxstart;
         if1=-1;
@@ -1037,13 +1009,7 @@ void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
     dxstart=1.0e-2;
 
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=-1.0;
-        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
-            norm=_max_found.get_data(i)-_min_found.get_data(i);
-        }
-        if(!(norm>0.0)){
-           norm = _chisquared->get_max(i)-_chisquared->get_min(i);
-        }
+        norm=get_norm(i);
 
         dx=dxstart;
         if1=-1;
@@ -1985,13 +1951,7 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
 
     for(i=0;i<_chisquared->get_dim();i++){
         center.set(i,get_pt(iCenter,i));
-        norm.set(i,-1.0);
-        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
-            norm.set(i,_max_found.get_data(i)-_min_found.get_data(i));
-        }
-        if(!(norm.get_data(i)>0.0)){
-            norm.set(i,_chisquared->get_max(i)-_chisquared->get_min(i));
-        }
+        norm.set(i,get_norm(i));
     }
 
     array_2d<double> fpp,fpm,fmp,fmm;
@@ -2230,13 +2190,7 @@ int node::findAcceptableCenter(){
     dx=1.0e-2;
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=-1.0;
-        if(_max_found.get_dim()>i && _min_found.get_dim()>i){
-            norm=_max_found.get_data(i)-_min_found.get_data(i);
-        }
-        if(!(norm>0.0)){
-            norm=_chisquared->get_max(i)-_chisquared->get_min(i);
-        }
+        norm=get_norm(i);
         step.set(i,dx*norm);
     }
 
@@ -2799,10 +2753,7 @@ void node::off_center_compass(int iStart){
     }
 
     for(i=0;i<dir.get_cols();i++){
-        norm=_max_found.get_data(i)-_min_found.get_data(i);
-        if(norm<1.0e-20){
-            norm=1.0;
-        }
+        norm=get_norm(i);
         for(j=0;j<dir.get_rows();j++){
             dir.multiply_val(j,i,norm);
         }
@@ -3732,7 +3683,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
 
         radius=normal_deviate(_chisquared->get_dice(),0.0,1.0);
         for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*(_max_found.get_data(i)-_min_found.get_data(i)));
+            trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*get_norm(i));
         }
         mu=ricochet_model(trial,&sigma);
         //trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
