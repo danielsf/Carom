@@ -732,8 +732,8 @@ double node::node_second_derivative_different(int center, int ix, int iy){
     is_it_safe("node_second_derivative_different");
 
     double xnorm,ynorm;
-    xnorm=get_norm(ix);
-    ynorm=get_norm(iy);
+    xnorm=1.0;
+    ynorm=1.0;
 
     int ifpp,ifpm,ifmp,ifmm;
     ifpp=-1;
@@ -853,7 +853,7 @@ double node::node_second_derivative_same(int center, int ix){
 
     double xnorm;
 
-    xnorm=get_norm(ix);
+    xnorm=1.0;
 
     double dx;
     dx=1.0e-2;
@@ -972,7 +972,7 @@ void node::_node_1sided_gradient(int dex, array_1d<double> &grad){
     dxstart=1.0e-2;
 
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=get_norm(i);
+        norm=1.0;
 
         dx=dxstart;
         if1=-1;
@@ -1023,7 +1023,7 @@ void node::_node_2sided_gradient(int dex, array_1d<double> &grad){
     dxstart=1.0e-2;
 
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=get_norm(i);
+        norm=1.0;
 
         dx=dxstart;
         if1=-1;
@@ -1965,7 +1965,7 @@ void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
 
     for(i=0;i<_chisquared->get_dim();i++){
         center.set(i,get_pt(iCenter,i));
-        norm.set(i,get_norm(i));
+        norm.set(i,1.0);
     }
 
     array_2d<double> fpp,fpm,fmp,fmm;
@@ -2204,7 +2204,7 @@ int node::findAcceptableCenter(){
     dx=1.0e-2;
     int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        norm=get_norm(i);
+        norm=1.0;
         step.set(i,dx*norm);
     }
 
@@ -2767,7 +2767,7 @@ void node::off_center_compass(int iStart){
     }
 
     for(i=0;i<dir.get_cols();i++){
-        norm=get_norm(i);
+        norm=1.0;
         for(j=0;j<dir.get_rows();j++){
             dir.multiply_val(j,i,norm);
         }
@@ -3697,7 +3697,7 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
 
         radius=normal_deviate(_chisquared->get_dice(),0.0,1.0);
         for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i)*get_norm(i));
+            trial.set(i,pt.get_data(i)+norm*radius*step.get_data(i));
         }
         mu=ricochet_model(trial,&sigma);
         //trial_strad=mu-distance_wgt*node_distance(neigh.get_data(0),trial);
