@@ -582,19 +582,33 @@ void node::set_transform(){
     }
 
     int ix;
-    int j;
-    double ct;
+    array_1d<double> dd,dd_sorted;
+    array_1d<int> dd_dexes;
+
+    dd.set_name("node_set_transform_dd");
+    dd_sorted.set_name("node_set_transform_dd_sorted");
+    dd_dexes.set_name("node_set_transform_dd_dexes");
+
+    double mu;
+
     for(ix=0;ix<_chisquared->get_dim();ix++){
-        _transform.set(ix,0.0);
-        ct=0.0;
-        for(i=0;i<_boundary_points.get_dim();i++){
-            for(j=i+1;j<_boundary_points.get_dim();j++){
-                ct+=1.0;
-                _transform.add_val(ix,fabs(_chisquared->get_pt(_boundary_points.get_data(i),ix)
-                                            -_chisquared->get_pt(_boundary_points.get_data(j),ix)));
+        dd.reset_preserving_room();
+        dd_sorted.reset_preserving_room();
+        dd_dexes.reset_preserving_room();
+        for(i=0;i<_compass_points.get_dim();i++){
+            mu=fabs(_chisquared->get_pt(_centerdex,ix)-_chisquared->get_pt(_compass_points.get_data(i),ix));
+            if(mu>1.0e-20){
+                dd.add(mu);
+                dd_dexes.add(i);
             }
         }
-        _transform.divide_val(ix,ct);
+        if(dd.get_dim()==0){
+            _transform.set(ix,1.0);
+        }
+        else{
+            sort_and_check(dd,dd_sorted,dd_dexes);
+            _transform.set(ix,dd.get_data(dd.get_dim()/2));
+        }
     }
 
 
