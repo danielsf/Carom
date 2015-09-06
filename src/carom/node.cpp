@@ -703,7 +703,7 @@ double node::node_distance(array_1d<double> &p1, array_1d<double> &p2){
     double ans;
     ans=0.0;
     for(i=0;i<_chisquared->get_dim();i++){
-        ans+=power((p1.get_data(i)-p2.get_data(i))/get_norm(i),2);
+        ans+=power(p1.get_data(i)-p2.get_data(i),2);
     }
     return sqrt(ans);
 
