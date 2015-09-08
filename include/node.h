@@ -93,7 +93,8 @@ private:
 
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     array_1d<int> _firework_centers;
-    array_1d<int> _ricochet_candidates,_off_center_origins;
+    array_1d<int> _ricochet_candidates;
+    array_1d<int> _off_center_origins,_off_center_candidates;
     array_1d<int> _associates;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;

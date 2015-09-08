@@ -71,6 +71,7 @@ void node::initialize(){
     _ricochet_candidate_velocities.set_name("node_ricochet_candidate_velocities");
     _off_center_compass_points.set_name("node_off_center_compass_points");
     _off_center_origins.set_name("node_off_center_origins");
+    _off_center_candidates.set_name("node_off_center_candidates");
     _basis_associates.set_name("node_basis_associates");
     _basis_mm.set_name("node_basis_mm");
     _basis_bb.set_name("node_basis_bb");
@@ -186,6 +187,11 @@ void node::copy(const node &in){
     _off_center_origins.reset();
     for(i=0;i<in._off_center_origins.get_dim();i++){
         _off_center_origins.set(i,in._off_center_origins.get_data(i));
+    }
+
+    _off_center_candidates.reset();
+    for(i=0;i<in._off_center_candidates.get_dim();i++){
+        _off_center_candidates.set(i,in._off_center_candidates.get_data(i));
     }
 
     _basis_associates.reset();
@@ -305,6 +311,10 @@ void node::merge(const node &in){
 
     for(i=0;i<in._off_center_origins.get_dim();i++){
         _off_center_origins.add(in._off_center_origins.get_data(i));
+    }
+
+    for(i=0;i<in._off_center_candidates.get_dim();i++){
+        _off_center_candidates.add(in._off_center_candidates.get_data(i));
     }
 
     int old_n_particles=_ricochet_particles.get_dim();
@@ -700,7 +710,9 @@ void node::evaluate(array_1d<double> &pt_in, double *value, int *dex){
                 }
             }
 
-
+            if(value[0]<0.5*(_chisquared->target()+_chisquared->get_fn(_centerdex))){
+                _off_center_candidates.add(dex[0]);
+            }
         }
 
     }
@@ -3874,8 +3886,8 @@ int node::choose_off_center_point(){
     min_allowable_dd=1.0e-3;
 
     ddmax=-2.0*exception_value;
-    for(i=0;i<_associates.get_dim();i++){
-        ipt=_associates.get_data(i);
+    for(i=0;i<_off_center_candidates.get_dim();i++){
+        ipt=_off_center_candidates.get_data(i);
         if(_chisquared->get_fn(ipt)<=target && _chisquared->get_fn(ipt)>min_chisq){
             use_it=1;
             dd_nn=2.0*exception_value;
@@ -3904,6 +3916,12 @@ int node::choose_off_center_point(){
     }
 
     if(iFound>=0){
+        for(i=0;i<_off_center_candidates.get_dim();i++){
+            if(_off_center_candidates.get_data(i)==iFound){
+                _off_center_candidates.remove(i);
+                i--;
+            }
+        }
         return iFound;
     }
 
