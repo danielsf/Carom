@@ -365,6 +365,10 @@ void node::set_id_dex(int ii){
     _id_dex=ii;
 }
 
+double node::get_transform(int dex){
+    return _transform.get_data(dex);
+}
+
 double node::get_norm(int dex){
     if(dex>=_max_found.get_dim() || dex>=_min_found.get_dim()){
         return 1.0;

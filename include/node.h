@@ -34,6 +34,7 @@ public:
     void simplex_search();
     double volume();
     double get_norm(int);
+    double get_transform(int);
     double projected_volume();
     int get_activity();
     int get_ct_ricochet();

@@ -185,6 +185,10 @@ void carom::write_pts(){
             printf("    highball calls %d\n",
             _nodes(i)->get_highball_calls());
         }
+        printf("    transform\n");
+        for(j=0;j<_chifn.get_dim();j++){
+            printf("    %e\n",_nodes(i)->get_transform(j));
+        }
         printf("\n");
     }
 
