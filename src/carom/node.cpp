@@ -3864,7 +3864,7 @@ int node::choose_off_center_point(){
     target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
     min_chisq=0.5*(target+_chisquared->get_fn(_centerdex));
 
-    double dd,ddmax,min_allowable_dd;
+    double dd,ddmax,dd_nn,min_allowable_dd;
     int i,j,use_it,iFound=-1;
     int ipt;
 
@@ -3875,17 +3875,25 @@ int node::choose_off_center_point(){
         ipt=_associates.get_data(i);
         if(_chisquared->get_fn(ipt)<=target && _chisquared->get_fn(ipt)>min_chisq){
             use_it=1;
+            dd_nn=2.0*exception_value;
             for(j=0;j<_off_center_origins.get_dim() && use_it==1;j++){
                 dd=node_distance(ipt,_off_center_origins.get_data(j));
                 if(dd<min_allowable_dd){
                     use_it=0;
                 }
+                else if(dd<dd_nn){
+                    dd_nn=dd;
+                }
             }
 
             if(use_it==1){
                 dd=node_distance(_centerdex,ipt);
-                if(dd>min_allowable_dd && dd>ddmax){
-                    ddmax=dd;
+                if(dd<dd_nn){
+                    dd_nn=dd;
+                }
+
+                if(dd_nn>min_allowable_dd && dd_nn>ddmax){
+                    ddmax=dd_nn;
                     iFound=ipt;
                 }
             }
