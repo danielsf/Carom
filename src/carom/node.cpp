@@ -4171,6 +4171,7 @@ void node::search(){
 
     if(_ricochet_strikes>=_allowed_ricochet_strikes){
         trim_ricochet(_ricochet_particles.get_dim()/2);
+        _ricochet_strikes=0;
     }
 
     if(_convergence_ct>_chisquared->get_dim()){
