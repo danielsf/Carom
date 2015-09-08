@@ -303,6 +303,10 @@ void node::merge(const node &in){
         }
     }
 
+    for(i=0;i<in._off_center_origins.get_dim();i++){
+        _off_center_origins.add(in._off_center_origins.get_data(i));
+    }
+
     int old_n_particles=_ricochet_particles.get_dim();
     int j;
     for(i=0;i<in._ricochet_particles.get_dim();i++){
