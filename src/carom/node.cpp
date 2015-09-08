@@ -4877,21 +4877,46 @@ void node::trim_ricochet(int n_to_trim){
     value_sorted.set_name("trim_ricochet_value_sorted");
     value_dex.set_name("trim_ricochet_value_dex");
 
+    array_1d<double> sub_dir,pointing_dir;
+    sub_dir.set_name("trim_ricochet_sub_dir");
+    pointing_dir.set_name("trim_ricochet_pointing_dir");
+
     int ip,ib;
-    double dd,ddmin;
+    double dd,ddmin,rr;
+    double norm,dotproduct;
     for(i=0;i<_ricochet_particles.get_dim();i++){
         ip=_ricochet_particles.get_data(i);
         ddmin=2.0*exception_value;
+
+        for(j=0;j<_chisquared->get_dim();j++){
+            pointing_dir.set(j,0.0);
+        }
+
         for(j=0;j<_boundary_points.get_dim();j++){
             ib=_boundary_points.get_data(j);
             if(ib!=ip){
-                dd=node_distance(ip,ib);
-                if(dd<ddmin){
-                    ddmin=dd;
+                for(k=0;k<_chisquared->get_dim();k++){
+                    sub_dir.set(k,get_pt(ip,k)-get_pt(ib,k));
+                }
+                norm=sub_dir.normalize();
+                rr=node_distance(ip,ib);
+                if(norm>1.0e-10){
+                    for(k=0;k<_chisquared->get_dim();k++){
+                        pointing_dir.add_val(k,sub_dir.get_data(k)/rr);
+                    }
                 }
             }
         }
-        value.add(ddmin);
+        pointing_dir.normalize();
+
+        _ricochet_velocities(i)->normalize();
+
+        dotproduct=0.0;
+        for(j=0;j<_chisquared->get_dim();j++){
+            dotproduct+=_ricochet_velocities.get_data(i,j)*pointing_dir.get_data(j);
+        }
+
+        value.add(dotproduct);
         value_dex.add(i);
     }
     sort_and_check(value,value_sorted,value_dex);
