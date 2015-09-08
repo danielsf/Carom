@@ -3913,6 +3913,10 @@ int node::choose_off_center_point(){
                 }
             }
         }
+        else if(_chisquared->get_fn(ipt)>target){
+            _off_center_candidates.remove(i);
+            i--;
+        }
     }
 
     if(iFound>=0){
