@@ -3350,8 +3350,7 @@ void node::initialize_ricochet(){
     local_center=find_local_center();
 
     for(i=0;i<nParticles;i++){
-        iFound=originate_particle_compass(dir);
-        //mcmc_kick(local_center,&iFound,dir,1000);
+        iFound=originate_particle_shooting(dir);
         set_particle(i,iFound,dir);
     }
 
@@ -4008,99 +4007,21 @@ int node::originate_particle_compass(array_1d<double> &dir){
     return iChosen;
 }
 
-void node::originate_particle_shooting(int ix, array_1d<double> &dir){
-    printf("WARNING originate_particle_shooting is no longer safe\n");
-    printf("the emergency use of originate_particle_compass is deprecated\n");
-    exit(1);
+int node::originate_particle_shooting(array_1d<double> &dir){
 
-    if(_boundary_points.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
-        //originate_particle_compass(ix, dir);
-        _bad_shots++;
-        return;
-    }
+    int iOrigin=choose_off_center_point();
+    _off_center_origins.add(iOrigin);
 
-    array_1d<double> local_dir,intermediate_dir;
-    int local_center;
-
-    local_dir.set_name("node_shooting_local_dir");
-
-    local_center=find_local_center();
-
-    local_dir.set_dim(_chisquared->get_dim());
-    local_dir.zero();
-    int i,j;
-    //if this doesn't work, try assembling local_dir from
-    //unnormalized vectors pointing from boundary to center
-    //that would give more weight to directions that have
-    //already been explored far afield
-    for(i=0;i<_boundary_points.get_dim();i++){
-        for(j=0;j<_chisquared->get_dim();j++){
-            intermediate_dir.set(j,get_pt(_boundary_points.get_data(i),j)-get_pt(local_center,j));
-        }
-
-        intermediate_dir.normalize();
-        for(j=0;j<_chisquared->get_dim();j++){
-            local_dir.add_val(j,intermediate_dir.get_data(j));
-        }
-    }
-
-
-    double min_norm,local_dir_norm;
-    min_norm=1.0e-10;
-    local_dir_norm=local_dir.normalize();
-    while(local_dir_norm<min_norm){
-        for(i=0;i<_chisquared->get_dim();i++){
-            local_dir.add_val(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        local_dir_norm=local_dir.normalize();
-    }
-
-    int iFound,pts0=_chisquared->get_pts();
-    iFound=node_bisection_origin_dir(local_center,local_dir);
-
-    double dist;
-    dist=_nearest_other_particle(iFound,-1);
-
-    array_1d<double> pp;
-
-    int random_ct=0;
-    //in case we found a point that already existed
-    while(iFound>=0 && (iFound<pts0 || dist<_node_dd_tol)){
-        random_ct++;
-        pts0=_chisquared->get_pts();
-        for(i=0;i<_chisquared->get_dim();i++){
-            local_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        iFound=node_bisection_origin_dir(local_center,local_dir);
-        dist=_nearest_other_particle(iFound,-1);
-    }
-
-
-    if(iFound<0){
-        //originate_particle_compass(ix,dir);
-        _bad_shots++;
-        return;
-    }
-
-    if(random_ct==0){
-        _good_shots++;
-    }
-    else{
-        _bad_shots++;
-    }
-
-    _ricochet_particles.set(ix,iFound);
+    int i;
     for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,get_pt(iFound,i)-get_pt(local_center,i));
+        dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
     }
     dir.normalize();
+    int iFound;
+    iFound=node_bisection_origin_dir(iOrigin,dir);
 
-    _originate_particle_paperwork(ix,iFound);
+    return iFound;
 
-}
-
-void node::_originate_particle_paperwork(int ix, int iChosen){
-    _ricochet_origins.set(ix,-1);
 }
 
 int node::kick_particle(int ix, array_1d<double> &dir){
@@ -4911,7 +4832,7 @@ void node::trim_ricochet(int n_to_trim){
     dir.set_name("trim_ricochet_dir");
     for(i=0;i<n_to_trim;i++){
         ip=nn_dist_dex.get_data(i);
-        iFound=originate_particle_compass(dir);
+        iFound=originate_particle_shooting(dir);
         set_particle(ip,iFound,dir);
     }
 }
