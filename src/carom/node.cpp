@@ -4036,15 +4036,56 @@ int node::originate_particle_compass(array_1d<double> &dir){
 }
 
 int node::originate_particle_shooting(array_1d<double> &dir){
-
     int iOrigin=choose_off_center_point();
     _off_center_origins.add(iOrigin);
 
-    int i;
+    int i,j;
+
+    double norm,rr;
+    array_1d<double> sub_dir,pointing_dir;
+    sub_dir.set_name("node_originate_sub_dir");
+    pointing_dir.set_name("node_originate_pointing_dir");
+    for(i=0;i<_chisquared->get_dim();i++){
+        pointing_dir.set(i,0.0);
+    }
+    for(i=0;i<_boundary_points.get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            sub_dir.set(j,get_pt(iOrigin,j)-get_pt(_boundary_points.get_data(i),j));
+        }
+        norm=sub_dir.normalize();
+        rr=node_distance(iOrigin,_boundary_points.get_data(i));
+        if(norm>1.0e-10){
+            for(j=0;j<_chisquared->get_dim();j++){
+                pointing_dir.add_val(j,sub_dir.get_data(j)/rr);
+            }
+        }
+    }
+
+    norm=pointing_dir.normalize();
+    double dotproduct=-1.0;
+
     for(i=0;i<_chisquared->get_dim();i++){
         dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
     }
     dir.normalize();
+
+    dotproduct=0.0;
+    for(i=0;i<_chisquared->get_dim();i++){
+        dotproduct+=dir.get_data(i)*pointing_dir.get_data(i);
+    }
+
+    while(dotproduct<0.0 && norm>1.0e-10){
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+
+        dotproduct=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            dotproduct+=dir.get_data(i)*pointing_dir.get_data(i);
+        }
+    }
+
     int iFound;
     iFound=node_bisection_origin_dir(iOrigin,dir);
 
