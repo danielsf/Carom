@@ -2733,7 +2733,7 @@ void node::off_center_compass(int iStart){
     printf("\noff center compass begins\n");
 
     int ix;
-    int i,j,k,goAhead;
+    int i,j,k;
     double dd,ddmin;
 
     _chisquared->set_iWhere(iCompass);
@@ -2764,23 +2764,6 @@ void node::off_center_compass(int iStart){
         if(norm>1.0e-20){
             dir.add_row(trial_dir);
         }
-    }
-
-    ddmin=1.0e-3;
-    goAhead=1;
-    for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
-        dd=node_distance(iStart,_off_center_origins.get_data(i));
-        if(dd<ddmin){
-            goAhead=0;
-        }
-    }
-
-    if(node_distance(iStart,_centerdex)<ddmin){
-        goAhead=0;
-    }
-
-    if(goAhead==0){
-        return;
     }
 
     _off_center_origins.add(iStart);
@@ -3873,15 +3856,49 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
 }
 
 int node::choose_off_center_point(){
+    double target,min_chisq;
+    target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
+    min_chisq=0.5*(target+_chisquared->get_fn(_centerdex));
+
+    double dd,ddmax,min_allowable_dd;
+    int i,j,use_it,iFound=-1;
+    int ipt;
+
+    min_allowable_dd=1.0e-3;
+
+    ddmax=-2.0*exception_value;
+    for(i=0;i<_associates.get_dim();i++){
+        ipt=_associates.get_data(i);
+        if(_chisquared->get_fn(ipt)<=target && _chisquared->get_fn(ipt)>min_chisq){
+            use_it=1;
+            for(j=0;j<_off_center_origins.get_dim() && use_it==1;j++){
+                dd=node_distance(ipt,_off_center_origins.get_data(j));
+                if(dd<min_allowable_dd){
+                    use_it=0;
+                }
+            }
+
+            if(use_it==1){
+                dd=node_distance(_centerdex,ipt);
+                if(dd>min_allowable_dd && dd>ddmax){
+                    ddmax=dd;
+                    iFound=ipt;
+                }
+            }
+        }
+    }
+
+    if(iFound>=0){
+        return iFound;
+    }
+
     array_1d<double> lowball,highball,random_dir;
 
-    double target,flow,fhigh;
-    int i,j;
+    double flow,fhigh;
     lowball.set_name("node_originate_lowball");
     highball.set_name("node_originate_highball");
     random_dir.set_name("node_originate_random_dir");
 
-    target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
 
     for(i=0;i<_chisquared->get_dim();i++){
         random_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
@@ -3894,7 +3911,6 @@ int node::choose_off_center_point(){
         highball.set(i,get_pt(_centerdex,i));
     }
 
-    int iFound;
     fhigh=-2.0*exception_value;
     while(fhigh<=target){
         for(i=0;i<_chisquared->get_dim();i++){
