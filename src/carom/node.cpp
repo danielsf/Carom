@@ -4871,11 +4871,11 @@ void node::trim_ricochet(int n_to_trim){
     //be merciless
 
     int i,j,k;
-    array_1d<double> nn_dist,nn_dist_sorted;
-    array_1d<int> nn_dist_dex;
-    nn_dist.set_name("trim_ricochet_nn_dist");
-    nn_dist_sorted.set_name("trim_ricochet_nn_dist_sorted");
-    nn_dist_dex.set_name("trim_ricochet_nn_dist_dex");
+    array_1d<double> value,value_sorted;
+    array_1d<int> value_dex;
+    value.set_name("trim_ricochet_value");
+    value_sorted.set_name("trim_ricochet_value_sorted");
+    value_dex.set_name("trim_ricochet_value_dex");
 
     int ip,ib;
     double dd,ddmin;
@@ -4891,16 +4891,16 @@ void node::trim_ricochet(int n_to_trim){
                 }
             }
         }
-        nn_dist.add(ddmin);
-        nn_dist_dex.add(i);
+        value.add(ddmin);
+        value_dex.add(i);
     }
-    sort_and_check(nn_dist,nn_dist_sorted,nn_dist_dex);
+    sort_and_check(value,value_sorted,value_dex);
 
     int iFound;
     array_1d<double> dir;
     dir.set_name("trim_ricochet_dir");
     for(i=0;i<n_to_trim;i++){
-        ip=nn_dist_dex.get_data(i);
+        ip=value_dex.get_data(i);
         iFound=originate_particle_shooting(dir);
         set_particle(ip,iFound,dir);
     }
