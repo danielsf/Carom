@@ -2766,16 +2766,9 @@ void node::off_center_compass(int iStart){
         }
     }
 
-    for(i=0;i<dir.get_cols();i++){
-        norm=1.0;
-        for(j=0;j<dir.get_rows();j++){
-            dir.multiply_val(j,i,norm);
-        }
-    }
-
     ddmin=1.0e-3;
     goAhead=1;
-    /*for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
+    for(i=0;i<_off_center_origins.get_dim() && goAhead==1;i++){
         dd=node_distance(iStart,_off_center_origins.get_data(i));
         if(dd<ddmin){
             goAhead=0;
@@ -2788,7 +2781,7 @@ void node::off_center_compass(int iStart){
 
     if(goAhead==0){
         return;
-    }*/
+    }
 
     _off_center_origins.add(iStart);
     int ibefore=_chisquared->get_called();
@@ -3879,53 +3872,61 @@ int node::step_kick(int ix, double ratio, array_1d<double> &dir){
      //maybe should try reflecting about the gradient...
 }
 
+int node::choose_off_center_point(){
+    array_1d<double> lowball,highball,random_dir;
+
+    double target,flow,fhigh;
+    int i,j;
+    lowball.set_name("node_originate_lowball");
+    highball.set_name("node_originate_highball");
+    random_dir.set_name("node_originate_random_dir");
+
+    target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        random_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+    }
+    random_dir.normalize();
+
+    flow=_chisquared->get_fn(_centerdex);
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,get_pt(_centerdex,i));
+        highball.set(i,get_pt(_centerdex,i));
+    }
+
+    int iFound;
+    fhigh=-2.0*exception_value;
+    while(fhigh<=target){
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.add_val(i,random_dir.get_data(i));
+        }
+        evaluate(highball,&fhigh,&iFound);
+    }
+
+    iFound=node_bisection(lowball,flow,highball,fhigh,1,target,0.01);
+    return iFound;
+}
 
 int node::originate_particle_compass(array_1d<double> &dir){
 
     //choose new origin
 
-    array_1d<double> lowball, highball,random_dir;
-    double flow, fhigh,target;
-    int iFound,i,j;
+    int i,j,iCenter;
     int local_center;
 
     local_center=find_local_center();
 
     while(_ricochet_candidates.get_dim()<_ricochet_particles.get_dim()+2*_chisquared->get_dim()){
-        /*lowball.set_name("node_originate_lowball");
-        highball.set_name("node_originate_highball");
-        random_dir.set_name("node_originate_random_dir");
 
-        target=0.5*(_chisquared->get_fn(local_center)+_chisquared->target());
+        iCenter=choose_off_center_point();
 
-        for(i=0;i<_chisquared->get_dim();i++){
-            random_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        random_dir.normalize();
-
-        flow=_chisquared->get_fn(_centerdex);
-        for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,get_pt(local_center,i));
-            highball.set(i,get_pt(local_center,i));
-        }
-
-        fhigh=-2.0*exception_value;
-        while(fhigh<=target){
-            for(i=0;i<_chisquared->get_dim();i++){
-                highball.add_val(i,random_dir.get_data(i));
-            }
-            evaluate(highball,&fhigh,&iFound);
-        }
-
-        iFound=node_bisection(lowball,flow,highball,fhigh,1,target,0.01);
-
-        if(iFound>=0){
-            off_center_compass(iFound);
+        if(iCenter>=0){
+            off_center_compass(iCenter);
             //firework_search(iFound, 0);
-        }*/
+        }
 
-        local_center=find_local_center();
-        off_center_compass(local_center);
+        //local_center=find_local_center();
+        //off_center_compass(local_center);
         _filter_candidates();
 
     }

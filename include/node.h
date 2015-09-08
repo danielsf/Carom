@@ -183,6 +183,8 @@ private:
     void transform_pt_to_truth(array_1d<double>&,array_1d<double>&);
     void get_true_pt(int,array_1d<double>&);
     void set_transform();
+
+    int choose_off_center_point();
 };
 
 class arrayOfNodes{
