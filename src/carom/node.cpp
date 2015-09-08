@@ -601,7 +601,7 @@ void node::set_transform(){
         dd_dexes.reset_preserving_room();
         for(i=0;i<_compass_points.get_dim();i++){
             mu=fabs(_chisquared->get_pt(_centerdex,ix)-_chisquared->get_pt(_compass_points.get_data(i),ix));
-            if(mu>1.0e-20){
+            if(mu>1.0e-10*(_true_max.get_data(ix)-_true_min.get_data(ix))){
                 dd.add(mu);
                 dd_dexes.add(i);
             }
