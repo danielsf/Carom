@@ -711,7 +711,9 @@ void node::evaluate(array_1d<double> &pt_in, double *value, int *dex){
             }
 
             if(value[0]<0.5*(_chisquared->target()+_chisquared->get_fn(_centerdex))){
-                _off_center_candidates.add(dex[0]);
+                if(value[0]>0.75*_chisquared->get_fn(_centerdex)+0.25*_chisquared->target()){
+                    _off_center_candidates.add(dex[0]);
+                }
             }
         }
 
@@ -3913,7 +3915,7 @@ int node::choose_off_center_point(){
                 }
             }
         }
-        else if(_chisquared->get_fn(ipt)>target){
+        else{
             _off_center_candidates.remove(i);
             i--;
         }
