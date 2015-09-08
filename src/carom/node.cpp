@@ -607,7 +607,7 @@ void node::set_transform(){
         }
         else{
             sort_and_check(dd,dd_sorted,dd_dexes);
-            _transform.set(ix,dd.get_data(dd.get_dim()/2));
+            _transform.set(ix,dd_sorted.get_data(dd.get_dim()/2));
         }
     }
 
