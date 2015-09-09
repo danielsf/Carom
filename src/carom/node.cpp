@@ -2375,6 +2375,8 @@ void node::recalibrate_max_min(){
     _projected_min.reset();
     _min_found.reset();
     _max_found.reset();
+    _true_min.reset();
+    _true_max.reset();
 
     array_1d<double> projected;
     projected.set_name("node_recalibrate_projected");
@@ -2410,6 +2412,15 @@ void node::recalibrate_max_min(){
 
                 if(j>=_max_found.get_dim() || mu>_max_found.get_data(j)){
                     _max_found.set(j,mu);
+                }
+
+                mu=_chisquared->get_pt(_associates.get_data(i),j);
+                if(j>=_true_min.get_dim() || mu<_true_min.get_data(j)){
+                    _true_min.set(j,mu);
+                }
+
+                if(j>=_true_max.get_dim() || mu>_true_max.get_data(j)){
+                    _true_max.set(j,mu);
                 }
             }
         }
