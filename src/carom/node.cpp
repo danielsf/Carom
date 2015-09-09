@@ -3396,25 +3396,6 @@ void node::initialize_ricochet(){
     _min_basis_error_changed=0;
     _since_expansion=0;
     _chimin_ricochet=_chimin;
-
-    FILE *output;
-    output=fopen("ricochet_particles.sav","w");
-    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
-        for(i=0;i<_chisquared->get_dim();i++){
-            fprintf(output,"%e ",get_pt(_ricochet_particles.get_data(ix),i));
-        }
-        fprintf(output,"\n");
-    }
-    fclose(output);
-    output=fopen("compass_points.sav","w");
-    for(ix=0;ix<_compass_points.get_dim();ix++){
-        for(i=0;i<_chisquared->get_dim();i++){
-            fprintf(output,"%e ",get_pt(_compass_points.get_data(ix),i));
-        }
-        fprintf(output,"\n");
-    }
-    fclose(output);
-
 }
 
 int node::smart_step_kick(int ix, double ratio, array_1d<double> &dir){
