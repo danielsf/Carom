@@ -26,6 +26,7 @@ void node::deactivate(){
 void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
+    _chimin_ricochet=2.0*exception_value;
     _centerdex=-1;
     _geo_centerdex=-1;
     _ellipse_center=-1;
@@ -108,6 +109,7 @@ void node::copy(const node &in){
     _geo_centerdex=in._geo_centerdex;
     _centerdex_basis=in._centerdex_basis;
     _chimin=in._chimin;
+    _chimin_ricochet=in._chimin_ricochet;
     _chimin_bases=in._chimin_bases;
     _min_changed=in._min_changed;
     _active=in._active;
@@ -3385,6 +3387,7 @@ void node::initialize_ricochet(){
 
     _min_basis_error_changed=0;
     _since_expansion=0;
+    _chimin_ricochet=_chimin;
 
     FILE *output;
     output=fopen("ricochet_particles.sav","w");
@@ -4120,15 +4123,12 @@ void node::search(){
         }
     }
 
-    double min_before;
-    min_before=_chimin;
-
     if(_ct_simplex<=_ct_ricochet &&
         _failed_simplexes<3 &&
         _chisquared->could_it_go_lower(_chimin)>0){
 
         simplex_search();
-        if(_chimin-min_before>0.2*(_chisquared->target()-_chisquared->chimin())){
+        if(_chimin-_chimin_ricochet>0.2*(_chisquared->target()-_chisquared->chimin())){
             reset_ricochet();
         }
     }
@@ -4144,7 +4144,6 @@ void node::search(){
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
-        //reset_ricochet();
         find_bases();
         compass_search_geometric_center();
     }

@@ -77,7 +77,7 @@ private:
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
     int _ricochet_strikes;
     int _ct_ricochet,_ct_simplex;
-    double _chimin,_chimin_bases;
+    double _chimin,_chimin_bases,_chimin_ricochet;
     double _volume_of_last_geom;
 
     int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
