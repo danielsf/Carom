@@ -4136,9 +4136,10 @@ void node::search(){
         _chisquared->could_it_go_lower(_chimin)>0){
 
         simplex_search();
-        if(_chimin-_chimin_ricochet>0.2*(_chisquared->target()-_chisquared->chimin())){
-            reset_ricochet();
-        }
+    }
+
+    if(_chimin-_chimin_ricochet>0.2*(_chisquared->target()-_chisquared->chimin())){
+        reset_ricochet();
     }
 
     double projectedVolume0=projected_volume();
