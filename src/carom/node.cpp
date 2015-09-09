@@ -329,6 +329,14 @@ void node::merge(const node &in){
         _ricochet_origins.add(in._ricochet_origins.get_data(i));
     }
 
+    if(in._chimin<_chimin){
+        _chimin=in._chimin;
+    }
+
+    if(_chisquared->get_fn(in._centerdex)<_chisquared->get_fn(_centerdex)){
+        _centerdex=in._centerdex;
+    }
+
     recalibrate_max_min();
     _active=1;
 }
