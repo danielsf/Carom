@@ -4435,6 +4435,7 @@ void node::reset_ricochet(){
     _ricochet_velocities.reset();
     _ricochet_candidates.reset();
     _ricochet_candidate_velocities.reset();
+    recalibrate_max_min();
     _found_bases=0;
 }
 
