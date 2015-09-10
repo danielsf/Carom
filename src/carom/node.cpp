@@ -632,7 +632,6 @@ void node::set_transform(){
         }
     }
     recalibrate_max_min();
-
 }
 
 void node::get_true_pt(int i1, array_1d<double> &pt_out){
@@ -714,6 +713,15 @@ void node::evaluate(array_1d<double> &pt_in, double *value, int *dex){
         }
 
     }
+}
+
+double node::normalized_node_distance(int i1, int i2){
+    double ans=0.0;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        ans+=power((get_pt(i1,i)-get_pt(i2,i))/get_norm(i),2);
+    }
+    return sqrt(ans);
 }
 
 double node::node_distance(array_1d<double> &p1, array_1d<double> &p2){
@@ -3883,7 +3891,7 @@ int node::choose_off_center_point(){
             use_it=1;
             dd_nn=2.0*exception_value;
             for(j=0;j<_off_center_origins.get_dim() && use_it==1;j++){
-                dd=node_distance(ipt,_off_center_origins.get_data(j));
+                dd=normalized_node_distance(ipt,_off_center_origins.get_data(j));
                 if(dd<min_allowable_dd){
                     use_it=0;
                 }
@@ -3893,7 +3901,7 @@ int node::choose_off_center_point(){
             }
 
             if(use_it==1){
-                dd=node_distance(_centerdex,ipt);
+                dd=normalized_node_distance(_centerdex,ipt);
                 if(dd<dd_nn){
                     dd_nn=dd;
                 }
