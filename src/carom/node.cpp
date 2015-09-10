@@ -4164,7 +4164,6 @@ void node::search(){
         volume0=volume();
         projectedVolume0=projected_volume();
 
-        reset_ricochet();
         find_bases();
         compass_search_geometric_center();
 
