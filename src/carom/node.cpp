@@ -602,13 +602,6 @@ void node::transform_pt_to_truth(array_1d<double> &pt_in, array_1d<double> &pt_o
 
 void node::set_transform(){
     int i;
-    for(i=0;i<_min_found.get_dim();i++){
-        _min_found.multiply_val(i,_transform.get_data(i));
-    }
-    for(i=0;i<_max_found.get_dim();i++){
-        _max_found.multiply_val(i,_transform.get_data(i));
-    }
-
     int ix;
     array_1d<double> dd,dd_sorted;
     array_1d<int> dd_dexes;
@@ -638,14 +631,7 @@ void node::set_transform(){
             _transform.set(ix,dd_sorted.get_data(dd.get_dim()/2));
         }
     }
-
-
-    for(i=0;i<_min_found.get_dim();i++){
-        _min_found.divide_val(i,_transform.get_data(i));
-    }
-    for(i=0;i<_max_found.get_dim();i++){
-        _max_found.divide_val(i,_transform.get_data(i));
-    }
+    recalibrate_max_min();
 
 }
 
