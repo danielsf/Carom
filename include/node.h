@@ -92,6 +92,7 @@ private:
     int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
 
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
+    asymm_array_2d<int> _transform_associates;
     array_1d<int> _firework_centers;
     array_1d<int> _ricochet_candidates;
     array_1d<int> _off_center_origins,_off_center_candidates;
