@@ -4777,7 +4777,7 @@ void node::trim_ricochet(int n_to_trim){
                     sub_dir.set(k,get_pt(ip,k)-get_pt(ib,k));
                 }
                 norm=sub_dir.normalize();
-                rr=node_distance(ip,ib);
+                rr=normalized_node_distance(ip,ib);
                 if(norm>1.0e-10){
                     for(k=0;k<_chisquared->get_dim();k++){
                         pointing_dir.add_val(k,sub_dir.get_data(k)/rr);
