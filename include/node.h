@@ -75,7 +75,7 @@ private:
     int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
-    int _ricochet_strikes;
+    int _ricochet_strikes,_strikeouts;
     int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases,_chimin_ricochet;
     double _volume_of_last_geom;
@@ -89,7 +89,7 @@ private:
     double _min_basis_error;
     double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed,_convergence_ct;
-    int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
+    int _successful_ricochets,_good_shots,_bad_shots;
 
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     asymm_array_2d<int> _transform_associates;
@@ -150,6 +150,9 @@ private:
     double _ricochet_model(array_1d<double>&, kd_tree&, double*, int, array_1d<int>&);
     double apply_quadratic_model(array_1d<double>&);
     double apply_quadratic_model(int);
+
+    void mcmc_step(int, int*, array_1d<double>&, int);
+    void mcmc_walk(int);
 
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
