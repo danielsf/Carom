@@ -111,6 +111,26 @@ inline void expand_grid(int ii ,array_1d<int> &grid_ct, array_1d<int> &out){
 
 }
 
+
+inline void expand_grid(long int ii ,array_1d<int> &grid_ct, array_1d<int> &out){
+    int ix,iy;
+    
+    long int denom,subtract,quotient;
+
+    for(ix=0;ix<grid_ct.get_dim();ix++){
+        denom=1;
+        for(iy=ix+1;iy<grid_ct.get_dim();iy++){
+            denom*=grid_ct.get_data(iy);
+        }
+        quotient=ii/denom;
+        iy=int(quotient);
+        out.set(ix,iy);
+        subtract=ii/denom;
+        ii-=subtract*denom;
+    }
+
+}
+
 struct chisquared_distribution{
 
     double _fix;

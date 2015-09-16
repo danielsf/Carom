@@ -59,7 +59,7 @@ for(i=1;i<iargc;i++){
                     nameroot[j]=argv[i][j];
                 }
                 nameroot[j]=0;
-                break;    
+                break;
         }
     }
 }
@@ -76,7 +76,7 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBeanData chisq(dim,1,100,0.4,0.4,0.05,20.0);
+jellyBeanData chisq(dim,1,100,0.4,0.4,0.02,20.0);
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;

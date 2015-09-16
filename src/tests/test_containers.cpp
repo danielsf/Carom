@@ -50,9 +50,9 @@ double err;
 for(i=0;i<dim;i++){
     err=fabs(matrix.get_data(0,i)-vector.get_data(i));
     if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
-    
+
     if(err>maxerr)maxerr=err;
-    
+
     if(err>tol){
         printf("WARNING vector did not get properly transcribed to matrix\n");
 	printf("%e %e %e\n",matrix.get_data(0,i),vector.get_data(i),err);
@@ -82,9 +82,9 @@ matrix.set_row(2,vector);
 for(i=0;i<dim;i++){
     err=fabs(matrix.get_data(2,i)-vector.get_data(i));
     if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
-    
+
     if(err>maxerr)maxerr=err;
-    
+
     if(err>tol){
         printf("WARNING set_row failed\n");
 	printf("%e %e %e\n",matrix.get_data(2,i),vector.get_data(i),err);
@@ -97,9 +97,9 @@ matrix.reset();
 if(matrix.get_cols()!=0 || matrix.get_rows()!=0){
     printf("WARNING just reset matrix but %d by %d\n",
     matrix.get_rows(),matrix.get_cols());
-    
+
     exit(1);
-    
+
 }
 
 vector.reset();
@@ -129,14 +129,14 @@ for(i=0;i<rows;i++){
 if(vector.get_dim()!=cols){
     printf("WARNING vector dim should be %d but %d\n",
     cols,vector.get_dim());
-    
+
     exit(1);
 }
 
 if(matrix.get_cols()!=cols || matrix.get_rows()!=rows){
     printf("WARNING matrix should be %d by %d but %d by %d\n",
     rows,cols,matrix.get_rows(),matrix.get_cols());
-    
+
     exit(1);
 }
 
@@ -154,7 +154,7 @@ for(i=0;i<rows;i++){
 if(maxerr>tol){
     printf("WARNING failed transcription of a %d by %d double\n",
     rows,cols);
-    
+
     exit(1);
 }
 
@@ -174,11 +174,11 @@ for(i=0;i<cols;i++){
 
 for(i=0;i<cols;i++){
     nn=chaos.doub();
-    
+
     vector.add_val(i,nn);
     err=fabs(base_vector[i]+nn-vector.get_data(i));
     if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
-    
+
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
         printf("WARNING failed on add val\n");
@@ -189,11 +189,11 @@ for(i=0;i<cols;i++){
 
 for(i=0;i<cols;i++){
     nn=chaos.doub();
-    
+
     vector.multiply_val(i,nn);
     err=fabs(base_vector[i]*nn-vector.get_data(i));
     if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
-    
+
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
         printf("WARNING failed on multiply val\n");
@@ -204,11 +204,11 @@ for(i=0;i<cols;i++){
 
 for(i=0;i<cols;i++){
     nn=chaos.doub();
-    
+
     vector.subtract_val(i,nn);
     err=fabs(base_vector[i]-nn-vector.get_data(i));
     if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
-    
+
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
         printf("WARNING failed on subtract val\n");
@@ -219,11 +219,11 @@ for(i=0;i<cols;i++){
 
 for(i=0;i<cols;i++){
     nn=chaos.doub();
-    
+
     vector.divide_val(i,nn);
     err=fabs(base_vector[i]/nn-vector.get_data(i));
     if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
-    
+
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
         printf("WARNING failed on divide val\n");
@@ -245,20 +245,20 @@ int removed=0;
 
 while(vector.get_dim()>0){
     i=chaos.int32()%(cols-removed);
-    
+
     vector.remove(i);
     for(j=i+1;j<cols;j++){
         removal_base[j-1]=removal_base[j];
     }
     removed++;
-    
+
     if(vector.get_dim()!=cols-removed){
         printf("WARNING vector dim %d should be %d removed %d\n",
 	vector.get_dim(),cols-removed,i);
 	
 	exit(1);
     }
-    
+
     for(j=0;j<vector.get_dim();j++){
         err=fabs(vector.get_data(j)-removal_base[j]);
 	if(vector.get_data(j)!=0.0)err=err/fabs(vector.get_data(j));
@@ -270,13 +270,13 @@ while(vector.get_dim()>0){
 	    exit(1);
 	}
     }
-    
+
 }
 
 if(vector.get_dim()!=0){
     printf("WARNING vector dim should be zero but %d\n",
     vector.get_dim());
-    
+
     exit(1);
 }
 
@@ -304,21 +304,21 @@ while(matrix.get_rows()>0){
 	    m_removal_base[j-1][k]=m_removal_base[j][k];
 	}
     }
-    
+
     removed++;
     if(matrix.get_rows()!=rows-removed){
         printf("WARNING matrix rows %d should be %d\n",
 	matrix.get_rows(),rows-removed);
 	exit(1);
     }
-    
+
     for(i=0;i<rows-removed;i++){
         for(j=0;j<cols;j++){
 	    err=fabs(matrix.get_data(i,j)-m_removal_base[i][j]);
 	    if(matrix.get_data(i,j)!=0.0)err=err/fabs(matrix.get_data(i,j));
-	    
+	
 	    if(err>maxerr)maxerr=err;
-	    
+	
 	    if(maxerr>tol){
 	        printf("WARNING when removing rows from 2d arrays maxerr %e\n",
 		maxerr);
@@ -327,14 +327,14 @@ while(matrix.get_rows()>0){
 	    }
 	}
     }
-    
+
 
 }
 
 if(matrix.get_rows()!=0){
     printf("WARNING matrix rows should be zero but %d\n",
     matrix.get_rows());
-    
+
     exit(1);
 }
 
@@ -347,7 +347,7 @@ for(i=0;i<rows;i++){
     for(j=0;j<cols;j++){
         vector.set(j,chaos.doub());
     }
-    
+
     matrix.add_row(vector);
 }
 
@@ -365,7 +365,7 @@ vptr=matrix(3);
 for(i=0;i<cols;i++){
     err=fabs(comparison_vector[i]-(*vptr).get_data(i));
     if(comparison_vector[i]!=0.0)err=err/fabs(comparison_vector[i]);
-    
+
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
         printf("WARNING failed on vptr\n");
@@ -376,10 +376,10 @@ for(i=0;i<cols;i++){
 for(i=0;i<cols;i++){
     nn=fabs(chaos.doub())+0.1;
     (*vptr).add_val(i,nn);
-    
+
     err=fabs((*vptr).get_data(i)-matrix.get_data(3,i));
     if((*vptr).get_data(i)!=0.0)err=err/fabs((*vptr).get_data(i));
-    
+
     if(err>maxerr){
        maxerr=err;
        printf("relating back to matrix %e %e %e\n",
@@ -389,10 +389,10 @@ for(i=0;i<cols;i++){
         printf("WARNING failed associating vptr to matrix\n");
 	exit(1);
     }
-    
+
     err=fabs((*vptr).get_data(i)-comparison_vector[i]-nn);
     if((*vptr).get_data(i)!=0.0)err=err/fabs((*vptr).get_data(i));
-    
+
     if(err>maxerr){
         maxerr=err;
         printf("actually changing vptr %e %e %e %e %e\n",(*vptr).get_data(i),
@@ -401,8 +401,8 @@ for(i=0;i<cols;i++){
     if(maxerr>tol){
         printf("WARNING failed actually changing the value in vptr\n");
 	exit(1);
-    } 
-    
+    }
+
 }
 
 /////////////////////////
@@ -562,7 +562,7 @@ if(i_matrix.get_rows()!=1){
 }
 
 
-for(i=0;i<dim;i++){    
+for(i=0;i<dim;i++){
     if(i_matrix.get_data(0,i)!=i_vector.get_data(i)){
         printf("WARNING vector did not get properly transcribed to matrix\n");
 	printf("%d %d\n",i_matrix.get_data(0,i),i_vector.get_data(i));
@@ -601,9 +601,9 @@ i_matrix.reset();
 if(i_matrix.get_cols()!=0 || i_matrix.get_rows()!=0){
     printf("WARNING just reset matrix but %d by %d\n",
     i_matrix.get_rows(),i_matrix.get_cols());
-    
+
     exit(1);
-    
+
 }
 
 i_vector.reset();
@@ -631,20 +631,20 @@ for(i=0;i<rows;i++){
 if(i_vector.get_dim()!=cols){
     printf("WARNING vector dim should be %d but %d\n",
     cols,i_vector.get_dim());
-    
+
     exit(1);
 }
 
 if(i_matrix.get_cols()!=cols || i_matrix.get_rows()!=rows){
     printf("WARNING matrix should be %d by %d but %d by %d\n",
     rows,cols,i_matrix.get_rows(),i_matrix.get_cols());
-    
+
     exit(1);
 }
 
 for(i=0;i<rows;i++){
     for(j=0;j<cols;j++){
-   
+
 	if(i_matrix.get_data(i,j)!=i_data[i][j]){
 	    printf("WARNING failed to transcribe i_data to i_matrix\n");
 	    exit(1);
@@ -791,7 +791,7 @@ for(iteration=0;iteration<2;iteration++){
     if(to_sort_double.get_dim()!=sorted_pts || dexes.get_dim()!=sorted_pts){
         printf("%d WARNING sorted_pts %d but double %d dexes %d\n",
         iteration,sorted_pts,to_sort_double.get_dim(),dexes.get_dim());
-    
+
         exit(1);
     }
 
@@ -800,7 +800,7 @@ for(iteration=0;iteration<2;iteration++){
     if(sorted_double.get_dim()!=sorted_pts){
         printf("%d WARNING sorted_pts %d but sorted %d\n",
         iteration,sorted_pts,sorted_double.get_dim());
-    
+
         exit(1);
     }
 
@@ -809,7 +809,7 @@ for(iteration=0;iteration<2;iteration++){
         if(to_sort_double.get_data(dexes.get_data(i))!=0.0){
             err=err/fabs(to_sort_double.get_data(dexes.get_data(i)));
         }
-        
+
 	if(i>0){
 	    if(sorted_double.get_data(i-1)>sorted_double.get_data(i)){
 	        printf("WARNING sorted double in wrong order %e %e\n",
@@ -824,14 +824,14 @@ for(iteration=0;iteration<2;iteration++){
         printf("%d WARNING error after sorting double %e\n",iteration,maxerr);
         exit(1);
     }
-    
+
     nn=to_sort_double.get_data(9);
-    
+
     for(i=0;i<sorted_pts/2;i++){
         j=chaos.int32()%sorted_pts;
 	to_sort_double.set(j,nn);
     }
-    
+
 
 }
 
@@ -849,7 +849,7 @@ for(iteration=0;iteration<2;iteration++){
     if(to_sort_int.get_dim()!=sorted_pts || dexes.get_dim()!=sorted_pts){
         printf("%d WARNING sorted_pts %d but int %d dexes %d\n",
         iteration,sorted_pts,to_sort_int.get_dim(),dexes.get_dim());
-    
+
         exit(1);
     }
 
@@ -858,7 +858,7 @@ for(iteration=0;iteration<2;iteration++){
     if(sorted_int.get_dim()!=sorted_pts){
         printf("%d WARNING sorted_pts %d but sorted %d\n",
         iteration,sorted_pts,sorted_int.get_dim());
-    
+
         exit(1);
     }
 
@@ -867,20 +867,20 @@ for(iteration=0;iteration<2;iteration++){
 	    printf("WARNING sorted_int failed to associate %d %d\n",
 	    to_sort_int.get_data(dexes.get_data(i)),
 	    sorted_int.get_data(i));
-	} 
-        
+	}
+
 	if(i>0){
 	    if(sorted_int.get_data(i-1)>sorted_int.get_data(i)){
 	        printf("WARNING sorted_int in wrong order %d %d\n",
 		sorted_int.get_data(i-1),sorted_int.get_data(i));
 	    }
 	}
-    
+
     }
 
-    
+
     k=to_sort_int.get_data(9);
-    
+
     for(i=0;i<sorted_pts/2;i++){
         j=chaos.int32()%sorted_pts;
 	to_sort_int.set(j,k);
@@ -919,25 +919,25 @@ for(i=0;i<params;i++){
 
 for(i=0;i<100;i++){
     nn=chaos.doub()*40.0;
-    
+
     j=get_dex(vv_getdex,nn);
-    
+
     for(k=0;k<params;k++){
         if(k!=j){
             if(fabs(vv_getdex.get_data(k)-nn)<fabs(vv_getdex.get_data(j)-nn)){
                 printf("WARNING got wrong index\n");
                 printf("target %e j %d %e k %d %e\n",
                 nn,j,vv_getdex.get_data(j),k,vv_getdex.get_data(k));
-                
+
                 printf("%e %e\n",
                 fabs(vv_getdex.get_data(j)-nn),
                 fabs(vv_getdex.get_data(k)-nn));
-                
+
                 exit(1);
-            } 
+            }
         }
     }
-    
+
 }
 
 //////now do some tests on asymm_array_2d
@@ -952,93 +952,93 @@ for(ii=0;ii<10;ii++){
     n1=chaos.int32()%10+2;
     n2=chaos.int32()%10+4;
     n3=chaos.int32()%10+7;
-    
+
     i1=new int[n1];
     i2=new int[n2];
     i3=new int[n3];
-    
+
     for(i=0;i<n1;i++){
         i1[i]=chaos.int32()%100;
     }
-    
+
     for(i=0;i<n2;i++){
         i2[i]=chaos.int32()%100;
     }
-    
+
     for(i=0;i<n3;i++){
         i3[i]=chaos.int32()%100;
     }
-    
+
     for(i=0;i<n2;i++){
         asymmTest.set(1,i,i2[i]);
     }
-    
+
     if(asymmTest.get_rows()!=2){
         printf("WARNING should have two rows in asymmTest %d\n",
         asymmTest.get_rows());
-        
+
         exit(1);
     }
-    
+
     if(asymmTest.get_cols(0)!=0){
         printf("WARNING asymmTest.get_cols(0) should be zero %d\n",
         asymmTest.get_cols(0));
         exit(1);
-    } 
-    
+    }
+
     if(asymmTest.get_cols(1)!=n2){
         printf("WARNING asymmTest.get_cols(1) shld %d is %d\n",
         n2,asymmTest.get_cols(1));
     }
-    
+
     for(i=0;i<n2;i++){
         if(asymmTest.get_data(1,i)!=i2[i]){
             printf("WARNING asymmTest data wrong\n");
             exit(1);
         }
     }
-    
+
     for(i=0;i<n3;i++){
         asymmTest.set(2,i,i3[i]);
     }
-    
-    if(asymmTest.get_cols(0)!=0){ 
+
+    if(asymmTest.get_cols(0)!=0){
         printf("WARNING after assigning third row, have first row cols\n");
         exit(1);
-    }  
-    
+    }
+
     for(i=0;i<n1;i++){
         asymmTest.set(0,i,i1[i]);
     }
-    
+
     if(asymmTest.get_rows()!=3){
         printf("WARNING wrong number of asymm rows\n");
         exit(1);
     }
-    
+
     if(asymmTest.get_cols(0)!=n1 ||
        asymmTest.get_cols(1)!=n2 ||
        asymmTest.get_cols(2)!=n3){
-   
+
        printf("WARNING wrong number of asymm cols %d %d %d, %d %d %d\n",
        n1,n2,n3,asymmTest.get_cols(0),asymmTest.get_cols(1),
        asymmTest.get_cols(2));
     }
-   
+
     for(i=0;i<n1;i++){
        if(asymmTest.get_data(0,i)!=i1[i]){
            printf("WARNING data fail in first asymm row\n");
            exit(1);
        }
     }
-    
+
     for(i=0;i<n2;i++){
        if(asymmTest.get_data(1,i)!=i2[i]){
            printf("WARNING data fail in second asymm row\n");
            exit(1);
        }
     }
-   
+
     for(i=0;i<n3;i++){
        if(asymmTest.get_data(2,i)!=i3[i]){
            printf("WARNING data fail in third asymm row %d %d\n",
@@ -1053,7 +1053,27 @@ for(ii=0;ii<10;ii++){
 
 }
 
+array_1d<int> arr;
+arr.add(2);
+arr.add(5);
+arr.add(1);
 
+if(arr.contains(1)!=1){
+    printf("WARNING did not find 1\n");
+    exit(1);
+}
+if(arr.contains(2)!=1){
+    printf("WARNING did not find 2\n");
+    exit(1);
+}
+if(arr.contains(5)!=1){
+    printf("WARNING did not find 5\n");
+    exit(1);
+}
+if(arr.contains(13)!=0){
+    printf("WARNING found 13\n");
+    exit(1);
+}
 
 
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);

@@ -9,7 +9,7 @@ double naiveDistance(array_1d<double> &p1, array_1d<double> &p2){
         printf("WARNING p1 d %d p2 d %d\n",p1.get_dim(),p2.get_dim());
         exit(1);
     }
-    
+
     int i;
     double ans=0.0;
     for(i=0;i<p1.get_dim();i++){
@@ -139,7 +139,7 @@ i=-1;
 //chisquared function has been called
 //10000 times
 while(carom_test.get_called()<nsamples){
-    carom_test.search();    
+    carom_test.search();
 }
 carom_test.write_pts();
 
@@ -183,7 +183,7 @@ for(i=0;i<goodPoints.get_rows();i++){
         }
     }
     troughFound.set(itrough,1);
-    
+
     for(j=0;j<borderPoints.get_rows();j++){
         dd=naiveDistance(goodPoints(i)[0],borderPoints(j)[0]);
         if(j==0 || dd<ddmin){

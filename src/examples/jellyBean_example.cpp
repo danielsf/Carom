@@ -12,7 +12,7 @@ int main(int iargc, char *argv[]){
 int i,j;
 int seed=99;
 int dim=5;
-int nsamples=100000;
+int nsamples=-1;
 double delta_chisq=11.0;
 double confidence_limit=0.95;
 
@@ -67,7 +67,7 @@ for(i=1;i<iargc;i++){
                 }
                 timingname[j]=0;
                 break;
-    
+
         }
     }
 }
@@ -84,8 +84,8 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBeanData chisq(dim,1,100,0.4,0.4,0.05,20.0);
-    
+jellyBeanData chisq(dim,1,100,0.4,0.4,0.02,20.0);
+
 chisq.print_mins();
 
 //declare APS

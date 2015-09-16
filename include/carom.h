@@ -14,9 +14,9 @@ public:
 
     carom();
     ~carom();
-    
+
     void initialize(int);
-    
+
     void set_seed(int);
     void set_min(array_1d<double>&);
     void set_max(array_1d<double>&);
@@ -26,28 +26,29 @@ public:
     void set_write_every(int);
     void set_outname(char*);
     void set_timingname(char*);
-    
+
     void set_chisquared(chisquared*);
 
     void search(int);
     void simplex_search();
     void write_pts();
-    
+
     int get_called();
     int active_nodes();
-    
+
     void set_confidence_limit(double);
     void set_dof(int);
-    
+
 private:
 
     chisq_wrapper _chifn;
     arrayOfNodes _nodes;
     int _write_every,_last_written;
+    int _unique_nodes;
     int _ct_simplex,_ct_node,_calls_to_simplex;
-    
+
     double _time_started;
-    
+
     char _outname[letters],_timingname[letters];
 
     void assess_node(int);
@@ -66,7 +67,7 @@ public:
 
 private:
     chisq_wrapper *_chifn;
-    
+
     array_2d<double> _covarin,_covar;
     array_1d<int> _neigh,_neigh_buff;
     array_1d<double> _dd,_qq;

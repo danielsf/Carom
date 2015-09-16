@@ -13,26 +13,26 @@ void simple_bisection(array_1d<double> &lowball_in, array_1d<double> &highball_i
     trial.set_name("simple_bisection_trial");
 
     double flow,fhigh,ftrial,fbest;
-    
+
     fbest=2.0*exception_value;
-    
+
     int i;
     for(i=0;i<fn->get_dim();i++){
         lowball.set(i,lowball_in.get_data(i));
         highball.set(i,highball_in.get_data(i));
         output.set(i,lowball.get_data(i));
     }
-    
+
     flow=fn[0](lowball);
     flow=fn[0](highball);
     fbest=flow;
-    
+
     int ct;
     for(ct=0;ct<100;ct++){
         for(i=0;i<fn->get_dim();i++){
             trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
         }
-        
+
         ftrial=fn[0](trial);
         if(ftrial<target){
             for(i=0;i<fn->get_dim();i++){
@@ -44,7 +44,7 @@ void simple_bisection(array_1d<double> &lowball_in, array_1d<double> &highball_i
                 highball.set(i,trial.get_data(i));
             }
         }
-        
+
         if(fabs(ftrial-target)<fabs(fbest-target)){
             fbest=ftrial;
             for(i=0;i<fn->get_dim();i++){
@@ -52,7 +52,7 @@ void simple_bisection(array_1d<double> &lowball_in, array_1d<double> &highball_i
             }
         }
     }
-    
+
 }
 
 double marginalized_call(array_1d<double> &pt_in, int iMargin, chisquared *fn){
@@ -60,16 +60,16 @@ double marginalized_call(array_1d<double> &pt_in, int iMargin, chisquared *fn){
     int i;
     array_1d<double> pt;
     pt.set_name("marginalized_call_pt");
-    
+
     for(i=0;i<pt_in.get_dim();i++){
         pt.set(i,pt_in.get_data(i));
     }
 
     double chisq,chisq_best;
-    
+
     chisq_best=2.0*exception_value;
     double xx,dx;
-    
+
     double minval,maxval;
     if(iMargin==0){
         minval=globalXmin;
@@ -79,9 +79,9 @@ double marginalized_call(array_1d<double> &pt_in, int iMargin, chisquared *fn){
         minval=globalYmin;
         maxval=globalYmax;
     }
-    
+
     dx=0.1;
-    
+
     for(xx=minval;xx<maxval;xx+=dx){
         pt.set(iMargin,xx);
         chisq=fn[0](pt);
@@ -104,27 +104,27 @@ void marginalized_bisection(array_1d<double> &lowball_in, array_1d<double> &high
     trial.set_name("simple_bisection_trial");
 
     double flow,fhigh,ftrial,fbest;
-    
+
     fbest=2.0*exception_value;
-    
+
     int i;
     for(i=0;i<fn->get_dim();i++){
         lowball.set(i,lowball_in.get_data(i));
         highball.set(i,highball_in.get_data(i));
         output.set(i,lowball.get_data(i));
     }
-    
+
     flow=marginalized_call(lowball,iMargin,fn);
     flow=marginalized_call(highball,iMargin,fn);
     fbest=flow;
-    
+
     int ct;
     for(ct=0;ct<100;ct++){
 
         for(i=0;i<fn->get_dim();i++){
             trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
         }
-        
+
         ftrial=marginalized_call(trial,iMargin,fn);
         if(ftrial<target){
             for(i=0;i<fn->get_dim();i++){
@@ -136,7 +136,7 @@ void marginalized_bisection(array_1d<double> &lowball_in, array_1d<double> &high
                 highball.set(i,trial.get_data(i));
             }
         }
-        
+
         if(fabs(ftrial-target)<fabs(fbest-target)){
             fbest=ftrial;
             for(i=0;i<fn->get_dim();i++){
@@ -144,7 +144,7 @@ void marginalized_bisection(array_1d<double> &lowball_in, array_1d<double> &high
             }
         }
     }
-    
+
 }
 
 
@@ -267,13 +267,13 @@ boundary.set_cols(2);
 for(ii=0;ii<xdexes.get_dim();ii++){
     ix=xdexes.get_data(ii);
     iy=ydexes.get_data(ii);
-    
+
     if(ix>iy){
         i=ix;
         ix=iy;
         iy=i;
     }
-    
+
     boundary.reset_preserving_room();
 
       printf("about to delete tree %d %d\n",ix,iy);
@@ -282,7 +282,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
            boundaryPointsTree=NULL;
        }
        printf("done with that\n");
-      
+
        if(ix>=2 && iy>=2){
            dtheta=0.01;
            ct=0;
@@ -291,13 +291,13 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                for(i=0;i<dim;i++){
                    trial.set(i,true_center.get_data(i));
                }
-               
+
                while(mu<=chi_target){
                    trial.add_val(ix,cos(theta));
                    trial.add_val(iy,sin(theta));
                    mu=chisq(trial);
                }
-           
+
                simple_bisection(true_center,trial,chi_target,&chisq,best_pt);
                boundary.set(ct,0,best_pt.get_data(ix));
                boundary.set(ct,1,best_pt.get_data(iy));
@@ -309,7 +309,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
            globalXmax=-2.0*exception_value;
            globalYmin=2.0*exception_value;
            globalYmax=-2.0*exception_value;
-           
+
            dtheta=0.01;
            ct=0;
            chi_worst=chi_target;
@@ -320,7 +320,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                trial.set(ix,curvature_center.get_data(0)+radiusOfCurvature*cos(theta));
                trial.set(iy,curvature_center.get_data(1)+radiusOfCurvature*sin(theta));
                mu=chisq(trial);
-               
+
                if(mu<=chi_target){
                    for(sgn=-1.0;sgn<1.1;sgn+=2.0){
                        for(i=0;i<dim;i++){
@@ -332,7 +332,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                            highball.add_val(iy,sgn*sin(theta));
                            mu=chisq(highball);
                        }
-                       
+
                        simple_bisection(trial,highball,chi_target,&chisq,best_pt);
                        mu=chisq(best_pt);
                        if(fabs(mu-chi_target)>fabs(chi_worst-chi_target)){
@@ -341,27 +341,27 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                        boundary.set(ct,0,best_pt.get_data(ix));
                        boundary.set(ct,1,best_pt.get_data(iy));
                        ct++;
-                   
+
                        if(best_pt.get_data(ix)>globalXmax){
                            globalXmax=best_pt.get_data(ix);
                        }
                        if(best_pt.get_data(ix)<globalXmin){
                            globalXmin=best_pt.get_data(ix);
                        }
-                       
+
                        if(best_pt.get_data(iy)>globalYmax){
                            globalYmax=best_pt.get_data(iy);
                        }
                        if(best_pt.get_data(iy)<globalYmin){
                            globalYmin=best_pt.get_data(iy);
                        }
-                   
+
                    }
                }
 
            }
            printf("chi_worst on 0,1 %e\n",chi_worst);
-           
+
        }
        else{
            chi_worst=chi_target;
@@ -376,100 +376,100 @@ for(ii=0;ii<xdexes.get_dim();ii++){
                minval=globalYmin;
                maxval=globalYmax;
            }
-           
+
            for(i=0;i<dim;i++){
                trial.set(i,true_center.get_data(i));
            }
-           
 
-           
+
+
            dtheta=0.01;
            for(theta=0.0;theta<2.0*pi;theta+=dtheta){
 
                for(i=0;i<dim;i++){
                    highball.set(i,true_center.get_data(i));
                }
-               
+
                mu=-2.0*exception_value;
                while(mu<chi_target){
                    highball.add_val(ix,cos(theta));
                    highball.add_val(iy,sin(theta));
                    mu=marginalized_call(highball,iMargin,&chisq);
                }
-               
+
                marginalized_bisection(true_center,highball,chi_target,&chisq,best_pt,iMargin);
-               
+
                mu=marginalized_call(best_pt,iMargin,&chisq);
                if(fabs(mu-chi_target)>fabs(chi_worst-chi_target)){
                    chi_worst=mu;
                    printf("    chi_worst %e\n",mu);
                }
-               
+
                boundary.set(ct,0,best_pt.get_data(ix));
                boundary.set(ct,1,best_pt.get_data(iy));
-               
+
                if((best_pt.get_data(iy)-true_center.get_data(iy))*sin(theta)<0.0){
                    printf("WARNING sin %e but d %e\n",
                    sin(theta),best_pt.get_data(iy)-true_center.get_data(iy));
                    exit(1);
                }
-               
+
                ct++;
 
-               
+
            }
-           
+
            printf("chi_worst on %d %d %e\n",ix,iy,chi_worst);
-           
-       
+
+
        }
-       
+
        printf("got boundary points %d\n",boundary.get_rows());
-       
+
        min.set(0,2.0*exception_value);
        max.set(0,-2.0*exception_value);
        min.set(1,2.0*exception_value);
        max.set(1,-2.0*exception_value);
-       
+
        for(i=0;i<boundary.get_rows();i++){
            if(boundary.get_data(i,0)<min.get_data(0)){
                min.set(0,boundary.get_data(i,0));
            }
-           
+
            if(boundary.get_data(i,0)>max.get_data(0)){
                max.set(0,boundary.get_data(i,0));
            }
-           
+
            if(boundary.get_data(i,1)<min.get_data(1)){
                min.set(1,boundary.get_data(i,1));
            }
-           
+
            if(boundary.get_data(i,1)>max.get_data(1)){
                 max.set(1,boundary.get_data(i,1));
            }
        }
-       
+
        if(ix==0 && iy==1){
            min.set(0,0.0);
            max.set(0,0.01);
            min.set(1,0.0);
            max.set(1,0.01);
        }
-       
-       
+
+
        boundaryPointsTree=new kd_tree(boundary,min,max);
        origin.set(0,boundaryPointsTree->get_pt(0,0));
        origin.set(1,boundaryPointsTree->get_pt(0,1));
        lastpt.set(0,origin.get_data(0));
        lastpt.set(1,origin.get_data(1));
-       
+
        lastdex=0;
        sprintf(filename,"%s_%d_%d_control.txt",outNameRoot,ix,iy);
        output=fopen(filename,"w");
        while(boundaryPointsTree->get_pts()>1){
            fprintf(output,"%e %e\n",lastpt.get_data(0),lastpt.get_data(1));
            boundaryPointsTree->remove(lastdex);
-           
+
            boundaryPointsTree->nn_srch(lastpt,1,neigh,dist);
            lastdex=neigh.get_data(0);
            lastpt.set(0,boundaryPointsTree->get_pt(lastdex,0));
@@ -477,10 +477,10 @@ for(ii=0;ii<xdexes.get_dim();ii++){
        }
        fprintf(output,"%e %e\n",lastpt.get_data(0),lastpt.get_data(1));
        fprintf(output,"%e %e\n",origin.get_data(0),origin.get_data(1));
-       
+
        fclose(output);
        printf("done printing\n");
-    
+
 }
 
 for(i=0;i<dim;i++){

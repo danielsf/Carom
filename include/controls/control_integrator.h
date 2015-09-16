@@ -17,7 +17,7 @@ class control_integrator{
         void set_chi_lim_freq(double);
         
         void run_analysis();
-        void convert_to_boundary(array_2d<double>&,double,double,int,array_2d<double>&);
+
         int get_dex(double, double, double, int);
         void write_output(int, int,
                         array_1d<double>&,

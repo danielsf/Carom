@@ -73,6 +73,7 @@ public:
 
     void set_confidence_limit(double);
     void set_dof(int);
+    int get_seed();
 
     kd_tree* get_tree();
 

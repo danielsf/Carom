@@ -13,6 +13,7 @@ p 509
 
 #include "time.h"
 #include "containers.h"
+#include "goto_tools.h"
 
 class kd_tree{
     /*
@@ -268,5 +269,8 @@ class kd_tree{
         void descend(int);
 
 };
+
+
+void convert_to_boundary(array_2d<double>&, double, double, array_2d<double>&);
 
 #endif
