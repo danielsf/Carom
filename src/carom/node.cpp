@@ -4808,7 +4808,7 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
     array_1d<int> valid_associates;
     valid_associates.set_name("node_mcmc_step_valid_associates");
     int i_pt;
-    int chi_pt;
+    double chi_pt;
     array_1d<double> pt;
     pt.set_name("node_mcmc_step_pt");
     int i;
