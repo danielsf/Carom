@@ -4881,7 +4881,7 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
         }
         else{
             roll=_chisquared->random_double();
-            if(exp(-0.5*(chi_trial-chi_pt))<roll){
+            if(exp(-0.5*(chi_trial-chi_pt))>roll){
                 accept_it=1;
             }
         }
