@@ -4876,13 +4876,15 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
 
         evaluate(trial,&chi_trial,&i_trial);
         accept_it=0;
-        if(chi_trial<chi_pt || chi_trial<_chisquared->target()){
-            accept_it=1;
-        }
-        else{
-            roll=_chisquared->random_double();
-            if(exp(-0.5*(chi_trial-chi_pt))>roll){
+        if(i_trial>=0){
+            if(chi_trial<chi_pt || chi_trial<_chisquared->target()){
                 accept_it=1;
+            }
+            else{
+                roll=_chisquared->random_double();
+                if(exp(-0.5*(chi_trial-chi_pt))>roll){
+                    accept_it=1;
+                }
             }
         }
 
