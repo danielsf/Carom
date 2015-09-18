@@ -4863,20 +4863,20 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
         }
         coulomb_dir.normalize();
         for(i=0;i<_chisquared->get_dim();i++){
-            random_dir.add_val(i,2.0*coulomb_dir.get_data(i));
+            random_dir.add_val(i,0.1*coulomb_dir.get_data(i));
         }
 
         random_dir.normalize();
 
 
-        step_length=fabs(normal_deviate(_chisquared->get_dice(),0.1,0.02));
+        step_length=fabs(normal_deviate(_chisquared->get_dice(),0.2,0.05));
         for(i=0;i<_chisquared->get_dim();i++){
             trial.set(i,pt.get_data(i)+step_length*random_dir.get_data(i));
         }
 
         evaluate(trial,&chi_trial,&i_trial);
         accept_it=0;
-        if(chi_trial<=_chisquared->target() || chi_trial<chi_pt){
+        if(chi_trial<chi_pt || chi_trial<_chisquared->target()){
             accept_it=1;
         }
         else{
