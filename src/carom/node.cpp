@@ -4044,7 +4044,7 @@ void node::search(){
 
     if(_ricochet_strikes>=_allowed_ricochet_strikes){
         if(_strikeouts%2==0){
-            mcmc_walk(20);
+            mcmc_walk(20*(1+_strikeouts/2));
         }
         else{
             trim_ricochet(_ricochet_particles.get_dim()/2);
@@ -4835,6 +4835,11 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
     int i_trial,i_associate,accept_it;
     double chi_trial,rr,step_length,roll;
 
+    double temp=-5.0;
+    int temp_step_interval = 5;
+    int n_temp_steps=n_steps/temp_step_interval;
+    double d_temp=fabs(temp)/double(n_temp_steps);
+
     int ct_accepted=0;
     int i_step,j;
     coulomb_dir.set_dim(_chisquared->get_dim());
@@ -4882,6 +4887,9 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
             }
             else{
                 roll=_chisquared->random_double();
+                if(i_step<n_steps && temp<0.0){
+                    roll*=exp(temp);
+                }
                 if(exp(-0.5*(chi_trial-chi_pt))>roll){
                     accept_it=1;
                 }
@@ -4895,6 +4903,10 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
             for(i=0;i<_chisquared->get_dim();i++){
                 pt.set(i,trial.get_data(i));
             }
+        }
+
+        if(i_step>0 && i_step%temp_step_interval==0){
+            temp+=d_temp;
         }
     }
 
