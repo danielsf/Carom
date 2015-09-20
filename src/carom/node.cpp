@@ -4843,30 +4843,31 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
     int ct_accepted=0;
     int i_step,j;
     coulomb_dir.set_dim(_chisquared->get_dim());
+    coulomb_dir.zero();
+    for(i=0;i<valid_associates.get_dim();i++){
+        i_associate=valid_associates.get_data(i);
+        if(_chisquared->get_fn(i_associate)<=_chisquared->target()){
+            if(i_associate!=i_pt){
+                rr=node_distance(i_pt, i_associate);
+                for(j=0;j<_chisquared->get_dim();j++){
+                    sub_dir.set(j,get_pt(i_pt,j)-get_pt(i_associate,j));
+                }
+                sub_dir.normalize();
+                for(j=0;j<_chisquared->get_dim();j++){
+                    coulomb_dir.add_val(j,sub_dir.get_data(j)/(rr*rr));
+                }
+            }
+        }
+    }
+    coulomb_dir.normalize();
+
+
     for(i_step=0;i_step<n_steps || ct_accepted<n_steps/2;i_step++){
         for(i=0;i<_chisquared->get_dim();i++){
             random_dir.set(i, normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
         random_dir.normalize();
 
-
-        coulomb_dir.zero();
-        for(i=0;i<valid_associates.get_dim();i++){
-            i_associate=valid_associates.get_data(i);
-            if(_chisquared->get_fn(i_associate)<=_chisquared->target()){
-                if(i_associate!=i_pt){
-                    rr=node_distance(i_pt, i_associate);
-                    for(j=0;j<_chisquared->get_dim();j++){
-                        sub_dir.set(j,get_pt(i_pt,j)-get_pt(i_associate,j));
-                    }
-                    sub_dir.normalize();
-                    for(j=0;j<_chisquared->get_dim();j++){
-                        coulomb_dir.add_val(j,sub_dir.get_data(j)/(rr*rr));
-                    }
-                }
-            }
-        }
-        coulomb_dir.normalize();
         for(i=0;i<_chisquared->get_dim();i++){
             random_dir.add_val(i,0.1*coulomb_dir.get_data(i));
         }
