@@ -4848,7 +4848,7 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
         i_associate=valid_associates.get_data(i);
         if(_chisquared->get_fn(i_associate)<=_chisquared->target()){
             if(i_associate!=i_pt){
-                rr=node_distance(i_pt, i_associate);
+                rr=normalized_node_distance(i_pt, i_associate);
                 for(j=0;j<_chisquared->get_dim();j++){
                     sub_dir.set(j,get_pt(i_pt,j)-get_pt(i_associate,j));
                 }
