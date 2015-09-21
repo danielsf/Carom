@@ -4690,9 +4690,13 @@ void node::ricochet(){
    array_1d<double> scratch;
    scratch.set_name("node_ricochet_scratch");
 
+   int i_origin;
+
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
        local_pts0=_chisquared->get_pts();
+
+       i_origin=_ricochet_particles.get_data(ix);
 
        _proper_ricochets++;
        iFound=_ricochet(ix,dir);
@@ -4720,10 +4724,21 @@ void node::ricochet(){
            iFound=node_bisection_origin_dir(_ricochet_particles.get_data(ix),dir);
            randomize=0;
            if(iFound>=0){
-               set_particle(ix,iFound,dir);
                if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
                    randomize=1;
                }
+
+               if(iFound==i_origin){
+                   randomize=1;
+               }
+               else if(randomize==0){
+                   for(i=0;i<_chisquared->get_dim();i++){
+                       dir.set(i,get_pt(iFound,i)-get_pt(i_origin,i));
+                   }
+                   dir.normalize();
+               }
+
+               set_particle(ix,iFound,dir);
            }
            else{
                randomize=1;
