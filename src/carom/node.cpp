@@ -4685,6 +4685,7 @@ void node::ricochet(){
     local_center=find_local_center();
 
     int abort_kicks;
+    int randomize;
 
    array_1d<double> scratch;
    scratch.set_name("node_ricochet_scratch");
@@ -4706,6 +4707,29 @@ void node::ricochet(){
        }
 
        set_particle(ix,iFound,dir);
+       randomize=0;
+       if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
+           randomize=1;
+       }
+
+       while(randomize==1){
+           for(i=0;i<_chisquared->get_dim();i++){
+               dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+           }
+           dir.normalize();
+           iFound=node_bisection_origin_dir(_ricochet_particles.get_data(ix),dir);
+           randomize=0;
+           if(iFound>=0){
+               set_particle(ix,iFound,dir);
+               if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
+                   randomize=1;
+               }
+           }
+           else{
+               randomize=1;
+           }
+       }
+
 
    }
 
