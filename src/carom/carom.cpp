@@ -118,13 +118,13 @@ void carom::write_pts(){
     }
 
     fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d %d -- ",
-        _chifn.get_called(),
+        _chifn.get_pts(),
         _chifn.chimin(),
         double(time(NULL))-_time_started,
-        (double(time(NULL))-_time_started)/double(_chifn.get_called()),
+        (double(time(NULL))-_time_started)/double(_chifn.get_pts()),
         _chifn.get_time_spent(),
-        _chifn.get_time_spent()/double(_chifn.get_called()),
-        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_called()),
+        _chifn.get_time_spent()/double(_chifn.get_pts()),
+        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()),
         _chifn.get_ct_where(iSimplex),
         _chifn.get_ct_where(iRicochet),
         _chifn.get_ct_where(iCompass),
@@ -330,7 +330,7 @@ void carom::search(int limit){
             write_pts();
         }
 
-        if(limit>0 && _chifn.get_called()>limit){
+        if(limit>0 && _chifn.get_pts()>limit){
             goon=0;
             write_pts();
         }
