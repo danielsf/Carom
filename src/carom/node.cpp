@@ -3278,6 +3278,7 @@ void node::initialize_ricochet(){
 
     _min_basis_error_changed=0;
     _since_expansion=0;
+    _convergence_ct=0;
     _chimin_ricochet=_chimin;
 }
 
@@ -4078,7 +4079,6 @@ void node::search(){
 
            initialize_ricochet();
            _active=1;
-           _convergence_ct=0;
 
            if(fabs(_chisquared->target()-target0)>0.01){
                recalibrate_max_min();
