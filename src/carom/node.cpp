@@ -4052,6 +4052,16 @@ void node::search(){
         }
         _ricochet_strikes=0;
         _strikeouts++;
+
+        volume1=volume();
+        projectedVolume1=projected_volume();
+
+        if(fabs(volume0-volume1)>0.01*volume0 ||
+           fabs(projectedVolume0-projectedVolume1)>0.01*projectedVolume1){
+
+            _convergence_ct=0;
+        }
+
     }
 
     if(_convergence_ct>_chisquared->get_dim()){
