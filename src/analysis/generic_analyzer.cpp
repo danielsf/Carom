@@ -27,11 +27,12 @@ xdexes.set_name("xdexes");
 ydexes.set_name("ydexes");
 
 int dim,ncenters,limit=-1;
-double target_chi;
+double target_chi,delta_chi;
 
 dim=22;
-target_chi=33.93;
 
+target_chi=-1.0;
+delta_chi=-1.0;
 
 for(i=1;i<iargc;i++){
     if(argv[i][0]=='-'){
@@ -44,9 +45,13 @@ for(i=1;i<iargc;i++){
                 i++;
                 dim=atoi(argv[i]);
                 break;
-            case 'c':
+            case 't':
                 i++;
                 target_chi=atof(argv[i]);
+                break;
+            case 'c':
+                i++;
+                delta_chi=atof(argv[i]);
                 break;
             case 'l':
                 i++;
@@ -76,6 +81,15 @@ for(i=1;i<iargc;i++){
     }
 }
 
+if(delta_chi<0.0 && target_chi<0.0){
+    printf("WARNING must specify either target_chi or delta_chi\n");
+    exit(1);
+}
+
+if(delta_chi>0.0 && target_chi>0.0){
+    printf("WARNING cannot specify both target_chi and delta_chi\n");
+    exit(1);
+}
 
 array_2d<double> data;
 array_1d<double> chisq,vv,vvprojected,mu,sig;
@@ -134,6 +148,12 @@ while(fscanf(input,"%le",&nn)>0 && (limit<0 || ct<limit)){
 }
 fclose(input);
 printf("chimin %e\n",chi_min);
+
+if(target_chi<0.0){
+    target_chi=chi_min+delta_chi;
+}
+
+printf("target %e delta %e\n",target_chi,delta_chi);
 
 input=fopen(inputName,"r");
 for(i=0;i<dim+5;i++){
