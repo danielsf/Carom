@@ -56,6 +56,7 @@ void node::initialize(){
     _total_kicks=0;
     _total_trimmed=0;
     _convergence_ct=0;
+    _compass_calls=0;
 
     _total_bisections=0;
     _bisection_calls=0;
@@ -135,6 +136,7 @@ void node::copy(const node &in){
     _total_kicks=in._total_kicks;
     _total_trimmed=in._total_trimmed;
     _highball_calls=in._highball_calls;
+    _compass_calls=in._compass_calls;
 
     _total_bisections=in._total_bisections;
     _total_ricochets=in._total_ricochets;
@@ -1649,6 +1651,7 @@ void node::compass_search(int local_center){
     compass_diagonal(local_center);
 
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
+    _compass_calls+=_chisquared->get_called()-ibefore;
 }
 
 void node::compass_diagonal(int local_center){
@@ -2358,7 +2361,7 @@ void node::find_bases(){
         _basis_associates.reset();
     }
 
-    if(_basis_associates.get_dim()==0){
+    if(_compass_calls==0){
         compass_search();
     }
 
