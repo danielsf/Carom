@@ -118,6 +118,7 @@ private:
 
     int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int);
     int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int,double,double);
+    int node_bisection(int,int,double,double);
     int node_bisection_origin_dir(int,array_1d<double>&);
     int node_bisection_origin_dir(int,array_1d<double>&,double,double);
 

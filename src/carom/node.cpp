@@ -1231,6 +1231,29 @@ int node::node_bisection(array_1d<double> &ll, double fl,
         return iFound;
 }
 
+int node::node_bisection(int i_low, int i_high, double target, double tol){
+    array_1d<double> lowball,highball;
+    lowball.set_name("node_bisection_int_lowball");
+    highball.set_name("node_bisection_int_highball");
+    double flow,fhigh;
+
+    int i;
+    flow=_chisquared->get_fn(i_low);
+    fhigh=_chisquared->get_fn(i_high);
+
+    if(fhigh<target || flow>target){
+        return -1;
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,get_pt(i_low,i));
+        highball.set(i,get_pt(i_high,i));
+    }
+
+    return node_bisection(lowball, flow, highball, fhigh, 1, target, tol);
+
+}
+
 int node::node_bisection(array_1d<double> &lowball_in, double flow,
                     array_1d<double> &highball_in, double fhigh,
                     int doSlope, double target_value, double tolerance){
