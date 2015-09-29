@@ -1530,7 +1530,7 @@ void node::populate_basis_associates(){
     double target,tol;
 
     dimsq=_chisquared->get_dim()*_chisquared->get_dim();
-    while(_basis_associates.get_dim()<n_associates_0+4*dimsq){
+    while(_basis_associates.get_dim()<n_associates_0+2*dimsq){
         for(i=0;i<_chisquared->get_dim();i++){
             dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
@@ -1545,19 +1545,6 @@ void node::populate_basis_associates(){
             }
         }
 
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.multiply_val(i,-1.0);
-        }
-
-        target=0.5*(_chisquared->target()+_chimin);
-        tol=0.01*(_chisquared->target()-_chimin);
-
-        iFound=node_bisection_origin_dir(_centerdex,dir,target,tol);
-        if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<5.0*tol){
-            if(_basis_associates.contains(iFound)==0){
-                _basis_associates.add(iFound);
-            }
-        }
     }
 }
 
