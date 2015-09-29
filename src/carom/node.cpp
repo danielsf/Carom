@@ -1519,6 +1519,26 @@ void node::add_to_compass(int dex){
     _compass_log.add(dex);
 }
 
+void node::populate_basis_associates(int i_low, int i_high){
+
+    double target;
+    target=0.5*(_chisquared->target()+_chimin);
+    if(_chisquared->get_fn(i_low)>target || _chisquared->get_fn(i_high)<target){
+        return;
+    }
+
+    double tol=0.01*(_chisquared->target()-_chimin);
+
+    int iFound;
+    iFound = node_bisection(i_low,i_high,target,tol);
+
+    if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<2.0*tol){
+        _basis_associates.add(iFound);
+    }
+
+}
+
+
 void node::compass_search(){
     compass_search(_centerdex);
 }
