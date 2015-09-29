@@ -1525,9 +1525,12 @@ void node::populate_basis_associates(){
 
     int n_associates_0=_basis_associates.get_dim();
 
-    array_1d<double> dir;
+    array_1d<double> dir,lowball,highball;
     dir.set_name("populate_basis_associates_dir");
-    int i,dimsq,iFound;
+    lowball.set_name("populate_basis_associates_lowball");
+    highball.set_name("populate_basis_associates_highball");
+    int i,dimsq,iFound,iFound2;
+    double flow,fhigh;
 
     double target,tol;
 
@@ -1545,6 +1548,25 @@ void node::populate_basis_associates(){
             if(_basis_associates.contains(iFound)==0){
                 _basis_associates.add(iFound);
             }
+
+            for(i=0;i<_chisquared->get_dim();i++){
+                lowball.set(i,get_pt(_centerdex,i));
+                highball.set(i,get_pt(iFound,i));
+            }
+
+            flow=_chisquared->get_fn(_centerdex);
+            fhigh=_chisquared->get_fn(iFound);
+            target=0.75*_chimin+0.25*_chisquared->target();
+
+            if(flow<target && fhigh>target){
+                iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
+                if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<5.0*tol){
+                    if(_basis_associates.contains(iFound)==0){
+                        _basis_associates.add(iFound);
+                    }
+                }
+            }
+
         }
 
     }
