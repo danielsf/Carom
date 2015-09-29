@@ -1525,12 +1525,9 @@ void node::populate_basis_associates(){
 
     int n_associates_0=_basis_associates.get_dim();
 
-    array_1d<double> dir,lowball,highball;
+    array_1d<double> dir;
     dir.set_name("populate_basis_associates_dir");
-    lowball.set_name("populate_basis_associates_lowball");
-    highball.set_name("populate_basis_associates_highball");
-    int i,dimsq,iFound,iFound2;
-    double flow,fhigh;
+    int i,dimsq,iFound,iStart;
 
     double target,tol;
 
@@ -1549,23 +1546,22 @@ void node::populate_basis_associates(){
                 _basis_associates.add(iFound);
             }
 
-            for(i=0;i<_chisquared->get_dim();i++){
-                lowball.set(i,get_pt(_centerdex,i));
-                highball.set(i,get_pt(iFound,i));
+            target=0.25*_chimin+0.75*_chisquared->target();
+
+            if(_chisquared->get_fn(iFound)<target){
+                iStart=iFound;
+            }
+            else{
+                iStart=_centerdex;
             }
 
-            flow=_chisquared->get_fn(_centerdex);
-            fhigh=_chisquared->get_fn(iFound);
-            target=0.75*_chimin+0.25*_chisquared->target();
-
-            if(flow<target && fhigh>target){
-                iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
-                if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<5.0*tol){
-                    if(_basis_associates.contains(iFound)==0){
-                        _basis_associates.add(iFound);
-                    }
+            iFound=node_bisection_origin_dir(iStart,dir,target,tol);
+            if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<5.0*tol){
+                if(_basis_associates.contains(iFound)==0){
+                    _basis_associates.add(iFound);
                 }
             }
+
 
         }
 
