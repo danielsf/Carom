@@ -1519,23 +1519,46 @@ void node::add_to_compass(int dex){
     _compass_log.add(dex);
 }
 
-void node::populate_basis_associates(int i_low, int i_high){
+void node::populate_basis_associates(){
 
-    double target;
-    target=0.5*(_chisquared->target()+_chimin);
-    if(_chisquared->get_fn(i_low)>target || _chisquared->get_fn(i_high)<target){
-        return;
+    int n_associates_0=_basis_associates.get_dim();
+
+    array_1d<double> dir;
+    dir.set_name("populate_basis_associates_dir");
+    int i,dimsq,iFound;
+
+    double target,tol;
+
+    dimsq=_chisquared->get_dim()*_chisquared->get_dim();
+    while(_basis_associates.get_dim()<n_associates_0+4*dimsq){
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        target=0.5*(_chisquared->target()+_chimin);
+        tol=0.01*(_chisquared->target()-_chimin);
+
+        iFound=node_bisection_origin_dir(_centerdex,dir,target,tol);
+        if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<5.0*tol){
+            if(_basis_associates.contains(iFound)==0){
+                _basis_associates.add(iFound);
+            }
+        }
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.multiply_val(i,-1.0);
+        }
+
+        target=0.5*(_chisquared->target()+_chimin);
+        tol=0.01*(_chisquared->target()-_chimin);
+
+        iFound=node_bisection_origin_dir(_centerdex,dir,target,tol);
+        if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<5.0*tol){
+            if(_basis_associates.contains(iFound)==0){
+                _basis_associates.add(iFound);
+            }
+        }
     }
-
-    double tol=0.01*(_chisquared->target()-_chimin);
-
-    int iFound;
-    iFound = node_bisection(i_low,i_high,target,tol);
-
-    if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<2.0*tol){
-        _basis_associates.add(iFound);
-    }
-
 }
 
 
@@ -1630,25 +1653,6 @@ void node::compass_search(int local_center){
                 if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())<0.1*(_chisquared->target()-_chisquared->chimin())){
                     _transform_associates.add(ix,iFound);
                 }
-
-                if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
-                    for(i=0;i<_chisquared->get_dim();i++){
-                        lowball.set(i,get_pt(local_center,i));
-                        highball.set(i,get_pt(iFound,i));
-                    }
-
-                    fhigh=_chisquared->get_fn(iFound);
-                    bisection_target=0.5*(_chimin+_chisquared->target());
-                    iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
-
-                    if(iFound>=0){
-                        if(_basis_associates.contains(iFound)==0){
-                            _basis_associates.add(iFound);
-                        }
-                    }
-
-                }
-
             }
 
         }
@@ -1812,20 +1816,6 @@ void node::compass_diagonal(int local_center){
                             _transform_associates.add(iy,iFound);
                         }
 
-                        if(_chisquared->get_fn(iFound)>0.5*(_chimin+_chisquared->target()) && local_center==_centerdex){
-                            for(i=0;i<_chisquared->get_dim();i++){
-                                lowball.set(i,get_pt(local_center,i));
-                                highball.set(i,get_pt(iFound,i));
-                            }
-
-                            fhigh=_chisquared->get_fn(iFound);
-                            bisection_target=0.5*(_chimin+_chisquared->target());
-                            iFound=node_bisection(lowball,_chimin,highball,fhigh,1,bisection_target,0.1*(bisection_target-_chimin));
-                            if(iFound>=0 && _basis_associates.contains(iFound)==0){
-                                _basis_associates.add(iFound);
-                            }
-
-                        }
                     }
 
                     if(isHigh==1){
@@ -2405,36 +2395,7 @@ void node::find_bases(){
 
     int dimsq=_chisquared->get_dim()*_chisquared->get_dim();
 
-    while(_basis_associates.get_dim()<dimsq){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        dir.normalize();
-
-        flow=_chisquared->get_fn(_centerdex);
-        for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,get_pt(_centerdex,i));
-            highball.set(i,get_pt(_centerdex,i));
-        }
-        fhigh=-2.0*exception_value;
-
-        while(fhigh<target){
-            for(i=0;i<_chisquared->get_dim();i++){
-                highball.add_val(i,dir.get_data(i));
-            }
-            evaluate(highball,&fhigh,&iFound);
-        }
-
-        target=0.5*(_chisquared->get_fn(_centerdex)+_chisquared->target());
-        tol=0.01*(_chisquared->target()-_chisquared->get_fn(_centerdex));
-
-        iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
-        if(iFound>=0 && fabs(_chisquared->get_fn(iFound)-target)<0.5*(target-_chisquared->get_fn(_centerdex))){
-            if(_basis_associates.contains(iFound)==0){
-                _basis_associates.add(iFound);
-            }
-        }
-    }
+    populate_basis_associates();
 
     if(_basis_associates.get_dim()==0){
         printf("WARNING _basis associates is empty\n");

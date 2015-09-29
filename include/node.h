@@ -136,7 +136,7 @@ private:
 
     void is_it_safe(char*);
 
-    void populate_basis_associates(int, int);
+    void populate_basis_associates();
 
     void compass_search(int);
     void compass_diagonal(int);
