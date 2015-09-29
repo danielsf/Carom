@@ -2403,7 +2403,10 @@ void node::find_bases(){
     highball.set_name("node_find_bases_highball");
     dir.set_name("node_find_bases_dir");
 
-    while(_basis_associates.get_dim()<_chisquared->get_dim()*_chisquared->get_dim()){
+    int bas_ct;
+    int dimsq=_chisquared->get_dim()*_chisquared->get_dim();
+
+    for(bas_ct=0;bas_ct<dimsq && _basis_associates.get_dim()<dimsq;bas_ct++){
         for(i=0;i<_chisquared->get_dim();i++){
             dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
         }
