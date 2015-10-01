@@ -4447,18 +4447,14 @@ void node::ricochet(){
        _proper_ricochets++;
        iFound=_ricochet(ix,dir);
 
-       for(abort_kicks=0;iFound<0 && abort_kicks<100;abort_kicks++){
-           mcmc_kick(_ricochet_particles.get_data(ix),&iFound,dir,100);
+       if(iFound>=0){
+           set_particle(ix,iFound,dir);
        }
 
-       if(abort_kicks>=100){
-           printf("WARNING abort kicks %d without iFound>0 \n",abort_kicks);
-           exit(1);
-       }
-
-       set_particle(ix,iFound,dir);
        randomize=0;
-       if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
+       if(iFound<0 || iFound==i_origin ||
+          fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
+
            randomize=1;
        }
 
