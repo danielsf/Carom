@@ -4449,9 +4449,12 @@ void node::ricochet(){
 
        if(iFound>=0){
            set_particle(ix,iFound,dir);
+           randomize=0;
+       }
+       else{
+           randomize=1;
        }
 
-       randomize=0;
        if(iFound<0 || iFound==i_origin ||
           fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
 
