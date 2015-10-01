@@ -161,7 +161,6 @@ private:
     int kick_particle(int, array_1d<double>&);
     int step_kick(int, double, array_1d<double>&);
     int mcmc_kick(int, int*, array_1d<double>&, int);
-    int smart_step_kick(int, double, array_1d<double>&);
     int originate_particle_compass(array_1d<double>&);
     int originate_particle_shooting(array_1d<double>&);
     void _originate_particle_paperwork(int, int);
