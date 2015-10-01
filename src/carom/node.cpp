@@ -3227,6 +3227,10 @@ void node::_filter_candidates(){
 
 void node::set_particle(int ip, int ii, array_1d<double> &dir){
 
+    if(ii<0){
+        return;
+    }
+
     if(_ricochet_particles.get_dim()>ip){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
     }
