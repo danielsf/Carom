@@ -3501,74 +3501,6 @@ int node::mcmc_kick(int iStart, int *iFound, array_1d<double> &dir_out, int max_
 
 }
 
-int node::step_kick(int ix, double ratio, array_1d<double> &dir){
-    printf("WARNING step_kick is not safe against the new set_particles formalism\n");
-    exit(1);
-
-
-    int i,nearestParticle;
-    double x1,x2,ddbest,ddmin,dd;
-    nearestParticle=-1;
-    ddmin=1.0e-10;
-
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        dd=node_distance(_ricochet_candidates.get_data(i), _ricochet_particles.get_data(ix));
-        if(dd>ddmin){
-            if(nearestParticle<0 || dd<ddbest){
-                ddbest=dd;
-                nearestParticle=_ricochet_candidates.get_data(i);
-            }
-        }
-    }
-
-    for(i=0;i<_boundary_points.get_dim();i++){
-        if(_boundary_points.get_data(i)!=_ricochet_particles.get_data(ix)){
-            dd=node_distance(_boundary_points.get_data(i),_ricochet_particles.get_data(ix));
-            if(dd>ddmin){
-                if(nearestParticle<0 || dd<ddbest){
-                    ddbest=dd;
-                    nearestParticle=_boundary_points.get_data(i);
-                }
-            }
-        }
-
-
-    }
-
-    array_1d<double> trial;
-    trial.set_name("node_step_kick_trial");
-    int iFound;
-    double mu;
-
-    int local_center;
-
-    local_center=find_local_center();
-
-    for(i=0;i<_chisquared->get_dim();i++){
-           x1=get_pt(_ricochet_particles.get_data(ix),i);
-           trial.set(i,ratio*x1+(1.0-ratio)*get_pt(local_center,i));
-    }
-    evaluate(trial,&mu,&iFound);
-    if(iFound<0){
-        return 0;
-    }
-    _ricochet_origins.set(ix,_ricochet_particles.get_data(ix));
-    _ricochet_particles.set(ix,iFound);
-
-     if(nearestParticle>=0){
-         for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(nearestParticle,i));
-         }
-     }
-     else{
-         for(i=0;i<_chisquared->get_dim();i++){
-             dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(local_center,i));
-         }
-     }
-     dir.normalize();
-     return 1;
-     //maybe should try reflecting about the gradient...
-}
 
 int node::choose_off_center_point(){
     double target,min_chisq;
@@ -3787,9 +3719,6 @@ int node::originate_particle_shooting(array_1d<double> &dir){
 
 }
 
-int node::kick_particle(int ix, array_1d<double> &dir){
-    return step_kick(ix,1.0-0.1,dir);
-}
 
 void node::search(){
 

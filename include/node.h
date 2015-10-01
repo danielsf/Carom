@@ -158,8 +158,6 @@ private:
     void mcmc_step(int, int*, array_1d<double>&, int);
     void mcmc_walk(int);
 
-    int kick_particle(int, array_1d<double>&);
-    int step_kick(int, double, array_1d<double>&);
     int mcmc_kick(int, int*, array_1d<double>&, int);
     int originate_particle_compass(array_1d<double>&);
     int originate_particle_shooting(array_1d<double>&);
