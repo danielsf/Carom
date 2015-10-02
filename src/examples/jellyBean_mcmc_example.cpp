@@ -19,6 +19,9 @@ int burnin=3000;
 int dim=10;
 int nChains=4;
 char nameroot[letters];
+char logname[letters];
+
+logname[0]=0;
 
 for(i=1;i<iargc;i++){
     if(argv[i][0]=='-'){
@@ -59,6 +62,14 @@ for(i=1;i<iargc;i++){
                     nameroot[j]=argv[i][j];
                 }
                 nameroot[j]=0;
+                break;
+            case 'l':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    logname[j]=argv[i][j];
+                }
+                logname[j]=0;
+            
                 break;
         }
     }
@@ -106,17 +117,19 @@ mcmc_test.sample(nsamples);
 mcmc_test.write_timing(0);
 
 FILE *log_test;
-log_test = fopen("output/scratch/mcmc_log.txt", "w");
-fprintf(log_test,"# ");
-for(i=0;i<dim;i++){
-    fprintf(log_test,"p%d ",i);
-}
-fprintf(log_test,"chisq mu sig ling\n");
-for(i=0;i<chisq.pt_log.get_rows();i++){
-    for(j=0;j<dim;j++){
-        fprintf(log_test,"%.12e ",chisq.pt_log.get_data(i,j));
+if(logname[0]!=0){
+    log_test = fopen(logname, "w");
+    fprintf(log_test,"# ");
+    for(i=0;i<dim;i++){
+        fprintf(log_test,"p%d ",i);
     }
-    fprintf(log_test,"%.12e 0 0 0\n",chisq.fn_log.get_data(i));
+    fprintf(log_test,"chisq mu sig ling\n");
+    for(i=0;i<chisq.pt_log.get_rows();i++){
+        for(j=0;j<dim;j++){
+            fprintf(log_test,"%.12e ",chisq.pt_log.get_data(i,j));
+        }
+        fprintf(log_test,"%.12e 0 0 0\n",chisq.fn_log.get_data(i));
+    }
 }
 
 }
