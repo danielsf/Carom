@@ -451,6 +451,7 @@ chisquared::chisquared(){
 };
 
 chisquared::chisquared(int id){
+    _with_logging=0;
     _ncenters=1;
     _dim=id;
 
@@ -466,6 +467,7 @@ chisquared::chisquared(int id){
 };
 
 chisquared::chisquared(int id, int ic){
+    _with_logging=0;
     _dim=id;
     _ncenters=ic;
 
