@@ -78,6 +78,8 @@ printf("seed %d\n",seed);
 
 jellyBeanData chisq(dim,1,100,0.4,0.4,0.02,20.0);
 
+chisq.enable_logging();
+
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;
 max.set_name("driver_max");
@@ -101,5 +103,20 @@ if(doGuess==1){
 mcmc_test.set_burnin(burnin);
 mcmc_test.set_name_root(nameroot);
 mcmc_test.sample(nsamples);
+mcmc_test.write_timing(0);
+
+FILE *log_test;
+log_test = fopen("output/scratch/mcmc_log.txt", "w");
+fprintf(log_test,"# ");
+for(i=0;i<dim;i++){
+    fprintf(log_test,"p%d ",i);
+}
+fprintf(log_test,"chisq mu sig ling\n");
+for(i=0;i<chisq.pt_log.get_rows();i++){
+    for(j=0;j<dim;j++){
+        fprintf(log_test,"%.12e ",chisq.pt_log.get_data(i,j));
+    }
+    fprintf(log_test,"%.12e 0 0 0\n",chisq.fn_log.get_data(i));
+}
 
 }
