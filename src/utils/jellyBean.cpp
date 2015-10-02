@@ -393,6 +393,10 @@ double chiSquaredData::operator()(array_1d<double> &pt){
         exit(1);
     }
 
+    if(_with_logging==1){
+        _log_point(pt, chisq_min);
+    }
+
     return chisq_min;
 }
 
