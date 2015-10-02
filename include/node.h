@@ -75,11 +75,12 @@ private:
     int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
-    int _ricochet_strikes;
+    int _ricochet_strikes,_strikeouts;
     int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases,_chimin_ricochet;
     double _volume_of_last_geom;
 
+    int _compass_calls;
     int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
     int _highball_calls;
     int _ricochet_bisection_calls,_gradient_calls,_ricochet_bisections;
@@ -89,7 +90,7 @@ private:
     double _min_basis_error;
     double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed,_convergence_ct;
-    int _strikeouts,_successful_ricochets,_good_shots,_bad_shots;
+    int _successful_ricochets,_good_shots,_bad_shots;
 
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     asymm_array_2d<int> _transform_associates;
@@ -118,6 +119,7 @@ private:
 
     int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int);
     int node_bisection(array_1d<double>&,double,array_1d<double>&,double,int,double,double);
+    int node_bisection(int,int,double,double);
     int node_bisection_origin_dir(int,array_1d<double>&);
     int node_bisection_origin_dir(int,array_1d<double>&,double,double);
 
@@ -135,6 +137,8 @@ private:
 
     void is_it_safe(char*);
 
+    void populate_basis_associates();
+
     void compass_search(int);
     void compass_diagonal(int);
     void compass_search_geometric_center();
@@ -151,11 +155,10 @@ private:
     double apply_quadratic_model(array_1d<double>&);
     double apply_quadratic_model(int);
 
-    int kick_particle(int, array_1d<double>&);
-    int step_kick(int, double, array_1d<double>&);
+    void mcmc_step(int, int*, array_1d<double>&, int);
+    void mcmc_walk(int);
+
     int mcmc_kick(int, int*, array_1d<double>&, int);
-    int t_kick(int,array_1d<double>&);
-    int smart_step_kick(int, double, array_1d<double>&);
     int originate_particle_compass(array_1d<double>&);
     int originate_particle_shooting(array_1d<double>&);
     void _originate_particle_paperwork(int, int);
