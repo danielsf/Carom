@@ -2550,8 +2550,8 @@ void node::firework_search(int iStart, int refineCenter){
     int iEnd;
 
     if(refineCenter==1){
-        gnorm=gradient.normalize();
         node_gradient(iStart,gradient);
+        gnorm=gradient.normalize();
 
         i0=iStart;
         if(gnorm>tol){
