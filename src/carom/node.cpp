@@ -4383,6 +4383,9 @@ void node::ricochet(){
    _chisquared->set_iWhere(iRicochet);
 
    int i;
+   double dd;
+   double dd_max=-1.0;
+   double dd_min=2.0*exception_value;
 
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
@@ -4490,10 +4493,14 @@ void node::ricochet(){
            }
        }
 
+       dd=node_distance(i_origin,_ricochet_particles.get_data(ix));
+       if(dd<dd_min)dd_min=dd;
+       if(dd>dd_max)dd_max=dd;
 
    }
 
-   printf("    done with actual ricochet: volume %e\n",volume());
+   printf("    done with actual ricochet: volume %e dd %e %e\n",
+   volume(),dd_min,dd_max);
 
    double ricochet_dd,ddmax;
    int iChosen;
