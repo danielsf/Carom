@@ -159,7 +159,10 @@ void carom::write_pts(){
 
     printf("\nNODE CENTERS\n");
     for(i=0;i<_nodes.get_dim();i++){
-        printf("    %e\n",_chifn.get_fn(_nodes(i)->get_center()));
+        printf("    %e -- %d %e %e\n",
+        _chifn.get_fn(_nodes(i)->get_center()),_nodes(i)->get_center(),
+        _chifn.get_pt(_nodes(i)->get_center(),0),
+        _chifn.get_pt(_nodes(i)->get_center(),1));
 
         if(_nodes(i)->get_total_bisections()>0){
             printf("    bisections %d %d %d\n",

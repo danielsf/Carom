@@ -2577,7 +2577,11 @@ void node::firework_search(int iStart, int refineCenter){
                 }
             }
         }
-        _firework_centers.add(iStart);
+
+        if(_firework_centers.contains(iStart)==0){
+            _firework_centers.add(iStart);
+        }
+
         if(_chisquared->get_fn(iStart)>_chisquared->get_fn(i0)-1.0){
             return;
         }
@@ -2661,6 +2665,8 @@ void node::firework_search(int iStart, int refineCenter){
 
         }
     }
+
+    printf("end of firework volume %e\n",volume());
 }
 
 
