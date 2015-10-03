@@ -4511,6 +4511,35 @@ void node::ricochet(){
    _ct_ricochet+=_chisquared->get_called()-ibefore;
    int r_called=_chisquared->get_called()-ibefore;
 
+   double mu;
+   int do_off_center,k,iFirework;
+   local_center=find_local_center();
+   for(i=0;i<_ricochet_particles.get_dim();i++){
+       do_off_center=1;
+
+       if(_firework_centers.get_dim()>0){
+           for(j=0;j<_firework_centers.get_dim() && do_off_center==1;j++){
+               is_connected=_are_connected(_ricochet_particles.get_data(i),_firework_centers.get_data(j));
+               if(is_connected==1){
+                   do_off_center=0;
+               }
+           }
+       }
+       else{
+           mu=apply_quadratic_model(_ricochet_particles.get_data(i));
+           if(mu<_chisquared->target()){
+               do_off_center=0;
+           }
+       }
+
+       if(do_off_center==1){
+           iFirework=_ricochet_particles.get_data(i);
+           printf("\ndoing firework %e %d %e\n",volume(),_firework_centers.get_dim(),_chisquared->get_fn(iFirework));
+           firework_search(iFirework);
+
+       }
+   }
+
    _ricochet_calls+=_chisquared->get_called()-ibefore;
    _ricochet_bisection_calls+=_bisection_calls-rcalls_before;
    _ricochet_bisections+=_total_bisections-rbefore;
