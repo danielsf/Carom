@@ -29,6 +29,12 @@ public:
     void search();
     void reset_ricochet();
     void ricochet();
+
+    void initialize_gradient_wander();
+    void gradient_wander();
+    void _gradient_wander(int);
+    void burst_particles(int);
+
     int _ricochet(int, array_1d<double>&);
     int _adaptive_ricochet(int, array_1d<double>&);
     void simplex_search();
@@ -98,6 +104,8 @@ private:
     array_1d<int> _ricochet_candidates;
     array_1d<int> _off_center_origins,_off_center_candidates;
     array_1d<int> _associates;
+    array_1d<int> _gradient_wanderers,_gradient_origins,_burst_centers;
+    array_1d<int> _gradient_counters;
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
     array_1d<double> _max_found,_min_found;
@@ -114,6 +122,7 @@ private:
     array_1d<int> _ricochet_log;
     array_1d<int> _ricochet_candidate_log;
     array_1d<int> _compass_log;
+    array_1d<int> _wander_log;
 
     chisq_wrapper *_chisquared;
 
@@ -145,6 +154,7 @@ private:
     void off_center_compass(int);
     void trim_ricochet(int);
     void set_particle(int,int,array_1d<double>&);
+    void set_wanderer(int,int);
     double ricochet_model(array_1d<double>&);
     double ricochet_model(array_1d<double>&,array_1d<int>&);
     double ricochet_model(array_1d<double>&,double*);
