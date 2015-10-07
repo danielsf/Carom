@@ -93,6 +93,9 @@ private:
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
     int _proper_ricochets;
 
+    double _wander_stepsize;
+    int _wander_acceptances,_wander_rejections;
+
     double _min_basis_error;
     double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed,_convergence_ct;
@@ -102,6 +105,7 @@ private:
     asymm_array_2d<int> _transform_associates;
     array_1d<int> _firework_centers;
     array_1d<int> _ricochet_candidates;
+    array_1d<int> _avg_pts;
     array_1d<int> _off_center_origins,_off_center_candidates;
     array_1d<int> _associates;
     array_1d<int> _gradient_wanderers,_gradient_origins,_burst_centers;

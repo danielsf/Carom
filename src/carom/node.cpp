@@ -57,6 +57,9 @@ void node::initialize(){
     _total_trimmed=0;
     _convergence_ct=0;
     _compass_calls=0;
+    _wander_stepsize=-1.0;
+    _wander_acceptances=0;
+    _wander_rejections=0;
 
     _total_bisections=0;
     _bisection_calls=0;
@@ -104,6 +107,7 @@ void node::initialize(){
     _burst_centers.set_name("node_burst_centers");
     _gradient_counters.set_name("node_gradient_counters");
     _wander_log.set_name("node_wander_log");
+    _avg_pts.set_name("node_avg_pts");
 }
 
 void node::copy(const node &in){
@@ -142,6 +146,9 @@ void node::copy(const node &in){
     _total_trimmed=in._total_trimmed;
     _highball_calls=in._highball_calls;
     _compass_calls=in._compass_calls;
+    _wander_stepsize=in._wander_stepsize;
+    _wander_acceptances=in._wander_acceptances;
+    _wander_rejections=in._wander_rejections;
 
     _total_bisections=in._total_bisections;
     _total_ricochets=in._total_ricochets;
@@ -199,6 +206,11 @@ void node::copy(const node &in){
     _ricochet_candidates.reset();
     for(i=0;i<in._ricochet_candidates.get_dim();i++){
         _ricochet_candidates.set(i,in._ricochet_candidates.get_data(i));
+    }
+
+    _avg_pts.reset();
+    for(i=0;i<in._avg_pts.get_dim();i++){
+        _avg_pts.set(i,in._avg_pts.get_data(i));
     }
 
     _ricochet_candidate_velocities.reset();
@@ -683,6 +695,7 @@ void node::set_transform(){
         }
     }
     recalibrate_max_min();
+    _wander_stepsize=-1.0;
 }
 
 void node::get_true_pt(int i1, array_1d<double> &pt_out){
@@ -3799,7 +3812,7 @@ void node::search(){
     int ibefore=_chisquared->get_called();
 
     ricochet();
-    gradient_wander();
+    //gradient_wander();
 
     double tol;
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
@@ -4431,15 +4444,132 @@ void node::ricochet(){
    int rbefore=_total_bisections;
    _chisquared->set_iWhere(iRicochet);
 
-   int i;
-   double dd;
+    array_1d<double> avg_pt;
+    array_1d<int> use_for_avg;
+    double f_avg;
+    int i_avg,peel_off;
+    int ii,jj,i_peel;
+    double denom,dd_peel,dd_peel_max,dd;
+
+    i_avg=-1;
+    f_avg=2.0*exception_value;
+    peel_off=0;
+    for(ii=0;ii<_ricochet_particles.get_dim();ii++){
+        use_for_avg.add(_ricochet_particles.get_data(ii));
+    }
+
+    while((i_avg<0 || f_avg>_chisquared->target()) && peel_off<_chisquared->get_dim()){
+        peel_off++;
+        for(ii=0;ii<_chisquared->get_dim();ii++){
+            avg_pt.set(ii,0.0);
+        }
+        denom=0.0;
+        for(ii=0;ii<use_for_avg.get_dim();ii++){
+            denom+=1.0;
+            for(jj=0;jj<_chisquared->get_dim();jj++){
+                avg_pt.add_val(jj,get_pt(use_for_avg.get_data(ii),jj));
+            }
+        }
+        for(ii=0;ii<_chisquared->get_dim();ii++){
+            avg_pt.divide_val(ii,denom);
+        }
+
+        evaluate(avg_pt,&f_avg,&i_avg);
+        if(i_avg<0 || f_avg>_chisquared->target()){
+            if(1==1){
+                for(ii=0;ii<use_for_avg.get_dim();ii++){
+                    dd_peel=2.0*exception_value;
+                    for(jj=ii+1;jj<use_for_avg.get_dim();jj++){
+                         dd=node_distance(use_for_avg.get_data(ii), use_for_avg.get_data(jj));
+                         if(dd<dd_peel){
+                             dd_peel=dd;
+                         }
+                    }
+                    if(ii==0 || dd_peel>dd_peel_max){
+                        dd_peel_max=dd_peel;
+                        i_peel=ii;
+                    }
+                }
+            }
+            else{
+                for(ii=0;ii<use_for_avg.get_dim();ii++){
+                    dd=node_distance(use_for_avg.get_data(ii),i_avg);
+                    if(ii==0 || dd>dd_peel_max){
+                        dd_peel_max=dd;
+                        i_peel=ii;
+                    }
+                }
+            }
+            use_for_avg.remove(i_peel);
+        }
+    }
+
+    if(i_avg>=0){
+        _avg_pts.add(i_avg);
+        _wander_log.add(i_avg);
+    }
+
+    int i,j,iNew;
+    double dotproduct,v0,v1;
+    array_1d<double> avg_dir,random_dir,gradient;
+    if(_avg_pts.get_dim()>1 && i_avg>=0 && _chisquared->get_fn(i_avg)<_chisquared->target()){
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            avg_dir.set(i,0.0);
+        }
+        for(i=0;i<_avg_pts.get_dim()-1;i++){
+            for(j=0;j<_chisquared->get_dim();j++){
+                random_dir.set(j,get_pt(i_avg,j)-get_pt(_avg_pts.get_data(i),j));
+            }
+            random_dir.normalize();
+            for(j=0;j<_chisquared->get_dim();j++){
+                avg_dir.add_val(j,random_dir.get_data(j));
+            }
+        }
+        avg_dir.normalize();
+        node_gradient(i_avg,gradient);
+        gradient.normalize();
+        for(i=0;i<_chisquared->get_dim();i++){
+            random_dir.set(i,avg_dir.get_data(i)+gradient.get_data(i));
+        }
+        v0=volume();
+        iNew=node_bisection_origin_dir(i_avg,random_dir);
+        if(iNew>=0 && _chisquared->get_fn(iNew)<_chisquared->target()){
+            v1=volume();
+            if(v1>v0){
+                set_particle(_ricochet_particles.get_dim(),iNew,random_dir);
+            }
+        }
+        /*for(i=0;i<_chisquared->get_dim();i++){
+            v0=volume();
+            dotproduct=0.0;
+            for(j=0;j<_chisquared->get_dim();j++){
+                random_dir.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+                dotproduct+=random_dir.get_data(j)*avg_dir.get_data(j);
+            }
+            if(dotproduct<0.0){
+                i--;
+            }
+            else{
+                random_dir.normalize();
+                iNew=node_bisection_origin_dir(i_avg,random_dir);
+                if(iNew>=0 && _chisquared->get_fn(iNew)<_chisquared->target()){
+                    v1=volume();
+                    if(v1>v0){
+                        set_particle(_ricochet_particles.get_dim(),iNew,random_dir);
+                    }
+                }
+            }
+        }*/
+    }
+
    double dd_max=-1.0;
    double dd_min=2.0*exception_value;
 
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
 
-   int ix,j,iFound;
+   int ix,iFound;
 
    kd_tree kd_copy(_chisquared->get_tree()[0]);
 
@@ -4448,7 +4578,7 @@ void node::ricochet(){
        kd_copy.set_max(i,_max_found.get_data(i));
    }
 
-   double dx,x1,x2,y1,y2,component,distanceMin;
+   double dx,x1,x2,y1,y2,distanceMin;
    double gnorm,dirnorm;
    array_1d<double> dir;
    int local_pts0;
@@ -4925,7 +5055,7 @@ void node::write_node_log(char *nameRoot){
     }
 
     for(i=0;i<_wander_log.get_dim();i++){
-        fprintf(output,"%d\n",_wander_log.get_data(i));
+        fprintf(output,"%d %e\n",_wander_log.get_data(i),_chisquared->get_fn(_wander_log.get_data(i)));
     }
     fclose(output);
     _wander_log.reset();
@@ -4948,152 +5078,113 @@ void node::set_wanderer(int ix, int ii){
 }
 
 void node::_gradient_wander(int ix){
+    double chi_old,chi_new;
+    array_1d<double> step,gradient;
+    step.set_name("gradient_wander_step");
+    gradient.set_name("gradient_wander_gradient");
     int i_start=_gradient_wanderers.get_data(ix);
+    chi_old=_chisquared->get_fn(i_start);
 
-    double dd,ddmin;
-    int iddmin,iy,ipt;
+    node_gradient(i_start,gradient);
+    gradient.normalize();
 
-    if(_chisquared->get_fn(i_start)>_chisquared->target()){
-        ddmin=2.0*exception_value;
-        for(iy=0;iy<_associates.get_dim();iy++){
-            ipt=_associates.get_data(iy);
-            if(_chisquared->get_fn(ipt)<_chisquared->target()){
-                dd=node_distance(i_start,ipt);
-                if(dd<ddmin){
-                    ddmin=dd;
-                    iddmin=ipt;
-                }
+    int i,j;
+    double rr,component;
+    for(i=0;i<_chisquared->get_dim();i++){
+        step.set(i,-1.0*gradient.get_data(i));
+    }
+
+    array_1d<double> coulomb_dir,sub_dir;
+    coulomb_dir.set_name("gradient_wander_coulomb");
+    sub_dir.set_name("gradient_wander_sub_dir");
+
+    rr=fabs(normal_deviate(_chisquared->get_dice(),_wander_stepsize,0.2*_wander_stepsize));
+
+    double rr_c;
+    int iy;
+    for(i=0;i<_chisquared->get_dim();i++){
+        coulomb_dir.set(i,0.0);
+    }
+    for(iy=0;iy<_gradient_wanderers.get_dim();iy++){
+        if(iy!=ix){
+            rr_c=normalized_node_distance(i_start,_gradient_wanderers.get_data(iy));
+            for(i=0;i<_chisquared->get_dim();i++){
+                sub_dir.set(i,get_pt(i_start,i)-get_pt(_gradient_wanderers.get_data(iy),i));
+            }
+            sub_dir.normalize();
+            for(i=0;i<_chisquared->get_dim();i++){
+                coulomb_dir.add_val(i,sub_dir.get_data(i)/power(rr_c,2));
             }
         }
-        i_start=iddmin;
-        set_wanderer(ix,ipt);
-        _gradient_counters.set(ix,0);
     }
 
-    array_1d<double> origin_dir;
-    origin_dir.set_name("gradient_wander_origin_dir");
+    coulomb_dir.normalize();
 
-    array_1d<double> lowball,highball,gradient;
-    double flow,fhigh;
-    lowball.set_name("gradient_wander_lowball");
-    highball.set_name("gradient_wander_highball");
-    gradient.set_name("gradient_wander_gradient");
+    array_1d<double> perturbation;
+    perturbation.set_name("gradient_wander_perturbation");
+    double dotproduct=-1.0;
+    //while(dotproduct<-1.0e-4){
+        for(i=0;i<_chisquared->get_dim();i++){
+            perturbation.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+        }
+        dotproduct=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            dotproduct+=perturbation.get_data(i)*step.get_data(i);
+        }
+        for(i=0;i<_chisquared->get_dim();i++){
+            perturbation.subtract_val(i,dotproduct*step.get_data(i));
+        }
+        perturbation.normalize();
+        dotproduct=0.0;
+        for(i=0;i<_chisquared->get_dim();i++){
+            dotproduct+=perturbation.get_data(i)*coulomb_dir.get_data(i);
+        }
+    //}
 
-    int iFound,i;
-    double target,tol;
-
-    //target=0.5*(_chisquared->target()+_chisquared->chimin());
-    target=_chisquared->target();
-    tol=0.01*(_chisquared->target()-_chisquared->chimin());
-
-    double mu;
-    int i_other_side,p_ct;
-    array_1d<double> trial;
+    int iFound,do_burst;
+    array_1d<double> trial,dir;
     trial.set_name("gradient_wander_trial");
-
-    if(_chisquared->get_fn(i_start)>target){
-        node_gradient(i_start,gradient);
-        gradient.normalize();
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            gradient.multiply_val(i,-1.0);
-        }
-
-        i_other_side=node_bisection_origin_dir(i_start,gradient);
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,0.5*(get_pt(i_start,i)+get_pt(i_other_side,i)));
-        }
-        evaluate(trial,&mu,&iFound);
-
-        if(iFound>=0){
-            i_start=iFound;
-        }
-        else{
-            printf("WARNING gradient wander unable to perturb start\n");
-            exit(1);
-        }
-
-    }
-
-    //target=0.5*(_chisquared->target()+_chisquared->chimin());
-    target=_chisquared->target();
-    tol=0.01*(_chisquared->target()-_chisquared->chimin());
-
-    array_1d<double> dir;
     dir.set_name("gradient_wander_dir");
 
-    node_gradient(i_start, gradient);
-    double gnorm;
-    double component;
-    double dirnorm;
-    gnorm=gradient.normalize();
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,step.get_data(i)+0.5*perturbation.get_data(i));
+    }
+    dir.normalize();
 
-    if(ix<_gradient_origins.get_dim()){
-        for(i=0;i<_chisquared->get_dim();i++){
-            origin_dir.set(i,get_pt(i_start,i)-get_pt(_gradient_origins.get_data(ix),i));
-        }
-        origin_dir.normalize();
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.multiply_val(i,rr);
+        trial.set(i,get_pt(i_start,i)+dir.get_data(i));
     }
 
-    if(_gradient_counters.get_data(ix)%2==0){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        dirnorm=dir.normalize();
-
-        if(gnorm>1.0e-20){
-            component=0.0;
-            for(i=0;i<_chisquared->get_dim();i++){
-               component+=dir.get_data(i)*gradient.get_data(i);
-            }
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.subtract_val(i,component*gradient.get_data(i));
-            }
-            dirnorm=dir.normalize();
-        }
-
-        while(dirnorm<1.0e-20){
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-            }
-            dirnorm=dir.normalize();
-        }
-    }
-    else{
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,gradient.get_data(i));
-        }
-    }
-
-    _gradient_counters.add_val(ix,1);
-    iFound=node_bisection_origin_dir(i_start,dir);
-
-    int iFound_0=iFound;
-    int do_burst;
-
-    array_1d<double> particle_dir;
-    particle_dir.set_name("gradient_wander_particle_dir");
-    int iParticle,added_particles,n_particles,j;
+    evaluate(trial,&chi_new,&iFound);
+    printf("    chiold %e chinew %e target %e\n",chi_old,chi_new,_chisquared->target());
+    int accept_it=0;
+    double mu;
 
     if(iFound>=0){
-        /*target=0.5*(_chisquared->target()+_chisquared->chimin());
-        tol=0.01*(_chisquared->target()-_chisquared->chimin());
-        for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,get_pt(i_start,i));
-            highball.set(i,get_pt(iFound,i));
+        if(chi_new<chi_old){
+             accept_it=1;
+             if(chi_new<_chisquared->target()){
+                 i=iFound;
+                 iFound=node_bisection_origin_dir(i,dir);
+             }
         }
-        flow=_chisquared->get_fn(i_start);
-        fhigh=_chisquared->get_fn(iFound);
-        iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);*/
+        else{
+            rr=_chisquared->random_double();
+            if(exp(-0.5*(chi_new-chi_old))>rr){
+                accept_it=1;
+            }
+        }
 
-        /*for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,0.5*(get_pt(i_start,i)+get_pt(iFound,i)));
+        if(accept_it==1){
+            set_wanderer(ix,iFound);
+            _wander_acceptances++;
         }
-        evaluate(trial,&mu,&iFound);*/
+        else{
+            _wander_rejections++;
+        }
 
         if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
-            set_wanderer(ix,iFound);
 
             if(is_this_an_associate_gross(iFound)==0){
                 do_burst=1;
@@ -5130,28 +5221,41 @@ void node::gradient_wander(){
         initialize_gradient_wander();
     }
 
-    int ix;
+    array_1d<double> dd,dd_sorted;
+    array_1d<int> dd_dexes;
+    int ix,iy;
+    if(_wander_stepsize<0.0){
+        for(ix=0;ix<_gradient_wanderers.get_dim();ix++){
+            for(iy=ix+1;iy<_gradient_wanderers.get_dim();iy++){
+                dd.add(node_distance(_gradient_wanderers.get_data(ix),_gradient_wanderers.get_data(iy)));
+                dd_dexes.add(dd_dexes.get_dim());
+            }
+        }
+
+        sort_and_check(dd,dd_sorted,dd_dexes);
+        _wander_stepsize=dd_sorted.get_data(dd_sorted.get_dim()/2);
+        _wander_acceptances=0;
+        _wander_rejections=0;
+    }
+
+
     for(ix=0;ix<_gradient_wanderers.get_dim();ix++){
         _gradient_wander(ix);
     }
+
+    if(_wander_acceptances+_wander_rejections>4*_gradient_wanderers.get_dim()){
+        if(_wander_acceptances<_wander_rejections/5){
+            _wander_stepsize*=0.5;
+        }
+        else if(_wander_acceptances>_wander_rejections/2){
+            _wander_stepsize*=1.5;
+        }
+
+        _wander_acceptances=0;
+        _wander_rejections=0;
+    }
     printf("ending with %e\n",volume());
 
-    array_1d<double> dir;
-    dir.set_name("gradient_meta_wander_dir");
-    int i,iFound;
-
-    if(volume()-volume0<0.01*volume0){
-        for(ix=0;ix<_gradient_wanderers.get_dim();ix++){
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-            }
-            dir.normalize();
-            iFound=node_bisection_origin_dir(_gradient_wanderers.get_data(ix),dir);
-            if(iFound>=0){
-                set_wanderer(ix,iFound);
-            }
-        }
-    }
 }
 
 
@@ -5265,6 +5369,10 @@ arrayOfNodes::~arrayOfNodes(){
 
 void arrayOfNodes::add(int cc, chisq_wrapper *gg){
 
+    if(_ct>0){
+        return;//spock
+    }
+
     node *buffer;
     int i,j;
 
@@ -5294,7 +5402,7 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_id_dex(_ct);
     printf("time to initialize ricochet\n");
     _data[_ct].initialize_ricochet();
-    _data[_ct].initialize_gradient_wander();
+    //_data[_ct].initialize_gradient_wander();
     printf("done with that\n");
     _ct++;
 
