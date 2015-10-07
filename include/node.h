@@ -35,6 +35,10 @@ public:
     void _gradient_wander(int);
     void burst_particles(int);
 
+    void swarm_shoot(array_1d<double>&, double);
+    void swarm_evaluate(array_1d<double>&,double*);
+    void swarm_search();
+
     int _ricochet(int, array_1d<double>&);
     int _adaptive_ricochet(int, array_1d<double>&);
     void simplex_search();
@@ -75,6 +79,8 @@ public:
     int get_proper_ricochets();
     void set_id_dex(int);
     void write_node_log(char*);
+    int get_swarm_expand();
+    int get_swarm_outside();
 
 private:
     int _id_dex,_last_wrote_log;
@@ -115,6 +121,13 @@ private:
     array_1d<double> _max_found,_min_found;
     array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
+
+    array_2d<double> _swarm;
+    array_1d<double> _swarm_center;
+    array_1d<double> _swarm_norm,_swarm_max,_swarm_min;
+    int _swarm_acceptances,_swarm_rejections;
+    double _swarm_step,_f_swarm_center;
+    int _swarm_outsiders,_swarm_expanders;
 
     array_1d<double> _true_min,_true_max,_transform;
 

@@ -130,14 +130,15 @@ void carom::write_pts(){
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim(),_unique_nodes);
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%.4e %.4e %d %d -- convergence %d ricochets %d kicks %d",
+        fprintf(output,"%.4e %.4e %d %d -- convergence %d ricochets %d swarm out %d expand %d",
         _nodes(i)->projected_volume(),
         _nodes(i)->volume(),
         _nodes(i)->get_n_particles(),
         _nodes(i)->get_n_candidates(),
         _nodes(i)->get_convergence_ct(),
         _nodes(i)->get_proper_ricochets(),
-        _nodes(i)->get_total_kicks());
+        _nodes(i)->get_swarm_outside(),
+        _nodes(i)->get_swarm_expand());
 
         /*fprintf(output,"%.4e %.4e %d %d -- convergence %d shots: failed %d successful %d strikeouts %d ricochets %d",
         _nodes(i)->projected_volume(),_nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates(),

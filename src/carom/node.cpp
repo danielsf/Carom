@@ -71,6 +71,12 @@ void node::initialize(){
     _highball_calls=0;
     _proper_ricochets=0;
 
+    _swarm_acceptances=0;
+    _swarm_rejections=0;
+    _swarm_step=1.0;
+    _swarm_outsiders=0;
+    _swarm_expanders=0;
+
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
     _ricochet_candidate_velocities.set_name("node_ricochet_candidate_velocities");
@@ -108,6 +114,9 @@ void node::initialize(){
     _gradient_counters.set_name("node_gradient_counters");
     _wander_log.set_name("node_wander_log");
     _avg_pts.set_name("node_avg_pts");
+    _swarm.set_name("node_swarm");
+    _swarm_center.set_name("node_swarm_center");
+    _swarm_norm.set_name("node_swarm_norm");
 }
 
 void node::copy(const node &in){
@@ -159,6 +168,12 @@ void node::copy(const node &in){
     _gradient_calls=in._gradient_calls;
     _proper_ricochets=in._proper_ricochets;
 
+    _swarm_acceptances=in._swarm_acceptances;
+    _swarm_rejections=in._swarm_rejections;
+    _swarm_step=in._swarm_step;
+    _swarm_outsiders=in._swarm_outsiders;
+    _swarm_expanders=in._swarm_expanders;
+
     int i,j;
 
     _chisquared=in._chisquared;
@@ -176,6 +191,14 @@ void node::copy(const node &in){
     _compass_points.reset();
     for(i=0;i<in._compass_points.get_dim();i++){
         _compass_points.set(i,in._compass_points.get_data(i));
+    }
+
+    _swarm.reset();
+    _swarm.set_cols(in._swarm.get_cols());
+    for(i=0;i<in._swarm.get_rows();i++){
+        for(j=0;j<in._swarm.get_cols();j++){
+            _swarm.set(i,j,in._swarm.get_data(i,j));
+        }
     }
 
     _gradient_wanderers.reset();
@@ -3802,10 +3825,6 @@ void node::search(){
         simplex_search();
     }
 
-    if(_chimin-_chimin_ricochet>0.2*(_chisquared->target()-_chisquared->chimin())){
-        reset_ricochet();
-    }
-
     double projectedVolume0=projected_volume();
     double volume0=volume();
     double target0=_chisquared->target();
@@ -4436,6 +4455,8 @@ void node::ricochet(){
 
    }
 
+   swarm_search();
+
    double volume0=volume();
    double projectedVolume0=projected_volume();
 
@@ -4444,124 +4465,6 @@ void node::ricochet(){
    int rbefore=_total_bisections;
    _chisquared->set_iWhere(iRicochet);
 
-    array_1d<double> avg_pt;
-    array_1d<int> use_for_avg;
-    double f_avg;
-    int i_avg,peel_off;
-    int ii,jj,i_peel;
-    double denom,dd_peel,dd_peel_max,dd;
-
-    i_avg=-1;
-    f_avg=2.0*exception_value;
-    peel_off=0;
-    for(ii=0;ii<_ricochet_particles.get_dim();ii++){
-        use_for_avg.add(_ricochet_particles.get_data(ii));
-    }
-
-    while((i_avg<0 || f_avg>_chisquared->target()) && peel_off<_chisquared->get_dim()){
-        peel_off++;
-        for(ii=0;ii<_chisquared->get_dim();ii++){
-            avg_pt.set(ii,0.0);
-        }
-        denom=0.0;
-        for(ii=0;ii<use_for_avg.get_dim();ii++){
-            denom+=1.0;
-            for(jj=0;jj<_chisquared->get_dim();jj++){
-                avg_pt.add_val(jj,get_pt(use_for_avg.get_data(ii),jj));
-            }
-        }
-        for(ii=0;ii<_chisquared->get_dim();ii++){
-            avg_pt.divide_val(ii,denom);
-        }
-
-        evaluate(avg_pt,&f_avg,&i_avg);
-        if(i_avg<0 || f_avg>_chisquared->target()){
-            if(1==1){
-                for(ii=0;ii<use_for_avg.get_dim();ii++){
-                    dd_peel=2.0*exception_value;
-                    for(jj=ii+1;jj<use_for_avg.get_dim();jj++){
-                         dd=node_distance(use_for_avg.get_data(ii), use_for_avg.get_data(jj));
-                         if(dd<dd_peel){
-                             dd_peel=dd;
-                         }
-                    }
-                    if(ii==0 || dd_peel>dd_peel_max){
-                        dd_peel_max=dd_peel;
-                        i_peel=ii;
-                    }
-                }
-            }
-            else{
-                for(ii=0;ii<use_for_avg.get_dim();ii++){
-                    dd=node_distance(use_for_avg.get_data(ii),i_avg);
-                    if(ii==0 || dd>dd_peel_max){
-                        dd_peel_max=dd;
-                        i_peel=ii;
-                    }
-                }
-            }
-            use_for_avg.remove(i_peel);
-        }
-    }
-
-    if(i_avg>=0){
-        _avg_pts.add(i_avg);
-        _wander_log.add(i_avg);
-    }
-
-    int i,j,iNew;
-    double dotproduct,v0,v1;
-    array_1d<double> avg_dir,random_dir,gradient;
-    if(_avg_pts.get_dim()>1 && i_avg>=0 && _chisquared->get_fn(i_avg)<_chisquared->target()){
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            avg_dir.set(i,0.0);
-        }
-        for(i=0;i<_avg_pts.get_dim()-1;i++){
-            for(j=0;j<_chisquared->get_dim();j++){
-                random_dir.set(j,get_pt(i_avg,j)-get_pt(_avg_pts.get_data(i),j));
-            }
-            random_dir.normalize();
-            for(j=0;j<_chisquared->get_dim();j++){
-                avg_dir.add_val(j,random_dir.get_data(j));
-            }
-        }
-        avg_dir.normalize();
-        node_gradient(i_avg,gradient);
-        gradient.normalize();
-        for(i=0;i<_chisquared->get_dim();i++){
-            random_dir.set(i,avg_dir.get_data(i)+gradient.get_data(i));
-        }
-        v0=volume();
-        iNew=node_bisection_origin_dir(i_avg,random_dir);
-        if(iNew>=0 && _chisquared->get_fn(iNew)<_chisquared->target()){
-            v1=volume();
-            if(v1>v0){
-                set_particle(_ricochet_particles.get_dim(),iNew,random_dir);
-            }
-        }
-        /*for(i=0;i<_chisquared->get_dim();i++){
-            v0=volume();
-            dotproduct=0.0;
-            for(j=0;j<_chisquared->get_dim();j++){
-                random_dir.set(j,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-                dotproduct+=random_dir.get_data(j)*avg_dir.get_data(j);
-            }
-            if(dotproduct<0.0){
-                i--;
-            }
-            else{
-                random_dir.normalize();
-                iNew=node_bisection_origin_dir(i_avg,random_dir);
-                if(iNew>=0 && _chisquared->get_fn(iNew)<_chisquared->target()){
-                    v1=volume();
-                    if(v1>v0){
-                        set_particle(_ricochet_particles.get_dim(),iNew,random_dir);
-                    }
-                }
-            }
-        }*/
-    }
 
    double dd_max=-1.0;
    double dd_min=2.0*exception_value;
@@ -4569,7 +4472,7 @@ void node::ricochet(){
    printf("    starting ricochet with volume %e and pts %d\n",volume(),
    _ricochet_particles.get_dim());
 
-   int ix,iFound;
+   int ix,iFound,i,j;
 
    kd_tree kd_copy(_chisquared->get_tree()[0]);
 
@@ -4619,6 +4522,7 @@ void node::ricochet(){
    scratch.set_name("node_ricochet_scratch");
 
    int i_origin;
+   double dd;
 
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
@@ -4996,6 +4900,9 @@ int node::get_n_candidates(){
 }
 
 void node::write_node_log(char *nameRoot){
+    printf("\n_swarm_outsiders %d\n_swarm_expanders %d\n\n",
+    _swarm_outsiders,_swarm_expanders);
+
     char outname[letters];
     sprintf(outname,"%s_node_%d_log.txt",nameRoot,_id_dex);
 
@@ -5063,6 +4970,237 @@ void node::write_node_log(char *nameRoot){
     _last_wrote_log=_chisquared->get_pts();
 
 }
+
+int node::get_swarm_outside(){
+    return _swarm_outsiders;
+}
+
+int node::get_swarm_expand(){
+    return _swarm_expanders;
+}
+
+void node::swarm_shoot(array_1d<double> &pt, double mu){
+
+    array_1d<double> lowball, highball, dir;
+    lowball.set_name("swarm_shoot_lowball");
+    highball.set_name("swarm_shoot_highball");
+    dir.set_name("swarm_shoot_dir");
+
+    double flow,fhigh,rr,target,tol;
+    target=_chisquared->target();
+    tol=0.01*(_chisquared->target()-_chisquared->chimin());
+    flow=mu;
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        lowball.set(i,pt.get_data(i));
+    }
+
+    if(_f_swarm_center>target){
+        fhigh=_f_swarm_center;
+        for(i=0;i<_chisquared->get_dim();i++){
+            highball.set(i,_swarm_center.get_data(i));
+            dir.set(i,highball.get_data(i)-lowball.get_data(i));
+        }
+        dir.normalize();
+    }
+    else{
+        fhigh=-2.0*exception_value;
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,pt.get_data(i)-_swarm_center.get_data(i));
+            highball.set(i,lowball.get_data(i));
+        }
+        dir.normalize();
+        rr=1.0;
+        while(fhigh<target){
+            for(i=0;i<_chisquared->get_dim();i++){
+                highball.add_val(i,rr*dir.get_data(i));
+            }
+            evaluate(highball,&fhigh,&i);
+            rr*=2.0;
+        }
+    }
+
+    int iFound;
+    iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
+    if(iFound<0){
+        printf("WARNING swarm shot failed\n");
+        exit(1);
+    }
+
+    set_particle(_ricochet_particles.get_dim(),iFound,dir);
+
+}
+
+void node::swarm_evaluate(array_1d<double> &pt, double *mu){
+    int i,j;
+    double v0=volume();
+    array_1d<double> buffer;
+    buffer.set_name("swarm_evaluate_buffer");
+    for(i=0;i<_chisquared->get_dim();i++){
+        buffer.set(i,_swarm_center.get_data(i));
+    }
+    for(i=0;i<_chisquared->get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            buffer.add_val(j,_basis_vectors.get_data(i,j)*pt.get_data(i)*_swarm_norm.get_data(i));
+        }
+    }
+    evaluate(buffer,mu,&i);
+    if(i>=0){
+        _wander_log.add(i);
+    }
+    double v1=volume();
+    if(v1>v0){
+        swarm_shoot(buffer,mu[0]);
+        _swarm_expanders++;
+    }
+
+    int outside=0;
+    if(mu[0]<_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim() && outside==0;i++){
+            if(buffer.get_data(i)<_swarm_min.get_data(i)){
+                outside=1;
+            }
+            if(buffer.get_data(i)>_swarm_max.get_data(i)){
+                outside=1;
+            }
+        }
+        if(outside==1){
+            _swarm_outsiders++;
+        }
+    }
+}
+
+void node::swarm_search(){
+
+    if(_swarm_acceptances+_swarm_rejections>200){
+        if(_swarm_acceptances<(_swarm_rejections)/5){
+            _swarm_step*=0.75;
+        }
+        else if(_swarm_acceptances>(_swarm_rejections)/3){
+            _swarm_step*=1.25;
+        }
+        _swarm_acceptances=0;
+        _swarm_rejections=0;
+    }
+
+    array_1d<double> pp,vv,max,min;
+
+    pp.set_name("swarm_pp");
+    vv.set_name("swarm_vv");
+    max.set_name("swarm_norm");
+    min.set_name("swarm_norm");
+
+    int i,j;
+    for(i=0;i<_chisquared->get_dim();i++){
+        _swarm_center.set(i,0.0);
+    }
+
+    for(i=0;i<_ricochet_particles.get_dim();i++){
+        for(j=0;j<_chisquared->get_dim();j++){
+            vv.set(j,get_pt(_ricochet_particles.get_data(i),j));
+            _swarm_center.add_val(j,get_pt(_ricochet_particles.get_data(i),j));
+        }
+        project_to_bases(vv,pp);
+        for(j=0;j<_chisquared->get_dim();j++){
+            if(j>=min.get_dim() || pp.get_data(j)<min.get_data(j)){
+                min.set(j,pp.get_data(j));
+            }
+            if(j>=max.get_dim() || pp.get_data(j)>max.get_data(j)){
+                max.set(j,pp.get_data(j));
+            }
+        }
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        _swarm_max.set(i,max.get_data(i));
+        _swarm_min.set(i,min.get_data(i));
+        _swarm_norm.set(i,max.get_data(i)-min.get_data(i));
+        _swarm_center.divide_val(i,double(_ricochet_particles.get_dim()));
+    }
+
+    double mu;
+    int i_found;
+    evaluate(_swarm_center,&mu,&i_found);
+    _f_swarm_center=mu;
+
+    array_1d<double> step,trial;
+    step.set_name("swarm_step");
+    trial.set_name("swarm_trial");
+
+    array_1d<double> chi_old;
+    chi_old.set_name("swarm_chi_old");
+
+    int ipt;
+
+    if(_swarm.get_rows()==0){
+        _swarm.set_cols(_chisquared->get_dim());
+        for(ipt=0;ipt<4;ipt++){
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial.set(i,2.0*(_chisquared->random_double()-0.5));
+                _swarm.set(ipt,i,trial.get_data(i));
+            }
+            swarm_evaluate(trial,&mu);
+            if(mu>exception_value){
+                ipt--;
+            }
+            chi_old.set(ipt,mu);
+        }
+    }
+    else{
+        for(ipt=0;ipt<_swarm.get_rows();ipt++){
+            swarm_evaluate(_swarm(ipt)[0],&mu);
+            chi_old.set(ipt,mu);
+        }
+    }
+
+    int n_steps=25;
+    int i_step;
+    double rr;
+    int accept_it;
+    for(i_step=0;i_step<n_steps;i_step++){
+        for(ipt=0;ipt<_swarm.get_rows();ipt++){
+
+            rr=normal_deviate(_chisquared->get_dice(),_swarm_step,0.2*_swarm_step);
+
+            for(i=0;i<_chisquared->get_dim();i++){
+                step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+            }
+
+            step.normalize();
+
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial.set(i,_swarm.get_data(ipt,i)+rr*step.get_data(i));
+            }
+
+            swarm_evaluate(trial,&mu);
+
+            accept_it=0;
+
+            if(mu<chi_old.get_data(ipt)){
+                accept_it=1;
+            }
+            else{
+                rr=_chisquared->random_double();
+                if(exp(-0.5*(mu-chi_old.get_data(ipt)))>rr){
+                    accept_it=1;
+                }
+            }
+
+            if(accept_it==1){
+                _swarm_acceptances++;
+                chi_old.set(ipt,mu);
+                for(i=0;i<_chisquared->get_dim();i++){
+                    _swarm.set(ipt,i,trial.get_data(i));
+                }
+            }
+            else{
+                _swarm_rejections++;
+            }
+        }
+    }
+
+}
+
 
 void node::set_wanderer(int ix, int ii){
     if(_gradient_wanderers.get_dim()>ix){
