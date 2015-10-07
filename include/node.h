@@ -30,11 +30,6 @@ public:
     void reset_ricochet();
     void ricochet();
 
-    void initialize_gradient_wander();
-    void gradient_wander();
-    void _gradient_wander(int);
-    void burst_particles(int);
-
     void swarm_shoot(int);
     void swarm_evaluate(array_1d<double>&,double*);
     void swarm_search();
@@ -99,9 +94,6 @@ private:
     int _failed_kicks,_successful_kicks,_total_kicks,_total_trimmed;
     int _proper_ricochets;
 
-    double _wander_stepsize;
-    int _wander_acceptances,_wander_rejections;
-
     double _min_basis_error;
     double _node_dd_tol;
     int _since_expansion,_min_basis_error_changed,_convergence_ct;
@@ -114,8 +106,7 @@ private:
     array_1d<int> _avg_pts;
     array_1d<int> _off_center_origins,_off_center_candidates;
     array_1d<int> _associates;
-    array_1d<int> _gradient_wanderers,_gradient_origins,_burst_centers;
-    array_1d<int> _gradient_counters;
+
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
     array_1d<double> _max_found,_min_found;
@@ -171,7 +162,6 @@ private:
     void off_center_compass(int);
     void trim_ricochet(int);
     void set_particle(int,int,array_1d<double>&);
-    void set_wanderer(int,int);
     double ricochet_model(array_1d<double>&);
     double ricochet_model(array_1d<double>&,array_1d<int>&);
     double ricochet_model(array_1d<double>&,double*);

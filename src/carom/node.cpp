@@ -57,9 +57,6 @@ void node::initialize(){
     _total_trimmed=0;
     _convergence_ct=0;
     _compass_calls=0;
-    _wander_stepsize=-1.0;
-    _wander_acceptances=0;
-    _wander_rejections=0;
 
     _total_bisections=0;
     _bisection_calls=0;
@@ -108,10 +105,6 @@ void node::initialize(){
     _true_max.set_name("node_true_max");
     _transform.set_name("node_transform");
     _transform_associates.set_name("node_transform_associates");
-    _gradient_wanderers.set_name("node_gradient_wanderers");
-    _gradient_origins.set_name("node_gradient_origins");
-    _burst_centers.set_name("node_burst_centers");
-    _gradient_counters.set_name("node_gradient_counters");
     _wander_log.set_name("node_wander_log");
     _avg_pts.set_name("node_avg_pts");
     _swarm.set_name("node_swarm");
@@ -155,9 +148,6 @@ void node::copy(const node &in){
     _total_trimmed=in._total_trimmed;
     _highball_calls=in._highball_calls;
     _compass_calls=in._compass_calls;
-    _wander_stepsize=in._wander_stepsize;
-    _wander_acceptances=in._wander_acceptances;
-    _wander_rejections=in._wander_rejections;
 
     _total_bisections=in._total_bisections;
     _total_ricochets=in._total_ricochets;
@@ -201,29 +191,9 @@ void node::copy(const node &in){
         }
     }
 
-    _gradient_wanderers.reset();
-    for(i=0;i<in._gradient_wanderers.get_dim();i++){
-        _gradient_wanderers.set(i,in._gradient_wanderers.get_data(i));
-    }
-
-    _gradient_counters.reset();
-    for(i=0;i<in._gradient_counters.get_dim();i++){
-        _gradient_counters.set(i,in._gradient_counters.get_data(i));
-    }
-
-    _burst_centers.reset();
-    for(i=0;i<in._burst_centers.get_dim();i++){
-        _burst_centers.set(i,in._burst_centers.get_data(i));
-    }
-
     _wander_log.reset();
     for(i=0;i<in._wander_log.get_dim();i++){
         _wander_log.set(i,in._wander_log.get_data(i));
-    }
-
-    _gradient_origins.reset();
-    for(i=0;i<in._gradient_origins.get_dim();i++){
-        _gradient_origins.set(i,in._gradient_origins.get_data(i));
     }
 
     _ricochet_candidates.reset();
@@ -410,15 +380,6 @@ void node::merge(const node &in){
 
     if(_chisquared->get_fn(in._centerdex)<_chisquared->get_fn(_centerdex)){
         _centerdex=in._centerdex;
-    }
-
-    for(i=0;i<in._gradient_wanderers.get_dim();i++){
-        _gradient_wanderers.add(in._gradient_wanderers.get_data(i));
-        _gradient_counters.add(in._gradient_counters.get_data(i));
-    }
-
-    for(i=0;i<in._gradient_origins.get_dim();i++){
-        _gradient_origins.add(in._gradient_origins.get_data(i));
     }
 
     recalibrate_max_min();
@@ -718,7 +679,6 @@ void node::set_transform(){
         }
     }
     recalibrate_max_min();
-    _wander_stepsize=-1.0;
 }
 
 void node::get_true_pt(int i1, array_1d<double> &pt_out){
@@ -3689,7 +3649,6 @@ int node::originate_particle_compass(array_1d<double> &dir){
 
         if(iCenter>=0){
             off_center_compass(iCenter);
-            //firework_search(iFound, 0);
         }
 
         //local_center=find_local_center();
@@ -3831,7 +3790,6 @@ void node::search(){
     int ibefore=_chisquared->get_called();
 
     ricochet();
-    //gradient_wander();
 
     double tol;
     tol=0.1*(_chisquared->target()-_chisquared->get_fn(_centerdex_basis));
@@ -3882,9 +3840,6 @@ void node::search(){
         find_bases();
         compass_search_geometric_center();
 
-        //firework_search(_centerdex,0);
-
-
         volume1=volume();
         projectedVolume1=projected_volume();
 
@@ -3894,15 +3849,6 @@ void node::search(){
            _active=1;
            _convergence_ct=0;
            _ricochet_strikes=0;
-           //initialize_ricochet();
-
-           /*for(i=0;i<2*_chisquared->get_dim();i++){
-               j=_ricochet_particles.get_dim();
-               iParticle=originate_particle_shooting(dir);
-               set_particle(j,iParticle,dir);
-           }*/
-
-           //initialize_gradient_wander();
 
            if(fabs(_chisquared->target()-target0)>0.01){
                recalibrate_max_min();
@@ -4592,35 +4538,6 @@ void node::ricochet(){
 
    int r_called=_chisquared->get_called()-ibefore;
 
-   /*double mu;
-   int do_off_center,k,iFirework;
-   local_center=find_local_center();
-   for(i=0;i<_ricochet_particles.get_dim();i++){
-       do_off_center=1;
-
-       if(_firework_centers.get_dim()>0){
-           for(j=0;j<_firework_centers.get_dim() && do_off_center==1;j++){
-               is_connected=_are_connected(_ricochet_particles.get_data(i),_firework_centers.get_data(j));
-               if(is_connected==1){
-                   do_off_center=0;
-               }
-           }
-       }
-       else{
-           mu=apply_quadratic_model(_ricochet_particles.get_data(i));
-           if(mu<_chisquared->target()){
-               do_off_center=0;
-           }
-       }
-
-       if(do_off_center==1){
-           iFirework=_ricochet_particles.get_data(i);
-           printf("\ndoing firework %e %d %e\n",volume(),_firework_centers.get_dim(),_chisquared->get_fn(iFirework));
-           firework_search(iFirework);
-
-       }
-   }*/
-
    _ricochet_calls+=_chisquared->get_called()-ibefore;
    _ricochet_bisection_calls+=_bisection_calls-rcalls_before;
    _ricochet_bisections+=_total_bisections-rbefore;
@@ -5176,295 +5093,6 @@ void node::swarm_search(){
 }
 
 
-void node::set_wanderer(int ix, int ii){
-    if(_gradient_wanderers.get_dim()>ix){
-        _gradient_origins.set(ix,_gradient_wanderers.get_data(ix));
-    }
-    else{
-        _gradient_origins.set(ix,_centerdex);
-    }
-
-    _gradient_wanderers.set(ix,ii);
-    _wander_log.add(ii);
-
-}
-
-void node::_gradient_wander(int ix){
-    double chi_old,chi_new;
-    array_1d<double> step,gradient;
-    step.set_name("gradient_wander_step");
-    gradient.set_name("gradient_wander_gradient");
-    int i_start=_gradient_wanderers.get_data(ix);
-    chi_old=_chisquared->get_fn(i_start);
-
-    node_gradient(i_start,gradient);
-    gradient.normalize();
-
-    int i,j;
-    double rr,component;
-    for(i=0;i<_chisquared->get_dim();i++){
-        step.set(i,-1.0*gradient.get_data(i));
-    }
-
-    array_1d<double> coulomb_dir,sub_dir;
-    coulomb_dir.set_name("gradient_wander_coulomb");
-    sub_dir.set_name("gradient_wander_sub_dir");
-
-    rr=fabs(normal_deviate(_chisquared->get_dice(),_wander_stepsize,0.2*_wander_stepsize));
-
-    double rr_c;
-    int iy;
-    for(i=0;i<_chisquared->get_dim();i++){
-        coulomb_dir.set(i,0.0);
-    }
-    for(iy=0;iy<_gradient_wanderers.get_dim();iy++){
-        if(iy!=ix){
-            rr_c=normalized_node_distance(i_start,_gradient_wanderers.get_data(iy));
-            for(i=0;i<_chisquared->get_dim();i++){
-                sub_dir.set(i,get_pt(i_start,i)-get_pt(_gradient_wanderers.get_data(iy),i));
-            }
-            sub_dir.normalize();
-            for(i=0;i<_chisquared->get_dim();i++){
-                coulomb_dir.add_val(i,sub_dir.get_data(i)/power(rr_c,2));
-            }
-        }
-    }
-
-    coulomb_dir.normalize();
-
-    array_1d<double> perturbation;
-    perturbation.set_name("gradient_wander_perturbation");
-    double dotproduct=-1.0;
-    //while(dotproduct<-1.0e-4){
-        for(i=0;i<_chisquared->get_dim();i++){
-            perturbation.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        dotproduct=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            dotproduct+=perturbation.get_data(i)*step.get_data(i);
-        }
-        for(i=0;i<_chisquared->get_dim();i++){
-            perturbation.subtract_val(i,dotproduct*step.get_data(i));
-        }
-        perturbation.normalize();
-        dotproduct=0.0;
-        for(i=0;i<_chisquared->get_dim();i++){
-            dotproduct+=perturbation.get_data(i)*coulomb_dir.get_data(i);
-        }
-    //}
-
-    int iFound,do_burst;
-    array_1d<double> trial,dir;
-    trial.set_name("gradient_wander_trial");
-    dir.set_name("gradient_wander_dir");
-
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,step.get_data(i)+0.5*perturbation.get_data(i));
-    }
-    dir.normalize();
-
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.multiply_val(i,rr);
-        trial.set(i,get_pt(i_start,i)+dir.get_data(i));
-    }
-
-    evaluate(trial,&chi_new,&iFound);
-    printf("    chiold %e chinew %e target %e\n",chi_old,chi_new,_chisquared->target());
-    int accept_it=0;
-    double mu;
-
-    if(iFound>=0){
-        if(chi_new<chi_old){
-             accept_it=1;
-             if(chi_new<_chisquared->target()){
-                 i=iFound;
-                 iFound=node_bisection_origin_dir(i,dir);
-             }
-        }
-        else{
-            rr=_chisquared->random_double();
-            if(exp(-0.5*(chi_new-chi_old))>rr){
-                accept_it=1;
-            }
-        }
-
-        if(accept_it==1){
-            set_wanderer(ix,iFound);
-            _wander_acceptances++;
-        }
-        else{
-            _wander_rejections++;
-        }
-
-        if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
-
-            if(is_this_an_associate_gross(iFound)==0){
-                do_burst=1;
-            }
-            else{
-                do_burst=0;
-            }
-
-            for(i=0;i<_burst_centers.get_dim() && do_burst==1;i++){
-                for(j=0;j<_chisquared->get_dim();j++){
-                    trial.set(j,0.5*(get_pt(_burst_centers.get_data(i),j)+get_pt(iFound,j)));
-                }
-                evaluate(trial,&mu,&j);
-                if(mu<_chisquared->target()){
-                    do_burst=0;
-                }
-            }
-
-            if(do_burst==1){
-                burst_particles(iFound);
-            }
-
-        }
-    }
-
-}
-
-
-void node::gradient_wander(){
-    double volume0=volume();
-    printf("\nstarting wander with %e\n",volume());
-    int ibefore=_chisquared->get_called();
-    if(_gradient_wanderers.get_dim()==0){
-        initialize_gradient_wander();
-    }
-
-    array_1d<double> dd,dd_sorted;
-    array_1d<int> dd_dexes;
-    int ix,iy;
-    if(_wander_stepsize<0.0){
-        for(ix=0;ix<_gradient_wanderers.get_dim();ix++){
-            for(iy=ix+1;iy<_gradient_wanderers.get_dim();iy++){
-                dd.add(node_distance(_gradient_wanderers.get_data(ix),_gradient_wanderers.get_data(iy)));
-                dd_dexes.add(dd_dexes.get_dim());
-            }
-        }
-
-        sort_and_check(dd,dd_sorted,dd_dexes);
-        _wander_stepsize=dd_sorted.get_data(dd_sorted.get_dim()/2);
-        _wander_acceptances=0;
-        _wander_rejections=0;
-    }
-
-
-    for(ix=0;ix<_gradient_wanderers.get_dim();ix++){
-        _gradient_wander(ix);
-    }
-
-    if(_wander_acceptances+_wander_rejections>4*_gradient_wanderers.get_dim()){
-        if(_wander_acceptances<_wander_rejections/5){
-            _wander_stepsize*=0.5;
-        }
-        else if(_wander_acceptances>_wander_rejections/2){
-            _wander_stepsize*=1.5;
-        }
-
-        _wander_acceptances=0;
-        _wander_rejections=0;
-    }
-    printf("ending with %e\n",volume());
-
-}
-
-
-void node::initialize_gradient_wander(){
-
-    int n_0=_gradient_wanderers.get_dim();
-
-    array_1d<double> dir;
-    dir.set_name("initialize_gradient_wander_dir");
-    int i,iFound;
-
-    double target,tol;
-
-    while(_gradient_wanderers.get_dim()<n_0+2*_chisquared->get_dim()){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-         }
-         dir.normalize();
-
-         target=0.5*(_chisquared->target()+_chisquared->chimin());
-         tol=0.01*(_chisquared->target()-_chisquared->chimin());
-
-         iFound=node_bisection_origin_dir(_centerdex,dir,target,tol);
-         if(iFound>=0){
-             set_wanderer(_gradient_wanderers.get_dim(),iFound);
-             _gradient_counters.add(0);
-             for(i=0;i<_chisquared->get_dim();i++){
-                 dir.multiply_val(i,-1.0);
-             }
-             iFound=node_bisection_origin_dir(_centerdex,dir,target,tol);
-             if(iFound>=0 && _gradient_wanderers.contains(iFound)==0){
-                 set_wanderer(_gradient_wanderers.get_dim(),iFound);
-                 _gradient_counters.add(0);
-             }
-         }
-    }
-
-
-}
-
-void node::burst_particles(int iCenter){
-
-    array_1d<double> gradient,trial_dir;
-    gradient.set_name("burst_particles_gradient");
-    trial_dir.set_name("burst_particles_trial_dir");
-    node_gradient(iCenter,gradient);
-    gradient.normalize();
-
-    array_2d<double> dir;
-    dir.set_name("burst_particles_dir");
-    dir.add_row(gradient);
-
-    int i,j,k;
-    double component,dirnorm;
-    while(dir.get_rows()<_chisquared->get_dim()){
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial_dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-
-        for(i=0;i<dir.get_rows();i++){
-            component=0.0;
-            for(j=0;j<_chisquared->get_dim();j++){
-                component+=dir.get_data(i,j)*trial_dir.get_data(j);
-            }
-            for(j=0;j<_chisquared->get_dim();j++){
-                trial_dir.subtract_val(j,component*dir.get_data(i,j));
-            }
-        }
-
-        dirnorm=trial_dir.normalize();
-        if(dirnorm>1.0e-20){
-            dir.add_row(trial_dir);
-        }
-
-    }
-
-    double sgn;
-    int iFound;
-    for(sgn=-1.0;sgn<1.1;sgn+=2.0){
-        for(i=0;i<dir.get_rows();i++){
-            for(j=0;j<_chisquared->get_dim();j++){
-                trial_dir.set(j,dir.get_data(i,j)*sgn+0.1*gradient.get_data(j));
-            }
-            trial_dir.normalize();
-            iFound=node_bisection_origin_dir(iCenter,trial_dir);
-            if(iFound>=0){
-                j=_ricochet_particles.get_dim();
-                set_particle(j,iFound,trial_dir);
-            }
-        }
-    }
-
-    _burst_centers.add(iCenter);
-
-}
-
-
 ///////////////arrayOfNodes code below//////////
 
 arrayOfNodes::arrayOfNodes(){
@@ -5510,7 +5138,6 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_id_dex(_ct);
     printf("time to initialize ricochet\n");
     _data[_ct].initialize_ricochet();
-    //_data[_ct].initialize_gradient_wander();
     printf("done with that\n");
     _ct++;
 
