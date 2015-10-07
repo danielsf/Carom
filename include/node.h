@@ -35,7 +35,7 @@ public:
     void _gradient_wander(int);
     void burst_particles(int);
 
-    void swarm_shoot(array_1d<double>&, double);
+    void swarm_shoot(int);
     void swarm_evaluate(array_1d<double>&,double*);
     void swarm_search();
 

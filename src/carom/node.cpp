@@ -4979,55 +4979,28 @@ int node::get_swarm_expand(){
     return _swarm_expanders;
 }
 
-void node::swarm_shoot(array_1d<double> &pt, double mu){
+void node::swarm_shoot(int i_start){
 
-    array_1d<double> lowball, highball, dir;
-    lowball.set_name("swarm_shoot_lowball");
-    highball.set_name("swarm_shoot_highball");
+    array_1d<double> gradient,dir;
+    gradient.set_name("swarm_shoot_gradient");
     dir.set_name("swarm_shoot_dir");
-
-    double flow,fhigh,rr,target,tol;
-    target=_chisquared->target();
-    tol=0.01*(_chisquared->target()-_chisquared->chimin());
-    flow=mu;
-    int i;
-    for(i=0;i<_chisquared->get_dim();i++){
-        lowball.set(i,pt.get_data(i));
-    }
-
-    if(_f_swarm_center>target){
-        fhigh=_f_swarm_center;
-        for(i=0;i<_chisquared->get_dim();i++){
-            highball.set(i,_swarm_center.get_data(i));
-            dir.set(i,highball.get_data(i)-lowball.get_data(i));
-        }
-        dir.normalize();
-    }
-    else{
-        fhigh=-2.0*exception_value;
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,pt.get_data(i)-_swarm_center.get_data(i));
-            highball.set(i,lowball.get_data(i));
-        }
-        dir.normalize();
-        rr=1.0;
-        while(fhigh<target){
-            for(i=0;i<_chisquared->get_dim();i++){
-                highball.add_val(i,rr*dir.get_data(i));
-            }
-            evaluate(highball,&fhigh,&i);
-            rr*=2.0;
-        }
-    }
-
+    node_gradient(i_start, gradient);
+    gradient.normalize();
     int iFound;
-    iFound=node_bisection(lowball,flow,highball,fhigh,1,target,tol);
+    iFound=node_bisection_origin_dir(i_start,gradient);
     if(iFound<0){
         printf("WARNING swarm shot failed\n");
         exit(1);
     }
 
+    int i;
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,get_pt(iFound,i)-_swarm_center.get_data(i));
+    }
+    dir.normalize();
+
     set_particle(_ricochet_particles.get_dim(),iFound,dir);
+    _wander_log.add(iFound);
 
 }
 
@@ -5045,12 +5018,10 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
         }
     }
     evaluate(buffer,mu,&i);
-    if(i>=0){
-        _wander_log.add(i);
-    }
+
     double v1=volume();
-    if(v1>v0){
-        swarm_shoot(buffer,mu[0]);
+    if(v1>v0*1.05){
+        swarm_shoot(i);
         _swarm_expanders++;
     }
 
@@ -5068,6 +5039,8 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
             _swarm_outsiders++;
         }
     }
+
+    mu[0]=fabs(mu[0]-_chisquared->target());
 }
 
 void node::swarm_search(){
@@ -5134,7 +5107,7 @@ void node::swarm_search(){
 
     if(_swarm.get_rows()==0){
         _swarm.set_cols(_chisquared->get_dim());
-        for(ipt=0;ipt<4;ipt++){
+        for(ipt=0;ipt<6;ipt++){
             for(i=0;i<_chisquared->get_dim();i++){
                 trial.set(i,2.0*(_chisquared->random_double()-0.5));
                 _swarm.set(ipt,i,trial.get_data(i));
@@ -5153,7 +5126,7 @@ void node::swarm_search(){
         }
     }
 
-    int n_steps=25;
+    int n_steps=16;
     int i_step;
     double rr;
     int accept_it;
