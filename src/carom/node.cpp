@@ -5017,11 +5017,12 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
             buffer.add_val(j,_basis_vectors.get_data(i,j)*pt.get_data(i)*_swarm_norm.get_data(i));
         }
     }
-    evaluate(buffer,mu,&i);
+    int iFound;
+    evaluate(buffer,mu,&iFound);
 
     double v1=volume();
     if(v1>v0*1.05){
-        swarm_shoot(i);
+        swarm_shoot(iFound);
         _swarm_expanders++;
     }
 
@@ -5045,7 +5046,7 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
 
 void node::swarm_search(){
 
-    if(_swarm_acceptances+_swarm_rejections>200){
+    if(_swarm_acceptances+_swarm_rejections>20*_chisquared->get_dim()){
         if(_swarm_acceptances<(_swarm_rejections)/5){
             _swarm_step*=0.75;
         }
@@ -5107,7 +5108,7 @@ void node::swarm_search(){
 
     if(_swarm.get_rows()==0){
         _swarm.set_cols(_chisquared->get_dim());
-        for(ipt=0;ipt<6;ipt++){
+        for(ipt=0;ipt<_chisquared->get_dim();ipt++){
             for(i=0;i<_chisquared->get_dim();i++){
                 trial.set(i,2.0*(_chisquared->random_double()-0.5));
                 _swarm.set(ipt,i,trial.get_data(i));
@@ -5126,7 +5127,7 @@ void node::swarm_search(){
         }
     }
 
-    int n_steps=16;
+    int n_steps=10;
     int i_step;
     double rr;
     int accept_it;
@@ -5479,10 +5480,6 @@ arrayOfNodes::~arrayOfNodes(){
 }
 
 void arrayOfNodes::add(int cc, chisq_wrapper *gg){
-
-    if(_ct>0){
-        return;//spock
-    }
 
     node *buffer;
     int i,j;
