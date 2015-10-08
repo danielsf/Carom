@@ -388,6 +388,14 @@ void node::merge(const node &in){
         _centerdex=in._centerdex;
     }
 
+    array_1d<double> buffer;
+    for(i=0;i<in._swarm.get_rows();i++){
+        for(j=0;j<in._swarm.get_cols();j++){
+            buffer.set(j,in._swarm.get_data(i,j));
+        }
+        _swarm.add_row(buffer);
+    }
+
     recalibrate_max_min();
     _active=1;
 }
@@ -5170,8 +5178,8 @@ void arrayOfNodes::cull(){
                 if(_data[j].get_activity()==1){
                     kill_it=_data[i].is_this_an_associate(_data[j].get_center());
                     if(kill_it==1){
-                        //_data[i].merge(_data[j]);
-                        _data[j].deactivate_simplex();
+                        _data[i].merge(_data[j]);
+                        _data[j].deactivate();
                     }
                 }
             }
