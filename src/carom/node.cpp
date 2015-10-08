@@ -2889,9 +2889,13 @@ double node::apply_quadratic_model(int i1){
 
 double node::apply_quadratic_model(array_1d<double> &pt){
     is_it_safe("apply_quadratic_model");
+    if(_ellipse_center<0){
+        printf("WARNING calling apply quadratic model before we have a model\n");
+        exit(1);
+    }
     int ix,j;
     double ans,mu;
-    ans=_chimin;
+    ans=_chisquared->get_fn(_ellipse_center);
     for(ix=0;ix<_basis_vectors.get_rows();ix++){
         mu=0.0;
         for(j=0;j<_chisquared->get_dim();j++){
