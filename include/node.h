@@ -76,8 +76,10 @@ public:
     void write_node_log(char*);
     int get_swarm_expand();
     int get_swarm_outside();
+    void deactivate_simplex();
 
 private:
+    int _do_simplex;
     int _id_dex,_last_wrote_log;
     int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;

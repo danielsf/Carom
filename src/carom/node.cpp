@@ -23,10 +23,15 @@ void node::deactivate(){
     _active=0;
 }
 
+void node::deactivate_simplex(){
+    _do_simplex=0;
+}
+
 void node::initialize(){
     _chisquared=NULL;
     _chimin=2.0*exception_value;
     _chimin_ricochet=2.0*exception_value;
+    _do_simplex=1;
     _centerdex=-1;
     _geo_centerdex=-1;
     _ellipse_center=-1;
@@ -148,6 +153,7 @@ void node::copy(const node &in){
     _total_trimmed=in._total_trimmed;
     _highball_calls=in._highball_calls;
     _compass_calls=in._compass_calls;
+    _do_simplex=in._do_simplex;
 
     _total_bisections=in._total_bisections;
     _total_ricochets=in._total_ricochets;
@@ -3779,7 +3785,8 @@ void node::search(){
 
     if(_ct_simplex<=_ct_ricochet &&
         _failed_simplexes<3 &&
-        _chisquared->could_it_go_lower(_chimin)>0){
+        _chisquared->could_it_go_lower(_chimin)>0 &&
+        _do_simplex==1){
 
         simplex_search();
     }
@@ -5163,8 +5170,8 @@ void arrayOfNodes::cull(){
                 if(_data[j].get_activity()==1){
                     kill_it=_data[i].is_this_an_associate(_data[j].get_center());
                     if(kill_it==1){
-                        _data[i].merge(_data[j]);
-                        _data[j].deactivate();
+                        //_data[i].merge(_data[j]);
+                        _data[j].deactivate_simplex();
                     }
                 }
             }
