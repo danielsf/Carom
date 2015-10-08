@@ -118,6 +118,7 @@ private:
     array_2d<double> _swarm;
     array_1d<double> _swarm_center;
     array_1d<double> _swarm_norm,_swarm_max,_swarm_min;
+    array_1d<int> _swarm_associates;
     int _swarm_acceptances,_swarm_rejections;
     double _swarm_step,_f_swarm_center;
     int _swarm_outsiders,_swarm_expanders;

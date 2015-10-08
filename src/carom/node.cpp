@@ -115,6 +115,7 @@ void node::initialize(){
     _swarm.set_name("node_swarm");
     _swarm_center.set_name("node_swarm_center");
     _swarm_norm.set_name("node_swarm_norm");
+    _swarm_associates.set_name("node_swarm_associates");
 }
 
 void node::copy(const node &in){
@@ -4980,15 +4981,28 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
     double dmu=fabs(mu[0]-_chisquared->target());
     double chisq=mu[0];
     double deltachisq=_chisquared->target()-_chisquared->chimin();
-    double quad=apply_quadratic_model(buffer);
+    double dd,ddmin;
+    ddmin=2.0*exception_value;
+    for(i=0;i<_swarm_associates.get_dim();i++){
+        dd=normalized_node_distance(iFound,_swarm_associates.get_data(i));
+        if(dd<ddmin){
+            ddmin=dd;
+        }
+    }
 
-    mu[0]=dmu-exp(-dmu/deltachisq)*(quad-chisq);
+    mu[0]=dmu-exp(-dmu/deltachisq)*deltachisq*ddmin;
 
 }
 
 void node::swarm_search(){
 
-    if(_swarm_acceptances+_swarm_rejections>20*_chisquared->get_dim()){
+    int i;
+    _swarm_associates.reset();
+    for(i=0;i<_associates.get_dim();i++){
+        _swarm_associates.add(_associates.get_data(i));
+    }
+
+    if(_swarm_acceptances+_swarm_rejections>20*_swarm.get_rows()){
         if(_swarm_acceptances<(_swarm_rejections)/5){
             _swarm_step*=0.75;
         }
@@ -5006,7 +5020,7 @@ void node::swarm_search(){
     max.set_name("swarm_norm");
     min.set_name("swarm_norm");
 
-    int i,j;
+    int j;
     for(i=0;i<_chisquared->get_dim();i++){
         _swarm_center.set(i,0.0);
     }
