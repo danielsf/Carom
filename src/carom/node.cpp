@@ -4973,7 +4973,13 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
         }
     }
 
-    mu[0]=fabs(mu[0]-_chisquared->target());
+    double dmu=fabs(mu[0]-_chisquared->target());
+    double chisq=mu[0];
+    double deltachisq=_chisquared->target()-_chisquared->chimin();
+    double quad=apply_quadratic_model(buffer);
+
+    mu[0]=dmu-exp(-dmu/deltachisq)*(quad-chisq);
+
 }
 
 void node::swarm_search(){
