@@ -4627,22 +4627,12 @@ void node::ricochet(){
     double volume1=volume();
     double projectedVolume1=projected_volume();
 
-    if(fabs(volume0-volume1)>0.01*volume0 || fabs(projectedVolume1-projectedVolume0)>projectedVolume0*0.01){
+    if(_ricochet_strikes>=_allowed_ricochet_strikes){
+        mcmc_walk(10);
         _ricochet_strikes=0;
     }
     else{
         _ricochet_strikes++;
-    }
-
-    if(_ricochet_strikes>=_allowed_ricochet_strikes){
-        if(_strikeouts%2==0){
-            mcmc_walk(20*(1+_strikeouts/2));
-        }
-        else{
-            trim_ricochet(_ricochet_particles.get_dim()/2);
-        }
-        _ricochet_strikes=0;
-        _strikeouts++;
     }
 
     printf("    ending ricochet with volume %e -- %d -- %d\n\n",
