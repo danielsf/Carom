@@ -4628,10 +4628,10 @@ void node::ricochet(){
     double projectedVolume1=projected_volume();
 
     if(fabs(volume0-volume1)>0.01*volume0 || fabs(projectedVolume1-projectedVolume0)>projectedVolume0*0.01){
-        _ricochet_strikes++;
+        _ricochet_strikes=0;
     }
     else{
-        _ricochet_strikes=0;
+        _ricochet_strikes++;
     }
 
     if(_ricochet_strikes>=_allowed_ricochet_strikes){
