@@ -5087,7 +5087,16 @@ void node::swarm_search(){
     int i_step;
     double rr;
     int accept_it;
+    double temp_term;
     for(i_step=0;i_step<n_steps;i_step++){
+
+        if(i_step<n_steps/2){
+            temp_term=exp(-0.5*(n_steps/2-i_step));
+        }
+        else{
+            temp_term=1.0;
+        }
+
         for(ipt=0;ipt<_swarm.get_rows();ipt++){
 
             rr=normal_deviate(_chisquared->get_dice(),_swarm_step,0.2*_swarm_step);
@@ -5110,7 +5119,7 @@ void node::swarm_search(){
                 accept_it=1;
             }
             else{
-                rr=_chisquared->random_double();
+                rr=_chisquared->random_double()*temp_term;
                 if(exp(-0.5*(mu-chi_old.get_data(ipt)))>rr){
                     accept_it=1;
                 }
