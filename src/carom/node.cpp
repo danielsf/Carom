@@ -663,17 +663,12 @@ void node::transform_pt_to_truth(array_1d<double> &pt_in, array_1d<double> &pt_o
 void node::set_transform(){
     int i,ipt;
     int ix;
-    array_1d<double> dd,dd_sorted,old_transform;
+    array_1d<double> dd,dd_sorted;
     array_1d<int> dd_dexes;
 
-    old_transform.set_name("node_old_transform");
     dd.set_name("node_set_transform_dd");
     dd_sorted.set_name("node_set_transform_dd_sorted");
     dd_dexes.set_name("node_set_transform_dd_dexes");
-
-    for(i=0;i<_chisquared->get_dim();i++){
-        old_transform.set(i,_transform.get_data(i));
-    }
 
     double mu;
 
@@ -700,15 +695,12 @@ void node::set_transform(){
     }
     recalibrate_max_min();
 
-    int j;
-    if(_ricochet_velocities.get_rows()>0){
-        for(i=0;i<_ricochet_velocities.get_rows();i++){
-            for(j=0;j<_ricochet_velocities.get_cols();j++){
-                _ricochet_velocities.multiply_val(i,j,_transform.get_data(j)/old_transform.get_data(j));
-            }
-            _ricochet_velocities(i)->normalize();
-        }
-    }
+    /*
+    Here we should rescale _ricochet_velocities by the ratio of the
+    new _transform to the old _transform.  However, the small perturbation
+    given by not rescaling the velocities seems to lead to beter convergence
+    properties.
+    */
 }
 
 void node::get_true_pt(int i1, array_1d<double> &pt_out){
