@@ -4396,6 +4396,49 @@ int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
 }
 
 
+void node::_shift_ricochet(int ix){
+
+    if(_chisquared->get_fn(_ricochet_particles.get_data(ix))<_chisquared->target()){
+        return;
+    }
+
+    array_1d<double> trial,dir;
+    trial.set_name("shift_ricochet_trial");
+    dir.set_name("shift_ricochet_dir");
+
+    int i,iFound;
+    double mu;
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(get_pt(_ricochet_particles.get_data(ix),i)+
+                         get_pt(_ricochet_origins.get_data(ix),i)));
+    }
+    evaluate(trial,&mu,&iFound);
+    if(iFound>=0 && mu<_chisquared->target()){
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-trial.get_data(i));
+        }
+        iFound=node_bisection_origin_dir(iFound,dir);
+        if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
+            _ricochet_particles.set(ix,iFound);
+            return;
+        }
+    }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(_centerdex,i));
+    }
+
+    iFound=node_bisection_origin_dir(_centerdex, dir);
+    if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
+        _ricochet_particles.set(ix,iFound);
+        return;
+    }
+
+    printf("WARNING could not set ricochet particle correctly\n");
+    printf("%e %e\n",_chisquared->get_fn(iFound),_chisquared->target());
+    exit(1);
+
+}
 
 void node::ricochet(){
     printf("starting ricochet\n");
@@ -4494,6 +4537,10 @@ void node::ricochet(){
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
        local_pts0=_chisquared->get_pts();
 
+       if(_chisquared->get_fn(_ricochet_particles.get_data(ix))>_chisquared->target()){
+           _shift_ricochet(ix);
+       }
+
        i_origin=_ricochet_particles.get_data(ix);
 
        _proper_ricochets++;
@@ -4514,11 +4561,16 @@ void node::ricochet(){
        }
 
        while(randomize==1){
+           if(_chisquared->get_fn(_ricochet_particles.get_data(ix))>_chisquared->target()){
+               _shift_ricochet(ix);
+           }
+
            for(i=0;i<_chisquared->get_dim();i++){
                dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
            }
            dir.normalize();
            iFound=node_bisection_origin_dir(_ricochet_particles.get_data(ix),dir);
+
            randomize=0;
            if(iFound>=0){
                if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){

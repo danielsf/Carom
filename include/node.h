@@ -34,6 +34,7 @@ public:
     void swarm_evaluate(array_1d<double>&,double*);
     void swarm_search();
 
+    void _shift_ricochet(int);
     int _ricochet(int, array_1d<double>&);
     int _adaptive_ricochet(int, array_1d<double>&);
     void simplex_search();
