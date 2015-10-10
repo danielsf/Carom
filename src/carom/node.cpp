@@ -475,6 +475,20 @@ double node::get_norm(int dex){
     return ans;
 }
 
+double node::get_projected_norm(int dex){
+    if(dex>=_projected_max.get_dim() || dex>=_projected_min.get_dim()){
+        return 1.0;
+    }
+
+    double ans;
+    ans=_projected_max.get_data(dex)-_projected_min.get_data(dex);
+    if(ans<1.0e-20){
+        return 1.0;
+    }
+
+    return ans;
+}
+
 void node::set_center(int ix){
     _centerdex=ix;
     _first_centerdex=ix;
@@ -4772,7 +4786,7 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
 
     int i_step,local_acceptances,accept_it;
     double mu;
-    int iFound;
+    int iFound,j;
 
     local_acceptances=0;
     for(i_step=0;i_step<n_steps;i_step++){
@@ -4787,8 +4801,14 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
         delta=_chisquared->target()-_chisquared->chimin();
 
         for(i=0;i<_chisquared->get_dim();i++){
-            step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-            step.multiply_val(i,_mcmc_step*get_norm(i));
+            step.set(i,0.0);
+        }
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            mu=get_projected_norm(i)*normal_deviate(_chisquared->get_dice(),0.0,1.0);
+            for(j=0;j<_chisquared->get_dim();j++){
+                step.add_val(j,_mcmc_step*mu*_basis_vectors.get_data(i,j));
+            }
         }
 
         for(i=0;i<_chisquared->get_dim();i++){
@@ -4841,7 +4861,7 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
     else{
         i_found[0]=i_pt;
     }
-    printf("    local_acceptances %d\n",local_acceptances);
+    printf("    local_acceptances %d %e\n",local_acceptances,volume());
 }
 
 
