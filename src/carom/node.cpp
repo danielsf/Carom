@@ -79,6 +79,10 @@ void node::initialize(){
     _swarm_outsiders=0;
     _swarm_expanders=0;
 
+    _mcmc_step=0.1;
+    _mcmc_acceptances=0;
+    _mcmc_rejections=0;
+
     _compass_points.set_name("node_compass_points");
     _ricochet_candidates.set_name("node_ricochet_candidates");
     _ricochet_candidate_velocities.set_name("node_ricochet_candidate_velocities");
@@ -170,6 +174,10 @@ void node::copy(const node &in){
     _swarm_step=in._swarm_step;
     _swarm_outsiders=in._swarm_outsiders;
     _swarm_expanders=in._swarm_expanders;
+
+    _mcmc_step=in._mcmc_step;
+    _mcmc_acceptances=in._mcmc_acceptances;
+    _mcmc_rejections=in._mcmc_rejections;
 
     int i,j;
 
@@ -4705,132 +4713,127 @@ void node::trim_ricochet(int n_to_trim){
 }
 
 void node::mcmc_walk(int n_steps){
+
+    if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*20){
+        if(_mcmc_acceptances>_mcmc_rejections/3){
+            _mcmc_step*=1.25;
+        }
+        else if(_mcmc_acceptances<_mcmc_rejections/5){
+            _mcmc_step*=0.75;
+        }
+        _mcmc_acceptances=0;
+        _mcmc_rejections=0;
+    }
+
     int ix,i_found;
     array_1d<double> dir;
+    array_1d<int> local_associates;
+    local_associates.set_name("node_local_associates");
     dir.set_name("node_mcmc_walk_dir");
+
+    for(ix=0;ix<_associates.get_dim();ix++){
+        if(_chisquared->get_fn(_associates.get_data(ix))<_chisquared->target()){
+            local_associates.add(_associates.get_data(ix));
+        }
+    }
+
     for(ix=0;ix<_ricochet_particles.get_dim();ix++){
-        mcmc_step(_ricochet_particles.get_data(ix), &i_found, dir, n_steps);
-        set_particle(ix,i_found,dir);
+        mcmc_step(_ricochet_particles.get_data(ix), &i_found, dir, n_steps, local_associates);
+        if(i_found!=_ricochet_particles.get_data(ix)){
+            set_particle(ix,i_found,dir);
+        }
     }
 }
 
-void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps){
+void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps,
+                     array_1d<int> &local_associates){
 
-    array_1d<int> valid_associates;
-    valid_associates.set_name("node_mcmc_step_valid_associates");
-    int i_pt;
-    double chi_pt;
-    array_1d<double> pt;
-    pt.set_name("node_mcmc_step_pt");
+    array_1d<double> step,trial;
+    step.set_name("mcmc_step_step");
+    trial.set_name("mcmc_step_trial");
+
+    double temp_term,roll;
+    double delta,dmu,dd,ddmin;
+    int i_pt=i_start;
+
     int i;
-
-    for(i=0;i<_associates.get_dim();i++){
-        if(_chisquared->get_fn(_associates.get_data(i))<=_chisquared->target()){
-            valid_associates.add(_associates.get_data(i));
+    ddmin=2.0*exception_value;
+    for(i=0;i<local_associates.get_dim();i++){
+        dd=normalized_node_distance(local_associates.get_data(i),i_pt);
+        if(dd<ddmin){
+            ddmin=dd;
         }
     }
 
-    for(i=0;i<_chisquared->get_dim();i++){
-        pt.set(i,get_pt(i_start,i));
-    }
-    i_pt = i_start;
-    chi_pt = _chisquared->get_fn(i_pt);
+    dmu=fabs(_chisquared->get_fn(i_pt)-_chisquared->target());
+    delta=_chisquared->target()-_chisquared->chimin();
+    double chi_new,chi_old;
+    chi_old=dmu-exp(-dmu/delta)*delta*ddmin;
 
-    array_1d<double> random_dir, coulomb_dir, sub_dir;
-    random_dir.set_name("node_mcmc_step_random_dir");
-    coulomb_dir.set_name("node_mcmc_step_coulomb_dir");
-    sub_dir.set_name("node_mcmc_step_sub_dir");
+    int i_step,local_acceptances,accept_it;
+    double mu;
+    int iFound;
 
-    array_1d<double> trial;
-    trial.set_name("node_mcmc_step_trial");
-    int i_trial,i_associate,accept_it;
-    double chi_trial,rr,step_length,roll;
+    local_acceptances=0;
+    for(i_step=0;i_step<n_steps;i_step++){
 
-    double temp=-5.0;
-    int temp_step_interval = 5;
-    int n_temp_steps=n_steps/temp_step_interval;
-    double d_temp=fabs(temp)/double(n_temp_steps);
+        if(i_step<n_steps/2){
+            temp_term=exp(-1.0*(n_steps/2-i_step));
+        }
+        else{
+            temp_term=1.0;
+        }
 
-    int ct_accepted=0;
-    int i_step,j;
-    coulomb_dir.set_dim(_chisquared->get_dim());
-    coulomb_dir.zero();
-    for(i=0;i<valid_associates.get_dim();i++){
-        i_associate=valid_associates.get_data(i);
-        if(_chisquared->get_fn(i_associate)<=_chisquared->target()){
-            if(i_associate!=i_pt){
-                rr=normalized_node_distance(i_pt, i_associate);
-                for(j=0;j<_chisquared->get_dim();j++){
-                    sub_dir.set(j,get_pt(i_pt,j)-get_pt(i_associate,j));
-                }
-                sub_dir.normalize();
-                for(j=0;j<_chisquared->get_dim();j++){
-                    coulomb_dir.add_val(j,sub_dir.get_data(j)/(rr*rr));
+        delta=_chisquared->target()-_chisquared->chimin();
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            step.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
+            step.multiply_val(i,_mcmc_step*get_norm(i));
+        }
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            trial.set(i,get_pt(i_pt,i)+step.get_data(i));
+        }
+        evaluate(trial,&mu,&iFound);
+        accept_it=0;
+        if(iFound>=0){
+            ddmin=2.0*exception_value;
+            for(i=0;i<local_associates.get_dim();i++){
+                dd=normalized_node_distance(i_pt,iFound);
+                if(dd<ddmin){
+                    ddmin=dd;
                 }
             }
-        }
-    }
-    coulomb_dir.normalize();
+            dmu=fabs(mu-_chisquared->target());
+            chi_new=dmu-exp(-dmu/delta)*delta*ddmin;
 
-
-    for(i_step=0;i_step<n_steps || ct_accepted<n_steps/2;i_step++){
-        for(i=0;i<_chisquared->get_dim();i++){
-            random_dir.set(i, normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        random_dir.normalize();
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            random_dir.add_val(i,0.1*coulomb_dir.get_data(i));
-        }
-
-        random_dir.normalize();
-
-
-        step_length=fabs(normal_deviate(_chisquared->get_dice(),0.2,0.05));
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,pt.get_data(i)+step_length*random_dir.get_data(i));
-        }
-
-        evaluate(trial,&chi_trial,&i_trial);
-        accept_it=0;
-        if(i_trial>=0){
-            if(chi_trial<chi_pt || chi_trial<_chisquared->target()){
+            if(chi_new<chi_old){
                 accept_it=1;
             }
             else{
-                roll=_chisquared->random_double();
-                if(i_step<n_steps && temp<0.0){
-                    roll*=exp(temp);
-                }
-                if(exp(-0.5*(chi_trial-chi_pt))>roll){
+                roll=_chisquared->random_double()*temp_term;
+                if(exp(-0.5*(chi_new-chi_old))>roll){
                     accept_it=1;
                 }
             }
         }
 
-        if(accept_it==1){
-            ct_accepted++;
-            i_pt=i_trial;
-            chi_pt=chi_trial;
-            for(i=0;i<_chisquared->get_dim();i++){
-                pt.set(i,trial.get_data(i));
-            }
+        if(accept_it==0){
+            _mcmc_rejections++;
+        }
+        else{
+            _mcmc_acceptances++;
+            local_acceptances++;
+            i_pt=iFound;
+            chi_new=chi_old;
         }
 
-        if(i_step>0 && i_step%temp_step_interval==0){
-            temp+=d_temp;
-        }
     }
 
     for(i=0;i<_chisquared->get_dim();i++){
         out_dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
     }
     double dir_norm=out_dir.normalize();
-    if(dir_norm<1.0e-20){
-        printf("WARNING in mcmc_step dir_norm %e accepted %d\n",dir_norm, ct_accepted);
-        printf("%d %d\n",i_pt, i_start);
-        exit(1);
-    }
 
     if(fabs(_chisquared->get_fn(i_pt)-_chisquared->target())>0.02*(_chisquared->target()-_chisquared->chimin())){
         i_found[0]=node_bisection_origin_dir(i_start, out_dir);
@@ -4838,6 +4841,7 @@ void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n
     else{
         i_found[0]=i_pt;
     }
+    printf("    local_acceptances %d\n",local_acceptances);
 }
 
 

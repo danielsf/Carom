@@ -124,6 +124,9 @@ private:
     double _swarm_step,_f_swarm_center;
     int _swarm_outsiders,_swarm_expanders;
 
+    double _mcmc_step;
+    int _mcmc_acceptances,_mcmc_rejections;
+
     array_1d<double> _true_min,_true_max,_transform;
 
     array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
@@ -176,7 +179,7 @@ private:
     double apply_quadratic_model(array_1d<double>&);
     double apply_quadratic_model(int);
 
-    void mcmc_step(int, int*, array_1d<double>&, int);
+    void mcmc_step(int, int*, array_1d<double>&, int, array_1d<int>&);
     void mcmc_walk(int);
 
     int mcmc_kick(int, int*, array_1d<double>&, int);
