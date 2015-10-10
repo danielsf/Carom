@@ -5007,7 +5007,7 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
     evaluate(buffer,mu,&iFound);
 
     double v1=volume();
-    if(v1>v0*1.1){
+    if(v1>v0*1.05){
         swarm_shoot(iFound);
         _swarm_expanders++;
     }
