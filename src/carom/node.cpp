@@ -4562,8 +4562,11 @@ void node::ricochet(){
    int i_origin;
    double dd;
 
+   double v0,v1;
+
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
+       v0=volume();
        local_pts0=_chisquared->get_pts();
 
        if(_chisquared->get_fn(_ricochet_particles.get_data(ix))>_chisquared->target()){
@@ -4579,7 +4582,13 @@ void node::ricochet(){
            set_particle(ix,iFound,dir);
            randomize=0;
        }
-       else{
+
+       v1=volume();
+       if(!(v1>v0)){
+           mcmc_walk(ix,10);
+       }
+
+       /*else{
            randomize=1;
        }
 
@@ -4621,7 +4630,7 @@ void node::ricochet(){
            else{
                randomize=1;
            }
-       }
+       }*/
 
        dd=node_distance(i_origin,_ricochet_particles.get_data(ix));
        if(dd<dd_min)dd_min=dd;
@@ -4649,16 +4658,8 @@ void node::ricochet(){
     double volume1=volume();
     double projectedVolume1=projected_volume();
 
-    if(_ricochet_strikes>=_allowed_ricochet_strikes){
-        mcmc_walk(10);
-        _ricochet_strikes=0;
-    }
-    else{
-        _ricochet_strikes++;
-    }
-
-    printf("    ending ricochet with volume %e -- %d -- %d\n\n",
-    volume(),r_called,_ricochet_particles.get_dim());
+    printf("    ending ricochet with volume %e from %e -- %d -- %d\n\n",
+    volume(),volume0,r_called,_ricochet_particles.get_dim());
 }
 
 void node::trim_ricochet(int n_to_trim){
@@ -4726,7 +4727,7 @@ void node::trim_ricochet(int n_to_trim){
 
 }
 
-void node::mcmc_walk(int n_steps){
+void node::mcmc_walk(int iparticle, int n_steps){
 
     if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*20){
         if(_mcmc_acceptances>_mcmc_rejections/3){
@@ -4751,12 +4752,11 @@ void node::mcmc_walk(int n_steps){
         }
     }
 
-    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
-        mcmc_step(_ricochet_particles.get_data(ix), &i_found, dir, n_steps, local_associates);
-        if(i_found!=_ricochet_particles.get_data(ix)){
-            set_particle(ix,i_found,dir);
-        }
+    mcmc_step(_ricochet_particles.get_data(iparticle), &i_found, dir, n_steps, local_associates);
+    if(i_found!=_ricochet_particles.get_data(iparticle)){
+        set_particle(iparticle,i_found,dir);
     }
+
 }
 
 void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps,

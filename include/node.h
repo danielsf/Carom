@@ -181,7 +181,7 @@ private:
     double apply_quadratic_model(int);
 
     void mcmc_step(int, int*, array_1d<double>&, int, array_1d<int>&);
-    void mcmc_walk(int);
+    void mcmc_walk(int,int);
 
     int mcmc_kick(int, int*, array_1d<double>&, int);
     int originate_particle_compass(array_1d<double>&);
