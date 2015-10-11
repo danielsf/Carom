@@ -4730,10 +4730,10 @@ void node::trim_ricochet(int n_to_trim){
 void node::mcmc_walk(int iparticle, int n_steps){
 
     if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*20){
-        if(_mcmc_acceptances>_mcmc_rejections/3){
+        if(_mcmc_acceptances>_mcmc_rejections/2){
             _mcmc_step*=1.25;
         }
-        else if(_mcmc_acceptances<_mcmc_rejections/5){
+        else if(_mcmc_acceptances<_mcmc_rejections/3){
             _mcmc_step*=0.75;
         }
         _mcmc_acceptances=0;
