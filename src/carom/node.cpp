@@ -5087,10 +5087,10 @@ void node::swarm_search(){
     }
 
     if(_swarm_acceptances+_swarm_rejections>20*_swarm.get_rows()){
-        if(_swarm_acceptances<(_swarm_rejections)/5){
+        if(_swarm_acceptances<(_swarm_rejections)/3){
             _swarm_step*=0.75;
         }
-        else if(_swarm_acceptances>(_swarm_rejections)/3){
+        else if(_swarm_acceptances>(_swarm_rejections)/2){
             _swarm_step*=1.25;
         }
         _swarm_acceptances=0;
