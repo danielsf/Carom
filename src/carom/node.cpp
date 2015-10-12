@@ -5167,7 +5167,7 @@ void node::swarm_search(){
         }
     }
 
-    int n_steps=10;
+    int n_steps=20;
     int i_step;
     double rr;
     int accept_it;
