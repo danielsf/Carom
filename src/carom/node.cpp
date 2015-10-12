@@ -3355,7 +3355,7 @@ void node::initialize_ricochet(){
         _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
     }
 
-    int nParticles=2*_chisquared->get_dim();
+    int nParticles=_chisquared->get_dim();
     if(_ricochet_particles.get_dim()>nParticles){
         nParticles=_ricochet_particles.get_dim();
     }
