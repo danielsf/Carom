@@ -4585,7 +4585,7 @@ void node::ricochet(){
 
        v1=volume();
        if(!(v1>v0)){
-           mcmc_walk(ix,10);
+           mcmc_walk(ix,20);
        }
 
        /*else{
