@@ -4746,10 +4746,15 @@ void node::mcmc_walk(int iparticle, int n_steps){
     local_associates.set_name("node_local_associates");
     dir.set_name("node_mcmc_walk_dir");
 
-    for(ix=0;ix<_associates.get_dim();ix++){
-        if(_chisquared->get_fn(_associates.get_data(ix))<_chisquared->target()){
-            local_associates.add(_associates.get_data(ix));
+    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
+
+    for(ix=0;ix<_boundary_points.get_dim();ix++){
+        if(_chisquared->get_fn(_associates.get_data(ix))<_chisquared->target()+tol){
+            local_associates.add(_boundary_points.get_data(ix));
         }
+    }
+    if(local_associates.get_dim()==0){
+        return;
     }
 
     mcmc_step(_ricochet_particles.get_data(iparticle), &i_found, dir, n_steps, local_associates);
@@ -5070,9 +5075,15 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
 void node::swarm_search(){
 
     int i;
+    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
     _swarm_associates.reset();
-    for(i=0;i<_associates.get_dim();i++){
-        _swarm_associates.add(_associates.get_data(i));
+    for(i=0;i<_boundary_points.get_dim();i++){
+        if(_chisquared->get_fn(_boundary_points.get_data(i))<_chisquared->target()+tol){
+            _swarm_associates.add(_boundary_points.get_data(i));
+        }
+    }
+    if(_swarm_associates.get_dim()==0){
+        return;
     }
 
     if(_swarm_acceptances+_swarm_rejections>20*_swarm.get_rows()){
