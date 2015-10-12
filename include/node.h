@@ -86,7 +86,6 @@ private:
     int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
-    int _ricochet_strikes,_strikeouts;
     int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases,_chimin_ricochet;
     double _volume_of_last_geom;
@@ -134,6 +133,7 @@ private:
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;
+    array_1d<int> _ricochet_strikes;
 
     array_1d<int> _ricochet_log;
     array_1d<int> _ricochet_candidate_log;

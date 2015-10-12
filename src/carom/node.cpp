@@ -43,8 +43,6 @@ void node::initialize(){
     _ct_ricochet=0;
     _ct_simplex=0;
     _allowed_ricochet_strikes=3;
-    _ricochet_strikes=0;
-    _strikeouts=0;
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
@@ -120,6 +118,7 @@ void node::initialize(){
     _swarm_center.set_name("node_swarm_center");
     _swarm_norm.set_name("node_swarm_norm");
     _swarm_associates.set_name("node_swarm_associates");
+    _ricochet_strikes.set_name("node_ricochet_strikes");
 }
 
 void node::copy(const node &in){
@@ -141,8 +140,6 @@ void node::copy(const node &in){
     _ct_ricochet=in._ct_ricochet;
     _ct_simplex=in._ct_simplex;
     _allowed_ricochet_strikes=in._allowed_ricochet_strikes;
-    _ricochet_strikes=in._ricochet_strikes;
-    _strikeouts=in._strikeouts;
     _ellipse_center=in._ellipse_center;
     _since_expansion=in._since_expansion;
     _min_basis_error=in._min_basis_error;
@@ -209,6 +206,11 @@ void node::copy(const node &in){
     _wander_log.reset();
     for(i=0;i<in._wander_log.get_dim();i++){
         _wander_log.set(i,in._wander_log.get_data(i));
+    }
+
+    _ricochet_strikes.reset();
+    for(i=0;i<in._ricochet_strikes.get_dim();i++){
+        _ricochet_strikes.set(i,in._ricochet_strikes.get_data(i));
     }
 
     _ricochet_candidates.reset();
@@ -419,10 +421,6 @@ int node::get_good_shots(){
 
 int node::get_bad_shots(){
     return _bad_shots;
-}
-
-int node::get_strikeouts(){
-    return _strikeouts;
 }
 
 int node::get_successful_ricochets(){
@@ -3325,6 +3323,8 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
         return;
     }
 
+    double v0=volume();
+
     if(_ricochet_particles.get_dim()>ip){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
     }
@@ -3340,6 +3340,18 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
         _ricochet_velocities.set(ip,j,dir.get_data(j));
     }
 
+    double v1=volume();
+    if(v1>v0){
+        _ricochet_strikes.set(ip,0);
+    }
+    else{
+        if(ip<_ricochet_strikes.get_dim()){
+            _ricochet_strikes.add_val(ip,1);
+        }
+        else{
+            _ricochet_strikes.set(ip,1);
+        }
+    }
 }
 
 void node::initialize_ricochet(){
@@ -3897,7 +3909,6 @@ void node::search(){
 
            _active=1;
            _convergence_ct=0;
-           _ricochet_strikes=0;
 
            if(fabs(_chisquared->target()-target0)>0.01){
                recalibrate_max_min();
