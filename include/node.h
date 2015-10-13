@@ -135,6 +135,7 @@ private:
     array_1d<int> _boundary_points;
     array_1d<int> _ricochet_strikes;
     double _v0;
+    int _since_culled;
 
     array_1d<int> _ricochet_log;
     array_1d<int> _ricochet_candidate_log;

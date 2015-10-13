@@ -61,6 +61,7 @@ void node::initialize(){
     _total_trimmed=0;
     _convergence_ct=0;
     _compass_calls=0;
+    _since_culled=0;
 
     _total_bisections=0;
     _bisection_calls=0;
@@ -157,6 +158,7 @@ void node::copy(const node &in){
     _highball_calls=in._highball_calls;
     _compass_calls=in._compass_calls;
     _do_simplex=in._do_simplex;
+    _since_culled=in._since_culled;
 
     _total_bisections=in._total_bisections;
     _total_ricochets=in._total_ricochets;
@@ -3326,11 +3328,16 @@ void node::_filter_candidates(){
 
 void node::cull_ricochet(){
 
+    if(_since_culled<_allowed_ricochet_strikes){
+        _since_culled++;
+        return;
+    }
+
     int i,max_strikes,max_dex;
     max_strikes=-1;
     max_dex=-1;
     for(i=0;i<_ricochet_particles.get_dim();i++){
-        if(_ricochet_strikes.get_data(i)>_allowed_ricochet_strikes){
+        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
             if(_ricochet_strikes.get_data(i)>max_strikes){
                 max_strikes=_ricochet_strikes.get_data(i);
                 max_dex=i;
@@ -3351,6 +3358,8 @@ void node::cull_ricochet(){
             set_particle(_ricochet_particles.get_dim(),iFound,dir);
         }
     }
+
+    _since_culled=0;
 
 }
 
