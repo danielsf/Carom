@@ -402,6 +402,10 @@ void node::merge(const node &in){
         _ricochet_origins.add(in._ricochet_origins.get_data(i));
     }
 
+    for(i=0;i<in._ricochet_growth_record.get_dim();i++){
+        _ricochet_growth_record.add(in._ricochet_growth_record.get_data(i));
+    }
+
     if(in._chimin<_chimin){
         _chimin=in._chimin;
     }
