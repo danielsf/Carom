@@ -3397,6 +3397,7 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     if(i_found!=_ricochet_particles.get_data(ip)){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
         _ricochet_particles.set(ip,i_found);
+        _ricochet_log.add(i_found);
         for(j=0;j<_chisquared->get_dim();j++){
             _ricochet_velocities.set(ip,j,mcmc_dir.get_data(j));
         }
