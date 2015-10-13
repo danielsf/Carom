@@ -3323,6 +3323,15 @@ void node::_filter_candidates(){
 
 }
 
+
+void node::remove_particle(int ip){
+    _ricochet_particles.remove(ip);
+    _ricochet_origins.remove(ip);
+    _ricochet_strikes.remove(ip);
+    _ricochet_velocities.remove_row(ip);
+}
+
+
 void node::set_particle(int ip, int ii, array_1d<double> &dir){
 
     if(ii<0){
