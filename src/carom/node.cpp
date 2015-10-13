@@ -3326,12 +3326,20 @@ void node::_filter_candidates(){
 
 void node::cull_ricochet(){
 
-    int i;
+    int i,max_strikes,max_dex;
+    max_strikes=-1;
+    max_dex=-1;
     for(i=0;i<_ricochet_particles.get_dim();i++){
         if(_ricochet_strikes.get_data(i)>_allowed_ricochet_strikes){
-            remove_particle(i);
-            i--;
+            if(_ricochet_strikes.get_data(i)>max_strikes){
+                max_strikes=_ricochet_strikes.get_data(i);
+                max_dex=i;
+            }
         }
+    }
+
+    if(max_dex>=0){
+        remove_particle(max_dex);
     }
 
     int iFound;
