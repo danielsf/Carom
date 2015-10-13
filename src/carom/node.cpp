@@ -3324,6 +3324,28 @@ void node::_filter_candidates(){
 }
 
 
+void node::cull_ricochet(){
+
+    int i;
+    for(i=0;i<_ricochet_particles.get_dim();i++){
+        if(_ricochet_strikes.get_data(i)>_allowed_ricochet_strikes){
+            remove_particle(i);
+            i--;
+        }
+    }
+
+    int iFound;
+    array_1d<double> dir;
+    dir.set_name("cull_ricochet_dir");
+    while(_ricochet_particles.get_dim()<_chisquared->get_dim()){
+        iFound=originate_particle_shooting(dir);
+        if(iFound>=0){
+            set_particle(_ricochet_particles.get_dim(),iFound,dir);
+        }
+    }
+
+}
+
 void node::remove_particle(int ip){
     _ricochet_particles.remove(ip);
     _ricochet_origins.remove(ip);
@@ -3333,7 +3355,6 @@ void node::remove_particle(int ip){
 
 
 void node::set_particle(int ip, int ii, array_1d<double> &dir){
-
     if(ii<0){
         return;
     }
@@ -3394,7 +3415,7 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     }
 
     mcmc_walk(_ricochet_particles.get_data(ip), &i_found, mcmc_dir, n_steps, local_associates);
-    if(i_found!=_ricochet_particles.get_data(ip)){
+    if(i_found>=0 && i_found!=_ricochet_particles.get_data(ip)){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
         _ricochet_particles.set(ip,i_found);
         _ricochet_log.add(i_found);
@@ -3880,6 +3901,8 @@ int node::originate_particle_shooting(array_1d<double> &dir){
 void node::search(){
 
     printf("calling node search\n");
+
+    cull_ricochet();
 
     if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
         simplex_search();
@@ -4844,7 +4867,7 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
     }
     double dir_norm=out_dir.normalize();
 
-    if(fabs(_chisquared->get_fn(i_pt)-_chisquared->target())>0.02*(_chisquared->target()-_chisquared->chimin())){
+    if(_chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
         i_found[0]=node_bisection_origin_dir(i_start, out_dir);
     }
     else{
