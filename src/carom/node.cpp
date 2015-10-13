@@ -121,6 +121,7 @@ void node::initialize(){
     _swarm_norm.set_name("node_swarm_norm");
     _swarm_associates.set_name("node_swarm_associates");
     _ricochet_strikes.set_name("node_ricochet_strikes");
+    _ricochet_growth_record.set_name("node_ricochet_growth_record");
 }
 
 void node::copy(const node &in){
@@ -211,6 +212,11 @@ void node::copy(const node &in){
     _wander_log.reset();
     for(i=0;i<in._wander_log.get_dim();i++){
         _wander_log.set(i,in._wander_log.get_data(i));
+    }
+
+    _ricochet_growth_record.reset();
+    for(i=0;i<in._ricochet_growth_record.get_dim();i++){
+        _ricochet_growth_record.set(i,in._ricochet_growth_record.get_data(i));
     }
 
     _ricochet_strikes.reset();
@@ -3349,12 +3355,33 @@ void node::cull_ricochet(){
         remove_particle(max_dex);
     }
 
+
     int iFound;
     array_1d<double> dir;
     dir.set_name("cull_ricochet_dir");
-    while(_ricochet_particles.get_dim()<_chisquared->get_dim()){
-        iFound=originate_particle_shooting(dir);
-        if(iFound>=0){
+
+    array_1d<int> local_associates;
+    local_associates.set_name("cull_ricochet_local_associates");
+    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
+
+    for(i=0;i<_boundary_points.get_dim();i++){
+        if(_chisquared->get_fn(_boundary_points.get_data(i))<_chisquared->target()+tol){
+            local_associates.add(_boundary_points.get_data(i));
+        }
+    }
+
+    int i_most_growth;
+    double most_growth=-1.0;
+    for(i=0;i<_ricochet_growth_record.get_dim();i++){
+        if(_ricochet_growth_record.get_data(i)>most_growth){
+            most_growth=_ricochet_growth_record.get_data(i);
+            i_most_growth=_ricochet_particles.get_data(i);
+        }
+    }
+
+    while(_ricochet_particles.get_dim()<_chisquared->get_dim() && local_associates.get_dim()>0){
+        mcmc_walk(i_most_growth, &iFound, dir, 20, local_associates);
+        if(iFound>=0 && iFound!=i_most_growth){
             set_particle(_ricochet_particles.get_dim(),iFound,dir);
         }
     }
@@ -3376,6 +3403,10 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
         return;
     }
 
+    if(ip>=_ricochet_growth_record.get_dim()){
+        _ricochet_growth_record.set(ip,1.0);
+    }
+
     if(_ricochet_particles.get_dim()>ip){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
     }
@@ -3394,6 +3425,8 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     double v1=volume();
     if(v1>_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
+        _ricochet_growth_record.multiply_val(ip,v1/_v0);
+
         _v0=v1;
         return;
     }
