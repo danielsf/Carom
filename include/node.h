@@ -134,6 +134,7 @@ private:
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;
     array_1d<int> _ricochet_strikes;
+    double _v0;
 
     array_1d<int> _ricochet_log;
     array_1d<int> _ricochet_candidate_log;
@@ -180,8 +181,7 @@ private:
     double apply_quadratic_model(array_1d<double>&);
     double apply_quadratic_model(int);
 
-    void mcmc_step(int, int*, array_1d<double>&, int, array_1d<int>&);
-    void mcmc_walk(int,int);
+    void mcmc_walk(int, int*, array_1d<double>&, int, array_1d<int>&);
 
     int mcmc_kick(int, int*, array_1d<double>&, int);
     int originate_particle_compass(array_1d<double>&);

@@ -43,6 +43,7 @@ void node::initialize(){
     _ct_ricochet=0;
     _ct_simplex=0;
     _allowed_ricochet_strikes=3;
+    _v0=-1.0;
     _since_expansion=0;
     _min_basis_error=exception_value;
     _min_basis_error_changed=0;
@@ -175,6 +176,8 @@ void node::copy(const node &in){
     _mcmc_step=in._mcmc_step;
     _mcmc_acceptances=in._mcmc_acceptances;
     _mcmc_rejections=in._mcmc_rejections;
+
+    _v0=in._v0;
 
     int i,j;
 
@@ -2452,6 +2455,8 @@ void node::recalibrate_max_min(){
             i--;
         }
     }
+
+    _v0=volume();
 }
 
 void node::find_bases(){
@@ -2610,6 +2615,7 @@ void node::find_bases(){
         _min_basis_error=errorBest;
         _min_basis_error_changed=1;
     }
+    _v0=volume();
 }
 
 void node::firework_search(int iStart){
@@ -3323,8 +3329,6 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
         return;
     }
 
-    double v0=volume();
-
     if(_ricochet_particles.get_dim()>ip){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
     }
@@ -3341,17 +3345,55 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     }
 
     double v1=volume();
-    if(v1>v0){
+    if(v1>_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
+        _v0=v1;
+        return;
     }
     else{
-        if(ip<_ricochet_strikes.get_dim()){
-            _ricochet_strikes.add_val(ip,1);
+        _ricochet_strikes.add_val(ip,1);
+    }
+
+    if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*20){
+        if(_mcmc_acceptances>_mcmc_rejections/2){
+            _mcmc_step*=1.25;
         }
-        else{
-            _ricochet_strikes.set(ip,1);
+        else if(_mcmc_acceptances<_mcmc_rejections/3){
+            _mcmc_step*=0.75;
+        }
+        _mcmc_acceptances=0;
+        _mcmc_rejections=0;
+    }
+
+    int n_steps=20;
+
+    int ix,i_found;
+    array_1d<double> mcmc_dir;
+    array_1d<int> local_associates;
+    local_associates.set_name("set_particle_associates");
+    dir.set_name("set_particle_dir");
+
+    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
+
+    for(ix=0;ix<_boundary_points.get_dim();ix++){
+        if(_chisquared->get_fn(_associates.get_data(ix))<_chisquared->target()+tol){
+            local_associates.add(_boundary_points.get_data(ix));
         }
     }
+    if(local_associates.get_dim()==0){
+        return;
+    }
+
+    mcmc_walk(_ricochet_particles.get_data(ip), &i_found, mcmc_dir, n_steps, local_associates);
+    if(i_found!=_ricochet_particles.get_data(ip)){
+        _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
+        _ricochet_particles.set(ip,i_found);
+        for(j=0;j<_chisquared->get_dim();j++){
+            _ricochet_velocities.set(ip,j,mcmc_dir.get_data(j));
+        }
+    }
+
+    _v0=volume();
 }
 
 void node::initialize_ricochet(){
@@ -4565,7 +4607,6 @@ void node::ricochet(){
     local_center=find_local_center();
 
     int abort_kicks;
-    int randomize;
 
    array_1d<double> scratch;
    scratch.set_name("node_ricochet_scratch");
@@ -4575,8 +4616,10 @@ void node::ricochet(){
 
    double v0,v1;
 
+   dir.set_dim(_chisquared->get_dim());
    distanceMin=1.0e-2;
    for(ix=0;ix<_ricochet_particles.get_dim();ix++){
+       _v0=volume();
        v0=volume();
        local_pts0=_chisquared->get_pts();
 
@@ -4591,57 +4634,13 @@ void node::ricochet(){
 
        if(iFound>=0){
            set_particle(ix,iFound,dir);
-           randomize=0;
        }
+       else{
+           iFound=_ricochet_particles.get_data(ix);
+           dir.zero();
+           set_particle(ix,iFound,dir);
 
-       v1=volume();
-       if(!(v1>v0)){
-           mcmc_walk(ix,20);
        }
-
-       /*else{
-           randomize=1;
-       }
-
-       if(iFound<0 || iFound==i_origin ||
-          fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
-
-           randomize=1;
-       }
-
-       while(randomize==1){
-           if(_chisquared->get_fn(_ricochet_particles.get_data(ix))>_chisquared->target()){
-               _shift_ricochet(ix);
-           }
-
-           for(i=0;i<_chisquared->get_dim();i++){
-               dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-           }
-           dir.normalize();
-           iFound=node_bisection_origin_dir(_ricochet_particles.get_data(ix),dir);
-
-           randomize=0;
-           if(iFound>=0){
-               if(fabs(_chisquared->get_fn(iFound)-_chisquared->target())>0.05*(_chisquared->target()-_chisquared->chimin())){
-                   randomize=1;
-               }
-
-               if(iFound==i_origin){
-                   randomize=1;
-               }
-               else if(randomize==0){
-                   for(i=0;i<_chisquared->get_dim();i++){
-                       dir.set(i,get_pt(iFound,i)-get_pt(i_origin,i));
-                   }
-                   dir.normalize();
-               }
-
-               set_particle(ix,iFound,dir);
-           }
-           else{
-               randomize=1;
-           }
-       }*/
 
        dd=node_distance(i_origin,_ricochet_particles.get_data(ix));
        if(dd<dd_min)dd_min=dd;
@@ -4738,49 +4737,13 @@ void node::trim_ricochet(int n_to_trim){
 
 }
 
-void node::mcmc_walk(int iparticle, int n_steps){
 
-    if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*20){
-        if(_mcmc_acceptances>_mcmc_rejections/2){
-            _mcmc_step*=1.25;
-        }
-        else if(_mcmc_acceptances<_mcmc_rejections/3){
-            _mcmc_step*=0.75;
-        }
-        _mcmc_acceptances=0;
-        _mcmc_rejections=0;
-    }
-
-    int ix,i_found;
-    array_1d<double> dir;
-    array_1d<int> local_associates;
-    local_associates.set_name("node_local_associates");
-    dir.set_name("node_mcmc_walk_dir");
-
-    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
-
-    for(ix=0;ix<_boundary_points.get_dim();ix++){
-        if(_chisquared->get_fn(_associates.get_data(ix))<_chisquared->target()+tol){
-            local_associates.add(_boundary_points.get_data(ix));
-        }
-    }
-    if(local_associates.get_dim()==0){
-        return;
-    }
-
-    mcmc_step(_ricochet_particles.get_data(iparticle), &i_found, dir, n_steps, local_associates);
-    if(i_found!=_ricochet_particles.get_data(iparticle)){
-        set_particle(iparticle,i_found,dir);
-    }
-
-}
-
-void node::mcmc_step(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps,
+void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps,
                      array_1d<int> &local_associates){
 
     array_1d<double> step,trial;
-    step.set_name("mcmc_step_step");
-    trial.set_name("mcmc_step_trial");
+    step.set_name("mcmc_walk_step");
+    trial.set_name("mcmc_walk_trial");
 
     double temp_term,roll;
     double delta,dmu,dd,ddmin;
