@@ -1,0 +1,30 @@
+#ifndef DCHI_SIMPLEX_H
+#define DCHI_SIMPLEX_H
+
+#include "chisq_wrapper.h"
+
+class dchi_simplex_base : public function_wrapper{
+
+    public:
+        dchi_simplex_base(chisq_wrapper*, array_1d<int>&);
+        ~dchi_simplex_base(){};
+
+        double associate_distance(array_1d<double>&);
+        virtual double operator()(array_1d<double>&);
+
+    protected:
+        array_1d<int> _associates;
+        array_1d<double> _norm;
+        chisq_wrapper *_chisq;
+};
+
+class dchi_boundary_simplex : dchi_simplex_base{
+
+    public:
+        dchi_boundary_simplex(chisq_wrapper*, array_1d<int>&);
+        ~dchi_boundary_simplex(){};
+
+        virtual double operator()(array_1d<double>&);
+};
+
+#endif
