@@ -3338,7 +3338,7 @@ void node::_filter_candidates(){
 
 void node::cull_ricochet(){
 
-    if(_since_culled<_allowed_ricochet_strikes){
+    if(_since_culled<_chisquared->get_dim()){
         _since_culled++;
         return;
     }
@@ -3346,19 +3346,28 @@ void node::cull_ricochet(){
     int i,max_strikes,max_dex;
     max_strikes=-1;
     max_dex=-1;
+
+    array_1d<int> strikes,strikes_sorted,strikes_dexes;
+    strikes.set_name("cull_ricochet_strikes");
+    strikes_sorted.set_name("cull_ricochet_strikes_sorted");
+    strikes_dexes.set_name("cull_ricochet_strikes_dexes");
+
     for(i=0;i<_ricochet_particles.get_dim();i++){
-        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
-            if(_ricochet_strikes.get_data(i)>max_strikes){
-                max_strikes=_ricochet_strikes.get_data(i);
-                max_dex=i;
-            }
+        if(_ricochet_strikes.get_data(i)>=_chisquared->get_dim()){
+            strikes.add(-1*_ricochet_strikes.get_data(i));
+            strikes_dexes.add(i);
         }
     }
 
-    if(max_dex>=0){
-        remove_particle(max_dex);
+    if(strikes.get_dim()==0){
+        return;
     }
 
+    sort_and_check(strikes,strikes_sorted,strikes_dexes);
+    int n_started=_ricochet_particles.get_dim();
+    for(i=0;i<strikes_sorted.get_dim() && i<n_started-_chisquared->get_dim()/2;i++){
+        remove_particle(strikes_dexes.get_data(i));
+    }
 
     int iFound;
     array_1d<double> dir;
@@ -3374,18 +3383,15 @@ void node::cull_ricochet(){
         }
     }
 
-    int i_most_growth;
-    double most_growth=-1.0;
-    for(i=0;i<_ricochet_growth_record.get_dim();i++){
-        if(_ricochet_growth_record.get_data(i)>most_growth){
-            most_growth=_ricochet_growth_record.get_data(i);
-            i_most_growth=_ricochet_particles.get_data(i);
-        }
-    }
+    int i_start;
+    int i_roll=_chisquared->random_int();
+    i=i_roll%_boundary_points.get_dim();
+    i_start=_boundary_points.get_data(i);
+
 
     while(_ricochet_particles.get_dim()<_chisquared->get_dim() && local_associates.get_dim()>0){
-        mcmc_walk(i_most_growth, &iFound, dir, 20, local_associates);
-        if(iFound>=0 && iFound!=i_most_growth){
+        mcmc_walk(i_start, &iFound, dir, 100, local_associates);
+        if(iFound>=0 && iFound!=i_start){
             set_particle(_ricochet_particles.get_dim(),iFound,dir);
         }
     }
@@ -3398,6 +3404,7 @@ void node::remove_particle(int ip){
     _ricochet_particles.remove(ip);
     _ricochet_origins.remove(ip);
     _ricochet_strikes.remove(ip);
+    _ricochet_growth_record.remove(ip);
     _ricochet_velocities.remove_row(ip);
 }
 
