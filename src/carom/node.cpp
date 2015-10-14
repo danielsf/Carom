@@ -3900,6 +3900,98 @@ int node::originate_particle_compass(array_1d<double> &dir){
     return iChosen;
 }
 
+void node::originate_particle_simplex(){
+    array_1d<double> min,max;
+    min.set_name("orig_particle_simplex_min");
+    max.set_name("orig_particle_simplex_max");
+    array_1d<int> local_associates;
+    local_associates.set_name("orig_particle_simplex_local_associates");
+
+    int i;
+    for(i=0;i<_boundary_points.get_dim();i++){
+        local_associates.add(_boundary_points.get_data(i));
+    }
+
+    _chisquared->get_min(min);
+    _chisquared->get_max(max);
+
+    dchi_boundary_simplex dchi_fn(_chisquared, local_associates);
+
+    simplex_minimizer ffmin;
+    ffmin.set_minmax(min,max);
+    ffmin.set_chisquared(&dchi_fn);
+
+    array_2d<double> seed;
+    seed.set_name("orig_particle_simplex_seed");
+    array_1d<double> trial,trial_node;
+    trial.set_name("orig_particle_simplex_trial");
+    trial_node.set_name("orig_particle_simplex_trial_node");
+    double mu,dx;
+    int iFound;
+    while(seed.get_rows()<_chisquared->get_dim()+1){
+        for(i=0;i<_chisquared->get_dim();i++){
+            dx=max.get_data(i)-min.get_data(i);
+            trial.set(i,min.get_data(i)+_chisquared->random_double()*dx);
+        }
+        transform_pt_to_node(trial,trial_node);
+        evaluate(trial_node,&mu,&iFound);
+        if(mu<exception_value){
+            seed.add_row(trial);
+        }
+
+    }
+
+    trial.reset();
+    ffmin.find_minimum(seed,trial);
+    transform_pt_to_node(trial,trial_node);
+    evaluate(trial_node,&mu,&iFound);
+
+    double dd,ddmin;
+    int i_other=-1;
+
+    array_1d<double> dir;
+    dir.set_name("orig_particle_simplex_dir");
+
+    int i_particle;
+
+    if(iFound>=0){
+        ddmin=2.0*exception_value;
+        for(i=0;i<local_associates.get_dim();i++){
+            dd=normalized_node_distance(iFound,local_associates.get_data(i));
+            if(_chisquared->get_fn(local_associates.get_data(i))<_chisquared->target() && dd<ddmin){
+                ddmin=dd;
+                i_other=local_associates.get_data(i);
+            }
+        }
+
+        if(i_other<0){
+            i_other=_centerdex;
+        }
+
+        if(_chisquared->get_fn(i_other)>_chisquared->target()){
+            printf("WARNING i_other %e target %e (originate_particle_simplex)\n",
+            _chisquared->get_fn(i_other),_chisquared->target());
+            exit(1);
+        }
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,get_pt(iFound,i)-get_pt(i_other,i));
+        }
+
+        if(_chisquared->get_fn(iFound)>_chisquared->target()){
+          i_particle=node_bisection_origin_dir(i_other,dir);
+
+        }
+        else if(_chisquared->get_fn(iFound)<_chisquared->target()){
+            i_particle=node_bisection_origin_dir(iFound,dir);
+        }
+
+        set_particle(_ricochet_particles.get_dim(), i_particle, dir);
+
+    }
+
+}
+
 int node::originate_particle_shooting(array_1d<double> &dir){
     int iOrigin=choose_off_center_point();
     _off_center_origins.add(iOrigin);
