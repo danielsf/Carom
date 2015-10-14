@@ -4,6 +4,7 @@
 dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
                                      array_1d<int> &associates_in){
 
+    _called=0;
     _chisq=chi_in;
     _associates.set_name("dchi_simplex_associates");
     int i,j;
@@ -35,6 +36,10 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
         _norm.set(i,max.get_data(i)-min.get_data(i));
     }
 
+}
+
+int dchi_simplex_base::get_called(){
+    return _called;
 }
 
 double dchi_simplex_base::associate_distance(array_1d<double> &pt){
@@ -70,6 +75,7 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
     double dmu=fabs(_chisq->target()-mu);
     double delta=_chisq->target()-_chisq->chimin();
 
+    _called++;
     return dmu-exp(-dmu/delta)*delta*distance;
 }
 

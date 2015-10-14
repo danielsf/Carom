@@ -3383,17 +3383,8 @@ void node::cull_ricochet(){
         }
     }
 
-    int i_start;
-    int i_roll=_chisquared->random_int();
-    i=i_roll%_boundary_points.get_dim();
-    i_start=_boundary_points.get_data(i);
-
-
-    while(_ricochet_particles.get_dim()<_chisquared->get_dim() && local_associates.get_dim()>0){
-        mcmc_walk(i_start, &iFound, dir, 100, local_associates);
-        if(iFound>=0 && iFound!=i_start){
-            set_particle(_ricochet_particles.get_dim(),iFound,dir);
-        }
+    while(_ricochet_particles.get_dim()<_chisquared->get_dim()){
+        originate_particle_simplex();
     }
 
     _since_culled=0;
@@ -3901,6 +3892,7 @@ int node::originate_particle_compass(array_1d<double> &dir){
 }
 
 void node::originate_particle_simplex(){
+    printf("orig simplex\n");
     array_1d<double> min,max;
     min.set_name("orig_particle_simplex_min");
     max.set_name("orig_particle_simplex_max");
@@ -3912,8 +3904,10 @@ void node::originate_particle_simplex(){
         local_associates.add(_boundary_points.get_data(i));
     }
 
-    _chisquared->get_min(min);
-    _chisquared->get_max(max);
+    for(i=0;i<_chisquared->get_dim();i++){
+        min.set(i,_true_min.get_data(i));
+        max.set(i,_true_max.get_data(i));
+    }
 
     dchi_boundary_simplex dchi_fn(_chisquared, local_associates);
 
@@ -3942,6 +3936,8 @@ void node::originate_particle_simplex(){
     }
 
     trial.reset();
+    ffmin.use_gradient();
+    ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,trial);
     transform_pt_to_node(trial,trial_node);
     evaluate(trial_node,&mu,&iFound);
@@ -3955,6 +3951,7 @@ void node::originate_particle_simplex(){
     int i_particle;
 
     if(iFound>=0){
+        _wander_log.add(iFound);
         ddmin=2.0*exception_value;
         for(i=0;i<local_associates.get_dim();i++){
             dd=normalized_node_distance(iFound,local_associates.get_data(i));
@@ -3987,6 +3984,7 @@ void node::originate_particle_simplex(){
         }
 
         set_particle(_ricochet_particles.get_dim(), i_particle, dir);
+        _wander_log.add(i_particle);
 
     }
 
@@ -5175,7 +5173,6 @@ void node::swarm_shoot(int i_start){
     dir.normalize();
 
     set_particle(_ricochet_particles.get_dim(),iFound,dir);
-    _wander_log.add(iFound);
 
 }
 
