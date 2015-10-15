@@ -76,6 +76,6 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
     double delta=_chisq->target()-_chisq->chimin();
 
     _called++;
-    return dmu-exp(-dmu/delta)*delta*distance;
+    return dmu-exp(-0.1*dmu/delta)*delta*distance*2.0;
 }
 

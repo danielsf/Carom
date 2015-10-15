@@ -3925,7 +3925,7 @@ void node::originate_particle_simplex(){
     while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
             dx=max.get_data(i)-min.get_data(i);
-            trial.set(i,min.get_data(i)+_chisquared->random_double()*dx);
+            trial.set(i,min.get_data(i)+dx*(2.0*_chisquared->random_double()-1.0));
         }
         transform_pt_to_node(trial,trial_node);
         evaluate(trial_node,&mu,&iFound);
@@ -4945,7 +4945,7 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
     dmu=fabs(_chisquared->get_fn(i_pt)-_chisquared->target());
     delta=_chisquared->target()-_chisquared->chimin();
     double chi_new,chi_old;
-    chi_old=dmu-exp(-dmu/delta)*delta*ddmin;
+    chi_old=dmu-exp(-0.1*dmu/delta)*delta*ddmin*2.0;
 
     int i_step,local_acceptances,accept_it;
     double mu;
@@ -4988,7 +4988,7 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
                 }
             }
             dmu=fabs(mu-_chisquared->target());
-            chi_new=dmu-exp(-dmu/delta)*delta*ddmin;
+            chi_new=dmu-exp(-0.1*dmu/delta)*delta*ddmin*2.0;
 
             if(chi_new<chi_old){
                 accept_it=1;
@@ -5225,7 +5225,7 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
         }
     }
 
-    mu[0]=dmu-exp(-dmu/deltachisq)*deltachisq*ddmin;
+    mu[0]=dmu-exp(-0.1*dmu/deltachisq)*deltachisq*ddmin*2.0;
 
 }
 
