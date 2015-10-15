@@ -28,7 +28,6 @@ public:
     void find_bases();
     void compass_search();
     void search();
-    void reset_ricochet();
     void ricochet();
 
     void swarm_shoot(int);

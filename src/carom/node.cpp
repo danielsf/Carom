@@ -4371,15 +4371,6 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
     return 0;
 }
 
-void node::reset_ricochet(){
-    _ricochet_particles.reset();
-    _ricochet_velocities.reset();
-    _ricochet_candidates.reset();
-    _ricochet_candidate_velocities.reset();
-    recalibrate_max_min();
-    _found_bases=0;
-}
-
 int node::_ricochet(int iparticle, array_1d<double> &dir_out){
     double local_v0=volume();
     double flow,fhigh;
