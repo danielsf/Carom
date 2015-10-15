@@ -3506,11 +3506,30 @@ void node::initialize_ricochet(){
 
     _ricochet_velocities.reset();
     _ricochet_particles.reset();
-    _ricochet_origins.reset();
     _ricochet_velocities.set_cols(_chisquared->get_dim());
 
-    while(_ricochet_particles.get_dim()<nParticles){
-        originate_particle_simplex();
+    array_1d<int> dexes;
+    array_1d<double> dmu;
+
+    int j,ix,iChosen;
+    double dist,dist_best,dist_local_best;
+    dexes.set_name("node_initialize_ricochet_dexes");
+    dmu.set_name("node_initialize_ricochet_dmu");
+
+    _filter_candidates();
+
+    array_1d<double> dir;
+    dir.set_name("node_initialize_ricochet_dir");
+
+    dir.set_dim(_chisquared->get_dim());
+
+    int iFound,local_center;
+
+    local_center=find_local_center();
+
+    for(i=0;i<nParticles;i++){
+        iFound=originate_particle_shooting(dir);
+        set_particle(i,iFound,dir);
     }
 
     _min_basis_error_changed=0;
