@@ -29,6 +29,9 @@ void node::deactivate_simplex(){
 
 void node::initialize(){
     _chisquared=NULL;
+    _ricochet_growth=1.0;
+    _mcmc_growth=1.0;
+    _swarm_growth=1.0;
     _chimin=2.0*exception_value;
     _chimin_ricochet=2.0*exception_value;
     _do_simplex=1;
@@ -168,6 +171,10 @@ void node::copy(const node &in){
     _ricochet_bisections=in._ricochet_bisections;
     _gradient_calls=in._gradient_calls;
     _proper_ricochets=in._proper_ricochets;
+
+    _ricochet_growth=in._ricochet_growth;
+    _mcmc_growth=in._mcmc_growth;
+    _swarm_growth=in._swarm_growth;
 
     _swarm_acceptances=in._swarm_acceptances;
     _swarm_rejections=in._swarm_rejections;
@@ -412,12 +419,28 @@ void node::merge(const node &in){
         _swarm.add_row(buffer);
     }
 
+    _ricochet_growth*=in._ricochet_growth;
+    _mcmc_growth*=in._mcmc_growth;
+    _swarm_growth*=in._swarm_growth;
+
     recalibrate_max_min();
     _active=1;
 }
 
 int node::get_convergence_ct(){
     return _convergence_ct;
+}
+
+double node::get_ricochet_growth(){
+    return _ricochet_growth;
+}
+
+double node::get_swarm_growth(){
+    return _swarm_growth;
+}
+
+double node::get_mcmc_growth(){
+    return _mcmc_growth;
 }
 
 int node::get_good_shots(){
@@ -4358,6 +4381,7 @@ void node::reset_ricochet(){
 }
 
 int node::_ricochet(int iparticle, array_1d<double> &dir_out){
+    double local_v0=volume();
     double flow,fhigh;
     array_1d<double> lowball,highball,gradient;
     lowball.set_name("_ricochet_lowball");
@@ -4479,6 +4503,7 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
         dir_out.set(i,dir.get_data(i));
     }
 
+    _ricochet_growth*=(volume()/local_v0);
     return iFound;
 
 }
@@ -4909,6 +4934,7 @@ void node::trim_ricochet(int n_to_trim){
 void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps,
                      array_1d<int> &local_associates){
 
+    double local_v0=volume();
     array_1d<double> step,trial;
     step.set_name("mcmc_walk_step");
     trial.set_name("mcmc_walk_trial");
@@ -5009,6 +5035,7 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
         i_found[0]=i_pt;
     }
     printf("    local_acceptances %d %e\n",local_acceptances,volume());
+    _mcmc_growth*=(volume()/local_v0);
 }
 
 
@@ -5215,6 +5242,8 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
 
 void node::swarm_search(){
 
+    double local_v0=volume();
+
     int i;
     double tol=0.05*(_chisquared->target()-_chisquared->chimin());
     _swarm_associates.reset();
@@ -5224,6 +5253,7 @@ void node::swarm_search(){
         }
     }
     if(_swarm_associates.get_dim()==0){
+        _swarm_growth*=(volume()/local_v0);
         return;
     }
 
@@ -5362,6 +5392,8 @@ void node::swarm_search(){
             }
         }
     }
+
+    _swarm_growth*=(volume()/local_v0);
 
 }
 

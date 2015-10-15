@@ -81,6 +81,10 @@ public:
     int get_swarm_outside();
     void deactivate_simplex();
 
+    double get_ricochet_growth();
+    double get_swarm_growth();
+    double get_mcmc_growth();
+
 private:
     int _do_simplex;
     int _id_dex,_last_wrote_log;
@@ -142,6 +146,8 @@ private:
     array_1d<int> _ricochet_candidate_log;
     array_1d<int> _compass_log;
     array_1d<int> _wander_log;
+
+    double _ricochet_growth,_mcmc_growth,_swarm_growth;
 
     chisq_wrapper *_chisquared;
 
