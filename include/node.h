@@ -131,7 +131,6 @@ private:
     array_1d<double> _true_min,_true_max,_transform;
 
     array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
-    array_1d<double> _ricochet_growth_record;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;

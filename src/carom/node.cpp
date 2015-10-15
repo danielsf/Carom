@@ -121,7 +121,6 @@ void node::initialize(){
     _swarm_norm.set_name("node_swarm_norm");
     _swarm_associates.set_name("node_swarm_associates");
     _ricochet_strikes.set_name("node_ricochet_strikes");
-    _ricochet_growth_record.set_name("node_ricochet_growth_record");
 }
 
 void node::copy(const node &in){
@@ -212,11 +211,6 @@ void node::copy(const node &in){
     _wander_log.reset();
     for(i=0;i<in._wander_log.get_dim();i++){
         _wander_log.set(i,in._wander_log.get_data(i));
-    }
-
-    _ricochet_growth_record.reset();
-    for(i=0;i<in._ricochet_growth_record.get_dim();i++){
-        _ricochet_growth_record.set(i,in._ricochet_growth_record.get_data(i));
     }
 
     _ricochet_strikes.reset();
@@ -400,10 +394,6 @@ void node::merge(const node &in){
             _ricochet_velocities.set(old_n_particles+i,j,in._ricochet_velocities.get_data(i,j));
         }
         _ricochet_origins.add(in._ricochet_origins.get_data(i));
-    }
-
-    for(i=0;i<in._ricochet_growth_record.get_dim();i++){
-        _ricochet_growth_record.add(in._ricochet_growth_record.get_data(i));
     }
 
     if(in._chimin<_chimin){
@@ -3395,7 +3385,6 @@ void node::remove_particle(int ip){
     _ricochet_particles.remove(ip);
     _ricochet_origins.remove(ip);
     _ricochet_strikes.remove(ip);
-    _ricochet_growth_record.remove(ip);
     _ricochet_velocities.remove_row(ip);
 }
 
@@ -3403,10 +3392,6 @@ void node::remove_particle(int ip){
 void node::set_particle(int ip, int ii, array_1d<double> &dir){
     if(ii<0){
         return;
-    }
-
-    if(ip>=_ricochet_growth_record.get_dim()){
-        _ricochet_growth_record.set(ip,1.0);
     }
 
     if(_ricochet_particles.get_dim()>ip){
@@ -3427,7 +3412,6 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     double v1=volume();
     if(v1>_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
-        _ricochet_growth_record.multiply_val(ip,v1/_v0);
 
         _v0=v1;
         return;
