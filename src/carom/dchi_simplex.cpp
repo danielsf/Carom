@@ -117,7 +117,7 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
     double delta=_chisq->target()-_chisq->chimin();
     double dmu=fabs(mu-_chisq->chimin());
 
-    double exp_term=exp(-0.1*dmu/delta);
+    double exp_term=exp(-dmu/delta);
     double distance;
     if(exp_term>1.0e-5){
         distance=associate_distance(pt);
