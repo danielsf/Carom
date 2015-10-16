@@ -550,6 +550,22 @@ void node::set_chisquared(chisq_wrapper *cc){
 
 }
 
+int node::get_n_boundary(){
+    return _boundary_points.get_dim();
+}
+
+int node::get_boundary(int ii){
+    return _boundary_points.get_data(ii);
+}
+
+int node::get_n_associates(){
+    return _associates.get_dim();
+}
+
+int node::get_associate(int ii){
+    return _associates.get_data(ii);
+}
+
 int node::get_center(){
     return _centerdex;
 }

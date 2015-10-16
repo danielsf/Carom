@@ -102,17 +102,21 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
     int i_found;
     _chisq->evaluate(pt,&mu,&i_found);
 
+    if(_associates.get_dim()==0){
+        return mu;
+    }
+
     double delta=_chisq->target()-_chisq->chimin();
     double dmu=fabs(mu-_chisq->chimin());
 
     double exp_term=exp(-0.1*dmu/delta);
-    double distance_term;
+    double distance;
     if(exp_term>1.0e-5){
-        distance_term=1.0/(associate_distance(pt)+1.0e-6);
+        distance=associate_distance(pt);
     }
     else{
-        distance_term=0.0;
+        return mu;
     }
 
-    return mu+exp_term*distance_term;
+    return mu-exp_term*distance*delta*2.0;
 }

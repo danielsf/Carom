@@ -48,6 +48,11 @@ public:
     int get_n_particles();
     int get_n_candidates();
 
+    int get_n_boundary();
+    int get_boundary(int);
+    int get_n_associates();
+    int get_associate(int);
+
     void project_to_bases(array_1d<double>&,array_1d<double>&);
     void recalibrate_max_min();
 
