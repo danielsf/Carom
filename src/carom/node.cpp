@@ -403,6 +403,10 @@ void node::merge(const node &in){
         _ricochet_origins.add(in._ricochet_origins.get_data(i));
     }
 
+    for(i=0;i<in._ricochet_strikes.get_dim();i++){
+        _ricochet_strikes.add(in._ricochet_strikes.get_data(i));
+    }
+
     if(in._chimin<_chimin){
         _chimin=in._chimin;
     }
@@ -639,6 +643,14 @@ void node::is_it_safe(char *word){
 
         exit(1);
 
+    }
+
+    if(_ricochet_strikes.get_dim()>_ricochet_particles.get_dim()){
+        printf("WARNING %d strikes but %d particles\n",
+        _ricochet_strikes.get_dim(),
+        _ricochet_particles.get_dim());
+
+        exit(1);
     }
 
     if(_ricochet_candidates.get_dim()!=_ricochet_candidate_velocities.get_rows()){
