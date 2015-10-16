@@ -18,22 +18,23 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
     _norm.set_name("dchi_base_norm");
 
     double mu;
+    if(_associates.get_dim()>0){
+        for(i=0;i<_associates.get_dim();i++){
+            for(j=0;j<_chisq->get_dim();j++){
+                mu=_chisq->get_pt(i,j);
+                if(i==0 || mu<min.get_data(j)){
+                    min.set(j,mu);
+                }
 
-    for(i=0;i<_associates.get_dim();i++){
-        for(j=0;j<_chisq->get_dim();j++){
-            mu=_chisq->get_pt(i,j);
-            if(i==0 || mu<min.get_data(j)){
-                min.set(j,mu);
-            }
-
-            if(i==0 || mu>max.get_data(j)){
-                max.set(j,mu);
+                if(i==0 || mu>max.get_data(j)){
+                    max.set(j,mu);
+                }
             }
         }
-    }
 
-    for(i=0;i<_chisq->get_dim();i++){
-        _norm.set(i,max.get_data(i)-min.get_data(i));
+        for(i=0;i<_chisq->get_dim();i++){
+            _norm.set(i,max.get_data(i)-min.get_data(i));
+        }
     }
 
 }
@@ -43,6 +44,13 @@ int dchi_simplex_base::get_called(){
 }
 
 double dchi_simplex_base::associate_distance(array_1d<double> &pt){
+
+     if(_associates.get_dim()<=0){
+         printf("Cannot call dchi_simplex_base::associate_distance\n");
+         printf("_associates.get_dim() %d\n",_associates.get_dim());
+         exit(1);
+     }
+
      double dd,ddmin;
      int i,j;
      ddmin=0.0;
