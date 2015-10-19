@@ -3379,7 +3379,7 @@ void node::_filter_candidates(){
 
 void node::cull_ricochet(){
 
-    if(_since_culled<_chisquared->get_dim()){
+    if(_since_culled<_allowed_ricochet_strikes){
         _since_culled++;
         return;
     }
@@ -3394,7 +3394,7 @@ void node::cull_ricochet(){
     strikes_dexes.set_name("cull_ricochet_strikes_dexes");
 
     for(i=0;i<_ricochet_particles.get_dim();i++){
-        if(_ricochet_strikes.get_data(i)>=_chisquared->get_dim()){
+        if(_ricochet_strikes.get_data(i)>=_allowed_ricochet_strikes){
             strikes.add(-1*_ricochet_strikes.get_data(i));
             strikes_dexes.add(i);
         }
