@@ -5247,12 +5247,18 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
     double chisq=mu[0];
     double deltachisq=_chisquared->target()-_chisquared->chimin();
     double dd,ddmin;
-    ddmin=2.0*exception_value;
-    for(i=0;i<_swarm_associates.get_dim();i++){
-        dd=normalized_node_distance(iFound,_swarm_associates.get_data(i));
-        if(dd<ddmin){
-            ddmin=dd;
+
+    if(iFound>=0){
+        ddmin=2.0*exception_value;
+        for(i=0;i<_swarm_associates.get_dim();i++){
+            dd=normalized_node_distance(iFound,_swarm_associates.get_data(i));
+            if(dd<ddmin){
+                ddmin=dd;
+            }
         }
+    }
+    else{
+        ddmin=0.0;
     }
 
     mu[0]=dmu-exp(-0.1*dmu/deltachisq)*deltachisq*ddmin*2.0;
