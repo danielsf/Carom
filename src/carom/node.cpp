@@ -5011,7 +5011,7 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
         if(iFound>=0){
             ddmin=2.0*exception_value;
             for(i=0;i<local_associates.get_dim();i++){
-                dd=normalized_node_distance(i_pt,iFound);
+                dd=normalized_node_distance(local_associates.get_data(i),iFound);
                 if(dd<ddmin){
                     ddmin=dd;
                 }
