@@ -5047,7 +5047,7 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
     }
     double dir_norm=out_dir.normalize();
 
-    if(_chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
+    if(i_pt!=i_start && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
         i_found[0]=node_bisection_origin_dir(i_start, out_dir);
     }
     else{
