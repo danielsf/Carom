@@ -3461,7 +3461,7 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     }
 
     double v1=volume();
-    if(v1>_v0 || ip>=_ricochet_strikes.get_dim()){
+    if(v1>1.001*_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
 
         _v0=v1;
