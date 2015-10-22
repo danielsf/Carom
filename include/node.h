@@ -36,7 +36,6 @@ public:
 
     void _shift_ricochet(int);
     int _ricochet(int, array_1d<double>&);
-    int _adaptive_ricochet(int, array_1d<double>&);
     void simplex_search();
     double volume();
     double get_norm(int);
@@ -135,7 +134,6 @@ private:
 
     array_1d<double> _true_min,_true_max,_transform;
 
-    array_2d<double> _ricochet_velocities;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;
@@ -179,7 +177,7 @@ private:
     void off_center_compass(int);
     void cull_ricochet();
     void remove_particle(int);
-    void set_particle(int,int,array_1d<double>&);
+    void set_particle(int,int);
     double ricochet_model(array_1d<double>&);
     double ricochet_model(array_1d<double>&,array_1d<int>&);
     double ricochet_model(array_1d<double>&,double*);
@@ -190,10 +188,10 @@ private:
     double apply_quadratic_model(array_1d<double>&);
     double apply_quadratic_model(int);
 
-    void mcmc_walk(int, int*, array_1d<double>&, int, array_1d<int>&);
+    void mcmc_walk(int, int*, int, array_1d<int>&);
 
     int mcmc_kick(int, int*, array_1d<double>&, int);
-    int originate_particle_shooting(array_1d<double>&);
+    int originate_particle_shooting(int*);
     void originate_particle_simplex();
     double _nearest_other_particle(int,int);
 

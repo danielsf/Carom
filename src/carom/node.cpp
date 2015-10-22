@@ -104,7 +104,6 @@ void node::initialize(){
     _projected_max.set_name("node_projected_max");
     _ricochet_particles.set_name("node_ricochet_particles");
     _ricochet_origins.set_name("node_ricochet_origins");
-    _ricochet_velocities.set_name("node_ricochet_velocities");
     _associates.set_name("node_associates");
     _boundary_points.set_name("node_boundary_points");
     _ricochet_log.set_name("node_ricochet_log");
@@ -317,13 +316,6 @@ void node::copy(const node &in){
     }
 
     _ricochet_particles.reset();
-    _ricochet_velocities.reset();
-    _ricochet_velocities.set_cols(in._ricochet_velocities.get_cols());
-    for(i=0;i<in._ricochet_velocities.get_rows();i++){
-        for(j=0;j<in._ricochet_velocities.get_cols();i++){
-            _ricochet_velocities.set(i,j,in._ricochet_velocities.get_data(i,j));
-        }
-    }
     for(i=0;i<in._ricochet_particles.get_dim();i++){
         _ricochet_particles.set(i,in._ricochet_particles.get_data(i));
     }
@@ -370,9 +362,6 @@ void node::merge(const node &in){
     int j;
     for(i=0;i<in._ricochet_particles.get_dim();i++){
         _ricochet_particles.add(in._ricochet_particles.get_data(i));
-        for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_velocities.set(old_n_particles+i,j,in._ricochet_velocities.get_data(i,j));
-        }
         _ricochet_origins.add(in._ricochet_origins.get_data(i));
     }
 
@@ -608,11 +597,11 @@ void node::is_it_safe(char *word){
 
     }
 
-    if(_ricochet_particles.get_dim()!=_ricochet_velocities.get_rows()){
+    if(_ricochet_particles.get_dim()!=_ricochet_origins.get_dim()){
 
         printf("WARNING in node::%s\n",word);
         printf("ricochet particles %d\n",_ricochet_particles.get_dim());
-        printf("ricochet velocities %d\n",_ricochet_velocities.get_rows());
+        printf("ricochet origins %d\n",_ricochet_origins.get_dim());
 
         exit(1);
 
@@ -738,12 +727,6 @@ void node::set_transform(){
     }
     recalibrate_max_min();
 
-    /*
-    Here we should rescale _ricochet_velocities by the ratio of the
-    new _transform to the old _transform.  However, the small perturbation
-    given by not rescaling the velocities seems to lead to beter convergence
-    properties.
-    */
 }
 
 void node::get_true_pt(int i1, array_1d<double> &pt_out){
@@ -3237,11 +3220,10 @@ void node::remove_particle(int ip){
     _ricochet_particles.remove(ip);
     _ricochet_origins.remove(ip);
     _ricochet_strikes.remove(ip);
-    _ricochet_velocities.remove_row(ip);
 }
 
 
-void node::set_particle(int ip, int ii, array_1d<double> &dir){
+void node::set_particle(int ip, int ii){
     if(ii<0){
         return;
     }
@@ -3257,9 +3239,6 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     _ricochet_log.add(ii);
 
     int j;
-    for(j=0;j<_chisquared->get_dim();j++){
-        _ricochet_velocities.set(ip,j,dir.get_data(j));
-    }
 
     double v1=volume();
     if(v1>1.001*_v0 || ip>=_ricochet_strikes.get_dim()){
@@ -3286,10 +3265,8 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
     int n_steps=20;
 
     int ix,i_found;
-    array_1d<double> mcmc_dir;
     array_1d<int> local_associates;
     local_associates.set_name("set_particle_associates");
-    dir.set_name("set_particle_dir");
 
     double tol=0.05*(_chisquared->target()-_chisquared->chimin());
 
@@ -3302,14 +3279,11 @@ void node::set_particle(int ip, int ii, array_1d<double> &dir){
         return;
     }
 
-    mcmc_walk(_ricochet_particles.get_data(ip), &i_found, mcmc_dir, n_steps, local_associates);
+    mcmc_walk(_ricochet_particles.get_data(ip), &i_found, n_steps, local_associates);
     if(i_found>=0 && i_found!=_ricochet_particles.get_data(ip)){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
         _ricochet_particles.set(ip,i_found);
         _ricochet_log.add(i_found);
-        for(j=0;j<_chisquared->get_dim();j++){
-            _ricochet_velocities.set(ip,j,mcmc_dir.get_data(j));
-        }
     }
 
     _v0=volume();
@@ -3329,9 +3303,7 @@ void node::initialize_ricochet(){
         nParticles=_ricochet_particles.get_dim();
     }
 
-    _ricochet_velocities.reset();
     _ricochet_particles.reset();
-    _ricochet_velocities.set_cols(_chisquared->get_dim());
 
     array_1d<int> dexes;
     array_1d<double> dmu;
@@ -3346,13 +3318,18 @@ void node::initialize_ricochet(){
 
     dir.set_dim(_chisquared->get_dim());
 
-    int iFound,local_center;
+    int iFound,local_center,i_origin;
 
     local_center=find_local_center();
 
-    for(i=0;i<nParticles;i++){
-        iFound=originate_particle_shooting(dir);
-        set_particle(i,iFound,dir);
+    int n_0=_ricochet_particles.get_dim();
+
+    while(_ricochet_particles.get_dim()<n_0+nParticles){
+        iFound=originate_particle_shooting(&i_origin);
+        if(iFound>=0 && i_origin>=0){
+            _ricochet_particles.add(iFound);
+            _ricochet_origins.add(i_origin);
+        }
     }
 
     _min_basis_error_changed=0;
@@ -3741,14 +3718,19 @@ void node::originate_particle_simplex(){
             i_particle=node_bisection_origin_dir(iFound,dir);
         }
 
-        set_particle(_ricochet_particles.get_dim(), i_particle, dir);
-        _wander_log.add(i_particle);
+        if(iFound>=0 && i_other>=0){
+            _ricochet_particles.add(iFound);
+            _ricochet_origins.add(i_other);
+            _wander_log.add(i_particle);
+        }
 
     }
 
 }
 
-int node::originate_particle_shooting(array_1d<double> &dir){
+int node::originate_particle_shooting(int *origin_out){
+    array_1d<double> dir;
+    dir.set_name("originate_particle_shooting_dir");
     int iOrigin=choose_off_center_point();
     _off_center_origins.add(iOrigin);
 
@@ -3802,6 +3784,7 @@ int node::originate_particle_shooting(array_1d<double> &dir){
     int iFound;
     iFound=node_bisection_origin_dir(iOrigin,dir);
 
+    origin_out[0]=iOrigin;
     return iFound;
 
 }
@@ -4125,10 +4108,11 @@ int node::is_it_a_strike(int ix, kd_tree &kd_copy){
 int node::_ricochet(int iparticle, array_1d<double> &dir_out){
     double local_v0=volume();
     double flow,fhigh;
-    array_1d<double> lowball,highball,gradient;
+    array_1d<double> lowball,highball,gradient,dir_0;
     lowball.set_name("_ricochet_lowball");
     highball.set_name("_ricochet_highball");
     gradient.set_name("_ricochet_gradient");
+    dir_0.set_name("_ricochet_dir_0");
 
     double reflection_coeff,component,gnorm,dirnorm;
 
@@ -4155,11 +4139,16 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
     gnorm=gradient.normalize();
     component=0.0;
     for(i=0;i<_chisquared->get_dim();i++){
-        component+=_ricochet_velocities.get_data(iparticle,i)*gradient.get_data(i);
+        dir_0.set(i,get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_ricochet_origins.get_data(iparticle),i));
+    }
+    dir_0.normalize();
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        component+=dir_0.get_data(i)*gradient.get_data(i);
     }
 
     for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,_ricochet_velocities.get_data(iparticle,i)-reflection_coeff*component*gradient.get_data(i));
+        dir.set(i,dir_0.get_data(i)-reflection_coeff*component*gradient.get_data(i));
     }
 
     dirnorm=dir.normalize();
@@ -4250,168 +4239,6 @@ int node::_ricochet(int iparticle, array_1d<double> &dir_out){
 
 }
 
-int node::_adaptive_ricochet(int iparticle, array_1d<double> &dir_out){
-    array_1d<double> gradient;
-    array_1d<double> old_dir;
-    gradient.set_name("_ricochet_gradient");
-    old_dir.set_name("_ricochet_old_dir");
-
-    double grad_component;
-
-    array_1d<double> dir,scratch;
-    dir.set_name("_ricochet_dir");
-    scratch.set_name("_ricochet_scratch");
-
-    int i,j;
-
-    node_gradient(_ricochet_particles.get_data(iparticle),gradient);
-
-    gradient.normalize();
-    grad_component=0.0;
-    for(i=0;i<_chisquared->get_dim();i++){
-        grad_component+=_ricochet_velocities.get_data(iparticle,i)*gradient.get_data(i);
-    }
-
-    for(i=0;i<_chisquared->get_dim();i++){
-        old_dir.set(i,_ricochet_velocities.get_data(iparticle,i)-grad_component*gradient.get_data(i));
-    }
-
-    array_1d<double> trial_dir,best_dir;
-    double fbest_dir,f_dir,best_theta;
-
-    double theta,costheta,sintheta;
-
-    best_theta=-10.0;
-    for(i=0;i<_chisquared->get_dim();i++){
-        trial_dir.set(i,old_dir.get_data(i)-grad_component*gradient.get_data(i));
-        best_dir.set(i,trial_dir.get_data(i));
-    }
-    fbest_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
-
-    old_dir.normalize();
-    for(i=1;i<=10;i++){
-        theta=i*0.5*pi/10.0;
-        costheta=cos(theta);
-        sintheta=sin(theta);
-        for(j=0;j<_chisquared->get_dim();j++){
-            trial_dir.set(j,costheta*old_dir.get_data(j)-sintheta*gradient.get_data(j));
-        }
-        f_dir=evaluate_dir(_ricochet_particles.get_data(iparticle),trial_dir);
-        if(f_dir>fbest_dir){
-            fbest_dir=f_dir;
-            best_theta=theta;
-            for(j=0;j<_chisquared->get_dim();j++){
-                best_dir.set(j,trial_dir.get_data(j));
-            }
-        }
-    }
-
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,best_dir.get_data(i));
-    }
-    dir.normalize();
-
-    double eflow,efhigh;
-    array_1d<double> elowball,ehighball,edir;
-    array_1d<double> lowball,highball;
-    elowball.set_name("_ricochet_elowball");
-    ehighball.set_name("_ricochet_ehighball");
-    edir.set_name("_ricochet_edir");
-    lowball.set_name("_ricochet_lowball");
-    highball.set_name("_ricochet_highball");
-
-    double flow,fhigh;
-    int iFound,local_center;
-    double component;
-
-    local_center=find_local_center();
-    flow=2.0*exception_value;
-    fhigh=-2.0*exception_value;
-
-    while(flow>_chisquared->target()){
-        flow=_chisquared->get_fn(_ricochet_particles.get_data(iparticle));
-        for(i=0;i<_chisquared->get_dim();i++){
-            lowball.set(i,get_pt(_ricochet_particles.get_data(iparticle),i));
-        }
-
-        while(flow>=_chisquared->target()){
-            for(i=0;i<_chisquared->get_dim();i++){
-                elowball.set(i,get_pt(local_center,i));
-                ehighball.set(i,lowball.get_data(i));
-                edir.set(i,lowball.get_data(i)-elowball.get_data(i));
-            }
-            edir.normalize();
-            eflow=_chisquared->get_fn(local_center);
-
-            component=1.0;
-            efhigh=flow;
-
-            if(eflow>_chisquared->target() || eflow>efhigh){
-                printf("WARNING eflow %e %e %e\n",
-                eflow,efhigh,_chisquared->target());
-                printf("%e\n",_chisquared->get_fn(local_center));
-                exit(1);
-            }
-
-            iFound=node_bisection(elowball,eflow,ehighball,efhigh,1);
-            for(i=0;i<_chisquared->get_dim();i++){
-                lowball.set(i,get_pt(iFound,i));
-            }
-            flow=_chisquared->get_fn(iFound);
-        }
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            highball.set(i,lowball.get_data(i));
-        }
-
-        if(iparticle<_ricochet_origins.get_dim() && _ricochet_origins.get_data(iparticle)>=0){
-            for(i=0;i<_chisquared->get_dim();i++){
-                scratch.set(i,\
-               get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_ricochet_origins.get_data(iparticle),i));
-            }
-            component=scratch.normalize()*1.1;
-        }
-        else{
-            component=1.0;
-        }
-
-        if(component<1.0e-20){
-            component=1.0;
-        }
-
-        while(fhigh<_chisquared->target()+1.0){
-            for(i=0;i<_chisquared->get_dim();i++){
-                highball.add_val(i,component*dir.get_data(i));
-            }
-            evaluate(highball,&fhigh,&j);
-            component*=2.0;
-
-            if(fhigh<_chisquared->target()){
-                for(i=0;i<_chisquared->get_dim();i++){
-                    lowball.set(i,highball.get_data(i));
-                }
-                flow=fhigh;
-            }
-
-        }
-    }
-
-    if(flow>_chisquared->target() || flow>fhigh){
-        printf("WARNING in ricochet %e %e %e\n",
-        flow,fhigh,_chisquared->target());
-        exit(1);
-    }
-
-    iFound=node_bisection(lowball,flow,highball,fhigh,0);
-
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir_out.set(i,dir.get_data(i));
-    }
-
-    return iFound;
-
-}
-
 
 void node::_shift_ricochet(int ix){
 
@@ -4464,22 +4291,6 @@ void node::ricochet(){
     if(_ricochet_particles.get_dim()==0){
         initialize_ricochet();
     }
-
-    if(_ricochet_velocities.get_rows()!=_ricochet_particles.get_dim()){
-        printf("WARNING in node n_velocities %d n_particles %d\n",
-        _ricochet_velocities.get_rows(),_ricochet_particles.get_dim());
-
-        exit(1);
-    }
-
-    if(_ricochet_velocities.get_cols()!=_chisquared->get_dim()){
-
-       printf("WARNING in node ricochet velocity dim %d shld be %d\n",
-       _ricochet_velocities.get_cols(),_chisquared->get_dim());
-
-       exit(1);
-
-   }
 
    swarm_search();
 
@@ -4568,12 +4379,12 @@ void node::ricochet(){
        iFound=_ricochet(ix,dir);
 
        if(iFound>=0){
-           set_particle(ix,iFound,dir);
+           set_particle(ix,iFound);
        }
        else{
            iFound=_ricochet_particles.get_data(ix);
            dir.zero();
-           set_particle(ix,iFound,dir);
+           set_particle(ix,iFound);
 
        }
 
@@ -4607,7 +4418,7 @@ void node::ricochet(){
     volume(),volume0,r_called,_ricochet_particles.get_dim());
 }
 
-void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n_steps,
+void node::mcmc_walk(int i_start, int *i_found, int n_steps,
                      array_1d<int> &local_associates){
 
     double local_v0=volume();
@@ -4699,13 +4510,15 @@ void node::mcmc_walk(int i_start, int *i_found, array_1d<double> &out_dir, int n
 
     }
 
+    array_1d<double> dir;
+    dir.set_name("mcmc_walk_dir");
     for(i=0;i<_chisquared->get_dim();i++){
-        out_dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
+        dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
     }
-    double dir_norm=out_dir.normalize();
+    double dir_norm=dir.normalize();
 
     if(i_pt!=i_start && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
-        i_found[0]=node_bisection_origin_dir(i_start, out_dir);
+        i_found[0]=node_bisection_origin_dir(i_start, dir);
     }
     else{
         i_found[0]=i_pt;
@@ -4823,9 +4636,8 @@ int node::get_swarm_expand(){
 
 void node::swarm_shoot(int i_start){
 
-    array_1d<double> gradient,dir;
+    array_1d<double> gradient;
     gradient.set_name("swarm_shoot_gradient");
-    dir.set_name("swarm_shoot_dir");
     node_gradient(i_start, gradient);
     gradient.normalize();
     int iFound;
@@ -4835,13 +4647,10 @@ void node::swarm_shoot(int i_start){
         exit(1);
     }
 
-    int i;
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,get_pt(iFound,i)-_swarm_center.get_data(i));
+    if(iFound>=0 && i_start>=0){
+        _ricochet_particles.add(iFound);
+        _ricochet_origins.add(i_start);
     }
-    dir.normalize();
-
-    set_particle(_ricochet_particles.get_dim(),iFound,dir);
 
 }
 
