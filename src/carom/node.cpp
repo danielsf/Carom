@@ -4365,11 +4365,16 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
             }
         }
 
-        if(accept_it==0){
-            _mcmc_rejections++;
+        if(temp_term>0.95){
+            if(accept_it==0){
+                _mcmc_rejections++;
+            }
+            else{
+                _mcmc_acceptances++;
+            }
         }
-        else{
-            _mcmc_acceptances++;
+
+        if(accept_it==1){
             local_acceptances++;
             i_pt=iFound;
             chi_old=chi_new;
@@ -4721,14 +4726,19 @@ void node::swarm_search(){
             }
 
             if(accept_it==1){
-                _swarm_acceptances++;
                 chi_old.set(ipt,mu);
                 for(i=0;i<_chisquared->get_dim();i++){
                     _swarm.set(ipt,i,trial.get_data(i));
                 }
             }
-            else{
-                _swarm_rejections++;
+
+            if(temp_term>0.95){
+                if(accept_it==1){
+                    _swarm_acceptances++;
+                }
+                else{
+                    _swarm_rejections++;
+                }
             }
         }
     }
