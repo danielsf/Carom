@@ -3224,20 +3224,6 @@ void node::add_to_boundary(int dex){
     _boundary_points.add(dex);
 }
 
-void node::_filter_candidates(){
-    int i;
-
-    for(i=0;i<_ricochet_candidates.get_dim();i++){
-        if(_chisquared->get_fn(_ricochet_candidates.get_data(i))<0.5*(_chisquared->target()+_chisquared->chimin())){
-            _ricochet_candidates.remove(i);
-            _ricochet_candidate_velocities.remove_row(i);
-            i--;
-        }
-    }
-
-}
-
-
 void node::cull_ricochet(){
 
     if(_since_culled<_allowed_ricochet_strikes){
@@ -3404,8 +3390,6 @@ void node::initialize_ricochet(){
     double dist,dist_best,dist_local_best;
     dexes.set_name("node_initialize_ricochet_dexes");
     dmu.set_name("node_initialize_ricochet_dmu");
-
-    _filter_candidates();
 
     array_1d<double> dir;
     dir.set_name("node_initialize_ricochet_dir");
