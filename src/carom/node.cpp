@@ -4371,7 +4371,7 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
             _mcmc_acceptances++;
             local_acceptances++;
             i_pt=iFound;
-            chi_new=chi_old;
+            chi_old=chi_new;
         }
 
     }
