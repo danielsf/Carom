@@ -87,8 +87,6 @@ void node::initialize(){
     _mcmc_rejections=0;
 
     _compass_points.set_name("node_compass_points");
-    _ricochet_candidates.set_name("node_ricochet_candidates");
-    _ricochet_candidate_velocities.set_name("node_ricochet_candidate_velocities");
     _off_center_compass_points.set_name("node_off_center_compass_points");
     _off_center_origins.set_name("node_off_center_origins");
     _off_center_candidates.set_name("node_off_center_candidates");
@@ -110,7 +108,6 @@ void node::initialize(){
     _associates.set_name("node_associates");
     _boundary_points.set_name("node_boundary_points");
     _ricochet_log.set_name("node_ricochet_log");
-    _ricochet_candidate_log.set_name("node_ricochet_candidate_log");
     _compass_log.set_name("node_compass_log");
     _firework_centers.set_name("node_firework_centers");
     _true_min.set_name("node_true_min");
@@ -225,22 +222,9 @@ void node::copy(const node &in){
         _ricochet_strikes.set(i,in._ricochet_strikes.get_data(i));
     }
 
-    _ricochet_candidates.reset();
-    for(i=0;i<in._ricochet_candidates.get_dim();i++){
-        _ricochet_candidates.set(i,in._ricochet_candidates.get_data(i));
-    }
-
     _avg_pts.reset();
     for(i=0;i<in._avg_pts.get_dim();i++){
         _avg_pts.set(i,in._avg_pts.get_data(i));
-    }
-
-    _ricochet_candidate_velocities.reset();
-    _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
-    for(i=0;i<in._ricochet_candidate_velocities.get_rows();i++){
-        for(j=0;j<in._ricochet_candidate_velocities.get_cols();j++){
-            _ricochet_candidate_velocities.set(i,j,in._ricochet_candidate_velocities.get_data(i,j));
-        }
     }
 
     _firework_centers.reset();
@@ -353,11 +337,6 @@ void node::copy(const node &in){
     _ricochet_log.reset();
     for(i=0;i<in._ricochet_log.get_dim();i++){
         _ricochet_log.add(in._ricochet_log.get_data(i));
-    }
-
-    _ricochet_candidate_log.reset();
-    for(i=0;i<in._ricochet_candidate_log.get_dim();i++){
-        _ricochet_candidate_log.add(in._ricochet_candidate_log.get_data(i));
     }
 
     _compass_log.reset();
@@ -653,12 +632,6 @@ void node::is_it_safe(char *word){
         exit(1);
     }
 
-    if(_ricochet_candidates.get_dim()!=_ricochet_candidate_velocities.get_rows()){
-        printf("WARNING in node::%s\n",word);
-        printf("ricochet candidates %d\n",_ricochet_candidates.get_dim());
-        printf("velocities %d\n",_ricochet_candidate_velocities.get_rows());
-        exit(1);
-    }
 }
 
 int node::is_this_an_associate_gross(int dex){
@@ -2790,19 +2763,6 @@ void node::off_center_compass(int iStart){
 
             if(iFound>=0){
                 _off_center_compass_points.add(iFound);
-                if(iFound!=iStart){
-                    _ricochet_candidates.add(iFound);
-                    _ricochet_candidate_log.add(iFound);
-                    j=_ricochet_candidate_velocities.get_rows();
-                    for(i=0;i<_chisquared->get_dim();i++){
-                        _ricochet_candidate_velocities.set(j,i,get_pt(iFound,i)-get_pt(iStart,i));
-                    }
-
-                    if(_ricochet_candidates.get_dim()!=_ricochet_candidate_velocities.get_rows()){
-                        printf("WARNING out of sync in off_diag\n");
-                        exit(1);
-                    }
-                }
             }
 
             if(sgn<0.0 && iFound>=0 && iFound!=iStart){
@@ -3369,10 +3329,6 @@ void node::initialize_ricochet(){
     }
 
     int i;
-
-    if(_ricochet_candidate_velocities.get_cols()==0){
-        _ricochet_candidate_velocities.set_cols(_chisquared->get_dim());
-    }
 
     int nParticles=_chisquared->get_dim();
     if(_ricochet_particles.get_dim()>nParticles){
@@ -4830,20 +4786,6 @@ void node::write_node_log(char *nameRoot){
     fclose(output);
 
     _ricochet_log.reset();
-
-    sprintf(outname,"%s_node_candidate_%d_log.txt",nameRoot,_id_dex);
-    if(_last_wrote_log==0){
-        output=fopen(outname,"w");
-    }
-    else{
-        output=fopen(outname,"a");
-    }
-
-    for(i=0;i<_ricochet_candidate_log.get_dim();i++){
-        fprintf(output,"%d\n",_ricochet_candidate_log.get_data(i));
-    }
-    fclose(output);
-    _ricochet_candidate_log.reset();
 
     sprintf(outname,"%s_node_compass_%d_log.txt",nameRoot,_id_dex);
     if(_last_wrote_log==0){

@@ -113,7 +113,6 @@ private:
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     asymm_array_2d<int> _transform_associates;
     array_1d<int> _firework_centers;
-    array_1d<int> _ricochet_candidates;
     array_1d<int> _avg_pts;
     array_1d<int> _off_center_origins,_off_center_candidates;
     array_1d<int> _associates;
@@ -137,7 +136,7 @@ private:
 
     array_1d<double> _true_min,_true_max,_transform;
 
-    array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
+    array_2d<double> _ricochet_velocities;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;
@@ -146,7 +145,6 @@ private:
     int _since_culled;
 
     array_1d<int> _ricochet_log;
-    array_1d<int> _ricochet_candidate_log;
     array_1d<int> _compass_log;
     array_1d<int> _wander_log;
 
