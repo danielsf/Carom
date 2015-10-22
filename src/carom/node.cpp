@@ -4112,30 +4112,15 @@ int node::_ricochet(int iparticle){
 
 
     double local_v0=volume();
-    double flow,fhigh;
-    array_1d<double> lowball,highball,gradient,dir_0;
-    lowball.set_name("_ricochet_lowball");
-    highball.set_name("_ricochet_highball");
+    array_1d<double> gradient,dir_0;
     gradient.set_name("_ricochet_gradient");
     dir_0.set_name("_ricochet_dir_0");
 
     double reflection_coeff,component,gnorm,dirnorm;
 
-    array_1d<double> dir,scratch;
+    array_1d<double> dir;
     dir.set_name("_ricochet_dir");
-    scratch.set_name("_ricochet_scratch");
-
-    int i,j,iFound,local_center;
-
-    double eflow,efhigh;
-    array_1d<double> elowball,ehighball,edir;
-    elowball.set_name("_ricochet_elowball");
-    ehighball.set_name("_ricochet_ehighball");
-    edir.set_name("_ricochet_edir");
-
-    local_center=find_local_center();
-    flow=2.0*exception_value;
-    fhigh=-2.0*exception_value;
+    int i,j,iFound;
 
     node_gradient(_ricochet_particles.get_data(iparticle),gradient);
 
