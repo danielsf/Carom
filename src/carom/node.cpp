@@ -3262,6 +3262,7 @@ void node::set_particle(int ip, int ii){
         }
     }
     if(local_associates.get_dim()==0){
+        _v0=v1;
         return;
     }
 
