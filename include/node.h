@@ -35,7 +35,7 @@ public:
     void swarm_search();
 
     void _shift_ricochet(int);
-    int _ricochet(int, array_1d<double>&);
+    int _ricochet(int);
     void simplex_search();
     double volume();
     double get_norm(int);
