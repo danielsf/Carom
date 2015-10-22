@@ -4241,39 +4241,9 @@ void node::ricochet(){
 
    int ix,iFound,i,j;
 
-   kd_tree kd_copy(_chisquared->get_tree()[0]);
-
-   for(i=0;i<_chisquared->get_dim();i++){
-       kd_copy.set_min(i,_min_found.get_data(i));
-       kd_copy.set_max(i,_max_found.get_data(i));
-   }
-
    double dx,x1,x2,y1,y2,distanceMin;
    double gnorm,dirnorm;
    int local_pts0;
-
-   array_1d<double> ricochet_max,ricochet_min,min0,max0;
-
-   ricochet_max.set_name("node_ricochet_max");
-   ricochet_min.set_name("node_ricochet_min");
-   min0.set_name("node_ricochet_min0");
-   max0.set_name("node_ricochet_max0");
-
-   for(i=0;i<_compass_points.get_dim();i++){
-       for(j=0;j<_chisquared->get_dim();j++){
-           if(i==0 || get_pt(_compass_points.get_data(i),j)<ricochet_min.get_data(j)){
-               ricochet_min.set(j,get_pt(_compass_points.get_data(i),j));
-           }
-           if(i==0 || get_pt(_compass_points.get_data(i),j)>ricochet_max.get_data(j)){
-               ricochet_max.set(j,get_pt(_compass_points.get_data(i),j));
-           }
-       }
-   }
-
-   for(i=0;i<_chisquared->get_dim();i++){
-       min0.set(i,_min_found.get_data(i));
-       max0.set(i,_max_found.get_data(i));
-   }
 
     int kicked,local_center,is_connected,highball_call_0;
     double reflection_coeff;
