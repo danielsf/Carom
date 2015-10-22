@@ -109,7 +109,6 @@ void node::initialize(){
     _boundary_points.set_name("node_boundary_points");
     _ricochet_log.set_name("node_ricochet_log");
     _compass_log.set_name("node_compass_log");
-    _firework_centers.set_name("node_firework_centers");
     _true_min.set_name("node_true_min");
     _true_max.set_name("node_true_max");
     _transform.set_name("node_transform");
@@ -225,11 +224,6 @@ void node::copy(const node &in){
     _avg_pts.reset();
     for(i=0;i<in._avg_pts.get_dim();i++){
         _avg_pts.set(i,in._avg_pts.get_data(i));
-    }
-
-    _firework_centers.reset();
-    for(i=0;i<in._firework_centers.get_dim();i++){
-        _firework_centers.set(i,in._firework_centers.get_data(i));
     }
 
     _off_center_compass_points.reset();
