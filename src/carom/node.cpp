@@ -4805,10 +4805,6 @@ int node::get_n_particles(){
     return _ricochet_particles.get_dim();
 }
 
-int node::get_n_candidates(){
-    return _ricochet_candidates.get_dim();
-}
-
 void node::write_node_log(char *nameRoot){
     printf("\n_swarm_outsiders %d\n_swarm_expanders %d\n\n",
     _swarm_outsiders,_swarm_expanders);
