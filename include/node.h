@@ -200,7 +200,6 @@ private:
     int mcmc_kick(int, int*, array_1d<double>&, int);
     int originate_particle_shooting(array_1d<double>&);
     void originate_particle_simplex();
-    void _originate_particle_paperwork(int, int);
     void _filter_candidates();
     double _nearest_other_particle(int,int);
 
