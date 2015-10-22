@@ -218,9 +218,6 @@ private:
     double node_second_derivative_different(int,int,int);
     double node_second_derivative_same(int,int);
 
-    void firework_search(int);
-    void firework_search(int,int);
-
     int _are_connected(int, int);
 
     int is_it_a_strike(int, kd_tree&);
