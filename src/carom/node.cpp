@@ -3194,20 +3194,6 @@ void node::cull_ricochet(){
         remove_particle(strikes_dexes.get_data(i));
     }
 
-    int iFound;
-    array_1d<double> dir;
-    dir.set_name("cull_ricochet_dir");
-
-    array_1d<int> local_associates;
-    local_associates.set_name("cull_ricochet_local_associates");
-    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
-
-    for(i=0;i<_boundary_points.get_dim();i++){
-        if(_chisquared->get_fn(_boundary_points.get_data(i))<_chisquared->target()+tol){
-            local_associates.add(_boundary_points.get_data(i));
-        }
-    }
-
     while(_ricochet_particles.get_dim()<_chisquared->get_dim()){
         originate_particle_simplex();
     }
