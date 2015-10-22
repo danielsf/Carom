@@ -181,7 +181,6 @@ private:
     void compass_diagonal(int);
     void compass_search_geometric_center();
     void off_center_compass(int);
-    void trim_ricochet(int);
     void cull_ricochet();
     void remove_particle(int);
     void set_particle(int,int,array_1d<double>&);
