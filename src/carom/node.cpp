@@ -3244,7 +3244,7 @@ void node::set_particle(int ip, int ii){
         _ricochet_strikes.add_val(ip,1);
     }
 
-    if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*20){
+    if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*10){
         if(_mcmc_acceptances>_mcmc_rejections/2){
             _mcmc_step*=1.25;
         }
@@ -4615,7 +4615,7 @@ void node::swarm_search(){
         return;
     }
 
-    if(_swarm_acceptances+_swarm_rejections>20*_swarm.get_rows()){
+    if(_swarm_acceptances+_swarm_rejections>10*_swarm.get_rows()){
         if(_swarm_acceptances<(_swarm_rejections)/3){
             _swarm_step*=0.75;
         }
