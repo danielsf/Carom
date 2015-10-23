@@ -607,7 +607,7 @@ void node::is_it_safe(char *word){
 
     }
 
-    if(_ricochet_strikes.get_dim()>_ricochet_particles.get_dim()){
+    if(_ricochet_strikes.get_dim()!=_ricochet_particles.get_dim()){
         printf("WARNING %d strikes but %d particles\n",
         _ricochet_strikes.get_dim(),
         _ricochet_particles.get_dim());
@@ -3316,6 +3316,7 @@ void node::initialize_ricochet(){
         if(iFound>=0 && i_origin>=0){
             _ricochet_particles.add(iFound);
             _ricochet_origins.add(i_origin);
+            _ricochet_strikes.add(0);
         }
     }
 
@@ -3708,6 +3709,7 @@ void node::originate_particle_simplex(){
         if(iFound>=0 && i_other>=0){
             _ricochet_particles.add(iFound);
             _ricochet_origins.add(i_other);
+            _ricochet_strikes.add(0);
             _wander_log.add(i_particle);
         }
 
@@ -4522,6 +4524,7 @@ void node::swarm_shoot(int i_start){
     if(iFound>=0 && i_start>=0){
         _ricochet_particles.add(iFound);
         _ricochet_origins.add(i_start);
+        _ricochet_strikes.add(0);
     }
 
 }
