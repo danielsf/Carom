@@ -4194,7 +4194,7 @@ void node::ricochet(){
         initialize_ricochet();
     }
 
-   swarm_search();
+   //swarm_search();
 
    double volume0=volume();
    double projectedVolume0=projected_volume();
