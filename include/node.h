@@ -86,6 +86,7 @@ public:
     double get_ricochet_growth();
     double get_swarm_growth();
     double get_mcmc_growth();
+    double get_simplex_growth();
 
 private:
     int _do_simplex;
@@ -145,7 +146,7 @@ private:
     array_1d<int> _compass_log;
     array_1d<int> _wander_log;
 
-    double _ricochet_growth,_mcmc_growth,_swarm_growth;
+    double _ricochet_growth,_mcmc_growth,_swarm_growth,_simplex_growth;
 
     chisq_wrapper *_chisquared;
 

@@ -32,6 +32,7 @@ void node::initialize(){
     _ricochet_growth=1.0;
     _mcmc_growth=1.0;
     _swarm_growth=1.0;
+    _simplex_growth=1.0;
     _chimin=2.0*exception_value;
     _chimin_ricochet=2.0*exception_value;
     _do_simplex=1;
@@ -170,6 +171,7 @@ void node::copy(const node &in){
     _ricochet_growth=in._ricochet_growth;
     _mcmc_growth=in._mcmc_growth;
     _swarm_growth=in._swarm_growth;
+    _simplex_growth=in._simplex_growth;
 
     _swarm_acceptances=in._swarm_acceptances;
     _swarm_rejections=in._swarm_rejections;
@@ -388,6 +390,7 @@ void node::merge(const node &in){
     _ricochet_growth*=in._ricochet_growth;
     _mcmc_growth*=in._mcmc_growth;
     _swarm_growth*=in._swarm_growth;
+    _simplex_growth*=in._simplex_growth;
 
     recalibrate_max_min();
     _active=1;
@@ -407,6 +410,10 @@ double node::get_swarm_growth(){
 
 double node::get_mcmc_growth(){
     return _mcmc_growth;
+}
+
+double node::get_simplex_growth(){
+    return _simplex_growth;
 }
 
 int node::get_good_shots(){
@@ -3615,6 +3622,7 @@ int node::choose_off_center_point(){
 }
 
 void node::originate_particle_simplex(){
+    double local_v0=volume();
     printf("orig simplex\n");
     array_1d<double> min,max;
     min.set_name("orig_particle_simplex_min");
@@ -3714,6 +3722,8 @@ void node::originate_particle_simplex(){
         }
 
     }
+
+    _simplex_growth*=volume()/local_v0;
 
 }
 
