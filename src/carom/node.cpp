@@ -28,6 +28,7 @@ void node::deactivate_simplex(){
 }
 
 void node::initialize(){
+    _log=NULL;
     _chisquared=NULL;
     _ricochet_growth=1.0;
     _mcmc_growth=1.0;
@@ -183,6 +184,7 @@ void node::copy(const node &in){
     int i,j;
 
     _chisquared=in._chisquared;
+    _log=in._log;
 
     _associates.reset();
     for(i=0;i<in._associates.get_dim();i++){
@@ -475,6 +477,18 @@ void node::set_center(int ix){
     if(_chisquared!=NULL){
         _chimin=_chisquared->get_fn(ix);
     }
+}
+
+void node::set_log(asymm_array_2d<int> *ll){
+    _log=ll;
+}
+
+void node::add_to_log(int kind, int pt){
+    if(_log==NULL){
+        return;
+    }
+
+    _log->add(kind,pt);
 }
 
 void node::set_chisquared(chisq_wrapper *cc){
@@ -1593,6 +1607,7 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::add_to_compass(int dex){
     _compass_points.add(dex);
+    add_to_log(_log_compass, dex);
 }
 
 void node::populate_basis_associates(){
@@ -3684,8 +3699,20 @@ void node::originate_particle_simplex(){
             i_particle=node_bisection_origin_dir(iFound,dir);
         }
 
-        if(iFound>=0 && i_other>=0){
-            _ricochet_particles.add(iFound);
+        if(i_particle<0 && iFound>=0 && iFound!=i_other){
+            i_particle=iFound;
+        }
+
+        if(iFound>=0){
+            add_to_log(_log_dchi_simplex, iFound);
+        }
+
+        if(i_particle>=0 && iFound!=i_particle){
+            add_to_log(_log_dchi_simplex, i_particle);
+        }
+
+        if(i_particle>=0 && i_other>=0 && i_particle!=i_other){
+            _ricochet_particles.add(i_particle);
             _ricochet_origins.add(i_other);
             _ricochet_strikes.add(0);
         }
@@ -4029,6 +4056,11 @@ int node::_ricochet(int iparticle){
     iFound=node_bisection_origin_dir(_ricochet_particles.get_data(iparticle), dir);
 
     _ricochet_growth*=(volume()/local_v0);
+
+    if(iFound>=0){
+        add_to_log(_log_ricochet, iFound);
+    }
+
     return iFound;
 
 }
@@ -4279,8 +4311,15 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
     }
     double dir_norm=dir.normalize();
 
+    if(i_pt>=0){
+        add_to_log(_log_mcmc, i_pt);
+    }
+
     if(i_pt!=i_start && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
         i_found[0]=node_bisection_origin_dir(i_start, dir);
+        if(i_found[0]>=0){
+            add_to_log(_log_mcmc, i_found[0]);
+        }
     }
     else{
         i_found[0]=i_pt;
@@ -4629,6 +4668,11 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     printf("done with that\n");
     _ct++;
 
+}
+
+void arrayOfNodes::add(int i, chisq_wrapper *g, asymm_array_2d<int> *a){
+    add(i,g);
+    _data[_ct-1].set_log(a);
 }
 
 void arrayOfNodes::add(chisq_wrapper *g, int i){

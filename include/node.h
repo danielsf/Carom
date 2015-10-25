@@ -5,6 +5,7 @@
 #include "eigen_wrapper.h"
 #include "simplex.h"
 #include "dchi_simplex.h"
+#include "search_types.h"
 
 class node{
 
@@ -20,6 +21,7 @@ public:
 
     void initialize_ricochet();
 
+    void set_log(asymm_array_2d<int>*);
     void set_chisquared(chisq_wrapper*);
     void set_center(int);
     void set_basis(int,int,double);
@@ -29,6 +31,8 @@ public:
     void compass_search();
     void search();
     void ricochet();
+
+    void add_to_log(int, int);
 
     void swarm_shoot(int);
     void swarm_evaluate(array_1d<double>&,double*);
@@ -141,6 +145,8 @@ private:
     double _v0;
     int _since_culled;
 
+    asymm_array_2d<int> *_log;
+
     double _ricochet_growth,_mcmc_growth,_swarm_growth,_simplex_growth;
 
     chisq_wrapper *_chisquared;
@@ -221,6 +227,7 @@ public:
     ~arrayOfNodes();
 
     void add(int,chisq_wrapper*);
+    void add(int,chisq_wrapper*,asymm_array_2d<int>*);
     void add(chisq_wrapper*,int);
     int get_dim();
     void cull();

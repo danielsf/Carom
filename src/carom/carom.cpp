@@ -2,11 +2,13 @@
 
 carom::carom(){
     _write_every=3000;
+    _last_wrote_log=-1;
     _last_written=0;
     _ct_simplex=0;
     _ct_node=0;
     _unique_nodes=0;
     _calls_to_simplex=0;
+    _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
@@ -90,6 +92,60 @@ void carom::initialize(int npts){
     _chifn.initialize(npts);
     write_pts();
 }
+
+
+void carom::write_log(){
+
+    FILE *output;
+    char log_name[2*letters],suffix[letters];
+    array_1d<int> types;
+    types.set_name("carom_write_log_types");
+    types.add(_log_ricochet);
+    types.add(_log_mcmc);
+    types.add(_log_dchi_simplex);
+    types.add(_log_simplex);
+    types.add(_log_compass);
+    int i,j,ii;
+
+    for(ii=0;ii<types.get_dim();ii++){
+        if(types.get_data(ii)==_log_ricochet){
+            sprintf(log_name,"%s_ricochet_log.txt",_outname);
+        }
+        else if(types.get_data(ii)==_log_mcmc){
+            sprintf(log_name,"%s_mcmc_log.txt",_outname);
+        }
+        else if(types.get_data(ii)==_log_dchi_simplex){
+            sprintf(log_name,"%s_dchi_simplex_log.txt",_outname);
+        }
+        else if(types.get_data(ii)==_log_simplex){
+           sprintf(log_name,"%s_simplex_log.txt",_outname);
+        }
+        else if(types.get_data(ii)==_log_compass){
+            sprintf(log_name,"%s_compass_log.txt",_outname);
+        }
+
+        if(_last_wrote_log<0){
+            output=fopen(log_name,"w");
+        }
+        else{
+            output=fopen(log_name,"a");
+        }
+
+        for(i=0;i<_log.get_cols(types.get_data(ii));i++){
+            for(j=0;j<_chifn.get_dim();j++){
+                fprintf(output,"%e ",_chifn.get_pt(_log.get_data(types.get_data(ii),i),j));
+            }
+            fprintf(output,"%e\n",_chifn.get_fn(_log.get_data(types.get_data(ii),i)));
+        }
+
+        fclose(output);
+    }
+
+    _last_wrote_log=_chifn.get_pts();
+    _log.reset_preserving_room();
+
+}
+
 
 void carom::write_pts(){
     FILE *output;
@@ -320,6 +376,8 @@ void carom::simplex_search(){
 
     _ct_simplex+=_chifn.get_called()-ibefore;
 
+    _log.add(_log_simplex,neigh.get_data(0));
+
     assess_node(neigh.get_data(0));
 
     printf("done simplex searching; called cost %d _nodes %d\n",cost_fn.get_called(),_nodes.get_dim());
@@ -398,7 +456,7 @@ void carom::assess_node(int dex){
     }
 
     if(_nodes.get_dim()==0 && _chifn.get_fn(dex)<_chifn.target()){
-        _nodes.add(dex,&_chifn);
+        _nodes.add(dex,&_chifn,&_log);
         _unique_nodes++;
         return;
     }
@@ -431,7 +489,7 @@ void carom::assess_node(int dex){
                 is_unique=0;
             }
         }
-        _nodes.add(dex,&_chifn);
+        _nodes.add(dex,&_chifn,&_log);
         if(is_unique==1){
             _unique_nodes++;
         }
