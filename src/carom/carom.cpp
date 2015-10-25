@@ -135,7 +135,9 @@ void carom::write_log(){
             for(j=0;j<_chifn.get_dim();j++){
                 fprintf(output,"%e ",_chifn.get_pt(_log.get_data(types.get_data(ii),i),j));
             }
-            fprintf(output,"%e\n",_chifn.get_fn(_log.get_data(types.get_data(ii),i)));
+            fprintf(output,"%e %d\n",
+            _chifn.get_fn(_log.get_data(types.get_data(ii),i)),
+            _log.get_data(types.get_data(ii),i));
         }
 
         fclose(output);
@@ -241,6 +243,7 @@ void carom::write_pts(){
         printf("\n");
     }
 
+    write_log();
     _last_written=_chifn.get_called();
 
 }
