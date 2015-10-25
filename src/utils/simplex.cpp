@@ -348,6 +348,9 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     find_il();
 
     int abort_max=_abort_max_factor*seed.get_cols();
+    if(abort_max<100){
+        abort_max=100;
+    }
     int dim=seed.get_cols();
     double spread,gradient_threshold;
 
