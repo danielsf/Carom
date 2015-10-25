@@ -1652,7 +1652,6 @@ void node::compass_search(int local_center){
     is_it_safe("compass_search");
     _compass_points.reset();
     _transform_associates.reset();
-    _chisquared->set_iWhere(iCompass);
 
     int ibefore=_chisquared->get_called();
 
@@ -1748,7 +1747,6 @@ void node::compass_search(int local_center){
 
 void node::compass_diagonal(int local_center){
     is_it_safe("compass_diagonal");
-    _chisquared->set_iWhere(iCompass);
 
     int ix,iy;
     array_1d<double> trial,lowball,highball,dir;
@@ -1924,7 +1922,6 @@ void node::compass_diagonal(int local_center){
 void node::compass_search_geometric_center(){
     is_it_safe("compass_geometric_center");
 
-    _chisquared->set_iWhere(iCompass);
     array_1d<double> geometric_dir,trial,highball,lowball;
     int iFound,i,j;
     double mu,fhigh,flow,bisection_target,tol;
@@ -2619,9 +2616,6 @@ void node::off_center_compass(int iStart){
     int ix;
     int i,j,k;
     double dd,ddmin;
-
-    _chisquared->set_iWhere(iCompass);
-
 
     array_2d<double> dir;
     dir.set_name("off_center_compass_directions");
@@ -3941,8 +3935,6 @@ void node::simplex_search(){
     seed.set_cols(_chisquared->get_dim());
     double mu;
 
-    _chisquared->set_iWhere(iNodeSimplex);
-
     array_1d<double> pt_node;
     pt_node.set_name("node_simplex_pt_node");
 
@@ -4102,8 +4094,6 @@ void node::ricochet(){
    int ibefore=_chisquared->get_called();
    int rcalls_before=_bisection_calls;
    int rbefore=_total_bisections;
-   _chisquared->set_iWhere(iRicochet);
-
 
    double dd_max=-1.0;
    double dd_min=2.0*exception_value;

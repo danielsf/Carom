@@ -7,8 +7,6 @@
 
 #define exception_value 1.0e30
 
-enum{iSimplex,iCompass,iRicochet,iNodeSimplex};
-
 void kill(char*);
 
 double raiseup(double,double);

@@ -105,7 +105,7 @@ void carom::write_pts(){
         for(j=0;j<_chifn.get_dim();j++){
             fprintf(output,"%.18e ",_chifn.get_pt(i,j));
         }
-        fprintf(output,"%.18e 0 0 %d\n",_chifn.get_fn(i),_chifn.get_where_log(i));
+        fprintf(output,"%.18e 0 0 0\n",_chifn.get_fn(i));
     }
     fclose(output);
 
@@ -117,7 +117,7 @@ void carom::write_pts(){
         output=fopen(_timingname,"a");
     }
 
-    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- %d %d %d -- ",
+    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- ",
         _chifn.get_pts(),
         _chifn.chimin(),
         double(time(NULL))-_time_started,
@@ -125,9 +125,6 @@ void carom::write_pts(){
         _chifn.get_time_spent(),
         _chifn.get_time_spent()/double(_chifn.get_pts()),
         (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()),
-        _chifn.get_ct_where(iSimplex),
-        _chifn.get_ct_where(iRicochet),
-        _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim(),_unique_nodes);
     for(i=0;i<_nodes.get_dim();i++){
         fprintf(output,"%.4e %.4e %d %d -- %.4e %.4e %.4e %.4e -- convergence %d swarm expand %d",
@@ -194,7 +191,6 @@ void carom::write_pts(){
 
 void carom::simplex_search(){
     _calls_to_simplex++;
-    _chifn.set_iWhere(iSimplex);
     int ibefore=_chifn.get_called();
 
     array_1d<int> local_associates;

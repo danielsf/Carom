@@ -64,9 +64,6 @@ public:
     double get_max(int);
     
     void find_gradient(array_1d<double>&,array_1d<double>&);
-    void set_iWhere(int);
-    int get_ct_where(int);
-    int get_where_log(int);
 
     int in_bounds(array_1d<double>&);
     int in_bounds(int, double);
@@ -93,7 +90,7 @@ private:
     void is_it_safe(char*);
     
     array_1d<double> _valid_dd;
-    array_1d<int> _valid_neigh,_ct_where,_where_log;
+    array_1d<int> _valid_neigh;
 
     chisquared_distribution _distribution;
 };
