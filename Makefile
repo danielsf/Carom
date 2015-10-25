@@ -108,6 +108,9 @@ contours: src/analysis/chisquared_contours.cpp object/kd.o
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
 
+object/dchi_simplex.o: src/carom/dchi_simplex.cpp include/dchi_simplex.h object/chisq_wrapper.o
+	$(gg) -c -o object/dchi_simplex.o src/carom/dchi_simplex.cpp
+
 object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
 	$(gg) -c -o object/jellyBean.o src/utils/jellyBean.cpp
 
@@ -115,7 +118,7 @@ object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o obje
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
 object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
-object/simplex.o
+object/simplex.o object/dchi_simplex.o
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
 object/carom.o: src/carom/carom.cpp include/carom.h \
@@ -146,7 +149,7 @@ object/jellyBean.o
 	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/node.o object/carom.o object/jellyBean.o \
+	object/dchi_simplex.o object/node.o object/carom.o object/jellyBean.o \
 	$(LIBRARIES)
 
 
@@ -194,7 +197,7 @@ object/wmap_likelihood_function.o
 	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
 	object/wmap_likelihood_function.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/node.o object/carom.o \
+	object/dchi_simplex.o object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 

@@ -157,63 +157,6 @@ chiSquaredData::chiSquaredData(int dd, int cc, int nData, double sigma) : chisqu
     int ii,jj,goon,i;
     double nn,normerr,ortherr,theta;
 
-    if(_dim>4){
-
-        theta=_dice->doub()*2.0*pi;
-        for(ii=0;ii<_dim;ii++){
-            _bases.set(0,ii,0.0);
-            _bases.set(1,ii,0.0);
-        }
-
-        _bases.set(0,0,cos(theta));
-        _bases.set(0,1,sin(theta));
-        _bases.set(1,0,-sin(theta));
-        _bases.set(1,1,cos(theta));
-
-        for(ii=2;ii<_dim;ii++){
-            goon=1;
-	    while(goon==1){
-                goon=0;
-	        for(i=0;i<_dim;i++)_bases.set(ii,i,_dice->doub()-0.5);
-	        for(jj=0;jj<ii;jj++){
-	            nn=0.0;
-		    for(i=0;i<_dim;i++)nn+=_bases.get_data(ii,i)*_bases.get_data(jj,i);
-		    for(i=0;i<_dim;i++)_bases.subtract_val(ii,i,nn*_bases.get_data(jj,i));
-	        }
-	
-	        nn=0.0;
-	        for(i=0;i<_dim;i++){
-		    nn+=power(_bases.get_data(ii,i),2);
-	        }
-	        if(nn<1.0e-20)goon=1;
-	        nn=sqrt(nn);
-	        for(i=0;i<_dim;i++){
-	            _bases.divide_val(ii,i,nn);
-	        }
-	    }
-        }
-
-        for(ii=0;ii<_dim;ii++){
-            nn=0.0;
-	    for(i=0;i<_dim;i++)nn+=power(_bases.get_data(ii,i),2);
-	    nn=fabs(1.0-nn);
-	    if(ii==0 || nn>normerr)normerr=nn;
-	
-	    for(jj=ii+1;jj<_dim;jj++){
-	       nn=0.0;
-	       for(i=0;i<_dim;i++)nn+=_bases.get_data(ii,i)*_bases.get_data(jj,i);
-	       nn=fabs(nn);
-	       if((ii==0 && jj==1) || nn>ortherr)ortherr=nn;
-	    }
-        }
-
-        printf("normerr %e ortherr %e\n",normerr,ortherr);
-        if(normerr>1.0e-3 || ortherr>1.0e-3){
-            death_knell("normerr or ortherr too large");
-        }
-    }
-
-
     _ndata=nData;
     _sig=sigma;
 
@@ -391,6 +334,10 @@ double chiSquaredData::operator()(array_1d<double> &pt){
             printf("%e\n",_param_buffer.get_data(ix));
         }
         exit(1);
+    }
+
+    if(_with_logging==1){
+        _log_point(pt, chisq_min);
     }
 
     return chisq_min;

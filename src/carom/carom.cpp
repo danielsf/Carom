@@ -130,24 +130,17 @@ void carom::write_pts(){
         _chifn.get_ct_where(iCompass),
         _calls_to_simplex,_nodes.get_dim(),_unique_nodes);
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%.4e %.4e %d %d -- convergence %d ricochets %d kicks %d",
+        fprintf(output,"%.4e %.4e %d %d -- %.4e %.4e %.4e %.4e -- convergence %d swarm expand %d",
         _nodes(i)->projected_volume(),
         _nodes(i)->volume(),
         _nodes(i)->get_n_particles(),
-        _nodes(i)->get_n_candidates(),
+        _chifn.get_pts(),
+        _nodes(i)->get_ricochet_growth(),
+        _nodes(i)->get_mcmc_growth(),
+        _nodes(i)->get_swarm_growth(),
+        _nodes(i)->get_simplex_growth(),
         _nodes(i)->get_convergence_ct(),
-        _nodes(i)->get_proper_ricochets(),
-        _nodes(i)->get_total_kicks());
-
-        /*fprintf(output,"%.4e %.4e %d %d -- convergence %d shots: failed %d successful %d strikeouts %d ricochets %d",
-        _nodes(i)->projected_volume(),_nodes(i)->volume(),_nodes(i)->get_n_particles(),_nodes(i)->get_n_candidates(),
-        _nodes(i)->get_convergence_ct(),
-        _nodes(i)->get_bad_shots(),_nodes(i)->get_good_shots(),
-        _nodes(i)->get_strikeouts(),_nodes(i)->get_successful_ricochets());*/
-
-        /*fprintf(output," kicks: total %d successful %d failed %d",
-        _nodes(i)->get_total_kicks(),
-        _nodes(i)->get_successful_kicks(),_nodes(i)->get_failed_kicks());*/
+        _nodes(i)->get_swarm_expand());
 
         fprintf(output," trimmed %d",_nodes(i)->get_total_trimmed());
 
@@ -159,7 +152,10 @@ void carom::write_pts(){
 
     printf("\nNODE CENTERS\n");
     for(i=0;i<_nodes.get_dim();i++){
-        printf("    %e\n",_chifn.get_fn(_nodes(i)->get_center()));
+        printf("    %e -- %d %e %e\n",
+        _chifn.get_fn(_nodes(i)->get_center()),_nodes(i)->get_center(),
+        _chifn.get_pt(_nodes(i)->get_center(),0),
+        _chifn.get_pt(_nodes(i)->get_center(),1));
 
         if(_nodes(i)->get_total_bisections()>0){
             printf("    bisections %d %d %d\n",
@@ -209,8 +205,72 @@ void carom::simplex_search(){
     _chifn.set_iWhere(iSimplex);
     int ibefore=_chifn.get_called();
 
+    array_1d<int> local_associates;
+    array_1d<double> norm;
+    local_associates.set_name("carom_simplex_local_associates");
+    norm.set_name("carom_simplex_norm");
+
+    int i_node,i_pt;
+    int i,j;
+    double xmin,xmax,xx;
+
+    if(_nodes.get_dim()>0){
+        for(i_node=0;i_node<_nodes.get_dim();i_node++){
+            i_pt=_nodes(i_node)->get_center();
+            if(local_associates.contains(i_pt)==0){
+                local_associates.add(i_pt);
+            }
+
+            for(i=0;i<_nodes(i_node)->get_n_boundary();i++){
+                i_pt=_nodes(i_node)->get_boundary(i);
+                if(local_associates.contains(i_pt)==0){
+                    local_associates.add(i_pt);
+                }
+            }
+
+            for(i=0;i<_nodes(i_node)->get_n_associates();i+=3){
+                i_pt=_nodes(i_node)->get_associate(i);
+                if(local_associates.contains(i_pt)==0){
+                    local_associates.add(i_pt);
+                }
+            }
+        }
+
+        if(_nodes.get_dim()>1){
+            for(i_node=0;i_node<_nodes.get_dim();i_node++){
+                for(i=0;i<_chifn.get_dim();i++){
+                    i_pt=_nodes(i_node)->get_center();
+                    xmin=_chifn.get_pt(i_pt,i);
+                    xmax=_chifn.get_pt(i_pt,i);
+                    for(j=0;j<_nodes(i_node)->get_n_boundary();j++){
+                        i_pt=_nodes(i_node)->get_boundary(j);
+                        xx=_chifn.get_pt(i_pt,i);
+
+                        if(xx<xmin){
+                            xmin=xx;
+                        }
+
+                        if(xx>xmax){
+                            xmax=xx;
+                        }
+                    }
+
+                    if(i>=norm.get_dim() || xmax-xmin>norm.get_data(i)){
+                        norm.set(i,xmax-xmin);
+                    }
+                }
+            }
+        }
+    }
+
+    dchi_multimodal_simplex dchifn(&_chifn,local_associates);
+
+    if(norm.get_dim()>0){
+        dchifn.set_norm(norm);
+    }
+
     simplex_minimizer ffmin;
-    ffmin.set_chisquared(&_chifn);
+    ffmin.set_chisquared(&dchifn);
     ffmin.set_dice(_chifn.get_dice());
     array_1d<double> min,max;
     min.set_name("carom_simplex_search_min");
@@ -227,7 +287,7 @@ void carom::simplex_search(){
     seed.set_name("carom_simplex_search_seed");
 
     seed.set_cols(_chifn.get_dim());
-    int i,j,iFound;
+    int iFound;
     array_1d<double> trial;
     array_1d<int> seed_dex;
     double ftrial;

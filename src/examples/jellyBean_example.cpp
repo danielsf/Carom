@@ -132,4 +132,13 @@ int active_nodes=1;
 carom_test.search(nsamples);
 chisq.print_mins();
 
+array_1d<double> v0,v1;
+chisq.get_basis(0,v0);
+chisq.get_basis(1,v1);
+printf("\nfirst two bases\n");
+for(i=0;i<dim;i++){
+    printf("%e %e\n",v0.get_data(i),v1.get_data(i));
+}
+
+
 }

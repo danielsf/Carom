@@ -219,6 +219,12 @@ public:
     /*return the dimensionality of the parameter space*/
     int get_dim();
 
+    void enable_logging(){
+        _with_logging=1;
+    }
+
+    array_2d<double> pt_log;
+    array_1d<double> fn_log;
 
 protected:
     /*
@@ -307,6 +313,17 @@ protected:
     */
     void add_to_boundary(array_1d<double>&,int,int,double);
 
+
+    int _with_logging;
+
+    void _log_point(array_1d<double> &pt, double mu){
+        if(_with_logging==0){
+             return;
+        }
+ 
+        fn_log.add(mu);
+        pt_log.add_row(pt);
+    }
 
 };
 

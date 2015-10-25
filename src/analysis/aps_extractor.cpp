@@ -203,7 +203,8 @@ void aps_extractor::write_good_points(char *outname, int ix, int iy){
 
     plot_thinned_data(to_plot,outname);
 
-    printf("wrote good pts with chi_min %e target %e\n",chi_min,chi_target);
+    printf("wrote good pts with chi_min %e target %e ct %d\n",
+    chi_min,chi_target,ct);
 }
 
 void aps_extractor::plot_chimin(char *outname){

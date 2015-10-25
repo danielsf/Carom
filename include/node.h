@@ -4,6 +4,7 @@
 #include "chisq_wrapper.h"
 #include "eigen_wrapper.h"
 #include "simplex.h"
+#include "dchi_simplex.h"
 
 class node{
 
@@ -27,19 +28,28 @@ public:
     void find_bases();
     void compass_search();
     void search();
-    void reset_ricochet();
     void ricochet();
-    int _ricochet(int, array_1d<double>&);
-    int _adaptive_ricochet(int, array_1d<double>&);
+
+    void swarm_shoot(int);
+    void swarm_evaluate(array_1d<double>&,double*);
+    void swarm_search();
+
+    void _shift_ricochet(int);
+    int _ricochet(int);
     void simplex_search();
     double volume();
     double get_norm(int);
+    double get_projected_norm(int);
     double get_transform(int);
     double projected_volume();
     int get_activity();
     int get_ct_ricochet();
     int get_n_particles();
-    int get_n_candidates();
+
+    int get_n_boundary();
+    int get_boundary(int);
+    int get_n_associates();
+    int get_associate(int);
 
     void project_to_bases(array_1d<double>&,array_1d<double>&);
     void recalibrate_max_min();
@@ -69,13 +79,21 @@ public:
     int get_proper_ricochets();
     void set_id_dex(int);
     void write_node_log(char*);
+    int get_swarm_expand();
+    int get_swarm_outside();
+    void deactivate_simplex();
+
+    double get_ricochet_growth();
+    double get_swarm_growth();
+    double get_mcmc_growth();
+    double get_simplex_growth();
 
 private:
+    int _do_simplex;
     int _id_dex,_last_wrote_log;
     int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
-    int _ricochet_strikes,_strikeouts;
     int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases,_chimin_ricochet;
     double _volume_of_last_geom;
@@ -94,26 +112,41 @@ private:
 
     array_1d<int> _compass_points,_basis_associates,_off_center_compass_points;
     asymm_array_2d<int> _transform_associates;
-    array_1d<int> _firework_centers;
-    array_1d<int> _ricochet_candidates;
+    array_1d<int> _avg_pts;
     array_1d<int> _off_center_origins,_off_center_candidates;
     array_1d<int> _associates;
+
     array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
     array_1d<double> _basis_lengths;
     array_1d<double> _max_found,_min_found;
     array_1d<double> _projected_min,_projected_max;
     array_2d<double> _basis_vectors,_basis_ddsq;
 
+    array_2d<double> _swarm;
+    array_1d<double> _swarm_center;
+    array_1d<double> _swarm_norm,_swarm_max,_swarm_min;
+    array_1d<int> _swarm_associates;
+    int _swarm_acceptances,_swarm_rejections;
+    double _swarm_step,_f_swarm_center;
+    int _swarm_outsiders,_swarm_expanders;
+
+    double _mcmc_step;
+    int _mcmc_acceptances,_mcmc_rejections;
+
     array_1d<double> _true_min,_true_max,_transform;
 
-    array_2d<double> _ricochet_velocities,_ricochet_candidate_velocities;
     array_1d<int> _ricochet_particles;
     array_1d<int> _ricochet_origins;
     array_1d<int> _boundary_points;
+    array_1d<int> _ricochet_strikes;
+    double _v0;
+    int _since_culled;
 
     array_1d<int> _ricochet_log;
-    array_1d<int> _ricochet_candidate_log;
     array_1d<int> _compass_log;
+    array_1d<int> _wander_log;
+
+    double _ricochet_growth,_mcmc_growth,_swarm_growth,_simplex_growth;
 
     chisq_wrapper *_chisquared;
 
@@ -143,8 +176,9 @@ private:
     void compass_diagonal(int);
     void compass_search_geometric_center();
     void off_center_compass(int);
-    void trim_ricochet(int);
-    void set_particle(int,int,array_1d<double>&);
+    void cull_ricochet();
+    void remove_particle(int);
+    void set_particle(int,int);
     double ricochet_model(array_1d<double>&);
     double ricochet_model(array_1d<double>&,array_1d<int>&);
     double ricochet_model(array_1d<double>&,double*);
@@ -155,14 +189,11 @@ private:
     double apply_quadratic_model(array_1d<double>&);
     double apply_quadratic_model(int);
 
-    void mcmc_step(int, int*, array_1d<double>&, int);
-    void mcmc_walk(int);
+    void mcmc_walk(int, int*, int, array_1d<int>&);
 
     int mcmc_kick(int, int*, array_1d<double>&, int);
-    int originate_particle_compass(array_1d<double>&);
-    int originate_particle_shooting(array_1d<double>&);
-    void _originate_particle_paperwork(int, int);
-    void _filter_candidates();
+    int originate_particle_shooting(int*);
+    void originate_particle_simplex();
     double _nearest_other_particle(int,int);
 
     double node_distance(array_1d<double>&, array_1d<double>&);
@@ -177,9 +208,6 @@ private:
     double node_second_derivative(int,int,int);
     double node_second_derivative_different(int,int,int);
     double node_second_derivative_same(int,int);
-
-    void firework_search(int);
-    void firework_search(int,int);
 
     int _are_connected(int, int);
 
