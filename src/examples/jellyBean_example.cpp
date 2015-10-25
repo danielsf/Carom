@@ -13,7 +13,8 @@ int i,j;
 int seed=99;
 int dim=5;
 int nsamples=-1;
-double delta_chisq=11.0;
+double delta_chisq=-1.0;
+double abs_target=-1.0;
 double confidence_limit=0.95;
 
 char timingname[letters],outname[letters];
@@ -28,7 +29,7 @@ for(i=1;i<iargc;i++){
     if(argv[i][0]=='-'){
         switch(argv[i][1]){
             case 'h':
-                printf("s = seed\nc = delta_chi\nn = nsamples\n");
+                printf("s = seed\nc = delta_chi\na = abs target\nn = nsamples\n");
                 printf("d = dim\no = outputname\nt = timingname\n");
                 printf("p = confidence limit\n");
                 exit(1);
@@ -44,6 +45,10 @@ for(i=1;i<iargc;i++){
             case 'c':
                 i++;
                 delta_chisq=atof(argv[i]);
+                break;
+            case 'a':
+                i++;
+                abs_target=atof(argv[i]);
                 break;
             case 'n':
                 i++;
@@ -96,7 +101,21 @@ chisq.print_mins();
 //on a 5-dimensional parameter space
 
 carom carom_test;
-carom_test.set_deltachi(delta_chisq);
+if(delta_chisq>0.0 && abs_target>0.0){
+    printf("WARNING cannot set delta chisq and target\n");
+    exit(1);
+}
+else if(delta_chisq<0.0 && abs_target<0.0){
+     printf("WARNING did not set either delta chisq or target\n");
+     exit(1);
+}
+
+if(delta_chisq>0.0){
+    carom_test.set_deltachi(delta_chisq);
+}
+else{
+    carom_test.set_target(abs_target);
+}
 carom_test.set_seed(seed);
 carom_test.set_confidence_limit(confidence_limit);
 
