@@ -57,7 +57,6 @@ void node::initialize(){
     _volume_of_last_geom=0.0;
     _successful_ricochets=0;
     _id_dex=0;
-    _last_wrote_log=0;
     _good_shots=0;
     _bad_shots=0;
     _node_dd_tol=1.0e-2;
@@ -107,13 +106,10 @@ void node::initialize(){
     _ricochet_origins.set_name("node_ricochet_origins");
     _associates.set_name("node_associates");
     _boundary_points.set_name("node_boundary_points");
-    _ricochet_log.set_name("node_ricochet_log");
-    _compass_log.set_name("node_compass_log");
     _true_min.set_name("node_true_min");
     _true_max.set_name("node_true_max");
     _transform.set_name("node_transform");
     _transform_associates.set_name("node_transform_associates");
-    _wander_log.set_name("node_wander_log");
     _avg_pts.set_name("node_avg_pts");
     _swarm.set_name("node_swarm");
     _swarm_center.set_name("node_swarm_center");
@@ -148,7 +144,6 @@ void node::copy(const node &in){
     _volume_of_last_geom=in._volume_of_last_geom;
     _successful_ricochets=in._successful_ricochets;
     _id_dex=in._id_dex;
-    _last_wrote_log=in._last_wrote_log;
     _node_dd_tol=in._node_dd_tol;
     _good_shots=in._good_shots;
     _bad_shots=in._bad_shots;
@@ -210,11 +205,6 @@ void node::copy(const node &in){
         for(j=0;j<in._swarm.get_cols();j++){
             _swarm.set(i,j,in._swarm.get_data(i,j));
         }
-    }
-
-    _wander_log.reset();
-    for(i=0;i<in._wander_log.get_dim();i++){
-        _wander_log.set(i,in._wander_log.get_data(i));
     }
 
     _ricochet_strikes.reset();
@@ -320,16 +310,6 @@ void node::copy(const node &in){
     _ricochet_particles.reset();
     for(i=0;i<in._ricochet_particles.get_dim();i++){
         _ricochet_particles.set(i,in._ricochet_particles.get_data(i));
-    }
-
-    _ricochet_log.reset();
-    for(i=0;i<in._ricochet_log.get_dim();i++){
-        _ricochet_log.add(in._ricochet_log.get_data(i));
-    }
-
-    _compass_log.reset();
-    for(i=0;i<in._compass_log.get_dim();i++){
-        _compass_log.add(in._compass_log.get_data(i));
     }
 
 }
@@ -1613,7 +1593,6 @@ double node::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_
 
 void node::add_to_compass(int dex){
     _compass_points.add(dex);
-    _compass_log.add(dex);
 }
 
 void node::populate_basis_associates(){
@@ -3229,7 +3208,6 @@ void node::set_particle(int ip, int ii){
     }
 
     _ricochet_particles.set(ip,ii);
-    _ricochet_log.add(ii);
 
     int j;
 
@@ -3277,7 +3255,6 @@ void node::set_particle(int ip, int ii){
     if(i_found>=0 && i_found!=_ricochet_particles.get_data(ip)){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
         _ricochet_particles.set(ip,i_found);
-        _ricochet_log.add(i_found);
     }
 
     _v0=volume();
@@ -3682,7 +3659,6 @@ void node::originate_particle_simplex(){
     int i_particle;
 
     if(iFound>=0){
-        _wander_log.add(iFound);
         ddmin=2.0*exception_value;
         for(i=0;i<local_associates.get_dim();i++){
             dd=normalized_node_distance(iFound,local_associates.get_data(i));
@@ -3718,7 +3694,6 @@ void node::originate_particle_simplex(){
             _ricochet_particles.add(iFound);
             _ricochet_origins.add(i_other);
             _ricochet_strikes.add(0);
-            _wander_log.add(i_particle);
         }
 
     }
@@ -4016,93 +3991,6 @@ void node::simplex_search(){
 
 }
 
-double node::_nearest_other_particle(int target, int ignore_particle){
-    int iy;
-    double dd,ans=2.0*exception_value;
-    for(iy=0;iy<_ricochet_particles.get_dim();iy++){
-        if(iy!=ignore_particle){
-            dd=node_distance(target,_ricochet_particles.get_data(iy));
-            if(dd<ans){
-                ans=dd;
-            }
-        }
-    }
-
-    int i,j;
-    for(i=0;i<_ricochet_log.get_dim();i++){
-        iy=_ricochet_log.get_data(i);
-        if(iy!=target){
-            dd=node_distance(target,iy);
-            if(dd<ans && (ignore_particle!=i || dd>1.0e-10)){
-                ans=dd;
-            }
-        }
-    }
-
-    return ans;
-
-}
-
-int node::is_it_a_strike(int ix, kd_tree &kd_copy){
-    if(_ricochet_particles.get_data(ix)<0){
-        return 1;
-    }
-
-    double mu=_chisquared->get_fn(_ricochet_particles.get_data(ix));
-    if(mu<0.1*_chisquared->chimin()+0.9*_chisquared->target()){
-        return 1;
-    }
-
-    double dist;
-    if(_ricochet_origins.get_data(ix)>=0){
-        dist=node_distance(_ricochet_origins.get_data(ix),_ricochet_particles.get_data(ix));
-        if(dist<_node_dd_tol){
-            return 1;
-        }
-    }
-
-    dist=_nearest_other_particle(_ricochet_particles.get_data(ix),ix);
-    if(dist<=_node_dd_tol){
-        return 1;
-    }
-
-    int i;
-    for(i=0;i<_boundary_points.get_dim();i++){
-        if(_boundary_points.get_data(i)!=ix){
-            dist=node_distance(_boundary_points.get_data(i),ix);
-            if(dist<=_node_dd_tol){
-                return 1;
-            }
-        }
-    }
-
-    array_1d<int> neigh;
-    array_1d<double> dd;
-    neigh.set_name("node_is_it_a_strike_neigh");
-    dd.set_name("node_is_it_a_strike_dd");
-
-    array_1d<double> true_pt;
-    true_pt.set_name("node_is_it_a_strike_true_pt");
-    get_true_pt(_ricochet_particles.get_data(ix),true_pt);
-
-    kd_copy.nn_srch(true_pt,1,neigh,dd);
-    dist=node_distance(neigh.get_data(0),_ricochet_particles.get_data(ix));
-    if(dist<=_node_dd_tol){
-        return 1;
-     }
-
-    mu=ricochet_model(true_pt,kd_copy);
-
-    if(mu>0.0 &&
-        mu<1.1*_chisquared->target()-0.1*_chisquared->chimin() &&
-        mu>_chisquared->chimin()){
-
-        return 1;
-    }
-
-
-    return 0;
-}
 
 int node::_ricochet(int iparticle){
     if(_ricochet_particles.get_data(iparticle)==_ricochet_origins.get_data(iparticle)){
@@ -4450,64 +4338,6 @@ int node::get_ricochet_bisections(){
 
 int node::get_n_particles(){
     return _ricochet_particles.get_dim();
-}
-
-void node::write_node_log(char *nameRoot){
-    printf("\n_swarm_outsiders %d\n_swarm_expanders %d\n\n",
-    _swarm_outsiders,_swarm_expanders);
-
-    char outname[letters];
-    sprintf(outname,"%s_node_%d_log.txt",nameRoot,_id_dex);
-
-    FILE *output;
-
-    if(_last_wrote_log==0){
-        output=fopen(outname,"w");
-    }
-    else{
-        output=fopen(outname,"a");
-    }
-
-    int i;
-
-    for(i=0;i<_ricochet_log.get_dim();i++){
-        fprintf(output,"%d\n",_ricochet_log.get_data(i));
-    }
-
-    fclose(output);
-
-    _ricochet_log.reset();
-
-    sprintf(outname,"%s_node_compass_%d_log.txt",nameRoot,_id_dex);
-    if(_last_wrote_log==0){
-        output=fopen(outname,"w");
-    }
-    else{
-        output=fopen(outname,"a");
-    }
-
-    for(i=0;i<_compass_log.get_dim();i++){
-        fprintf(output,"%d\n",_compass_log.get_data(i));
-    }
-    fclose(output);
-    _compass_log.reset();
-
-    sprintf(outname,"%s_node_wander_%d_log.txt",nameRoot,_id_dex);
-    if(_last_wrote_log==0){
-        output=fopen(outname,"w");
-    }
-    else{
-        output=fopen(outname,"a");
-    }
-
-    for(i=0;i<_wander_log.get_dim();i++){
-        fprintf(output,"%d %e\n",_wander_log.get_data(i),_chisquared->get_fn(_wander_log.get_data(i)));
-    }
-    fclose(output);
-    _wander_log.reset();
-
-    _last_wrote_log=_chisquared->get_pts();
-
 }
 
 int node::get_swarm_outside(){
