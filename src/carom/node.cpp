@@ -488,6 +488,10 @@ void node::add_to_log(int kind, int pt){
         return;
     }
 
+    if(kind<_log->get_rows() && _log[0](kind)->contains(pt)==1){
+        return;
+    }
+
     _log->add(kind,pt);
 }
 
