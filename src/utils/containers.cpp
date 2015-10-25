@@ -626,6 +626,10 @@ void array_2d<T>::decrement_rows(){
 
 template <typename T>
 void array_2d<T>::reset_preserving_room(){
+    int i;
+    for(i=0;i<rows;i++){
+        data[i].reset_preserving_room();
+    }
     rows=0;
 }
 
@@ -954,6 +958,10 @@ void asymm_array_2d<T>::remove_row(int dex){
 
 template <typename T>
 void asymm_array_2d<T>::reset_preserving_room(){
+    int i;
+    for(i=0;i<rows;i++){
+        data[i].reset_preserving_room();
+    }
     rows=0;
 }
 
