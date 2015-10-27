@@ -4546,10 +4546,11 @@ void node::swarm_search(){
                 _swarm.set(ipt,i,trial.get_data(i));
             }
             swarm_evaluate(trial,&mu);
+            chi_old.set(ipt,mu);
+
             if(mu>exception_value){
                 ipt--;
             }
-            chi_old.set(ipt,mu);
         }
     }
     else{
