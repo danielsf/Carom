@@ -105,6 +105,7 @@ void carom::write_log(){
     types.add(_log_dchi_simplex);
     types.add(_log_simplex);
     types.add(_log_compass);
+    types.add(_log_swarm);
     int i,j,ii;
 
     for(ii=0;ii<types.get_dim();ii++){
@@ -122,6 +123,13 @@ void carom::write_log(){
         }
         else if(types.get_data(ii)==_log_compass){
             sprintf(log_name,"%s_compass_log.txt",_outname);
+        }
+        else if(types.get_data(ii)==_log_swarm){
+            sprintf(log_name,"%s_swarm_log.txt",_outname);
+        }
+        else{
+            printf("WARNING asked for unknown log type %d\n",types.get_data(ii));
+            exit(1);
         }
 
         if(_last_wrote_log<0){

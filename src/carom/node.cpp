@@ -4395,6 +4395,7 @@ void node::swarm_shoot(int i_start){
     }
 
     if(iFound>=0 && i_start>=0){
+        add_to_log(_log_swarm, iFound);
         _ricochet_particles.add(iFound);
         _ricochet_origins.add(i_start);
         _ricochet_strikes.add(0);
@@ -4417,6 +4418,10 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
     }
     int iFound;
     evaluate(buffer,mu,&iFound);
+
+    if(mu[0]<_chisquared->target()){
+        add_to_log(_log_swarm, iFound);
+    }
 
     double v1=volume();
     if(v1>v0*1.05){
