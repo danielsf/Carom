@@ -13,7 +13,7 @@ def get_histogram(chisq, dchi, nsteps):
     return x_arr, cts
 
 
-def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
+def get_good_pts(data, target=None, delta_chisq=None):
     if target is None and delta_chisq is None:
         raise RuntimeError("must specify either target or delta_chisq in get_scatter")
 
@@ -27,6 +27,14 @@ def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.00
 
 
     good_pts = data[np.where(data.transpose()[i_chi]<=_target)[0]]
+    return good_pts
+
+
+def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
+
+    good_pts =get_good_pts(data, target=target, delta_chisq=delta_chisq)
+
+    i_chi = data.shape[1]-1
 
     temp = good_pts.transpose()
     x_norm = temp[ix].max()-temp[ix].min()
@@ -42,7 +50,6 @@ def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.00
 
     chisq_kept = [good_pts[min_dex][i_chi]]
     print 'data shape ',data.shape,i_chi
-    print _target
     print good_pts[min_dex]
     print 'min_dex ',min_dex
 
@@ -73,7 +80,7 @@ if __name__ == "__main__":
     dim = 10
 
     input_dir = os.path.join('/Users','danielsf','physics','Carom','output','scratch')
-    
+
     input_file = os.path.join(input_dir,'test151023','jellyBean_d10_s99_output.sav')
 
     full_data = np.genfromtxt(input_file)
@@ -83,7 +90,7 @@ if __name__ == "__main__":
     print full_data.shape
     print useful_data.shape
     print full_data.view(np.ndarray)
-    
+
     good_pts, chisq = get_scatter(useful_data, 0, 1, delta_chisq=18.3)
     print 'final ',good_pts.shape
     with open(os.path.join(input_dir,'trial_plot.sav'), 'w') as output:
