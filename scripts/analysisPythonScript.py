@@ -30,11 +30,9 @@ def get_good_pts(data, target=None, delta_chisq=None):
     return good_pts
 
 
-def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
+def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
 
-    good_pts =get_good_pts(data, target=target, delta_chisq=delta_chisq)
-
-    i_chi = data.shape[1]-1
+    i_chi = good_pts.shape[1]-1
 
     temp = good_pts.transpose()
     x_norm = temp[ix].max()-temp[ix].min()
@@ -44,12 +42,11 @@ def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.00
     print temp[i_chi][min_dex]
     print len(temp[i_chi])
     ct_kept = 1
-    pts_kept = np.ones((2,len(data)))*1000000.0
+    pts_kept = np.ones((2,len(good_pts)))*1000000.0
     pts_kept[0][0] = good_pts[min_dex][ix]
     pts_kept[1][0] = good_pts[min_dex][iy]
 
     chisq_kept = [good_pts[min_dex][i_chi]]
-    print 'data shape ',data.shape,i_chi
     print good_pts[min_dex]
     print 'min_dex ',min_dex
 
@@ -72,6 +69,11 @@ def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.00
         raise RuntimeError("ct_kept %d chisq %d\n" %(ct_kept, len(chisq_kept)))
     return pts_kept.transpose()[:ct_kept], chisq_kept
 
+
+def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
+
+    good_pts =get_good_pts(data, target=target, delta_chisq=delta_chisq)
+    return _get_scatter(good_pts, ix, iy, ddsq_threshold=ddsq_threshold)
 
 import os
 
