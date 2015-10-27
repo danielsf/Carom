@@ -15,7 +15,7 @@ def get_histogram(chisq, dchi, nsteps):
 
 def get_good_pts(data, target=None, delta_chisq=None):
     if target is None and delta_chisq is None:
-        raise RuntimeError("must specify either target or delta_chisq in get_scatter")
+        raise RuntimeError("must specify either target or delta_chisq in get_good_pts")
 
 
     i_chi = data.shape[1]-1
