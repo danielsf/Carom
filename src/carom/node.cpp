@@ -3669,8 +3669,6 @@ void node::originate_particle_simplex(){
     array_1d<double> dir;
     dir.set_name("orig_particle_simplex_dir");
 
-    int i_particle;
-
     if(iFound>=0){
         ddmin=2.0*exception_value;
         for(i=0;i<local_associates.get_dim();i++){
@@ -3695,28 +3693,12 @@ void node::originate_particle_simplex(){
             dir.set(i,get_pt(iFound,i)-get_pt(i_other,i));
         }
 
-        if(_chisquared->get_fn(iFound)>_chisquared->target()){
-          i_particle=node_bisection_origin_dir(i_other,dir);
-
-        }
-        else if(_chisquared->get_fn(iFound)<_chisquared->target()){
-            i_particle=node_bisection_origin_dir(iFound,dir);
-        }
-
-        if(i_particle<0 && iFound>=0 && iFound!=i_other){
-            i_particle=iFound;
-        }
-
         if(iFound>=0){
             add_to_log(_log_dchi_simplex, iFound);
         }
 
-        if(i_particle>=0 && iFound!=i_particle){
-            add_to_log(_log_dchi_simplex, i_particle);
-        }
-
-        if(i_particle>=0 && i_other>=0 && i_particle!=i_other){
-            _ricochet_particles.add(i_particle);
+        if(iFound>=0 && i_other>=0 && iFound!=i_other){
+            _ricochet_particles.add(iFound);
             _ricochet_origins.add(i_other);
             _ricochet_strikes.add(0);
         }
