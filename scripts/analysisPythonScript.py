@@ -50,9 +50,15 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
     print good_pts[min_dex]
     print 'min_dex ',min_dex
 
+    center_dd = np.power((temp[ix]-pts_kept[0][0])/x_norm,2)+np.power((temp[iy]-pts_kept[1][0])/y_norm,2)
+
     print 'looping ',x_norm, y_norm
-    for pt in good_pts:
+    for ipt in range(len(good_pts)):
         print_it = False
+
+        i_chosen = np.argmax(center_dd)
+
+        pt = good_pts[i_chosen]
 
         if not print_it:
             dd = np.power((pt[ix]-pts_kept[0][:ct_kept])/x_norm,2)+np.power((pt[iy]-pts_kept[1][:ct_kept])/y_norm,2)
@@ -64,6 +70,8 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
             pts_kept[1][ct_kept] = pt[iy]
             chisq_kept.append(pt[i_chi])
             ct_kept += 1
+
+        center_dd[i_chosen] = -1000.0
 
     if len(chisq_kept)!=ct_kept:
         raise RuntimeError("ct_kept %d chisq %d\n" %(ct_kept, len(chisq_kept)))
