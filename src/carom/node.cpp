@@ -3195,8 +3195,15 @@ void node::cull_ricochet(){
 
     sort_and_check(strikes,strikes_sorted,strikes_dexes);
     int n_started=_ricochet_particles.get_dim();
+    int target_particle,j;
     for(i=0;i<strikes_sorted.get_dim() && i<n_started-_chisquared->get_dim()/2;i++){
+        target_particle=strikes_dexes.get_data(i);
         remove_particle(strikes_dexes.get_data(i));
+        for(j=i+1;j<strikes_sorted.get_dim();j++){
+            if(strikes_dexes.get_data(j)>target_particle){
+                strikes_dexes.subtract_val(j,1);
+            }
+        }
     }
 
     while(_ricochet_particles.get_dim()<_chisquared->get_dim()){
