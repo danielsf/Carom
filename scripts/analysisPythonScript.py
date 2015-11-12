@@ -115,6 +115,13 @@ if __name__ == "__main__":
 
     input_file = os.path.join(input_dir,'analysisTest','jellyBean_d4_s99_output.sav')
 
+    control_names = {}
+    for ix, iy in zip(ix_list, iy_list):
+        control_file = os.path.join(carom_dir, 'controls', 'jellyBeanData')
+        control_file = os.path.join(control_file, 'jellyBean_%d_%d_frequentistFullDrelative.txt' % (ix, iy))
+
+        control_names['%d_%d' % (ix, iy)] = control_file
+
     full_data = np.genfromtxt(input_file)
     useful_data = full_data.transpose()[:dim+1].transpose()
 
@@ -126,6 +133,7 @@ if __name__ == "__main__":
                     'swarm':'_swarm_log.txt',
                     'compass':'_compass_log.txt'}
 
+
     log_data = {}
     for log_name in log_suffixes:
         log_file = input_file + log_suffixes[log_name]
@@ -135,9 +143,7 @@ if __name__ == "__main__":
 
     for ix, iy in zip(ix_list, iy_list):
 
-        control_file = os.path.join(carom_dir, 'controls', 'jellyBeanData')
-        control_file = os.path.join(control_file, 'jellyBean_%d_%d_frequentistFullDrelative.txt' % (ix, iy))
-        control_data = np.genfromtxt(control_file).transpose()
+        control_data = np.genfromtxt(control_names['%d_%d' % (ix, iy)]).transpose()
 
         xmax = control_data[0].max()
         xmin = control_data[0].min()
