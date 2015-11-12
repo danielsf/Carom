@@ -3208,6 +3208,11 @@ void node::cull_ricochet(){
 }
 
 void node::remove_particle(int ip){
+    if(_ricochet_strikes.get_data(ip)<_allowed_ricochet_strikes){
+        printf("WARNING trying to remove particle with %d strikes but allowed is %d\n",
+        _ricochet_strikes.get_data(ip),_allowed_ricochet_strikes);
+        exit(1);
+    }
     _ricochet_particles.remove(ip);
     _ricochet_origins.remove(ip);
     _ricochet_strikes.remove(ip);
