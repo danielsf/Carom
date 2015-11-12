@@ -2608,8 +2608,6 @@ void node::find_bases(){
         }
     }
 
-    set_geo_center();
-
     if(changed_bases==1 && _compass_calls==0){
         compass_search();
     }
@@ -3286,6 +3284,7 @@ void node::initialize_ricochet(){
 
     if(_found_bases==0){
         find_bases();
+        set_geo_center();
     }
 
     int i;
@@ -3813,6 +3812,7 @@ void node::search(){
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
         find_bases();
+        set_geo_center();
     }
 
     if(fabs(_chisquared->target()-target0)>0.01){
