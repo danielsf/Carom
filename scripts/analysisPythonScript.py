@@ -22,7 +22,6 @@ def get_good_pts(data, target=None, delta_chisq=None):
     if target is None and delta_chisq is None:
         raise RuntimeError("must specify either target or delta_chisq in get_good_pts")
 
-
     i_chi = data.shape[1]-1
 
     if target is not None:
@@ -32,6 +31,7 @@ def get_good_pts(data, target=None, delta_chisq=None):
 
 
     good_pts = data[np.where(data.transpose()[i_chi]<=_target)[0]]
+
     return good_pts, _target
 
 
@@ -154,7 +154,7 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
             plt.xticks(xticks, xformat, fontsize=20)
             plt.yticks(yticks, yformat, fontsize=20)
 
-            title = 'target $\chi^2 =$ %.2f\npoints %d\n' % (target, ct)
+            title = 'target $\chi^2 =$ %.2f\npoints %d' % (target, ct)
 
             plt.text(xmax-0.6*(xmax-xmin), ymax-0.2*(ymax-ymin), title, fontsize=30)
 
@@ -181,7 +181,7 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
                 plt.xticks(xticks, xformat, fontsize=20)
                 plt.yticks(yticks, yformat, fontsize=20)
 
-                title = 'target $\chi^2 =$ %.2f\npoints %d\n' % (target, ct)
+                title = 'points %d' % (ct)
                 plt.text(xmax-0.6*(xmax-xmin), ymax-0.2*(ymax-ymin), title, fontsize=30)
 
             file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
