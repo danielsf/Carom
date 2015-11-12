@@ -100,6 +100,7 @@ private:
     int _ct_ricochet,_ct_simplex;
     double _chimin,_chimin_bases,_chimin_ricochet;
     double _volume_of_last_geom;
+    int _last_geo_center;
 
     int _compass_calls;
     int _total_bisections,_bisection_calls,_total_ricochets,_ricochet_calls;
@@ -175,6 +176,7 @@ private:
 
     void compass_search(int);
     void compass_diagonal(int);
+    void set_geo_center();
     void compass_search_geometric_center();
     void off_center_compass(int);
     void cull_ricochet();

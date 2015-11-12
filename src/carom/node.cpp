@@ -56,6 +56,7 @@ void node::initialize(){
     _failed_kicks=0;
     _successful_kicks=0;
     _volume_of_last_geom=0.0;
+    _last_geo_center=-1;
     _successful_ricochets=0;
     _id_dex=0;
     _good_shots=0;
@@ -143,6 +144,7 @@ void node::copy(const node &in){
     _min_basis_error=in._min_basis_error;
     _min_basis_error_changed=in._min_basis_error_changed;
     _volume_of_last_geom=in._volume_of_last_geom;
+    _last_geo_center=in._last_geo_center;
     _successful_ricochets=in._successful_ricochets;
     _id_dex=in._id_dex;
     _node_dd_tol=in._node_dd_tol;
@@ -1938,15 +1940,16 @@ void node::compass_diagonal(int local_center){
 
 }
 
-void node::compass_search_geometric_center(){
-    is_it_safe("compass_geometric_center");
+
+void node::set_geo_center(){
+    is_it_safe("set_geo_center");
 
     array_1d<double> geometric_dir,trial,highball,lowball;
     int iFound,i,j;
     double mu,fhigh,flow,bisection_target,tol;
 
-    geometric_dir.set_name("compass_search_geometric_dir");
-    trial.set_name("compass_search_trial");
+    geometric_dir.set_name("set_geo_center_dir");
+    trial.set_name("set_geo_center_trial");
 
     iFound=-1;
 
@@ -1986,14 +1989,21 @@ void node::compass_search_geometric_center(){
                 printf("%e %e\n",get_pt(_centerdex,i),get_pt(iFound,i));
             }
             _geo_centerdex=iFound;
-            compass_search(iFound);
         }
 
     }
-
-    _volume_of_last_geom=volume();
-
 }
+
+
+void node::compass_search_geometric_center(){
+    set_geo_center();
+    if(_geo_centerdex>=0 && _geo_centerdex!=_centerdex && _geo_centerdex!=_last_geo_center){
+        compass_search(_geo_centerdex);
+    }
+    _volume_of_last_geom=volume();
+    _last_geo_center=_geo_centerdex;
+}
+
 
 void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
     is_it_safe("findCovarianceMatrix");
@@ -2471,10 +2481,6 @@ void node::find_bases(){
         _basis_associates.reset();
     }
 
-    if(_compass_calls==0){
-        compass_search();
-    }
-
     _chimin_bases=_chimin;
     _ellipse_center=_centerdex;
 
@@ -2602,7 +2608,9 @@ void node::find_bases(){
         }
     }
 
-    if(changed_bases==1){
+    set_geo_center();
+
+    if(changed_bases==1 && _compass_calls==0){
         compass_search();
     }
 
