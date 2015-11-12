@@ -5,6 +5,7 @@
 #include "eigen_wrapper.h"
 #include "simplex.h"
 #include "dchi_simplex.h"
+#include "search_types.h"
 
 class node{
 
@@ -20,6 +21,7 @@ public:
 
     void initialize_ricochet();
 
+    void set_log(asymm_array_2d<int>*);
     void set_chisquared(chisq_wrapper*);
     void set_center(int);
     void set_basis(int,int,double);
@@ -29,6 +31,8 @@ public:
     void compass_search();
     void search();
     void ricochet();
+
+    void add_to_log(int, int);
 
     void swarm_shoot(int);
     void swarm_evaluate(array_1d<double>&,double*);
@@ -78,7 +82,6 @@ public:
     int get_successful_ricochets();
     int get_proper_ricochets();
     void set_id_dex(int);
-    void write_node_log(char*);
     int get_swarm_expand();
     int get_swarm_outside();
     void deactivate_simplex();
@@ -90,7 +93,7 @@ public:
 
 private:
     int _do_simplex;
-    int _id_dex,_last_wrote_log;
+    int _id_dex;
     int _first_centerdex;
     int _centerdex,_geo_centerdex,_centerdex_basis,_active,_found_bases,_ellipse_center;
     int _min_changed,_allowed_ricochet_strikes,_failed_simplexes;
@@ -142,9 +145,7 @@ private:
     double _v0;
     int _since_culled;
 
-    array_1d<int> _ricochet_log;
-    array_1d<int> _compass_log;
-    array_1d<int> _wander_log;
+    asymm_array_2d<int> *_log;
 
     double _ricochet_growth,_mcmc_growth,_swarm_growth,_simplex_growth;
 
@@ -194,7 +195,6 @@ private:
     int mcmc_kick(int, int*, array_1d<double>&, int);
     int originate_particle_shooting(int*);
     void originate_particle_simplex();
-    double _nearest_other_particle(int,int);
 
     double node_distance(array_1d<double>&, array_1d<double>&);
     double node_distance(int, int);
@@ -211,7 +211,6 @@ private:
 
     int _are_connected(int, int);
 
-    int is_it_a_strike(int, kd_tree&);
     double get_pt(int,int);
     void transform_pt_to_node(array_1d<double>&,array_1d<double>&);
     void transform_pt_to_truth(array_1d<double>&,array_1d<double>&);
@@ -228,6 +227,7 @@ public:
     ~arrayOfNodes();
 
     void add(int,chisq_wrapper*);
+    void add(int,chisq_wrapper*,asymm_array_2d<int>*);
     void add(chisq_wrapper*,int);
     int get_dim();
     void cull();

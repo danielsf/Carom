@@ -7,6 +7,7 @@
 #include "chisq_wrapper.h"
 #include "simplex.h"
 #include "node.h"
+#include "search_types.h"
 
 class carom{
 
@@ -32,6 +33,7 @@ public:
     void search(int);
     void simplex_search();
     void write_pts();
+    void write_log();
 
     int get_called();
     int active_nodes();
@@ -46,6 +48,9 @@ private:
     int _write_every,_last_written;
     int _unique_nodes;
     int _ct_simplex,_ct_node,_calls_to_simplex;
+    int _last_wrote_log;
+
+    asymm_array_2d<int> _log;
 
     double _time_started;
 

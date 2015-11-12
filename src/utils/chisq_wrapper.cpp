@@ -10,8 +10,6 @@ chisq_wrapper::chisq_wrapper(){
     _range_max.set_name("chisq_wrapper_range_max");
     _valid_neigh.set_name("chisq_wrapper_valid_neigh");
     _valid_dd.set_name("chisq_wrapper_valid_dd");
-    _ct_where.set_name("chisq_wrapper_ct_where");
-    _where_log.set_name("chisq_wrapper_where_log");
     _ddmin=1.0e-8;
     _adaptive_target=1;
     _deltachi=-1.0;
@@ -24,10 +22,6 @@ chisq_wrapper::chisq_wrapper(){
     _confidence_limit=-1.0;
     _expected_delta=-1.0;
 
-    _ct_where.set(iSimplex,0);
-    _ct_where.set(iRicochet,0);
-    _ct_where.set(iCompass,0);
-    _ct_where.set(iNodeSimplex,0);
 }
 
 chisq_wrapper::~chisq_wrapper(){
@@ -175,7 +169,6 @@ void chisq_wrapper::initialize(int npts){
         }
         _fn.add(mu);
         data.add_row(vv);
-        _where_log.set(i,iSimplex);
     }
 
     array_1d<double> temp_max,temp_min;
@@ -313,18 +306,6 @@ double chisq_wrapper::operator()(array_1d<double> &pt){
     return mu;
 }
 
-void chisq_wrapper::set_iWhere(int ii){
-    _iWhere=ii;
-}
-
-int chisq_wrapper::get_ct_where(int ii){
-    return _ct_where.get_data(ii);
-}
-
-int chisq_wrapper::get_where_log(int ii){
-    return _where_log.get_data(ii);
-}
-
 double chisq_wrapper::raw_evaluate(array_1d<double> &pt){
     return _chifn[0](pt);
 }
@@ -353,15 +334,10 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
     value[0]=mu;
     _called++;
 
-    if(_iWhere>=0){
-        _ct_where.add_val(_iWhere,1);
-    }
-
     if(mu<exception_value){
         _kptr->add(pt);
         _fn.add(mu);
         dex[0]=_kptr->get_pts()-1;
-        _where_log.set(dex[0],_iWhere);
     }
 
     if(mu<_chimin){

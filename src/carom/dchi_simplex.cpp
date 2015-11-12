@@ -106,6 +106,8 @@ void dchi_multimodal_simplex::set_norm(array_1d<double> &nn){
 
 double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
 
+    _called++;
+
     double mu;
     int i_found;
     _chisq->evaluate(pt,&mu,&i_found);
