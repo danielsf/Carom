@@ -3862,7 +3862,8 @@ void node::search(){
         projectedVolume0=projected_volume();
 
         find_bases();
-        compass_search_geometric_center();
+        set_geo_center();
+        compass_search(find_local_center());
 
         volume1=volume();
         projectedVolume1=projected_volume();
