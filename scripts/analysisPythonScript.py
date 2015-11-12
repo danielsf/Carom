@@ -4,6 +4,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+__all__ = ["doAnalysis"]
+
 def get_histogram(chisq, dchi, nsteps):
     chisq_min = chisq.min()
     x_arr = np.arange(chisq_min+0.5*dchi, chisq_min+(nsteps+1)*dchi, dchi)
@@ -87,9 +89,13 @@ import os
 
 def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_names, output_dir):
 
+    plot_rows = len(ct_list)/3
+    if 3*plot_rows<len(ct_list):
+        plot_rows += 1
+
+
     full_data = np.genfromtxt(input_file)
     useful_data = full_data.transpose()[:dim+1].transpose()
-
 
     log_suffixes = {'ricochet':'_ricochet_log.txt',
                     'simplex':'_simplex_log.txt',
@@ -175,43 +181,3 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
             file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
             plt.savefig(file_name)
             plt.close()
-
-
-if __name__ == "__main__":
-    dim = 4
-    delta_chisq = 9.5
-
-    ct_list = range(10000, 40000+1, 5000)
-    if len(ct_list)>9:
-        raise RuntimeError("Cannot plot more than 9 ct steps: you have %d" % len(ct_list))
-
-    plot_rows = len(ct_list)/3
-    if 3*plot_rows<len(ct_list):
-        plot_rows += 1
-
-    ix_list = []
-    iy_list = []
-    for ii in range(dim):
-        for jj in range(ii+1, dim):
-            ix_list.append(ii)
-            iy_list.append(jj)
-
-    #ix_list = [0]
-    #iy_list = [3]
-
-    carom_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom')
-
-    output_dir = os.path.join(carom_dir, 'figures', 'timeSeries151111')
-
-    input_dir = os.path.join(carom_dir,'output')
-
-    input_file = os.path.join(input_dir,'analysisTest','jellyBean_d4_s99_output.sav')
-
-    control_names = {}
-    for ix, iy in zip(ix_list, iy_list):
-        control_file = os.path.join(carom_dir, 'controls', 'jellyBeanData')
-        control_file = os.path.join(control_file, 'jellyBean_%d_%d_frequentistFullDrelative.txt' % (ix, iy))
-
-        control_names['%d_%d' % (ix, iy)] = control_file
-
-    doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_names, output_dir)
