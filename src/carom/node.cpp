@@ -3805,11 +3805,6 @@ void node::search(){
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
         find_bases();
-        compass_search_geometric_center();
-    }
-
-    if(volume()>2.0*_volume_of_last_geom){
-        compass_search_geometric_center();
     }
 
     if(fabs(_chisquared->target()-target0)>0.01){
@@ -3847,7 +3842,6 @@ void node::search(){
         projectedVolume0=projected_volume();
 
         find_bases();
-        compass_search_geometric_center();
 
         volume1=volume();
         projectedVolume1=projected_volume();
