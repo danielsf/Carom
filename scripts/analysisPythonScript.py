@@ -87,7 +87,7 @@ def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.00
 import os
 
 
-def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_names, output_dir):
+def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_names, output_dir, scatter_control=False):
 
     plot_rows = len(ct_list)/3
     if 3*plot_rows<len(ct_list):
@@ -143,7 +143,10 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
             good_pts = good_pts.transpose()
 
             plt.subplot(plot_rows, 3, ict+1)
-            plt.plot(control_data[0], control_data[1], linewidth=2)
+            if not scatter_control:
+                plt.plot(control_data[0], control_data[1], linewidth=2)
+            else:
+                plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
             plt.scatter(good_pts[0], good_pts[1], color='r', s=40)
 
             plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
@@ -168,7 +171,10 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
                 chosen_dexes = np.where(data_dexes<=ct)[0]
                 data = log_data[log_name][chosen_dexes].transpose()
                 plt.subplot(plot_rows, 3, ict+1)
-                plt.plot(control_data[0], control_data[1], linewidth=2)
+                if not scatter_control:
+                    plt.plot(control_data[0], control_data[1], linewidth=2)
+                else:
+                    plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
                 plt.scatter(data[ix], data[iy], color='r', s=40)
                 plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
                 plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
