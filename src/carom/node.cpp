@@ -4629,7 +4629,7 @@ arrayOfNodes::~arrayOfNodes(){
     }
 }
 
-void arrayOfNodes::add(int cc, chisq_wrapper *gg){
+void arrayOfNodes::add(int cc, chisq_wrapper *gg, asymm_array_2d<int> *a){
 
     node *buffer;
     int i,j;
@@ -4658,6 +4658,7 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
+    _data[_ct].set_log(a);
     printf("time to initialize ricochet\n");
     _data[_ct].initialize_ricochet();
     printf("done with that\n");
@@ -4665,13 +4666,12 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
 
 }
 
-void arrayOfNodes::add(int i, chisq_wrapper *g, asymm_array_2d<int> *a){
-    add(i,g);
-    _data[_ct-1].set_log(a);
+void arrayOfNodes::add(int i, chisq_wrapper *g){
+    add(i,g,NULL);
 }
 
 void arrayOfNodes::add(chisq_wrapper *g, int i){
-    add(i,g);
+    add(i,g,NULL);
 }
 
 int arrayOfNodes::get_dim(){
