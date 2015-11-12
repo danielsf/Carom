@@ -1,5 +1,8 @@
 from __future__ import with_statement
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 def get_histogram(chisq, dchi, nsteps):
     chisq_min = chisq.min()
@@ -27,7 +30,7 @@ def get_good_pts(data, target=None, delta_chisq=None):
 
 
     good_pts = data[np.where(data.transpose()[i_chi]<=_target)[0]]
-    return good_pts
+    return good_pts, _target
 
 
 def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
@@ -39,20 +42,15 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
     y_norm = temp[iy].max()-temp[iy].min()
 
     min_dex = np.argmin(temp[i_chi])
-    print temp[i_chi][min_dex]
-    print len(temp[i_chi])
     ct_kept = 1
     pts_kept = np.ones((2,len(good_pts)))*1000000.0
     pts_kept[0][0] = good_pts[min_dex][ix]
     pts_kept[1][0] = good_pts[min_dex][iy]
 
     chisq_kept = [good_pts[min_dex][i_chi]]
-    print good_pts[min_dex]
-    print 'min_dex ',min_dex
 
     center_dd = np.power((temp[ix]-pts_kept[0][0])/x_norm,2)+np.power((temp[iy]-pts_kept[1][0])/y_norm,2)
 
-    print 'looping ',x_norm, y_norm
     for ipt in range(len(good_pts)):
         print_it = False
 
@@ -80,29 +78,129 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
 
 def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
 
-    good_pts =get_good_pts(data, target=target, delta_chisq=delta_chisq)
-    return _get_scatter(good_pts, ix, iy, ddsq_threshold=ddsq_threshold)
+    good_pts, _target =get_good_pts(data, target=target, delta_chisq=delta_chisq)
+    out_tuple = _get_scatter(good_pts, ix, iy, ddsq_threshold=ddsq_threshold)
+    return out_tuple[0], out_tuple[1], _target
 
 import os
 
 if __name__ == "__main__":
 
-    dim = 10
+    dim = 4
+    delta_chisq = 9.5
 
-    input_dir = os.path.join('/Users','danielsf','physics','Carom','output','scratch')
+    ct_list = range(10000, 40000+1, 5000)
+    if len(ct_list)>9:
+        raise RuntimeError("Cannot plot more than 9 ct steps: you have %d" % len(ct_list))
 
-    input_file = os.path.join(input_dir,'test151023','jellyBean_d10_s99_output.sav')
+    plot_rows = len(ct_list)/3
+    if 3*plot_rows<len(ct_list):
+        plot_rows += 1
+
+    ix_list = []
+    iy_list = []
+    for ii in range(dim):
+        for jj in range(ii+1, dim):
+            ix_list.append(ii)
+            iy_list.append(jj)
+
+    #ix_list = [0]
+    #iy_list = [3]
+
+    carom_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom')
+
+    output_dir = os.path.join(carom_dir, 'figures', 'timeSeries151111')
+
+    input_dir = os.path.join(carom_dir,'output')
+
+    input_file = os.path.join(input_dir,'analysisTest','jellyBean_d4_s99_output.sav')
 
     full_data = np.genfromtxt(input_file)
-    print full_data[dim].min()
     useful_data = full_data.transpose()[:dim+1].transpose()
-    print useful_data[0]
-    print full_data.shape
-    print useful_data.shape
-    print full_data.view(np.ndarray)
 
-    good_pts, chisq = get_scatter(useful_data, 0, 1, delta_chisq=18.3)
-    print 'final ',good_pts.shape
-    with open(os.path.join(input_dir,'trial_plot.sav'), 'w') as output:
-        for pt, cc in zip(good_pts, chisq):
-            output.write('%e %e %e\n' % (pt[0], pt[1], cc))
+
+    log_suffixes = {'ricochet':'_ricochet_log.txt',
+                    'simplex':'_simplex_log.txt',
+                    'dchi_simplex':'_dchi_simplex_log.txt',
+                    'mcmc':'_mcmc_log.txt',
+                    'swarm':'_swarm_log.txt',
+                    'compass':'_compass_log.txt'}
+
+    log_data = {}
+    for log_name in log_suffixes:
+        log_file = input_file + log_suffixes[log_name]
+        _log_data = np.genfromtxt(log_file)
+        log_data[log_name] = _log_data
+
+
+    for ix, iy in zip(ix_list, iy_list):
+
+        control_file = os.path.join(carom_dir, 'controls', 'jellyBeanData')
+        control_file = os.path.join(control_file, 'jellyBean_%d_%d_frequentistFullDrelative.txt' % (ix, iy))
+        control_data = np.genfromtxt(control_file).transpose()
+
+        xmax = control_data[0].max()
+        xmin = control_data[0].min()
+        ymax = control_data[1].max()
+        ymin = control_data[1].min()
+
+        dx = (xmax-xmin)/9.0
+        xmin -= dx
+        xmax += dx
+
+        dy = (ymax-ymin)/9.0
+        ymin -= dy
+        ymax += dy
+
+        xticks = np.arange(xmin,xmax+dx,dx)
+        xformat = ['%.2e' % xticks[ii] if ii%3==0 else '' for ii in range(len(xticks))]
+
+        yticks = np.arange(ymin,ymax+dx,dy)
+        yformat = ['%.2e' % yticks[ii] if ii%3==0 else '' for ii in range(len(yticks))]
+
+        plt.figure(figsize=(30,30))
+        for ict, ct in enumerate(ct_list):
+            all_pts = useful_data[:ct]
+            good_pts, chisq, target = get_scatter(useful_data[:ct], ix, iy, delta_chisq=delta_chisq)
+
+            good_pts = good_pts.transpose()
+
+            plt.subplot(plot_rows, 3, ict+1)
+            plt.plot(control_data[0], control_data[1], linewidth=2)
+            plt.scatter(good_pts[0], good_pts[1], color='r', s=40)
+
+            plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
+            plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
+            plt.xticks(xticks, xformat, fontsize=20)
+            plt.yticks(yticks, yformat, fontsize=20)
+
+            title = 'target $\chi^2 =$ %.2f\npoints %d\n' % (target, ct)
+
+            plt.text(xmax-0.6*(xmax-xmin), ymax-0.2*(ymax-ymin), title, fontsize=30)
+
+        file_name = os.path.join(output_dir, 'full_%d_%d.eps' % (ix, iy))
+
+        plt.savefig(file_name)
+        plt.close()
+
+        for log_name in ('ricochet', 'swarm', 'dchi_simplex', 'mcmc', 'compass'):
+            temp = log_data[log_name].transpose()
+            data_dexes = temp[dim+1]
+            plt.figure(figsize=(30,30))
+            for ict, ct in enumerate(ct_list):
+                chosen_dexes = np.where(data_dexes<=ct)[0]
+                data = log_data[log_name][chosen_dexes].transpose()
+                plt.subplot(plot_rows, 3, ict+1)
+                plt.plot(control_data[0], control_data[1], linewidth=2)
+                plt.scatter(data[ix], data[iy], color='r', s=40)
+                plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
+                plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
+                plt.xticks(xticks, xformat, fontsize=20)
+                plt.yticks(yticks, yformat, fontsize=20)
+
+                title = 'target $\chi^2 =$ %.2f\npoints %d\n' % (target, ct)
+                plt.text(xmax-0.6*(xmax-xmin), ymax-0.2*(ymax-ymin), title, fontsize=30)
+
+            file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
+            plt.savefig(file_name)
+            plt.close()
