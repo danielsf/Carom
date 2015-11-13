@@ -123,11 +123,11 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
 
         dx = (xmax-xmin)/9.0
         xmin -= dx
-        xmax += dx
+        xmax += 2.0*dx
 
         dy = (ymax-ymin)/9.0
         ymin -= dy
-        ymax += dy
+        ymax += 2.0*dy
 
         xticks = np.arange(xmin,xmax+dx,dx)
         xformat = ['%.2e' % xticks[ii] if ii%3==0 else '' for ii in range(len(xticks))]
@@ -156,7 +156,7 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
 
             title = 'target $\chi^2 =$ %.2f\npoints %d' % (target, ct)
 
-            plt.text(xmax-0.6*(xmax-xmin), ymax-0.2*(ymax-ymin), title, fontsize=30)
+            plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
 
         file_name = os.path.join(output_dir, 'full_%d_%d.eps' % (ix, iy))
 
@@ -182,7 +182,7 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
                 plt.yticks(yticks, yformat, fontsize=20)
 
                 title = 'points %d' % (ct)
-                plt.text(xmax-0.6*(xmax-xmin), ymax-0.2*(ymax-ymin), title, fontsize=30)
+                plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
 
             file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
             plt.savefig(file_name)
