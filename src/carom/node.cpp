@@ -3843,7 +3843,7 @@ void node::search(){
         _convergence_ct++;
     }
 
-    if(_convergence_ct>_chisquared->get_dim()){
+    if(_convergence_ct>_allowed_ricochet_strikes){
         printf("deactivating because we did not expand\n");
         _active=0;
     }
