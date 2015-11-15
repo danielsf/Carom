@@ -3854,7 +3854,7 @@ void node::search(){
 
     array_1d<double> dir;
     dir.set_name("node_search_dir");
-    int iParticle,i,j;
+    int iParticle,i,j,n_particles;
 
     if(_active==0){
         target0=_chisquared->target();
@@ -3863,7 +3863,13 @@ void node::search(){
 
         find_bases();
         set_geo_center();
-        compass_search();
+        n_particles=_ricochet_particles.get_dim();
+        _ricochet_particles.reset();
+        _ricochet_origins.reset();
+        _ricochet_strikes.reset();
+        for(i=0;i<n_particles;i++){
+            originate_particle_simplex();
+        }
 
         volume1=volume();
         projectedVolume1=projected_volume();
