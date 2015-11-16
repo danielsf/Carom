@@ -3215,11 +3215,6 @@ void node::cull_ricochet(){
 }
 
 void node::remove_particle(int ip){
-    if(_ricochet_strikes.get_data(ip)<_allowed_ricochet_strikes){
-        printf("WARNING trying to remove particle with %d strikes but allowed is %d\n",
-        _ricochet_strikes.get_data(ip),_allowed_ricochet_strikes);
-        exit(1);
-    }
     _ricochet_particles.remove(ip);
     _ricochet_origins.remove(ip);
     _ricochet_strikes.remove(ip);
@@ -3865,10 +3860,15 @@ void node::search(){
         find_bases();
         set_geo_center();
         n_particles=_ricochet_particles.get_dim();
-        _ricochet_particles.reset();
-        _ricochet_origins.reset();
-        _ricochet_strikes.reset();
-        for(i=0;i<n_particles;i++){
+
+        // remove any particles with non-zero strikes
+        for(i=_ricochet_particles.get_dim()-1;i>=0;i--){
+            if(_ricochet_strikes.get_data(i)>0){
+                remove_particle(i);
+            }
+        }
+
+        while(_ricochet_particles.get_dim()<n_particles){
             originate_particle_simplex();
         }
 
