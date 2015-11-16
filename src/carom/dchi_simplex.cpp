@@ -46,9 +46,7 @@ int dchi_simplex_base::get_called(){
 double dchi_simplex_base::associate_distance(array_1d<double> &pt){
 
      if(_associates.get_dim()<=0){
-         printf("Cannot call dchi_simplex_base::associate_distance\n");
-         printf("_associates.get_dim() %d\n",_associates.get_dim());
-         exit(1);
+         return 0.0;
      }
 
      double dd,ddmin;
