@@ -3660,12 +3660,13 @@ void node::originate_particle_simplex(){
     array_1d<double> trial,trial_node;
     trial.set_name("orig_particle_simplex_trial");
     trial_node.set_name("orig_particle_simplex_trial_node");
-    double mu,dx;
+    double mu,dx,midx;
     int iFound;
     while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
             dx=max.get_data(i)-min.get_data(i);
-            trial.set(i,min.get_data(i)+dx*(2.0*_chisquared->random_double()-1.0));
+            midx=0.5*(max.get_data(i)+min.get_data(i));
+            trial.set(i,midx+2.0*dx*(_chisquared->random_double()-0.5));
         }
         transform_pt_to_node(trial,trial_node);
         evaluate(trial_node,&mu,&iFound);
