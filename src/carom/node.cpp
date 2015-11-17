@@ -3859,14 +3859,9 @@ void node::search(){
 
         find_bases();
         set_geo_center();
-        n_particles=_ricochet_particles.get_dim();
-
-        // remove any particles with non-zero strikes
-        for(i=_ricochet_particles.get_dim()-1;i>=0;i--){
-            if(_ricochet_strikes.get_data(i)>0){
-                remove_particle(i);
-            }
-        }
+        _ricochet_particles.reset();
+        _ricochet_strikes.reset();
+        _ricochet_origins.reset();
 
         while(_ricochet_particles.get_dim()<n_particles){
             originate_particle_simplex();
