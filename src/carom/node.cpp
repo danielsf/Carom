@@ -4311,24 +4311,69 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
 
     array_1d<double> dir;
     dir.set_name("mcmc_walk_dir");
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
+
+    double walk_distance=0.0;
+
+    if(i_pt>=0){
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
+        }
+
+        for(i=0;i<_chisquared->get_dim();i++){
+            mu=0.0;
+            for(j=0;j<_chisquared->get_dim();j++){
+                mu+=dir.get_data(j)*_basis_vectors.get_data(i,j);
+            }
+            walk_distance+=power(mu/get_projected_norm(j),2);
+        }
+
+        walk_distance=sqrt(walk_distance);
     }
-    double dir_norm=dir.normalize();
+
+    if(walk_distance>1.0e-10 && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
+        while(_chisquared->get_fn(i_pt)>_chisquared->target()){
+            for(i=0;i<_chisquared->get_dim();i++){
+                step.set(i,0.0);
+            }
+
+            for(i=0;i<_chisquared->get_dim();i++){
+                mu=0.1*walk_distance*get_projected_norm(i)*normal_deviate(_chisquared->get_dice(),0.0,1.0);
+                for(j=0;j<_chisquared->get_dim();j++){
+                     step.add_val(j,_mcmc_step*mu*_basis_vectors.get_data(i,j));
+                }
+            }
+
+            for(i=0;i<_chisquared->get_dim();i++){
+                trial.set(i,get_pt(i_pt,i)+step.get_data(i));
+            }
+            evaluate(trial,&mu,&iFound);
+            accept_it=0;
+            if(iFound>=0){
+                if(mu<_chisquared->get_fn(i_pt)){
+                    accept_it=iFound;
+                }
+                else{
+                    roll=_chisquared->random_double();
+                    if(exp(-0.5*(chi_new-chi_old))>roll){
+                        accept_it=1;
+                    }
+                }
+            }
+
+            if(accept_it==1){
+                i_pt=iFound;
+            }
+        }
+
+    }
+
+    i_found[0]=i_pt;
 
     if(i_pt>=0){
         add_to_log(_log_mcmc, i_pt);
     }
 
-    if(i_pt!=i_start && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
-        i_found[0]=node_bisection_origin_dir(i_start, dir);
-        if(i_found[0]>=0){
-            add_to_log(_log_mcmc, i_found[0]);
-        }
-    }
-    else{
-        i_found[0]=i_pt;
-    }
     printf("    local_acceptances %d %e\n",local_acceptances,volume());
     _mcmc_growth*=(volume()/local_v0);
 }
