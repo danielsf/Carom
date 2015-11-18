@@ -1760,8 +1760,6 @@ void node::compass_search(int local_center){
         _basis_lengths.set(ix,blength);
     }
 
-    compass_diagonal(local_center);
-
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
     _compass_calls+=_chisquared->get_called()-ibefore;
 }
