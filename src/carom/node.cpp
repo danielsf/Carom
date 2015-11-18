@@ -3869,16 +3869,7 @@ void node::search(){
         volume1=volume();
         projectedVolume1=projected_volume();
 
-        if(fabs(volume0-volume1)>0.01*volume0 ||
-           fabs(projectedVolume0-projectedVolume1)>0.05*projectedVolume0){
-
-           _active=1;
-           _convergence_ct=0;
-
-           if(fabs(_chisquared->target()-target0)>0.01){
-               recalibrate_max_min();
-           }
-       }
+        _active=1;
     }
 
     if(_ricochet_particles.get_dim()==0){
