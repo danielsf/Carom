@@ -3859,6 +3859,7 @@ void node::search(){
 
         find_bases();
         set_geo_center();
+        n_particles=_ricochet_particles.get_dim();
         _ricochet_particles.reset();
         _ricochet_strikes.reset();
         _ricochet_origins.reset();
