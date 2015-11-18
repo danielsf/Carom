@@ -2606,10 +2606,6 @@ void node::find_bases(){
         }
     }
 
-    if(changed_bases==1 && _compass_calls==0){
-        compass_search();
-    }
-
     array_1d<double> projected;
     projected.set_name("node_find_bases_projected");
 
@@ -3290,6 +3286,9 @@ void node::initialize_ricochet(){
     if(_found_bases==0){
         find_bases();
         set_geo_center();
+        if(_compass_calls==0){
+            compass_search();
+        }
     }
 
     int i;
@@ -3819,6 +3818,7 @@ void node::search(){
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
         find_bases();
         set_geo_center();
+        compass_search();
     }
 
     if(fabs(_chisquared->target()-target0)>0.01){
