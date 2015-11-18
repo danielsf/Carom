@@ -4323,7 +4323,7 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
             for(j=0;j<_chisquared->get_dim();j++){
                 mu+=dir.get_data(j)*_basis_vectors.get_data(i,j);
             }
-            walk_distance+=power(mu/get_projected_norm(j),2);
+            walk_distance+=power(mu/get_projected_norm(i),2);
         }
 
         walk_distance=sqrt(walk_distance);

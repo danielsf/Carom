@@ -23,11 +23,11 @@ if __name__ == "__main__":
 
     carom_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom')
 
-    output_dir = os.path.join(carom_dir, 'figures', 'timeSeriesWMAP43')
+    output_dir = os.path.join(carom_dir, 'figures', 'wmapScratch')
 
     input_dir = os.path.join(carom_dir,'output')
 
-    input_file = os.path.join(input_dir,'test151030', 'wmap7_s43_output.sav')
+    input_file = os.path.join(input_dir,'scratch', 'wmap7_s122_output.sav')
 
     control_names = {}
     for ix, iy in zip(ix_list, iy_list):
