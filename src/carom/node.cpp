@@ -4320,8 +4320,9 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
         walk_distance=sqrt(walk_distance);
     }
 
-    if(walk_distance>1.0e-10 && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
+    if(walk_distance>1.0e-10 && _chisquared->get_fn(i_pt)-_chisquared->target()>0.02*(_chisquared->target()-_chisquared->chimin())){
         while(_chisquared->get_fn(i_pt)>_chisquared->target()){
+
             for(i=0;i<_chisquared->get_dim();i++){
                 step.set(i,0.0);
             }
@@ -4340,13 +4341,7 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
             accept_it=0;
             if(iFound>=0){
                 if(mu<_chisquared->get_fn(i_pt)){
-                    accept_it=iFound;
-                }
-                else{
-                    roll=_chisquared->random_double();
-                    if(exp(-0.5*(chi_new-chi_old))>roll){
-                        accept_it=1;
-                    }
+                    accept_it=1;
                 }
             }
 
@@ -4356,7 +4351,6 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
         }
 
     }
-
     i_found[0]=i_pt;
 
     if(i_pt>=0){
