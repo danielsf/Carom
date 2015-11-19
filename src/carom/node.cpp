@@ -4298,59 +4298,38 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
 
     }
 
-    array_1d<double> dir;
-    dir.set_name("mcmc_walk_dir");
+    array_1d<double> lowball,highball;
+    double flow, fhigh;
+    highball.set_name("mcmc_walk_highball");
+    lowball.set_name("mcmc_walk_lowball");
+    int i_nearest;
+    double dd_nearest;
 
-    double walk_distance=0.0;
-
-    if(i_pt>=0){
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
-        }
-
-        for(i=0;i<_chisquared->get_dim();i++){
-            mu=0.0;
-            for(j=0;j<_chisquared->get_dim();j++){
-                mu+=dir.get_data(j)*_basis_vectors.get_data(i,j);
-            }
-            walk_distance+=power(mu/get_projected_norm(i),2);
-        }
-
-        walk_distance=sqrt(walk_distance);
-    }
-
-    if(walk_distance>1.0e-10 && _chisquared->get_fn(i_pt)-_chisquared->target()>0.02*(_chisquared->target()-_chisquared->chimin())){
-        while(_chisquared->get_fn(i_pt)>_chisquared->target()){
-
-            for(i=0;i<_chisquared->get_dim();i++){
-                step.set(i,0.0);
-            }
-
-            for(i=0;i<_chisquared->get_dim();i++){
-                mu=0.1*walk_distance*get_projected_norm(i)*normal_deviate(_chisquared->get_dice(),0.0,1.0);
-                for(j=0;j<_chisquared->get_dim();j++){
-                     step.add_val(j,_mcmc_step*mu*_basis_vectors.get_data(i,j));
+    if(i_pt>=0 && _chisquared->get_fn(i_pt)>_chisquared->target()){
+        i_nearest=-1;
+        for(i=0;i<_associates.get_dim();i++){
+            if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()){
+                mu=node_distance(i_pt,_associates.get_data(i));
+                if(i_nearest<0 || mu<dd_nearest){
+                    i_nearest=_associates.get_data(i);
+                    dd_nearest=mu;
                 }
             }
+        }
 
+        if(i_nearest>=0){
             for(i=0;i<_chisquared->get_dim();i++){
-                trial.set(i,get_pt(i_pt,i)+step.get_data(i));
+                lowball.set(i,get_pt(i_nearest,i));
+                highball.set(i,get_pt(i_pt,i));
             }
-            evaluate(trial,&mu,&iFound);
-            accept_it=0;
-            if(iFound>=0){
-                if(mu<_chisquared->get_fn(i_pt)){
-                    accept_it=1;
-                }
-            }
-
-            if(accept_it==1){
-                i_pt=iFound;
-            }
+            flow=_chisquared->get_fn(i_nearest);
+            fhigh=_chisquared->get_fn(i_pt);
+            i_pt=node_bisection(lowball,flow,highball,fhigh,1);
         }
 
     }
+
+
     i_found[0]=i_pt;
 
     if(i_pt>=0){
