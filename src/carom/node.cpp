@@ -3234,14 +3234,50 @@ void node::set_particle(int ip, int ii){
     double v1=volume();
     if(v1>1.01*_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
+
+        _v0=v1;
+        return;
     }
     else{
         _ricochet_strikes.add_val(ip,1);
     }
 
-    _v0=v1;
-    return;
+    if(_mcmc_acceptances+_mcmc_rejections>_ricochet_particles.get_dim()*10){
+        if(_mcmc_acceptances>_mcmc_rejections/3){
+            _mcmc_step*=1.25;
+        }
+        else if(_mcmc_acceptances<_mcmc_rejections/5){
+            _mcmc_step*=0.75;
+        }
+        _mcmc_acceptances=0;
+        _mcmc_rejections=0;
+    }
 
+    int n_steps=20;
+
+    int ix,i_found;
+    array_1d<int> local_associates;
+    local_associates.set_name("set_particle_associates");
+
+    double tol=0.05*(_chisquared->target()-_chisquared->chimin());
+
+    for(ix=0;ix<_boundary_points.get_dim();ix++){
+        if(_chisquared->get_fn(_associates.get_data(ix))<_chisquared->target()+tol){
+            local_associates.add(_boundary_points.get_data(ix));
+        }
+    }
+    if(local_associates.get_dim()==0){
+        _v0=v1;
+        return;
+    }
+
+    mcmc_walk(_ricochet_particles.get_data(ip), &i_found, n_steps, local_associates);
+    if(i_found>=0 && i_found!=_ricochet_particles.get_data(ip)){
+        _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
+        _ricochet_particles.set(ip,i_found);
+    }
+
+    _v0=volume();
 }
 
 void node::initialize_ricochet(){
