@@ -3870,6 +3870,7 @@ void node::search(){
         projectedVolume1=projected_volume();
 
         _active=1;
+        _convergence_ct=0;
     }
 
     if(_ricochet_particles.get_dim()==0){
