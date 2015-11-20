@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     input_dir = os.path.join(carom_dir,'output')
 
-    input_file = os.path.join(input_dir,'scratch', 'wmap7_s122_output.sav')
+    input_file = os.path.join(input_dir,'scratch', 'wmap7_s76_output.sav')
 
     control_names = {}
     for ix, iy in zip(ix_list, iy_list):
