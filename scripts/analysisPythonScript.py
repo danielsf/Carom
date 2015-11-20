@@ -164,26 +164,27 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
         plt.close()
 
         for log_name in ('ricochet', 'swarm', 'dchi_simplex', 'mcmc', 'compass'):
-            temp = log_data[log_name].transpose()
-            data_dexes = temp[dim+1]
-            plt.figure(figsize=(30,30))
-            for ict, ct in enumerate(ct_list):
-                chosen_dexes = np.where(data_dexes<=ct)[0]
-                data = log_data[log_name][chosen_dexes].transpose()
-                plt.subplot(plot_rows, 3, ict+1)
-                if not scatter_control:
-                    plt.plot(control_data[0], control_data[1], linewidth=2)
-                else:
-                    plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
-                plt.scatter(data[ix], data[iy], color='r', s=40)
-                plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
-                plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
-                plt.xticks(xticks, xformat, fontsize=20)
-                plt.yticks(yticks, yformat, fontsize=20)
+            if len(log_data[log_name]>0):
+                temp = log_data[log_name].transpose()
+                data_dexes = temp[dim+1]
+                plt.figure(figsize=(30,30))
+                for ict, ct in enumerate(ct_list):
+                    chosen_dexes = np.where(data_dexes<=ct)[0]
+                    data = log_data[log_name][chosen_dexes].transpose()
+                    plt.subplot(plot_rows, 3, ict+1)
+                    if not scatter_control:
+                        plt.plot(control_data[0], control_data[1], linewidth=2)
+                    else:
+                        plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
+                    plt.scatter(data[ix], data[iy], color='r', s=40)
+                    plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
+                    plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
+                    plt.xticks(xticks, xformat, fontsize=20)
+                    plt.yticks(yticks, yformat, fontsize=20)
 
-                title = 'points %d' % (ct)
-                plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
+                    title = 'points %d' % (ct)
+                    plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
 
-            file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
-            plt.savefig(file_name)
-            plt.close()
+                file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
+                plt.savefig(file_name)
+                plt.close()
