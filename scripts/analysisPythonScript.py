@@ -163,7 +163,7 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
         plt.savefig(file_name)
         plt.close()
 
-        for log_name in ('ricochet', 'swarm', 'dchi_simplex', 'mcmc', 'compass'):
+        for log_name in ('ricochet', 'swarm', 'dchi_simplex', 'mcmc', 'compass', 'simplex'):
             if len(log_data[log_name]>0):
                 temp = log_data[log_name].transpose()
                 data_dexes = temp[dim+1]
