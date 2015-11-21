@@ -310,8 +310,8 @@ void carom::simplex_search(){
                         }
                     }
 
-                    if(i>=norm.get_dim() || xmax-xmin>norm.get_data(i)){
-                        norm.set(i,xmax-xmin);
+                    if(i>=norm.get_dim() || xmax-xmin<norm.get_data(i)){
+                        norm.set(i,0.5*(xmax-xmin));
                     }
                 }
             }
