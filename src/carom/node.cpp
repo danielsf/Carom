@@ -3294,8 +3294,8 @@ void node::initialize_ricochet(){
         if(_compass_calls==0){
             compass_search();
             compass_diagonal(_centerdex);
-            set_transform();
         }
+        set_transform();
     }
 
     int i;
