@@ -2520,8 +2520,6 @@ void node::find_bases(){
     stdevlim=1.0e-5/sqrt(double(_chisquared->get_dim()));
     max_abort=_chisquared->get_dim()*100;
 
-    set_transform();
-
     error=basis_error(_basis_vectors,_basis_model);
     error0=error;
     error1=error;
@@ -3288,6 +3286,8 @@ void node::initialize_ricochet(){
         set_geo_center();
         if(_compass_calls==0){
             compass_search();
+            compass_diagonal(_centerdex);
+            set_transform();
         }
     }
 
@@ -3819,6 +3819,8 @@ void node::search(){
         find_bases();
         set_geo_center();
         compass_search();
+        compass_diagonal(_centerdex);
+        set_transform();
     }
 
     if(fabs(_chisquared->target()-target0)>0.01){
