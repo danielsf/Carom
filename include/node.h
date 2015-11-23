@@ -28,6 +28,7 @@ public:
     void evaluate(array_1d<double>&, double*, int*);
     int get_center();
     void find_bases();
+    void find_bases(int);
     void compass_search();
     void search();
     void ricochet();

@@ -732,6 +732,8 @@ void node::set_transform(){
             _transform.set(ix,dd_sorted.get_data(dd.get_dim()/2));
         }
     }
+    find_bases(0);
+    set_geo_center();
     recalibrate_max_min();
 
 }
@@ -2473,6 +2475,10 @@ void node::recalibrate_max_min(){
 }
 
 void node::find_bases(){
+    find_bases(1);
+}
+
+void node::find_bases(int do_populate){
     is_it_safe("find_bases");
 
     if(_centerdex_basis<0 || node_distance(_centerdex_basis,_centerdex)>0.01){
@@ -2499,7 +2505,9 @@ void node::find_bases(){
 
     int dimsq=_chisquared->get_dim()*_chisquared->get_dim();
 
-    populate_basis_associates();
+    if(do_populate==1 || _basis_associates.get_dim()<_chisquared->get_dim()){
+        populate_basis_associates();
+    }
 
     if(_basis_associates.get_dim()==0){
         printf("WARNING _basis associates is empty\n");
@@ -3283,7 +3291,6 @@ void node::initialize_ricochet(){
 
     if(_found_bases==0){
         find_bases();
-        set_geo_center();
         if(_compass_calls==0){
             compass_search();
             compass_diagonal(_centerdex);
@@ -3817,7 +3824,6 @@ void node::search(){
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
         find_bases();
-        set_geo_center();
         compass_search();
         compass_diagonal(_centerdex);
         set_transform();
