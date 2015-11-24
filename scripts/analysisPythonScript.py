@@ -1,4 +1,5 @@
 from __future__ import with_statement
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -111,7 +112,10 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
     log_data = {}
     for log_name in log_suffixes:
         log_file = input_file + log_suffixes[log_name]
-        _log_data = np.genfromtxt(log_file)
+        if os.path.exists(log_file):
+            _log_data = np.genfromtxt(log_file)
+        else:
+            _log_data = []
         log_data[log_name] = _log_data
 
 
