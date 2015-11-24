@@ -168,7 +168,7 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
 
             title = 'min $\chi^2 =$ %.2f\ntarget $\chi^2 =$ %.2f\npoints %d' % (chi_min, target, ct)
 
-            plt.text(xmax-7.0*dx, ymax-3.0*dy, title, fontsize=25)
+            plt.text(xmax-7.0*dx, ymax-2.5*dy, title, fontsize=25)
 
         file_name = os.path.join(output_dir, 'full_%d_%d.eps' % (ix, iy))
 
