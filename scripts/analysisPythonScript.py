@@ -177,7 +177,7 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
         plt.close()
 
         for log_name in ('ricochet', 'swarm', 'dchi_simplex', 'mcmc', 'compass', 'simplex'):
-            if len(log_data[log_name]>0):
+            if len(log_data[log_name])>0:
                 temp = log_data[log_name].transpose()
                 data_dexes = temp[dim+1]
                 plt.figure(figsize=(30,30))
