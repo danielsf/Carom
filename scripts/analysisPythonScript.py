@@ -32,7 +32,7 @@ def get_good_pts(data, target=None, delta_chisq=None):
 
     good_pts = data[np.where(data.transpose()[i_chi]<=_target)[0]]
 
-    return good_pts, _target
+    return good_pts, _target, data.transpose()[i_chi].min()
 
 
 def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
@@ -80,9 +80,9 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
 
 def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
 
-    good_pts, _target =get_good_pts(data, target=target, delta_chisq=delta_chisq)
+    good_pts, _target, _min =get_good_pts(data, target=target, delta_chisq=delta_chisq)
     out_tuple = _get_scatter(good_pts, ix, iy, ddsq_threshold=ddsq_threshold)
-    return out_tuple[0], out_tuple[1], _target
+    return out_tuple[0], out_tuple[1], _target, _min
 
 import os
 
@@ -122,12 +122,12 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
         ymin = control_data[1].min()
 
         dx = (xmax-xmin)/9.0
-        xmin -= dx
+        xmin -= 0.5*dx
         xmax += 2.0*dx
 
         dy = (ymax-ymin)/9.0
-        ymin -= dy
-        ymax += 2.0*dy
+        ymin -= 0.5*dy
+        ymax += 3.0*dy
 
         xticks = np.arange(xmin,xmax+dx,dx)
         xformat = ['%.2e' % xticks[ii] if ii%3==0 else '' for ii in range(len(xticks))]
@@ -138,7 +138,7 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
         plt.figure(figsize=(30,30))
         for ict, ct in enumerate(ct_list):
             all_pts = useful_data[:ct]
-            good_pts, chisq, target = get_scatter(useful_data[:ct], ix, iy, delta_chisq=delta_chisq)
+            good_pts, chisq, target, chi_min = get_scatter(useful_data[:ct], ix, iy, delta_chisq=delta_chisq)
 
             good_pts = good_pts.transpose()
 
@@ -154,9 +154,9 @@ def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_
             plt.xticks(xticks, xformat, fontsize=20)
             plt.yticks(yticks, yformat, fontsize=20)
 
-            title = 'target $\chi^2 =$ %.2f\npoints %d' % (target, ct)
+            title = 'min $\chi^2 =$ %.2f\ntarget $\chi^2 =$ %.2f\npoints %d' % (chi_min, target, ct)
 
-            plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
+            plt.text(xmax-7.0*dx, ymax-3.0*dy, title, fontsize=25)
 
         file_name = os.path.join(output_dir, 'full_%d_%d.eps' % (ix, iy))
 
