@@ -89,6 +89,7 @@ import os
 
 def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
                          ct_list, input_file, control_names, output_dir,
+                         axis_labels = None,
                          scatter_control=False):
 
     plot_rows = len(ct_list)/3
@@ -131,11 +132,11 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
         ymin -= 0.5*dy
         ymax += 3.0*dy
 
-        xticks = np.arange(xmin,xmax+dx,dx)
-        xformat = ['%.2e' % xticks[ii] if ii%3==0 else '' for ii in range(len(xticks))]
+        xticks = np.arange(xmin,xmax+dx,(xmax-xmin)/5.0)
+        xformat = ['%.2e' % xticks[ii] if ii%2==0 else '' for ii in range(len(xticks))]
 
-        yticks = np.arange(ymin,ymax+dx,dy)
-        yformat = ['%.2e' % yticks[ii] if ii%3==0 else '' for ii in range(len(yticks))]
+        yticks = np.arange(ymin,ymax+dx,(ymax-ymin)/5.0)
+        yformat = ['%.2e' % yticks[ii] if ii%2==0 else '' for ii in range(len(yticks))]
 
         plt.figure(figsize=(30,30))
         for ict, ct in enumerate(ct_list):
@@ -151,10 +152,15 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
                 plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
             plt.scatter(good_pts[0], good_pts[1], color='r', s=40)
 
-            plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
-            plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
-            plt.xticks(xticks, xformat, fontsize=20)
-            plt.yticks(yticks, yformat, fontsize=20)
+            if axis_labels is None:
+                plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
+                plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
+            else:
+                plt.xlabel(axis_labels[ix], fontsize=20)
+                plt.ylabel(axis_labels[iy], fontsize=20)
+
+            plt.xticks(xticks, xformat, fontsize=15)
+            plt.yticks(yticks, yformat, fontsize=15)
 
             title = 'min $\chi^2 =$ %.2f\ntarget $\chi^2 =$ %.2f\npoints %d' % (chi_min, target, ct)
 
@@ -179,10 +185,16 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
                     else:
                         plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
                     plt.scatter(data[ix], data[iy], color='r', s=40)
-                    plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
-                    plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
-                    plt.xticks(xticks, xformat, fontsize=20)
-                    plt.yticks(yticks, yformat, fontsize=20)
+
+                    if axis_labels is None:
+                        plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
+                        plt.ylabel('$\\theta_%d$' % iy, fontsize=20)
+                    else:
+                        plt.xlabel(axis_labels[ix], fontsize=20)
+                        plt.ylabel(axis_labels[iy], fontsize=20)
+
+                    plt.xticks(xticks, xformat, fontsize=15)
+                    plt.yticks(yticks, yformat, fontsize=15)
 
                     title = 'points %d' % (ct)
                     plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
