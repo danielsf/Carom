@@ -129,11 +129,11 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
         ymin = control_data[1].min()
 
         dx = (xmax-xmin)/9.0
-        xmin -= 0.5*dx
+        xmin -= 0.1*dx
         xmax += 2.0*dx
 
         dy = (ymax-ymin)/9.0
-        ymin -= 0.5*dy
+        ymin -= 0.1*dy
         ymax += 3.0*dy
 
         xticks = np.arange(xmin,xmax+dx,(xmax-xmin)/5.0)
@@ -172,6 +172,7 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
 
         file_name = os.path.join(output_dir, 'full_%d_%d.eps' % (ix, iy))
 
+        plt.tight_layout()
         plt.savefig(file_name)
         plt.close()
 
@@ -204,5 +205,6 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
                     plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
 
                 file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
+                plt.tight_layout()
                 plt.savefig(file_name)
                 plt.close()
