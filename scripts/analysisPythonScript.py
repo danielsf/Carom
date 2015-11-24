@@ -44,6 +44,11 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
     x_norm = temp[ix].max()-temp[ix].min()
     y_norm = temp[iy].max()-temp[iy].min()
 
+    if x_norm == 0.0:
+        x_norm = 1.0
+    if y_norm == 0.0:
+        y_norm = 1.0
+
     min_dex = np.argmin(temp[i_chi])
     ct_kept = 1
     pts_kept = np.ones((2,len(good_pts)))*1000000.0
