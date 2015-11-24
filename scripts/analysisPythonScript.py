@@ -87,16 +87,31 @@ def _get_scatter(good_pts, ix, iy, ddsq_threshold=0.001):
 def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.001):
 
     good_pts, _target, _min =get_good_pts(data, target=target, delta_chisq=delta_chisq)
+
+    if len(good_pts) ==0:
+        return [], [], _target, _min
+
     out_tuple = _get_scatter(good_pts, ix, iy, ddsq_threshold=ddsq_threshold)
     return out_tuple[0], out_tuple[1], _target, _min
 
 import os
 
 
-def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
+def doTimeSeriesAnalysis(dim, ix_list, iy_list,
                          ct_list, input_file, control_names, output_dir,
                          axis_labels=None, output_prefix=None,
-                         scatter_control=False):
+                         scatter_control=False,
+                         delta_chisq=None, target=None):
+
+    if delta_chisq is None and target is None:
+        raise RuntimeError("Must specify either delta_chisq or target "
+                           "for doTimeSeriesAnalysis")
+
+
+    if delta_chisq is not None and target is not None:
+        raise RuntimeError("Cannot specify both delta_chisq and target "
+                           "in doTimeSeriesAnalysis")
+
 
     plot_rows = len(ct_list)/3
     if 3*plot_rows<len(ct_list):
@@ -150,16 +165,18 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
         plt.figure(figsize=(30,30))
         for ict, ct in enumerate(ct_list):
             all_pts = useful_data[:ct]
-            good_pts, chisq, target, chi_min = get_scatter(useful_data[:ct], ix, iy, delta_chisq=delta_chisq)
-
-            good_pts = good_pts.transpose()
+            good_pts, chisq, target, chi_min = get_scatter(useful_data[:ct], ix, iy,
+                                                           delta_chisq=delta_chisq, target=target)
 
             plt.subplot(plot_rows, 3, ict+1)
             if not scatter_control:
                 plt.plot(control_data[0], control_data[1], linewidth=2)
             else:
                 plt.scatter(control_data[0], control_data[1], color='b', marker='x', s=40)
-            plt.scatter(good_pts[0], good_pts[1], color='r', s=40)
+
+            if len(good_pts)>0:
+                good_pts = good_pts.transpose()
+                plt.scatter(good_pts[0], good_pts[1], color='r', s=40)
 
             if axis_labels is None:
                 plt.xlabel('$\\theta_%d$' % ix, fontsize=20)
