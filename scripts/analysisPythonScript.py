@@ -87,7 +87,9 @@ def get_scatter(data, ix, iy, target=None, delta_chisq=None, ddsq_threshold=0.00
 import os
 
 
-def doAnalysis(dim, delta_chisq, ix_list, iy_list, ct_list, input_file, control_names, output_dir, scatter_control=False):
+def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
+                         ct_list, input_file, control_names, output_dir,
+                         scatter_control=False):
 
     plot_rows = len(ct_list)/3
     if 3*plot_rows<len(ct_list):
