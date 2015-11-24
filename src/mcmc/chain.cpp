@@ -1176,8 +1176,8 @@ void arrayOfChains::plot_contours(int ix, int iy, double fraction, char *nameRoo
 
 
 
-    dx=(_contour_maxes.get_data(ix)-_contour_mins.get_data(ix))/200.0;
-    dy=(_contour_maxes.get_data(iy)-_contour_mins.get_data(iy))/200.0;
+    dx=(_contour_maxes.get_data(ix)-_contour_mins.get_data(ix))/50.0;
+    dy=(_contour_maxes.get_data(iy)-_contour_mins.get_data(iy))/50.0;
 
     printf("printing %d %e %d %e\n",ix,dx,iy,dy);
 
