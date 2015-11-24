@@ -90,7 +90,7 @@ import os
 
 def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
                          ct_list, input_file, control_names, output_dir,
-                         axis_labels = None,
+                         axis_labels=None, output_prefix=None,
                          scatter_control=False):
 
     plot_rows = len(ct_list)/3
@@ -170,7 +170,12 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
 
             plt.text(xmax-7.0*dx, ymax-2.5*dy, title, fontsize=25)
 
-        file_name = os.path.join(output_dir, 'full_%d_%d.eps' % (ix, iy))
+        name = 'full_%d_%d.eps' % (ix, iy)
+
+        if output_prefix is not None:
+            name = output_prefix + '_' + name
+
+        file_name = os.path.join(output_dir, name)
 
         plt.tight_layout()
         plt.savefig(file_name)
@@ -204,7 +209,12 @@ def doTimeSeriesAnalysis(dim, delta_chisq, ix_list, iy_list,
                     title = 'points %d' % (ct)
                     plt.text(xmax-0.6*(xmax-xmin), ymax-1.5*dy, title, fontsize=30)
 
-                file_name = os.path.join(output_dir, '%s_%d_%d.eps' % (log_name, ix, iy))
+                name = '%s_%d_%d.eps' % (log_name, ix, iy)
+
+                if output_prefix is not None:
+                    name = output_prefix + '_' + name
+
+                file_name = os.path.join(output_dir, name)
                 plt.tight_layout()
                 plt.savefig(file_name)
                 plt.close()
