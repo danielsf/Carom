@@ -3665,7 +3665,7 @@ void node::originate_particle_simplex(){
         for(i=0;i<_chisquared->get_dim();i++){
             dx=max.get_data(i)-min.get_data(i);
             midx=0.5*(max.get_data(i)+min.get_data(i));
-            trial.set(i,midx+3.0*dx*(_chisquared->random_double()-0.5));
+            trial.set(i,midx+_chisquared->get_dim()*dx*(_chisquared->random_double()-0.5));
         }
         transform_pt_to_node(trial,trial_node);
         evaluate(trial_node,&mu,&iFound);
