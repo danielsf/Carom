@@ -183,9 +183,10 @@ void carom::write_pts(){
         output=fopen(_timingname,"a");
     }
 
-    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- ",
+    fprintf(output,"%d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- ",
         _chifn.get_pts(),
         _chifn.chimin(),
+        _chifn.target(),
         double(time(NULL))-_time_started,
         (double(time(NULL))-_time_started)/double(_chifn.get_pts()),
         _chifn.get_time_spent(),
