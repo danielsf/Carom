@@ -90,11 +90,6 @@ likelihoods/wmap_likelihood_function.cpp include/wmap_likelihood_function.h
 object/aps_extractor.o: src/analysis/aps_extractor.cpp include/aps_extractor.h object/kd.o object/goto_tools.o
 	$(gg) -c -o object/aps_extractor.o src/analysis/aps_extractor.cpp
 
-s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_extractor.o
-	$(gg) -o bin/s_curve_analysis src/analysis/s_curve_analyzer.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o object/chisq.o \
-	$(LIBRARIES)
-
 analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
 	$(gg) -o bin/analysis src/analysis/generic_analyzer.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o \
@@ -137,13 +132,6 @@ object/jellyBean.o
 	object/simplex.o \
 	$(LIBRARIES)
 
-s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
-	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/node.o object/carom.o \
-	$(LIBRARIES)
-
 jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o \
 object/jellyBean.o
 	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
@@ -183,11 +171,11 @@ object/wmap_likelihood_function.o object/jellyBean.o
 	$(LIBRARIES)
 
 ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
-object/wmap_likelihood_function.o
+object/wmap_likelihood_function.o object/jellyBean.o
 	$(gg) -o bin/ellipseMCMC src/examples/ellipse_mcmc_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
-	object/chain.o object/kde.o object/mcmc.o \
+	object/chain.o object/kde.o object/mcmc.o object/jellyBean.o \
 	$(LIBRARIES)
 
 wmap7: src/examples/wmap7_example.cpp object/carom.o \
@@ -259,8 +247,6 @@ all:
 	make test_containers
 	make test_kd
 	make test_eigen
-	make s_curve_analysis
-	make s_curve_test
 
 clean:
 	rm object/*.o bin/*

@@ -13,6 +13,7 @@ int i,j;
 int seed=99;
 int dim=5;
 int nsamples=-1;
+double width=1.0;
 double delta_chisq=-1.0;
 double abs_target=-1.0;
 double confidence_limit=0.95;
@@ -58,6 +59,10 @@ for(i=1;i<iargc;i++){
                 i++;
                 dim=atoi(argv[i]);
                 break;
+            case 'w':
+                i++;
+                width=atof(argv[i]);
+                break;
             case 'o':
                 i++;
                 for(j=0;j<letters-1 && argv[i][j]!=0;j++){
@@ -89,7 +94,9 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBeanData chisq(dim,1,100,0.4,0.4,0.02,20.0);
+jellyBeanData chisq(dim,1,width,100,0.4,0.4,0.02,20.0);
+
+printf("done constructing chisq\n");
 
 chisq.print_mins();
 
@@ -148,6 +155,7 @@ printf("time to initialize\n");
 chisq.reset_timer();
 carom_test.initialize(1000);
 int active_nodes=1;
+printf("ready to search\n");
 carom_test.search(nsamples);
 chisq.print_mins();
 

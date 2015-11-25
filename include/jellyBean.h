@@ -3,25 +3,10 @@
 
 #include "chisq.h"
 
-class jellyBean : public chisquared{
-
-    public:
-        ~jellyBean();
-        jellyBean(int,double, double);
-        virtual double operator()(array_1d<double>&);
-        void get_curvature_center(array_1d<double>&);
-
-    private:
-        array_1d<double> _curvature_center,_radial_direction;
-        double _curvature_radius;
-
-};
-
-
 class chiSquaredData : public chisquared{
 
     public:
-        chiSquaredData(int, int, int, double);
+        chiSquaredData(int, int, double, int, double);
         ~chiSquaredData(){};
 
         virtual double operator()(array_1d<double>&);
@@ -47,7 +32,7 @@ class jellyBeanData : public chiSquaredData{
 
     public:
         ~jellyBeanData(){}
-        jellyBeanData(int,int,int,double,double,double,double);
+        jellyBeanData(int,int,double,int,double,double,double,double);
         
 
     protected:
