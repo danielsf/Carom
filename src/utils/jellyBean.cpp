@@ -67,7 +67,8 @@ void chiSquaredData::print_mins(){
         printf("center %d val %e\n",ic,this[0](trial));
         convert_params(trial,params,ic);
         for(ix=0;ix<_dim;ix++){
-            printf("    %e -- width %e -- mean %e \n",
+            printf("    %e %e -- width %e -- mean %e \n",
+            _centers.get_data(ic,ix),
             params.get_data(ix),_widths.get_data(0,ix),_mean_parameters.get_data(ix));
         }
     }
