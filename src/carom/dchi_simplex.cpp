@@ -33,7 +33,7 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
         }
 
         for(i=0;i<_chisq->get_dim();i++){
-            _norm.set(i,max.get_data(i)-min.get_data(i));
+            _norm.set(i,0.5*(max.get_data(i)-min.get_data(i)));
         }
     }
 
@@ -46,9 +46,7 @@ int dchi_simplex_base::get_called(){
 double dchi_simplex_base::associate_distance(array_1d<double> &pt){
 
      if(_associates.get_dim()<=0){
-         printf("Cannot call dchi_simplex_base::associate_distance\n");
-         printf("_associates.get_dim() %d\n",_associates.get_dim());
-         exit(1);
+         return 0.0;
      }
 
      double dd,ddmin;

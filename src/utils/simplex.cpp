@@ -174,7 +174,7 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
         }
     }
 
-    if(_called_evaluate>_last_cooled_off+1000 && !(_temp<_min_temp) && _freeze_temp==0){
+    if(_called_evaluate>_last_cooled_off+500 && !(_temp<_min_temp) && _freeze_temp==0){
         cool_off();
         if(_freeze_called==0)i=1;
         else i=0;

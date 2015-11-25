@@ -56,6 +56,7 @@ void node::initialize(){
     _failed_kicks=0;
     _successful_kicks=0;
     _volume_of_last_geom=0.0;
+    _last_geo_center=-1;
     _successful_ricochets=0;
     _id_dex=0;
     _good_shots=0;
@@ -143,6 +144,7 @@ void node::copy(const node &in){
     _min_basis_error=in._min_basis_error;
     _min_basis_error_changed=in._min_basis_error_changed;
     _volume_of_last_geom=in._volume_of_last_geom;
+    _last_geo_center=in._last_geo_center;
     _successful_ricochets=in._successful_ricochets;
     _id_dex=in._id_dex;
     _node_dd_tol=in._node_dd_tol;
@@ -730,6 +732,8 @@ void node::set_transform(){
             _transform.set(ix,dd_sorted.get_data(dd.get_dim()/2));
         }
     }
+    find_bases(0);
+    set_geo_center();
     recalibrate_max_min();
 
 }
@@ -1758,8 +1762,6 @@ void node::compass_search(int local_center){
         _basis_lengths.set(ix,blength);
     }
 
-    compass_diagonal(local_center);
-
     printf("leaving compass %d\n\n",_chisquared->get_called()-ibefore);
     _compass_calls+=_chisquared->get_called()-ibefore;
 }
@@ -1938,15 +1940,16 @@ void node::compass_diagonal(int local_center){
 
 }
 
-void node::compass_search_geometric_center(){
-    is_it_safe("compass_geometric_center");
+
+void node::set_geo_center(){
+    is_it_safe("set_geo_center");
 
     array_1d<double> geometric_dir,trial,highball,lowball;
     int iFound,i,j;
     double mu,fhigh,flow,bisection_target,tol;
 
-    geometric_dir.set_name("compass_search_geometric_dir");
-    trial.set_name("compass_search_trial");
+    geometric_dir.set_name("set_geo_center_dir");
+    trial.set_name("set_geo_center_trial");
 
     iFound=-1;
 
@@ -1986,14 +1989,21 @@ void node::compass_search_geometric_center(){
                 printf("%e %e\n",get_pt(_centerdex,i),get_pt(iFound,i));
             }
             _geo_centerdex=iFound;
-            compass_search(iFound);
         }
 
     }
-
-    _volume_of_last_geom=volume();
-
 }
+
+
+void node::compass_search_geometric_center(){
+    set_geo_center();
+    if(_geo_centerdex>=0 && _geo_centerdex!=_centerdex && _geo_centerdex!=_last_geo_center){
+        compass_search(_geo_centerdex);
+    }
+    _volume_of_last_geom=volume();
+    _last_geo_center=_geo_centerdex;
+}
+
 
 void node::findCovarianceMatrix(int iCenter, array_2d<double> &covar){
     is_it_safe("findCovarianceMatrix");
@@ -2465,14 +2475,14 @@ void node::recalibrate_max_min(){
 }
 
 void node::find_bases(){
+    find_bases(1);
+}
+
+void node::find_bases(int do_populate){
     is_it_safe("find_bases");
 
     if(_centerdex_basis<0 || node_distance(_centerdex_basis,_centerdex)>0.01){
         _basis_associates.reset();
-    }
-
-    if(_compass_calls==0){
-        compass_search();
     }
 
     _chimin_bases=_chimin;
@@ -2495,7 +2505,9 @@ void node::find_bases(){
 
     int dimsq=_chisquared->get_dim()*_chisquared->get_dim();
 
-    populate_basis_associates();
+    if(do_populate==1 || _basis_associates.get_dim()<_chisquared->get_dim()){
+        populate_basis_associates();
+    }
 
     if(_basis_associates.get_dim()==0){
         printf("WARNING _basis associates is empty\n");
@@ -2515,8 +2527,6 @@ void node::find_bases(){
     stdev=0.1/sqrt(double(_chisquared->get_dim()));
     stdevlim=1.0e-5/sqrt(double(_chisquared->get_dim()));
     max_abort=_chisquared->get_dim()*100;
-
-    set_transform();
 
     error=basis_error(_basis_vectors,_basis_model);
     error0=error;
@@ -2600,10 +2610,6 @@ void node::find_bases(){
             error1=errorBest;
             printf("    ct %d error %e from %e min %e\n",ct,errorBest,error0,_chimin);
         }
-    }
-
-    if(changed_bases==1){
-        compass_search();
     }
 
     array_1d<double> projected;
@@ -3189,8 +3195,15 @@ void node::cull_ricochet(){
 
     sort_and_check(strikes,strikes_sorted,strikes_dexes);
     int n_started=_ricochet_particles.get_dim();
+    int target_particle,j;
     for(i=0;i<strikes_sorted.get_dim() && i<n_started-_chisquared->get_dim()/2;i++){
+        target_particle=strikes_dexes.get_data(i);
         remove_particle(strikes_dexes.get_data(i));
+        for(j=i+1;j<strikes_sorted.get_dim();j++){
+            if(strikes_dexes.get_data(j)>target_particle){
+                strikes_dexes.subtract_val(j,1);
+            }
+        }
     }
 
     while(_ricochet_particles.get_dim()<_chisquared->get_dim()){
@@ -3278,6 +3291,11 @@ void node::initialize_ricochet(){
 
     if(_found_bases==0){
         find_bases();
+        if(_compass_calls==0){
+            compass_search();
+            compass_diagonal(_centerdex);
+        }
+        set_transform();
     }
 
     int i;
@@ -3641,12 +3659,13 @@ void node::originate_particle_simplex(){
     array_1d<double> trial,trial_node;
     trial.set_name("orig_particle_simplex_trial");
     trial_node.set_name("orig_particle_simplex_trial_node");
-    double mu,dx;
+    double mu,dx,midx;
     int iFound;
     while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
             dx=max.get_data(i)-min.get_data(i);
-            trial.set(i,min.get_data(i)+dx*(2.0*_chisquared->random_double()-1.0));
+            midx=0.5*(max.get_data(i)+min.get_data(i));
+            trial.set(i,midx+3.0*dx*(_chisquared->random_double()-0.5));
         }
         transform_pt_to_node(trial,trial_node);
         evaluate(trial_node,&mu,&iFound);
@@ -3805,11 +3824,9 @@ void node::search(){
 
     if(_chisquared->get_fn(_centerdex)<_chisquared->get_fn(_centerdex_basis)-tol){
         find_bases();
-        compass_search_geometric_center();
-    }
-
-    if(volume()>2.0*_volume_of_last_geom){
-        compass_search_geometric_center();
+        compass_search();
+        compass_diagonal(_centerdex);
+        set_transform();
     }
 
     if(fabs(_chisquared->target()-target0)>0.01){
@@ -3828,7 +3845,7 @@ void node::search(){
         _convergence_ct++;
     }
 
-    if(_convergence_ct>_chisquared->get_dim()){
+    if(_convergence_ct>_allowed_ricochet_strikes){
         printf("deactivating because we did not expand\n");
         _active=0;
     }
@@ -3839,7 +3856,7 @@ void node::search(){
 
     array_1d<double> dir;
     dir.set_name("node_search_dir");
-    int iParticle,i,j;
+    int iParticle,i,j,n_particles;
 
     if(_active==0){
         target0=_chisquared->target();
@@ -3847,21 +3864,21 @@ void node::search(){
         projectedVolume0=projected_volume();
 
         find_bases();
-        compass_search_geometric_center();
+        set_geo_center();
+        n_particles=_ricochet_particles.get_dim();
+        _ricochet_particles.reset();
+        _ricochet_strikes.reset();
+        _ricochet_origins.reset();
+
+        while(_ricochet_particles.get_dim()<n_particles){
+            originate_particle_simplex();
+        }
 
         volume1=volume();
         projectedVolume1=projected_volume();
 
-        if(fabs(volume0-volume1)>0.01*volume0 ||
-           fabs(projectedVolume0-projectedVolume1)>0.05*projectedVolume0){
-
-           _active=1;
-           _convergence_ct=0;
-
-           if(fabs(_chisquared->target()-target0)>0.01){
-               recalibrate_max_min();
-           }
-       }
+        _active=1;
+        _convergence_ct=0;
     }
 
     if(_ricochet_particles.get_dim()==0){
@@ -4290,26 +4307,44 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
 
     }
 
-    array_1d<double> dir;
-    dir.set_name("mcmc_walk_dir");
-    for(i=0;i<_chisquared->get_dim();i++){
-        dir.set(i,get_pt(i_pt,i)-get_pt(i_start,i));
+    array_1d<double> lowball,highball;
+    double flow, fhigh;
+    highball.set_name("mcmc_walk_highball");
+    lowball.set_name("mcmc_walk_lowball");
+    int i_nearest;
+    double dd_nearest;
+
+    if(i_pt>=0 && _chisquared->get_fn(i_pt)>_chisquared->target()){
+        i_nearest=-1;
+        for(i=0;i<_associates.get_dim();i++){
+            if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()){
+                mu=node_distance(i_pt,_associates.get_data(i));
+                if(i_nearest<0 || mu<dd_nearest){
+                    i_nearest=_associates.get_data(i);
+                    dd_nearest=mu;
+                }
+            }
+        }
+
+        if(i_nearest>=0){
+            for(i=0;i<_chisquared->get_dim();i++){
+                lowball.set(i,get_pt(i_nearest,i));
+                highball.set(i,get_pt(i_pt,i));
+            }
+            flow=_chisquared->get_fn(i_nearest);
+            fhigh=_chisquared->get_fn(i_pt);
+            i_pt=node_bisection(lowball,flow,highball,fhigh,1);
+        }
+
     }
-    double dir_norm=dir.normalize();
+
+
+    i_found[0]=i_pt;
 
     if(i_pt>=0){
         add_to_log(_log_mcmc, i_pt);
     }
 
-    if(i_pt!=i_start && _chisquared->target()-_chisquared->get_fn(i_pt)>0.02*(_chisquared->target()-_chisquared->chimin())){
-        i_found[0]=node_bisection_origin_dir(i_start, dir);
-        if(i_found[0]>=0){
-            add_to_log(_log_mcmc, i_found[0]);
-        }
-    }
-    else{
-        i_found[0]=i_pt;
-    }
     printf("    local_acceptances %d %e\n",local_acceptances,volume());
     _mcmc_growth*=(volume()/local_v0);
 }
@@ -4626,7 +4661,7 @@ arrayOfNodes::~arrayOfNodes(){
     }
 }
 
-void arrayOfNodes::add(int cc, chisq_wrapper *gg){
+void arrayOfNodes::add(int cc, chisq_wrapper *gg, asymm_array_2d<int> *a){
 
     node *buffer;
     int i,j;
@@ -4655,6 +4690,7 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
     _data[_ct].set_chisquared(gg);
     _data[_ct].set_center(cc);
     _data[_ct].set_id_dex(_ct);
+    _data[_ct].set_log(a);
     printf("time to initialize ricochet\n");
     _data[_ct].initialize_ricochet();
     printf("done with that\n");
@@ -4662,13 +4698,12 @@ void arrayOfNodes::add(int cc, chisq_wrapper *gg){
 
 }
 
-void arrayOfNodes::add(int i, chisq_wrapper *g, asymm_array_2d<int> *a){
-    add(i,g);
-    _data[_ct-1].set_log(a);
+void arrayOfNodes::add(int i, chisq_wrapper *g){
+    add(i,g,NULL);
 }
 
 void arrayOfNodes::add(chisq_wrapper *g, int i){
-    add(i,g);
+    add(i,g,NULL);
 }
 
 int arrayOfNodes::get_dim(){
