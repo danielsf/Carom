@@ -3238,7 +3238,7 @@ void node::set_particle(int ip, int ii){
     int j;
 
     double v1=volume();
-    if(v1>1.01*_v0 || ip>=_ricochet_strikes.get_dim()){
+    if(v1>1.05*_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
 
         _v0=v1;
@@ -3836,8 +3836,7 @@ void node::search(){
     double volume1=volume();
     double projectedVolume1=projected_volume();
 
-    if(fabs(volume0-volume1)>0.01*volume0 ||
-    fabs(projectedVolume1-projectedVolume0)>projectedVolume0*0.01){
+    if(fabs(volume0-volume1)>(0.01*_chisquared->get_dim())*volume0){
         _since_expansion=0;
         _convergence_ct=0;
     }
