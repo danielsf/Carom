@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-__all__ = ["doAnalysis"]
+__all__ = ["doTimeSeriesAnalysis", "get_scatter"]
 
 def get_histogram(chisq, dchi, nsteps):
     chisq_min = chisq.min()
