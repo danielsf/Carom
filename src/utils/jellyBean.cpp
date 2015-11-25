@@ -89,10 +89,6 @@ void chiSquaredData::print_mins(){
 
 void chiSquaredData::initialize_data(){
 
-    if(_chisq_initialized==0){
-        initialize();
-    }
-
     array_1d<double> params;
     params.set_name("jellyBeanData_initiailize_params");
     int ix,ic;
@@ -212,8 +208,6 @@ chiSquaredData(dd, cc, wc, nData, sigma){
     radial width (fraction)
     curvature radius
     */
-
-    initialize();
 
     _curvature_centers.set_name("jellyBeanData_curvature_center");
     _radial_directions.set_name("jellyBeanData_radial_directions");

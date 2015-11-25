@@ -16,6 +16,7 @@ chisquared::chisquared(int id){
     _seed=22;
     _chisq_initialized=0;
     _initialize();
+    initialize();
 };
 
 chisquared::chisquared(int id, int ic){
@@ -26,6 +27,7 @@ chisquared::chisquared(int id, int ic){
     _seed=22;
     _chisq_initialized=0;
     _initialize();
+    initialize();
 };
 
 
@@ -37,6 +39,7 @@ chisquared::chisquared(int id, int ic, double ww){
     _seed=22;
     _chisq_initialized=0;
     _initialize();
+    initialize();
 }
 
 void chisquared::_initialize(){
@@ -51,8 +54,8 @@ void chisquared::_initialize(){
 
     int i;
     for(i=0;i<_dim;i++){
-        _mins.set(i,-100.0);
-        _maxs.set(i,100.0);
+        _mins.set(i,-60.0);
+        _maxs.set(i,60.0);
     }
 }
 
