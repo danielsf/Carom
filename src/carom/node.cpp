@@ -1354,22 +1354,25 @@ int node::node_bisection(array_1d<double> &lowball_in, double flow,
 
     is_it_safe("bisection");
 
-    if(flow>target_value){
-        printf("cannot do bisection, flow %e target %e\n",flow,target_value);
-        exit(1);
-    }
-
-    int ibefore=_chisquared->get_called();
-
+    int i;
     array_1d<double> lowball,highball;
     lowball.set_name("node_bisection_lowball");
     highball.set_name("node_bisection_highball");
 
-    int i;
     for(i=0;i<_chisquared->get_dim();i++){
         lowball.set(i,lowball_in.get_data(i));
         highball.set(i,highball_in.get_data(i));
     }
+
+    if(flow>target_value){
+        printf("cannot do bisection, flow %e target %e\n",flow,target_value);
+        flow=_chisquared->get_fn(_centerdex);
+        for(i=0;i<_chisquared->get_dim();i++){
+            lowball.set(i,get_pt(_centerdex,i));
+        }
+    }
+
+    int ibefore=_chisquared->get_called();
 
     array_1d<double> e_dir;
     double component;
