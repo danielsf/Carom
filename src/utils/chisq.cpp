@@ -119,11 +119,21 @@ void chisquared::initialize(){
         _centers.add_row(trial);
     }
 
+    double mean,stdev;
+
     while(_widths.get_rows()<_ncenters){
         for(i=0;i<_dim;i++){
             mu=0.0;
             while(mu<1.0e-20){
-                mu=normal_deviate(_dice, _characteristic_width, 0.25*_characteristic_width);
+                if(i%2==0){
+                    mean=_characteristic_width;
+                    stdev=0.25*_characteristic_width;
+                }
+                else{
+                    mean=10.0*_characteristic_width;
+                    stdev=2.5*_characteristic_width;
+                }
+                mu=normal_deviate(_dice, mean, stdev);
             }
             trial.set(i,mu);
         }
