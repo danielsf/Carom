@@ -164,6 +164,7 @@ def doTimeSeriesAnalysis(dim, ix_list, iy_list,
 
         plt.figure(figsize=(30,30))
         for ict, ct in enumerate(ct_list):
+            target = None
             all_pts = useful_data[:ct]
             good_pts, chisq, target, chi_min = get_scatter(useful_data[:ct], ix, iy,
                                                            delta_chisq=delta_chisq, target=target)
