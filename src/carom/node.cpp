@@ -31,7 +31,7 @@ void node::initialize(){
     _log=NULL;
     _chisquared=NULL;
     _ricochet_growth=1.0;
-    _baseline_volume=0.0;
+    _baseline_volume=2.0*exception_value;
     _mcmc_growth=1.0;
     _swarm_growth=1.0;
     _simplex_growth=1.0;
