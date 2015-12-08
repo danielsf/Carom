@@ -91,6 +91,7 @@ public:
     double get_swarm_growth();
     double get_mcmc_growth();
     double get_simplex_growth();
+    double get_compass_growth();
 
 private:
     int _do_simplex;
@@ -150,6 +151,14 @@ private:
     asymm_array_2d<int> *_log;
 
     double _ricochet_growth,_mcmc_growth,_swarm_growth,_simplex_growth;
+    double _compass_growth;
+    double _baseline_volume;
+
+    void increment_ricochet_growth();
+    void increment_mcmc_growth();
+    void increment_simplex_growth();
+    void increment_swarm_growth();
+    void increment_compass_growth();
 
     chisq_wrapper *_chisquared;
 

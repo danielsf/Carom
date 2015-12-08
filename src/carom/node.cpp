@@ -31,9 +31,11 @@ void node::initialize(){
     _log=NULL;
     _chisquared=NULL;
     _ricochet_growth=1.0;
+    _baseline_volume=0.0;
     _mcmc_growth=1.0;
     _swarm_growth=1.0;
     _simplex_growth=1.0;
+    _compass_growth=1.0;
     _chimin=2.0*exception_value;
     _chimin_ricochet=2.0*exception_value;
     _do_simplex=1;
@@ -170,6 +172,8 @@ void node::copy(const node &in){
     _mcmc_growth=in._mcmc_growth;
     _swarm_growth=in._swarm_growth;
     _simplex_growth=in._simplex_growth;
+    _compass_growth=in._compass_growth;
+    _baseline_volume=in._baseline_volume;
 
     _swarm_acceptances=in._swarm_acceptances;
     _swarm_rejections=in._swarm_rejections;
@@ -375,6 +379,8 @@ void node::merge(const node &in){
     _mcmc_growth*=in._mcmc_growth;
     _swarm_growth*=in._swarm_growth;
     _simplex_growth*=in._simplex_growth;
+    _compass_growth*=in._compass_growth;
+    _baseline_volume=volume();
 
     recalibrate_max_min();
     _active=1;
@@ -388,16 +394,60 @@ double node::get_ricochet_growth(){
     return _ricochet_growth;
 }
 
+void node::increment_ricochet_growth(){
+    double vv=volume();
+    if(vv>_baseline_volume){
+        _ricochet_growth*=vv/_baseline_volume;
+    }
+    _baseline_volume=vv;
+}
+
 double node::get_swarm_growth(){
     return _swarm_growth;
+}
+
+void node::increment_swarm_growth(){
+   double vv=volume();
+   if(vv>_baseline_volume){
+       _swarm_growth*=vv/_baseline_volume;
+   }
+   _baseline_volume=vv;
 }
 
 double node::get_mcmc_growth(){
     return _mcmc_growth;
 }
 
+void node::increment_mcmc_growth(){
+    double vv=volume();
+    if(vv>_baseline_volume){
+        _mcmc_growth*=vv/_baseline_volume;
+    }
+    _baseline_volume=vv;
+}
+
+double node::get_compass_growth(){
+    return _compass_growth;
+}
+
+void node::increment_compass_growth(){
+    double vv=volume();
+    if(vv>_baseline_volume){
+        _compass_growth*=vv/_baseline_volume;
+    }
+    _baseline_volume=vv;
+}
+
 double node::get_simplex_growth(){
     return _simplex_growth;
+}
+
+void node::increment_simplex_growth(){
+    double vv=volume();
+    if(vv>_baseline_volume){
+        _simplex_growth*=vv/_baseline_volume;
+    }
+    _baseline_volume=vv;
 }
 
 int node::get_good_shots(){
@@ -3240,6 +3290,8 @@ void node::set_particle(int ip, int ii){
 
     int j;
 
+    increment_ricochet_growth();
+
     double v1=volume();
     if(v1>1.05*_v0 || ip>=_ricochet_strikes.get_dim()){
         _ricochet_strikes.set(ip,0);
@@ -3285,6 +3337,7 @@ void node::set_particle(int ip, int ii){
         _ricochet_origins.set(ip,_ricochet_particles.get_data(ip));
         _ricochet_particles.set(ip,i_found);
     }
+    increment_mcmc_growth();
 
     _v0=volume();
 }
@@ -3633,7 +3686,6 @@ int node::choose_off_center_point(){
 }
 
 void node::originate_particle_simplex(){
-    double local_v0=volume();
     printf("orig simplex\n");
     array_1d<double> min,max;
     min.set_name("orig_particle_simplex_min");
@@ -3727,7 +3779,7 @@ void node::originate_particle_simplex(){
 
     }
 
-    _simplex_growth*=volume()/local_v0;
+    increment_simplex_growth();
 
 }
 
@@ -3788,6 +3840,7 @@ int node::originate_particle_shooting(int *origin_out){
     iFound=node_bisection_origin_dir(iOrigin,dir);
 
     origin_out[0]=iOrigin;
+    increment_compass_growth();
     return iFound;
 
 }
@@ -3830,6 +3883,7 @@ void node::search(){
         compass_search();
         compass_diagonal(_centerdex);
         set_transform();
+        increment_compass_growth();
     }
 
     if(fabs(_chisquared->target()-target0)>0.01){
@@ -4021,8 +4075,6 @@ int node::_ricochet(int iparticle){
         return _ricochet_particles.get_data(iparticle);
     }
 
-
-    double local_v0=volume();
     array_1d<double> gradient,dir_0;
     gradient.set_name("_ricochet_gradient");
     dir_0.set_name("_ricochet_dir_0");
@@ -4059,8 +4111,6 @@ int node::_ricochet(int iparticle){
     }
 
     iFound=node_bisection_origin_dir(_ricochet_particles.get_data(iparticle), dir);
-
-    _ricochet_growth*=(volume()/local_v0);
 
     if(iFound>=0){
         add_to_log(_log_ricochet, iFound);
@@ -4215,7 +4265,6 @@ void node::ricochet(){
 void node::mcmc_walk(int i_start, int *i_found, int n_steps,
                      array_1d<int> &local_associates){
 
-    double local_v0=volume();
     array_1d<double> step,trial;
     step.set_name("mcmc_walk_step");
     trial.set_name("mcmc_walk_trial");
@@ -4348,7 +4397,6 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
     }
 
     printf("    local_acceptances %d %e\n",local_acceptances,volume());
-    _mcmc_growth*=(volume()/local_v0);
 }
 
 
@@ -4487,8 +4535,6 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
 
 void node::swarm_search(){
 
-    double local_v0=volume();
-
     int i;
     double tol=0.05*(_chisquared->target()-_chisquared->chimin());
     _swarm_associates.reset();
@@ -4498,7 +4544,7 @@ void node::swarm_search(){
         }
     }
     if(_swarm_associates.get_dim()==0){
-        _swarm_growth*=(volume()/local_v0);
+        increment_swarm_growth();
         return;
     }
 
@@ -4644,7 +4690,7 @@ void node::swarm_search(){
         }
     }
 
-    _swarm_growth*=(volume()/local_v0);
+    increment_swarm_growth();
 
 }
 
