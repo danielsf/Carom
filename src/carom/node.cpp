@@ -380,9 +380,9 @@ void node::merge(const node &in){
     _swarm_growth*=in._swarm_growth;
     _simplex_growth*=in._simplex_growth;
     _compass_growth*=in._compass_growth;
-    _baseline_volume=volume();
 
     recalibrate_max_min();
+    _baseline_volume=volume();
     _active=1;
 }
 
@@ -3921,6 +3921,7 @@ void node::search(){
 
         find_bases();
         set_geo_center();
+        increment_compass_growth();
         n_particles=_ricochet_particles.get_dim();
         _ricochet_particles.reset();
         _ricochet_strikes.reset();
