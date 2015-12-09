@@ -406,6 +406,7 @@ void control_integrator::write_output(int xdex, int ydex,
     array_2d<double> boundary;
     boundary.set_name("output_boundary");
 
+    //points wwith chisq < a priori chi^2_lim
     convert_to_boundary(frequentistFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_frequentistFullD.txt",outname_root);
@@ -420,6 +421,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
+    //points with chisq < chisq_min + delta_chisq(dof)
     sprintf(outname,"%s_frequentistFullDrelative_scatter.txt",outname_root);
     output=fopen(outname,"w");
     for(ix=0;ix<frequentistFullDrelative.get_rows();ix++){
@@ -441,6 +443,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
+    //point with chisq < chisq_min + 6
     convert_to_boundary(frequentist2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_frequentist2D.txt",outname_root);
@@ -455,6 +458,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
+    //points wiht -2 ln(marginalized_likelihood) < -2.0*ln(max_marginalized_likelihood) + 6
     convert_to_boundary(frequentist2Deff,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_frequentist2Deff.txt",outname_root);
@@ -470,6 +474,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
 
 
+    //sum of marginalized likelihood < 0.95 total
     convert_to_boundary(bayesian2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_bayesian2D.txt",outname_root);
@@ -485,6 +490,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
 
 
+    //sum of individual likelihood in full D space < 0.95 total
     convert_to_boundary(bayesianFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_bayesianFullD.txt",outname_root);
