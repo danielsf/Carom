@@ -44,6 +44,9 @@ chiSquaredData::chiSquaredData(int dd, int cc, double ww, int nData, double sigm
     }
 }
 
+void chiSquaredData::set_width(int ic, int id, double dd){
+    _widths.set(ic, id, dd);
+}
 
 void chiSquaredData::write_data(){
     FILE *output;

@@ -9,6 +9,8 @@ class chiSquaredData : public chisquared{
         chiSquaredData(int, int, double, int, double);
         ~chiSquaredData(){};
 
+        void set_width(int, int, double);
+
         virtual double operator()(array_1d<double>&);
         void write_data();
         void print_mins();
