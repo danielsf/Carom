@@ -21,9 +21,8 @@ control_integrator::control_integrator(function_wrapper &chisq,
     _chi_min=2.0*exception_value;
 
     chisquared_distribution distro;
-    _delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),0.95);
 
-    printf("_delta_chi_bayes: %e\n",_delta_chi_bayes);
+    _confidence_limit=0.95;
 
 }
 
@@ -32,6 +31,14 @@ void control_integrator::set_chi_lim_freq(double dd){
 }
 
 void control_integrator::run_analysis(){
+    run_analysis(0.95);
+}
+
+void control_integrator::run_analysis(double cc){
+
+    _confidence_limit=cc;
+
+    _delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),_confidence_limit);
 
     printf("nameroot %s\n",_name_root);
 
@@ -165,6 +172,7 @@ void control_integrator::run_analysis(){
         }
     }
 
+    printf("_delta_chi_bayes: %e\n",_delta_chi_bayes);
 }
 
 int control_integrator::get_dex(double value, double min, double dx, int max){
@@ -336,7 +344,7 @@ void control_integrator::write_output(int xdex, int ydex,
     sort_and_check(marginalized_likelihood_line,sorted,sorted_dexes);
     double sum=0.0;
     row=0;
-    for(i=sorted.get_dim()-1;i>=0 && sum<0.95*totalLikelihood;i--){
+    for(i=sorted.get_dim()-1;i>=0 && sum<_confidence_limit*totalLikelihood;i--){
         sum+=sorted.get_data(i);
 
         ix=marginalized_likelihood_dexes.get_data(sorted_dexes.get_data(i),0);
@@ -360,7 +368,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
     sum=0.0;
     row=0;
-    for(i=0;i<chi_vals_sorted.get_dim() && sum<0.95*totalLikelihood;i++){
+    for(i=0;i<chi_vals_sorted.get_dim() && sum<_confidence_limit*totalLikelihood;i++){
         sum+=likelihood_sorted.get_data(i);
         true_dex=dexes.get_data(i);
 
@@ -474,7 +482,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
 
 
-    //sum of marginalized likelihood < 0.95 total
+    //sum of marginalized likelihood < _confidence_limit * total
     convert_to_boundary(bayesian2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_bayesian2D.txt",outname_root);
@@ -490,7 +498,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
 
 
-    //sum of individual likelihood in full D space < 0.95 total
+    //sum of individual likelihood in full D space < _confidence_limit * total
     convert_to_boundary(bayesianFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_bayesianFullD.txt",outname_root);
