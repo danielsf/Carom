@@ -21,7 +21,7 @@ chiSquaredData::chiSquaredData(int dd, int cc, double ww, int nData, double sigm
     _wave_phase.set_name("jellyBeanData_phase");
     _wave_lambda.set_name("jellyBeanData_lambda");
     _wave_amp.set_name("jellBeanData_amp");
-    _env_center.set_name("jellyBeanData_env_center");
+    _env_d_center.set_name("jellyBeanData_env_d_center");
     _env_width.set_name("jellyBeanData_env_width");
     _param_buffer.set_name("jellyBeanData_param_buffer");
 
@@ -37,12 +37,23 @@ chiSquaredData::chiSquaredData(int dd, int cc, double ww, int nData, double sigm
     double ll_min,ll_max;
     ll_min=log(0.05*_xmax);
     ll_max=log(0.6*_xmax);
+
+    double last_center;
+    double d_center;
+    double d_c;
+    d_center=_xmax/double(_dim/4);
+    last_center=0.0;
     for(ix=0;ix<_dim;ix+=4){
         _wave_phase.add(local_dice.doub()*_xmax);
+
         ll=local_dice.doub()*(ll_max-ll_min)+ll_min;
         _wave_lambda.add(exp(ll));
+
         _wave_amp.add(local_dice.doub()*5.0);
-        _env_center.add(local_dice.doub()*_xmax);
+
+        d_c=local_dice.doub()*d_center;
+        _env_d_center.add(d_c);
+
         _env_width.add((local_dice.doub()*0.5+0.05)*_xmax);
     }
 
@@ -93,7 +104,7 @@ void chiSquaredData::print_mins(){
         printf("amp %e\n",_wave_amp.get_data(ix));
         printf("phase %e\n",_wave_phase.get_data(ix));
         printf("lambda %e\n",_wave_lambda.get_data(ix));
-        printf("env_x %e\n",_env_center.get_data(ix));
+        printf("env_d_x %e\n",_env_d_center.get_data(ix));
         printf("env_width %e\n",_env_width.get_data(ix));
         printf("\n");
     }
@@ -153,10 +164,16 @@ double chiSquaredData::data_function(array_1d<double> &params, double xx){
     double amp;
     double lambda;
     double phase;
+    double last_center=0.0;
+    double center;
     int ix,i_param;
     for(ix=0,i_param=0;ix<_dim;ix+=4,i_param++){
-        env_x=(xx-params.get_data(ix)-_env_center.get_data(i_param))/(params.get_data(ix+1)+_env_width.get_data(i_param));
+        center=last_center+fabs(params.get_data(ix))+_env_d_center.get_data(i_param);
+        env_x=(xx-center)/(params.get_data(ix+1)+_env_width.get_data(i_param));
+
         envelope=0.1+exp(-0.5*power(env_x,2));
+        last_center=center;
+
         amp=params.get_data(ix+2)+_wave_amp.get_data(i_param);
         lambda=params.get_data(ix+3)*0.5*_xmax+_wave_lambda.get_data(i_param);
         wave=sin(2.0*pi*(xx-_wave_phase.get_data(i_param))/lambda);
