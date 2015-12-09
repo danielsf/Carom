@@ -44,8 +44,8 @@ chiSquaredData::chiSquaredData(int dd, int cc, double ww, int nData, double sigm
         _wave_amp.add(local_dice.doub()*5.0);
         _env_center.add(local_dice.doub()*_xmax);
         _env_width.add((local_dice.doub()*0.5+0.05)*_xmax);
-    }    
-    
+    }
+
 }
 
 void chiSquaredData::set_width(int ic, int id, double dd){
@@ -146,7 +146,7 @@ void chiSquaredData::convert_params(array_1d<double> &pt, array_1d<double> &out,
 double chiSquaredData::data_function(array_1d<double> &params, double xx){
 
     double ans=0.0;
-    
+
     double envelope;
     double env_x;
     double wave;
