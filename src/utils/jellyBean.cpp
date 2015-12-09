@@ -5,43 +5,47 @@
 chiSquaredData::chiSquaredData(int dd, int cc, double ww, int nData, double sigma) : chisquared(dd, cc, ww){
     printf("_dim %d\n",_dim);
 
+    if(_dim<4){
+        printf("WARNING must have at least 4 params in chisquaredData\n");
+        exit(1);
+    }
+
+    if(_dim%4!=0){
+        printf("WARNING dimensionality must be multiple of four\n");
+        exit(1);
+    }
+
     _x_values.set_name("jellyBeanData_x");
     _y_values.set_name("jellyBeanData_y");
     _sigma.set_name("jellyBeanData_sigma");
-    _mean_parameters.set_name("jellyBeanData_mean_parameters");
-    _aux_params.set_name("jellyBeanData_aux_parameters");
+    _wave_phase.set_name("jellyBeanData_phase");
+    _wave_lambda.set_name("jellyBeanData_lambda");
+    _wave_amp.set_name("jellBeanData_amp");
+    _env_center.set_name("jellyBeanData_env_center");
+    _env_width.set_name("jellyBeanData_env_width");
     _param_buffer.set_name("jellyBeanData_param_buffer");
 
     Ran local_dice(nData+dd+cc);
 
-    int ii,jj,goon,i;
-    double nn,normerr,ortherr,theta;
-
     _ndata=nData;
     _sig=sigma;
+    _xmax=3.0;
+    _dx=0.03;
 
     int ix;
-
-    for(ix=0;ix<3;ix++){
-        _mean_parameters.set(ix,1.0);
-    }
-
-    int aux_ct;
-    double norm;
-    aux_ct=0;
-    for(;ix<_dim;ix++){
-        _mean_parameters.set(ix,local_dice.doub()*4.0-2.0);
-
-        norm=exp(log(10.0)*(aux_ct/2));
-
-        _aux_params.set(aux_ct,local_dice.doub()*norm);
-        aux_ct++;
-        _aux_params.set(aux_ct,local_dice.doub()*20.0+26.0);
-        aux_ct++;
-    }
-    for(ix=0;ix<aux_ct;ix++){
-        printf("aux %e\n",_aux_params.get_data(ix));
-    }
+    double ll;
+    double ll_min,ll_max;
+    ll_min=log(0.05*_xmax);
+    ll_max=log(0.6*_xmax);
+    for(ix=0;ix<_dim;ix+=4){
+        _wave_phase.add(local_dice.doub()*_xmax);
+        ll=local_dice.doub()*(ll_max-ll_min)+ll_min;
+        _wave_lambda.add(exp(ll));
+        _wave_amp.add(local_dice.doub()*5.0);
+        _env_center.add(local_dice.doub()*_xmax);
+        _env_width.add((local_dice.doub()*0.5+0.05)*_xmax);
+    }    
+    
 }
 
 void chiSquaredData::set_width(int ic, int id, double dd){
@@ -70,14 +74,10 @@ void chiSquaredData::print_mins(){
         printf("center %d val %e\n",ic,this[0](trial));
         convert_params(trial,params,ic);
         for(ix=0;ix<_dim;ix++){
-            printf("    %e %e -- width %e -- mean %e \n",
+            printf("    %e %e -- width %e\n",
             _centers.get_data(ic,ix),
-            params.get_data(ix),_widths.get_data(0,ix),_mean_parameters.get_data(ix));
+            params.get_data(ix),_widths.get_data(0,ix));
         }
-    }
-    printf("x_vals %d\n",_x_values.get_dim());
-    for(ix=0;ix<_aux_params.get_dim();ix++){
-        printf("    aux %d %e\n",ix,_aux_params.get_data(ix));
     }
 
     printf("\nbases\n");
@@ -85,6 +85,16 @@ void chiSquaredData::print_mins(){
         for(ic=0;ic<_dim;ic++){
             printf("%.3e ",_bases.get_data(ic,ix));
         }
+        printf("\n");
+    }
+
+    printf("\nparams\n");
+    for(ix=0;ix<_dim/4;ix++){
+        printf("amp %e\n",_wave_amp.get_data(ix));
+        printf("phase %e\n",_wave_phase.get_data(ix));
+        printf("lambda %e\n",_wave_lambda.get_data(ix));
+        printf("env_x %e\n",_env_center.get_data(ix));
+        printf("env_width %e\n",_env_width.get_data(ix));
         printf("\n");
     }
 
@@ -102,7 +112,7 @@ void chiSquaredData::initialize_data(){
     samples.set_name("jellyBeanData_initialize_samples");
 
     double xx,yy,mean,var;
-    for(ix=0, xx=0.0;xx<3.0;xx+=0.03, ix++){
+    for(ix=0, xx=0.0;xx<_xmax;xx+=_dx, ix++){
         mean=data_function(params,xx);
         for(ic=0;ic<_ndata;ic++){
             samples.set(ic,normal_deviate(_dice,mean,_sig));
@@ -124,6 +134,7 @@ void chiSquaredData::initialize_data(){
     }
 
     write_data();
+    print_mins();
 
 }
 
@@ -135,21 +146,21 @@ void chiSquaredData::convert_params(array_1d<double> &pt, array_1d<double> &out,
 double chiSquaredData::data_function(array_1d<double> &params, double xx){
 
     double ans=0.0;
-
-    ans=(_mean_parameters.get_data(0)+params.get_data(0))*xx*xx;
-    ans+=(_mean_parameters.get_data(1)+params.get_data(1))*xx;
-    ans+=_mean_parameters.get_data(2)+params.get_data(2);
-
-    double mu,amp;
-    int ix=3,i1,i2;
-    i1=0;
-    i2=1;
-    for(;ix<_dim;ix++){
-        amp=_mean_parameters.get_data(ix)+params.get_data(ix);
-        mu=amp*sin(_aux_params.get_data(i2)*(xx-_aux_params.get_data(i1)));
-        ans+=mu;
-        i1+=2;
-        i2+=2;
+    
+    double envelope;
+    double env_x;
+    double wave;
+    double amp;
+    double lambda;
+    double phase;
+    int ix,i_param;
+    for(ix=0,i_param=0;ix<_dim;ix+=4,i_param++){
+        env_x=(xx-params.get_data(ix)-_env_center.get_data(i_param))/(params.get_data(ix+1)+_env_width.get_data(i_param));
+        envelope=0.1+exp(-0.5*power(env_x,2));
+        amp=params.get_data(ix+2)+_wave_amp.get_data(i_param);
+        lambda=params.get_data(ix+3)*0.5*_xmax+_wave_lambda.get_data(i_param);
+        wave=sin(2.0*pi*(xx-_wave_phase.get_data(i_param))/lambda);
+        ans+=envelope*amp*wave;
     }
 
     return ans;

@@ -18,8 +18,10 @@ class chiSquaredData : public chisquared{
     protected:
         int _ndata;
         double _sig;
+        double _xmax,_dx;
         array_1d<double> _x_values,_y_values,_sigma;
-        array_1d<double> _mean_parameters,_aux_params;
+        array_1d<double> _wave_phase,_wave_lambda,_env_center,_env_width;
+        array_1d<double> _wave_amp;
         array_1d<double> _param_buffer;
 
         virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
