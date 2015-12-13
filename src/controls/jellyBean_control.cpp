@@ -78,7 +78,7 @@ int main(){
 
     printf("\nrange\n");
     for(i=0;i<4;i++){
-        printf("%e %e\n",min.get_data(i),max.get_data(i));
+        printf("%e %e\n",integrator.get_min(i),integrator.get_max(i));
     }
 
     printf("that took %e\n",double(time(NULL))-start);

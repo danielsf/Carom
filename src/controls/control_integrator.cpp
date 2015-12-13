@@ -4,6 +4,10 @@ control_integrator::control_integrator(function_wrapper &chisq,
                      array_1d<double> &min, array_1d<double> &max,
                      array_1d<double> &dx, char *name_root){
 
+    _min.set_name("control_min");
+    _max.set_name("control_max");
+    _dx.set_name("control_dx");
+
     _chisq=&chisq;
     int i;
     for(i=0;i<min.get_dim();i++){

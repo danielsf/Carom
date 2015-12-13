@@ -30,6 +30,9 @@ class control_integrator{
     
         void find_chi_min(array_1d<double>&, array_1d<double>&);
     
+        double get_min(int);
+        double get_max(int);
+
     private:
         array_1d<double> _min,_max,_dx;
         double _chi_lim_freq,_delta_chi_bayes,_chi_min;
