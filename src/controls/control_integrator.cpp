@@ -4,6 +4,8 @@ control_integrator::control_integrator(function_wrapper &chisq,
                      array_1d<double> &min, array_1d<double> &max,
                      array_1d<double> &dx, char *name_root){
 
+    _iter_p = NULL;
+
     _min.set_name("control_min");
     _max.set_name("control_max");
     _dx.set_name("control_dx");
@@ -44,6 +46,16 @@ void control_integrator::run_analysis(){
     run_analysis(0.95);
 }
 
+void control_integrator::_initialize_iterate(){
+    if(_iter_p!=NULL){
+        delete _iter_p;
+    }
+
+    _iter_p=new default_iteration_parameters();
+    _iter_p->initialize(_min, _max, _dx);
+}
+
+
 void control_integrator::run_analysis(double cc){
 
     chisquared_distribution distro;
@@ -60,6 +72,7 @@ void control_integrator::run_analysis(double cc){
     array_1d<double> chi_vals,good_min,good_max;
     array_2d<int> coordinates;
 
+    pt.set_name("pt");
     good_min.set_name("good_min");
     good_max.set_name("good_max");
     chi_vals.set_name("chi_vals");
@@ -81,34 +94,25 @@ void control_integrator::run_analysis(double cc){
     double mu;
     double start=double(time(NULL));
 
-
-
     int ct=0;
 
     double foundMin=exception_value;
-    long int total_pts=1;
-    array_1d<int> grid_ct;
-    grid_ct.set_name("grid_ct");
 
-    for(ix=0;ix<_min.get_dim();ix++){
-        iy=int((_max.get_data(ix)-_min.get_data(ix))/_dx.get_data(ix));
-        grid_ct.set(ix,iy);
-        total_pts*=iy;
-    }
-    printf("total_pts %ld\n",total_pts);
 
     FILE *output;
 
     output=fopen("output/scratch/control_scatter.sav","w");
 
-    long int ipt;
+    int keep_going=1;
+
+    _initialize_iterate();
+
     array_1d<int> idx;
-    idx.set_name("idx");
-    for(ipt=0;ipt<total_pts;ipt++){
-        expand_grid(ipt,grid_ct,idx);
-        for(ix=0;ix<_min.get_dim();ix++){
-            pt.set(ix,_min.get_data(ix)+idx.get_data(ix)*_dx.get_data(ix));
-        }
+    idx.set_name("control_idx");
+
+    while(keep_going==1){
+
+        keep_going=_iter_p->get_pt(pt,idx);
 
         mu=_chisq[0](pt);
 
@@ -127,6 +131,12 @@ void control_integrator::run_analysis(double cc){
             chi_vals.add(mu);
         }
 
+        if(_iter_p->get_current_ct()%1000000==0 && _iter_p->get_current_ct()>0){
+            printf("ct %ld good %d in %e %e -- %e\n",
+            _iter_p->get_current_ct(),chi_vals.get_dim(),double(time(NULL))-start,
+            (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin);
+        }
+
         if(mu<119.8){
             for(ix=0;ix<_min.get_dim();ix++){
                 fprintf(output,"%e ",pt.get_data(ix));
@@ -134,12 +144,6 @@ void control_integrator::run_analysis(double cc){
             fprintf(output,"\n");
         }
 
-
-        if(ipt%1000000==0 && ipt>0){
-            printf("ct %ld good %d in %e %e -- %e\n",
-            ipt,chi_vals.get_dim(),double(time(NULL))-start,
-            (double(time(NULL))-start)/double(ipt),foundMin);
-        }
 
     }
 
