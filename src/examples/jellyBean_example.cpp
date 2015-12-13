@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "jellyBean.h"
+#include "exampleLikelihoods.h"
 #include "carom.h"
 
 int main(int iargc, char *argv[]){
@@ -94,7 +95,9 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBeanData chisq(dim,1,width,100,0.4,0.4,0.02,20.0);
+//jellyBeanData chisq(dim,1,width,100,0.4,0.4,0.02,20.0);
+
+gaussianJellyBean chisq;
 
 printf("done constructing chisq\n");
 

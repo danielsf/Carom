@@ -1,16 +1,18 @@
 #include "controls/control_integrator.h"
 #include "jellyBean.h"
+#include "exampleLikelihoods.h"
 
 int main(){
 
+    double start=double(time(NULL));
     double curvature_radius=20.0;
     double radial_sigma=0.02;
     double angular_width=0.4;
 
     int dim=4;
-    jellyBeanData chisq(dim,1,100,0.4,angular_width,radial_sigma,curvature_radius);
+    //jellyBeanData chisq(dim,1,100,0.4,angular_width,radial_sigma,curvature_radius);
     //ellipseData chisq(dim,1,100,0.4);
-
+    gaussianJellyBean chisq;
 
 
     array_1d<double> min,max,dx,raw_min,raw_max;
@@ -45,6 +47,17 @@ int main(){
     raw_min.set(3,2.768490e+01);
     raw_max.set(3,2.775592e+01);*/
 
+    //for gaussianJellyBean
+    raw_min.set(0,1.561333e+01);
+    raw_max.set(0,2.680832e+01);
+    raw_min.set(1,-2.049267e+01);
+    raw_max.set(1, -9.829029e+00);
+    raw_min.set(2,9.726976e+00);
+    raw_max.set(2,1.610506e+01);
+    raw_min.set(3,1.212955e+01);
+    raw_max.set(3,2.189316e+01);
+
+
     int i;
     double dd;
     for(i=0;i<4;i++){
@@ -60,8 +73,8 @@ int main(){
 
     dx.multiply_val(0,0.3333);
 
-    control_integrator integrator(chisq,min,max,dx,"controls/jellyBeanData/jellyBean");
-    integrator.run_analysis();
+    control_integrator integrator(chisq,min,max,dx,"controls/scratch/jellyBean_0.95");
+    integrator.run_analysis(0.95);
 
     printf("\nrange\n");
     for(i=0;i<4;i++){
