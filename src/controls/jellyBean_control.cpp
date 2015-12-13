@@ -68,4 +68,5 @@ int main(){
         printf("%e %e\n",min.get_data(i),max.get_data(i));
     }
 
+    printf("that took %e\n",double(time(NULL))-start);
 }

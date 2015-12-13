@@ -136,10 +136,10 @@ carom_test.set_write_every(3000);
 array_1d<double> max,min;
 max.set_name("driver_max");
 min.set_name("driver_min");
-max.set_dim(dim);
-min.set_dim(dim);
+max.set_dim(chisq.get_dim());
+min.set_dim(chisq.get_dim());
 
-for(i=0;i<dim;i++){
+for(i=0;i<chisq.get_dim();i++){
     min.set(i,-80.0);
     max.set(i,80.0);
 }
@@ -163,7 +163,7 @@ array_1d<double> v0,v1;
 chisq.get_basis(0,v0);
 chisq.get_basis(1,v1);
 printf("\nfirst two bases\n");
-for(i=0;i<dim;i++){
+for(i=0;i<chisq.get_dim();i++){
     printf("%e %e\n",v0.get_data(i),v1.get_data(i));
 }
 

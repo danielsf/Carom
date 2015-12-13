@@ -20,8 +20,6 @@ control_integrator::control_integrator(function_wrapper &chisq,
     _chi_lim_freq=124.4;
     _chi_min=2.0*exception_value;
 
-    chisquared_distribution distro;
-
     _confidence_limit=0.95;
 
 }
@@ -36,9 +34,12 @@ void control_integrator::run_analysis(){
 
 void control_integrator::run_analysis(double cc){
 
+    chisquared_distribution distro;
+
     _confidence_limit=cc;
 
     _delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),_confidence_limit);
+    _chi_lim_freq=distro.confidence_limit(100.0,_confidence_limit);
 
     printf("nameroot %s\n",_name_root);
 
@@ -518,6 +519,9 @@ void control_integrator::write_output(int xdex, int ydex,
     printf("min found max found\n");
     printf("%e %e %e %e\n",_min.get_data(xdex),found_min.get_data(0),_max.get_data(xdex),found_max.get_data(0));
     printf("%e %e %e %e\n",_min.get_data(ydex),found_min.get_data(1),_max.get_data(ydex),found_max.get_data(1));
+    printf("confidence limit %e\n",_confidence_limit);
+    printf("delta_chi_bayes %e\n",_delta_chi_bayes);
+    printf("chi_lim_freq %e\n",_chi_lim_freq);
 
 }
 
