@@ -28,6 +28,14 @@ control_integrator::control_integrator(function_wrapper &chisq,
 
 }
 
+double control_integrator::get_min(int ii){
+    return _min.get_data(ii);
+}
+
+double control_integrator::get_max(int ii){
+    return _max.get_data(ii);
+}
+
 void control_integrator::set_chi_lim_freq(double dd){
     _chi_lim_freq=dd;
 }
