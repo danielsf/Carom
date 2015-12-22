@@ -426,8 +426,28 @@ void control_integrator::write_output(int xdex, int ydex,
 
     ///write outputs
     FILE *output;
-
     char outname[2*letters];
+
+    //heat map
+    sprintf(outname,"%s_heatmap.txt",outname_root);
+    output=fopen(outname,"w");
+    fprintf(output,"#x y min_chi^2 marginalized_likelihood\n");
+    for(ix=0;ix<minChi2Grid.get_rows();ix++){
+        for(iy=0;iy<minChi2Grid.get_cols();iy++){
+            if(marginalized_likelihood.get_data(ix,iy)>1.0e-10*max_likelihood ||
+               minChi2Grid.get_data(ix,iy)<2.0*exception_value){
+
+                fprintf(output,"%e %e %e %e\n",
+                        _min.get_data(xdex)+ix*_dx.get_data(xdex),
+                        _min.get_data(ydex)+iy*_dx.get_data(ydex),
+                        minChi2Grid.get_data(ix,iy),
+                        marginalized_likelihood.get_data(ix,iy));
+           }
+        }
+    }
+    fclose(output);
+
+
     array_2d<double> boundary;
     boundary.set_name("output_boundary");
 
