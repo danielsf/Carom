@@ -62,12 +62,12 @@ int main(){
     double dd;
     for(i=0;i<4;i++){
         dd=raw_max.get_data(i)-raw_min.get_data(i);
-        min.set(i,raw_min.get_data(i)-2.0*dd);
-        max.set(i,raw_max.get_data(i)+2.0*dd);
+        min.set(i,raw_min.get_data(i)-0.5*dd);
+        max.set(i,raw_max.get_data(i)+0.5*dd);
     }
 
     for(i=0;i<4;i++){
-        dx.set(i,(max.get_data(i)-min.get_data(i))*0.005);
+        dx.set(i,(max.get_data(i)-min.get_data(i))*0.01);
         printf("dx %e\n",dx.get_data(i));
     }
 
