@@ -90,7 +90,7 @@ void control_integrator::run_analysis(double cc){
         good_max.set(ix,-2.0*exception_value);
     }
 
-    double d_threshold=20.0;
+    double d_threshold=100.0;
     double mu;
     double start=double(time(NULL));
 
