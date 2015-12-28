@@ -148,7 +148,7 @@ void control_integrator::run_analysis(double cc){
     }
 
     fclose(output);
-    printf("foundMin %e\n",foundMin);
+    printf("foundMin %e in %d\n",foundMin,_iter_p->get_current_ct());
 
     start=double(time(NULL));
     array_1d<double> chi_sorted,likelihood_sorted;
