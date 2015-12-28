@@ -71,9 +71,7 @@ int main(){
         printf("dx %e\n",dx.get_data(i));
     }
 
-    dx.multiply_val(0,0.3333);
-
-    control_integrator integrator(chisq,min,max,dx,"controls/scratch/jellyBean_0.95");
+    control_integrator integrator(chisq,min,max,dx,"controls/scratch/jellyBean_gross_0.95");
     integrator.run_analysis(0.95);
 
     printf("\nrange\n");
