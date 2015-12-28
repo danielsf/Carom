@@ -63,7 +63,10 @@ class default_iteration_parameters : public iteration_parameters{
                 iy=int((max.get_data(ix)-min.get_data(ix))/(dx.get_data(ix)));
                 _grid_ct.set(ix, iy);
                 _total_ct*=iy;
+                printf("factor %d %e %e %e\n",
+                       iy,min.get_data(ix),max.get_data(ix),dx.get_data(ix));
             }
+            printf("total_ct %ld\n",_total_ct);
 
         }
 
