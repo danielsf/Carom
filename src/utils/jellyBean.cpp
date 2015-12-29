@@ -242,12 +242,14 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 
     _curvature_centers.set_name("jellyBeanData_curvature_center");
     _radial_directions.set_name("jellyBeanData_radial_directions");
+    _radial_y_axes.set_name("jellyBeanData_radial_y_axes");
     _radii.set_name("jellyBeanData_radii");
     _dir.set_name("jellyBeanData_global_dir");
     _planar_dir.set_name("jellyBeanData_planar_dir");
 
     _curvature_centers.set_dim(_ncenters,_dim);
     _radial_directions.set_dim(_ncenters,_dim);
+    _radial_y_axes.set_dim(_ncenters,_dim);
     _planar_dir.set_dim(_dim);
 
     array_1d<double> dir,trial;
@@ -256,7 +258,7 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 
     double curvature_radius=rr;
 
-    double mu,dot_check;
+    double mu,dot_check,rad_norm;
     int ix,iy,ic;
     for(ic=0;ic<_ncenters;ic++){
         for(ix=0;ix<_dim;ix++){
@@ -264,12 +266,13 @@ chiSquaredData(dd, cc, wc, nData, sigma){
         }
 
         dir.set_dim(_dim);
+
         dir.zero();
 
         for(ix=0;ix<2;ix++){
             mu=normal_deviate(_dice,0.0,1.0);
             for(iy=0;iy<_dim;iy++){
-                dir.add_val(iy,_bases.get_data(ix,iy));
+                dir.add_val(iy,mu*_bases.get_data(ix,iy));
             }
         }
 
@@ -281,6 +284,54 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 
         for(ix=0;ix<_dim;ix++){
             _radial_directions.set(ic,ix,_centers.get_data(ic,ix)-_curvature_centers.get_data(ic,ix));
+        }
+
+        _radial_directions(ic)->normalize();
+
+        for(ix=2;ix<_dim;ix++){
+            dot_check=0.0;
+            for(iy=0.0;iy<_dim;iy++){
+                dot_check+=_radial_directions.get_data(ic,iy)*_bases.get_data(ix,iy);
+            }
+            if(fabs(dot_check)>0.001){
+                printf("WARNING _radial_directions dot %d %e\n",ix,dot_check);
+            }
+        }
+
+        dot_check=1.0;
+        while(fabs(dot_check)>1.0e-2){
+            for(ix=0;ix<_dim;ix++){
+                trial.set(ix,normal_deviate(_dice,0.0,1.0));
+            }
+
+            for(ix=2;ix<_dim;ix++){
+                mu=0.0;
+                for(iy=0;iy<_dim;iy++){
+                    mu+=trial.get_data(iy)*_bases.get_data(ix,iy);
+                }
+                for(iy=0;iy<_dim;iy++){
+                    trial.subtract_val(iy,mu*_bases.get_data(ix,iy));
+                }
+            }
+
+            mu=0.0;
+            for(ix=0;ix<_dim;ix++){
+                mu+=_radial_directions.get_data(ic,ix)*trial.get_data(ix);
+            }
+
+            for(ix=0;ix<_dim;ix++){
+                trial.subtract_val(ix,mu*_radial_directions.get_data(ic,ix));
+            }
+
+            trial.normalize();
+            dot_check=0.0;
+
+            for(ix=0;ix<_dim;ix++){
+                _radial_y_axes.set(ic,ix,trial.get_data(ix));
+                dot_check+=trial.get_data(ix)*_radial_directions.get_data(ic,ix);
+            }
+
+            printf("dot_check %e\n",dot_check);
         }
 
         _radii.set(ic,_radial_directions(ic)->normalize());
@@ -299,8 +350,42 @@ chiSquaredData(dd, cc, wc, nData, sigma){
                 printf("WARNING dot_check %d %e\n",ix,dot_check);
                 exit(1);
             }
+
+            dot_check=0.0;
+            for(iy=0;iy<_dim;iy++){
+                dot_check+=_radial_y_axes.get_data(ic,iy)*_bases.get_data(ix,iy);
+            }
+            if(fabs(dot_check)>0.001){
+                printf("WARNING y axis dot_check %d %e\n",ix,dot_check);
+                exit(1);
+            }
+
         }
 
+        dot_check=0.0;
+        for(iy=0;iy<_dim;iy++){
+            dot_check+=_radial_directions.get_data(ic,iy)*_radial_y_axes.get_data(ic,iy);
+        }
+        if(fabs(dot_check)>0.001){
+            printf("WARNING y dot x %e\n",dot_check);
+            exit(1);
+        }
+
+        dot_check=0.0;
+        for(iy=0;iy<_dim;iy++){
+            dot_check+=power(_radial_directions.get_data(ic,iy),2);
+        }
+        if(fabs(dot_check-1.0)>0.01){
+            printf("WARNING rad norm %e\n",dot_check);
+        }
+
+        dot_check=0.0;
+        for(iy=0;iy<_dim;iy++){
+            dot_check+=power(_radial_y_axes.get_data(ic,iy),2);
+        }
+        if(fabs(dot_check-1.0)>0.01){
+            printf("WARNING rad y norm %e\n",dot_check);
+        }
 
     }
 
@@ -327,25 +412,56 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
 
     double planar_radius=_planar_dir.normalize();
 
-    double cos_theta=0.0,sin_theta;
+    double cos_theta=0.0,sin_theta=0.0;
     for(ix=0;ix<_dim;ix++){
         cos_theta+=_planar_dir.get_data(ix)*_radial_directions.get_data(ic,ix);
+        sin_theta+=_planar_dir.get_data(ix)*_radial_y_axes.get_data(ic,ix);
     }
+
 
     if(fabs(cos_theta)>1.0){
         if(fabs(cos_theta)>1.001){
             printf("WARNING somehow cos_theta>1.0 -- %e\n",cos_theta);
             exit(1);
         }
-        sin_theta=0.0;
-    }
-    else{
-        sin_theta=sqrt(1.0-cos_theta*cos_theta);
     }
 
-    double x_shldbe,y_shldbe,rsq_shldbe,r_shldbe;
-    rsq_shldbe=power(_radii.get_data(ic),2)/(cos_theta*cos_theta+sin_theta*sin_theta*16.0);
-    r_shldbe=sqrt(rsq_shldbe);
+    if(fabs(sin_theta)>1.0){
+        if(fabs(sin_theta)>1.001){
+            printf("WARNING somehow sin_theta>1.0 -- %e\n",sin_theta);
+            exit(1);
+        }
+    }
+
+    if(fabs(sqrt(cos_theta*cos_theta+sin_theta*sin_theta)-1.0)>0.01){
+        printf("WARNING sin*sin+cos*cos %e\n",
+        sqrt(cos_theta*cos_theta+sin_theta*sin_theta));
+
+        mu=0.0;
+        for(ix=0;ix<_dim;ix++){
+            mu+=power(_planar_dir.get_data(ix),2);
+        }
+        printf("planar_norm %e\n",mu);
+        exit(1);
+    }
+
+    double x_shldbe,y_shldbe,r_shldbe,aa;
+    //rsq_shldbe=power(_radii.get_data(ic),2)/(cos_theta*cos_theta+sin_theta*sin_theta*16.0);
+    //r_shldbe=sqrt(rsq_shldbe);
+
+    aa=4.0;
+
+    if(fabs(cos_theta)<1.0e-5 && sin_theta>0.0){
+        r_shldbe=1.0e10/aa;
+    }
+    else if(fabs(cos_theta)<1.0e-10 && sin_theta<0.0){
+        r_shldbe=0.5/aa;
+    }
+    else{
+        r_shldbe=(1.0+sin_theta)/(2.0*aa*cos_theta*cos_theta);
+    }
+
+    //printf("%e %e %e\n",cos_theta,sin_theta,r_shldbe);
 
     x_shldbe=r_shldbe*cos_theta;
     y_shldbe=r_shldbe*sin_theta;
@@ -355,8 +471,13 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
     y_is=planar_radius*sin_theta;
     d_radius=sqrt(power(x_is-x_shldbe,2)+power(y_is-y_shldbe,2));
 
+    double y_distance;
+    y_distance=(y_shldbe+0.5/aa)/_widths.get_data(ic,0);
 
-    out.set(0,(1.0-cos_theta)/_widths.get_data(ic,0));
+    //printf("y_shldbe %.3e y_distance %.3e drad %.3e -- %.3e %.3e %.3e %.3e\n",
+    //y_shldbe,y_distance,d_radius/_widths.get_data(ic,1),pt.get_data(3),cos_theta,sin_theta,r_shldbe);
+
+    out.set(0,y_distance);
     out.set(1,d_radius/_widths.get_data(ic,1));
 
     for(ix=0;ix<_dim;ix++){

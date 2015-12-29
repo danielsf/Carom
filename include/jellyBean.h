@@ -42,6 +42,7 @@ class jellyBeanData : public chiSquaredData{
     protected:
         array_1d<double> _radii,_dir,_planar_dir;
         array_2d<double> _curvature_centers,_radial_directions;
+        array_2d<double> _radial_y_axes;
 
         virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 };
