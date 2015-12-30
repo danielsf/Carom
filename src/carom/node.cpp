@@ -3713,8 +3713,7 @@ void node::originate_particle_simplex(){
 
     array_2d<double> seed;
     seed.set_name("orig_particle_simplex_seed");
-    array_1d<double> trial,trial_node,center;
-    center.set_name("orig_particle_simplex_center");
+    array_1d<double> trial,trial_node;
     trial.set_name("orig_particle_simplex_trial");
     trial_node.set_name("orig_particle_simplex_trial_node");
     double mu,dx,midx;
@@ -3728,8 +3727,8 @@ void node::originate_particle_simplex(){
             midx=0.5*(max.get_data(i)+min.get_data(i));
             trial.set(i,midx+dx*(_chisquared->random_double()-0.5));
         }
-        transform_pt_to_node(trial,center);
-        evaluate(center,&mu,&iCenter);
+        transform_pt_to_node(trial,trial_node);
+        evaluate(trial_node,&mu,&iCenter);
         if(mu<exception_value && iCenter>=0){
             seed.add_row(trial);
             mu=dchi_fn(_chisquared->get_pt(iCenter)[0]);
