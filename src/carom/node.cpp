@@ -1352,12 +1352,15 @@ int node::node_bisection_origin_dir(int iOrigin, array_1d<double> &dir, double t
         highball.set(i,get_pt(iOrigin,i));
     }
 
+    double norm=1.0;
+
     fhigh=-2.0*exception_value;
     while(fhigh<target){
         for(i=0;i<_chisquared->get_dim();i++){
-            highball.add_val(i,dir.get_data(i));
+            highball.add_val(i,norm*dir.get_data(i));
         }
         evaluate(highball,&fhigh,&i);
+        norm*=2.0;
     }
 
     return node_bisection(lowball,flow,highball,fhigh,1,target,tol);
@@ -3786,30 +3789,7 @@ void node::originate_particle_simplex(){
 
     if(iFound>=0){
 
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,get_pt(iFound,i)-get_pt(iFound-1,i));
-        }
-
-        dir.normalize();
-
-        if(_chisquared->get_fn(iFound)<_chisquared->target()){
-            other_side=_chisquared->target();
-            tol=0.01;
-        }
-        else{
-            other_side=_chisquared->get_fn(iFound)+1.0;
-            tol=0.1;
-        }
-
-        i_other=node_bisection_origin_dir(iFound,dir,other_side,tol);
-
-        if(iFound>=0){
-            add_to_log(_log_dchi_simplex, iFound);
-            printf("simplex found %e %e from %e\n",
-            _chisquared->get_fn(iFound),
-            dchi_fn(_chisquared->get_pt(iFound)[0]),
-            start_min);
-        }
+        i_other=_centerdex;
 
         if(iFound>=0 && i_other>=0 && iFound!=i_other){
             _ricochet_particles.add(iFound);
