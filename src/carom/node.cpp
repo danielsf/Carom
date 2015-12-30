@@ -3890,7 +3890,6 @@ void node::search(){
 
     printf("calling node search\n");
 
-    cull_ricochet();
 
     if(_chisquared->get_fn(_centerdex)>_chisquared->target()){
         simplex_search();
@@ -3907,6 +3906,8 @@ void node::search(){
 
         simplex_search();
     }
+
+    cull_ricochet();
 
     double projectedVolume0=projected_volume();
     double volume0=volume();
