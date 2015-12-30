@@ -3780,7 +3780,8 @@ void node::originate_particle_simplex(){
             start_min);
         }
 
-        if(iFound>=0 && i_other>=0 && iFound!=i_other){
+        if(iFound>=0 && i_other>=0 && iFound!=i_other &&
+           _chisquared->get_fn(iFound)<_chisquared->target()){
             _ricochet_particles.add(iFound);
             _ricochet_origins.add(i_other);
             _ricochet_strikes.add(0);
