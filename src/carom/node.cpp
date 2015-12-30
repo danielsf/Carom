@@ -3383,12 +3383,13 @@ void node::initialize_ricochet(){
     int n_0=_ricochet_particles.get_dim();
 
     while(_ricochet_particles.get_dim()<n_0+nParticles){
-        iFound=originate_particle_shooting(&i_origin);
+        originate_particle_simplex();
+        /*iFound=originate_particle_shooting(&i_origin);
         if(iFound>=0 && i_origin>=0){
             _ricochet_particles.add(iFound);
             _ricochet_origins.add(i_origin);
             _ricochet_strikes.add(0);
-        }
+        }*/
     }
 
     _min_basis_error_changed=0;
@@ -3686,14 +3687,15 @@ int node::choose_off_center_point(){
 }
 
 void node::originate_particle_simplex(){
-    printf("orig simplex\n");
+    printf("orig simplex %d\n",_chisquared->get_called());
     array_1d<double> min,max;
     min.set_name("orig_particle_simplex_min");
     max.set_name("orig_particle_simplex_max");
     array_1d<int> local_associates;
     local_associates.set_name("orig_particle_simplex_local_associates");
 
-    int i;
+    int i,ct_start;
+    ct_start=_chisquared->get_called();
     for(i=0;i<_boundary_points.get_dim();i++){
         local_associates.add(_boundary_points.get_data(i));
     }
@@ -3722,9 +3724,9 @@ void node::originate_particle_simplex(){
     iCenter=-1;
     while(iCenter<0 && seed.get_rows()==0){
         for(i=0;i<_chisquared->get_dim();i++){
-            dx=(max.get_data(i)-min.get_data(i));
+            dx=3.0*(max.get_data(i)-min.get_data(i));
             midx=0.5*(max.get_data(i)+min.get_data(i));
-            trial.set(i,midx+_chisquared->get_dim()*dx*(_chisquared->random_double()-0.5));
+            trial.set(i,midx+dx*(_chisquared->random_double()-0.5));
         }
         transform_pt_to_node(trial,center);
         evaluate(center,&mu,&iCenter);
@@ -3780,29 +3782,27 @@ void node::originate_particle_simplex(){
     double dd,ddmin;
     int i_other=-1;
 
+    int i_origin=-1;
+    double other_side,tol;
+
     if(iFound>=0){
-        ddmin=2.0*exception_value;
-        for(i=0;i<local_associates.get_dim();i++){
-            dd=normalized_node_distance(iFound,local_associates.get_data(i));
-            if(_chisquared->get_fn(local_associates.get_data(i))<_chisquared->target() && dd<ddmin){
-                ddmin=dd;
-                i_other=local_associates.get_data(i);
-            }
-        }
-
-        if(i_other<0){
-            i_other=_centerdex;
-        }
-
-        if(_chisquared->get_fn(i_other)>_chisquared->target()){
-            printf("WARNING i_other %e target %e (originate_particle_simplex)\n",
-            _chisquared->get_fn(i_other),_chisquared->target());
-            exit(1);
-        }
 
         for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,get_pt(iFound,i)-get_pt(i_other,i));
+            dir.set(i,get_pt(iFound,i)-get_pt(iFound-1,i));
         }
+
+        dir.normalize();
+
+        if(_chisquared->get_fn(iFound)<_chisquared->target()){
+            other_side=_chisquared->target();
+            tol=0.01;
+        }
+        else{
+            other_side=_chisquared->get_fn(iFound)+1.0;
+            tol=0.1;
+        }
+
+        i_other=node_bisection_origin_dir(iFound,dir,other_side,tol);
 
         if(iFound>=0){
             add_to_log(_log_dchi_simplex, iFound);
@@ -4195,15 +4195,12 @@ void node::_shift_ricochet(int ix){
         dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(_centerdex,i));
     }
 
+
     iFound=node_bisection_origin_dir(_centerdex, dir);
     if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
         _ricochet_particles.set(ix,iFound);
         return;
     }
-
-    printf("WARNING could not set ricochet particle correctly\n");
-    printf("%e %e\n",_chisquared->get_fn(iFound),_chisquared->target());
-    exit(1);
 
 }
 
@@ -4256,7 +4253,7 @@ void node::ricochet(){
        v0=volume();
        local_pts0=_chisquared->get_pts();
 
-       if(_chisquared->get_fn(_ricochet_particles.get_data(ix))>_chisquared->target()){
+       while(_chisquared->get_fn(_ricochet_particles.get_data(ix))>_chisquared->target()){
            _shift_ricochet(ix);
        }
 
