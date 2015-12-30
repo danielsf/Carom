@@ -3715,6 +3715,7 @@ void node::originate_particle_simplex(){
     trial.set_name("orig_particle_simplex_trial");
     trial_node.set_name("orig_particle_simplex_trial_node");
     double mu,dx,midx;
+    double start_min=2.0*exception_value;
     int iFound;
     while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
@@ -3726,6 +3727,10 @@ void node::originate_particle_simplex(){
         evaluate(trial_node,&mu,&iFound);
         if(mu<exception_value){
             seed.add_row(trial);
+            mu=dchi_fn(_chisquared->get_pt(iFound)[0]);
+            if(mu<start_min){
+                start_min=mu;
+            }
         }
 
     }
@@ -3769,6 +3774,10 @@ void node::originate_particle_simplex(){
 
         if(iFound>=0){
             add_to_log(_log_dchi_simplex, iFound);
+            printf("simplex found %e %e from %e\n",
+            _chisquared->get_fn(iFound),
+            dchi_fn(_chisquared->get_pt(iFound)[0]),
+            start_min);
         }
 
         if(iFound>=0 && i_other>=0 && iFound!=i_other){
