@@ -3783,6 +3783,7 @@ void node::originate_particle_simplex(){
     double other_side,tol;
 
     if(iFound>=0){
+        add_to_log(_log_dchi_simplex, iFound);
 
         i_other=_centerdex;
 
