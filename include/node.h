@@ -205,7 +205,8 @@ private:
     void mcmc_walk(int, int*, int, array_1d<int>&);
 
     int mcmc_kick(int, int*, array_1d<double>&, int);
-    int originate_particle_shooting(int*);
+    void originate_particle_shooting();
+    int _originate_particle_shooting(int*);
     void originate_particle_simplex();
 
     double node_distance(array_1d<double>&, array_1d<double>&);

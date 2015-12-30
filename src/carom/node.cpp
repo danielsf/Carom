@@ -3387,12 +3387,7 @@ void node::initialize_ricochet(){
 
     while(_ricochet_particles.get_dim()<n_0+nParticles){
         originate_particle_simplex();
-        /*iFound=originate_particle_shooting(&i_origin);
-        if(iFound>=0 && i_origin>=0){
-            _ricochet_particles.add(iFound);
-            _ricochet_origins.add(i_origin);
-            _ricochet_strikes.add(0);
-        }*/
+        //originate_particle_shooting();
     }
 
     _min_basis_error_changed=0;
@@ -3803,7 +3798,17 @@ void node::originate_particle_simplex(){
 
 }
 
-int node::originate_particle_shooting(int *origin_out){
+void node::originate_particle_shooting(){
+    int iFound, i_origin;
+    iFound=_originate_particle_shooting(&i_origin);
+    if(iFound>=0 && i_origin>=0){
+        _ricochet_particles.add(iFound);
+        _ricochet_origins.add(i_origin);
+        _ricochet_strikes.add(0);
+    }
+}
+
+int node::_originate_particle_shooting(int *origin_out){
     array_1d<double> dir;
     dir.set_name("originate_particle_shooting_dir");
     int iOrigin=choose_off_center_point();
