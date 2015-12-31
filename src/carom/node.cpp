@@ -3385,10 +3385,14 @@ void node::initialize_ricochet(){
 
     int n_0=_ricochet_particles.get_dim();
 
-    while(_ricochet_particles.get_dim()<n_0+nParticles){
-        //originate_particle_simplex();
+    while(_ricochet_particles.get_dim()<n_0+nParticles/2){
         originate_particle_shooting();
     }
+
+    while(_ricochet_particles.get_dim()<n_0+nParticles){
+        originate_particle_simplex();
+    }
+
 
     _min_basis_error_changed=0;
     _since_expansion=0;
