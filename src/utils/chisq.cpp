@@ -54,8 +54,8 @@ void chisquared::_initialize(){
 
     int i;
     for(i=0;i<_dim;i++){
-        _mins.set(i,-60.0);
-        _maxs.set(i,60.0);
+        _mins.set(i,-1.0*exception_value);
+        _maxs.set(i,exception_value);
     }
 }
 
