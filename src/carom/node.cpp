@@ -3720,9 +3720,9 @@ void node::originate_particle_simplex(){
     trial_node.set_name("orig_particle_simplex_trial_node");
     double mu,dx,midx;
     double start_min=2.0*exception_value;
-    int iFound;
+    int iFound,i_min;
 
-    while(seed.get_rows()<_chisquared->get_dim()+1){
+    while(seed.get_rows()<_chisquared->get_dim()){
         for(i=0;i<_chisquared->get_dim();i++){
             dx=(max.get_data(i)-min.get_data(i));
             midx=0.5*(max.get_data(i)+min.get_data(i));
@@ -3735,9 +3735,15 @@ void node::originate_particle_simplex(){
             mu=dchi_fn(_chisquared->get_pt(iFound)[0]);
             if(mu<start_min){
                 start_min=mu;
+                i_min=seed.get_rows()-1;
             }
         }
     }
+
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+seed.get_data(i_min,i)));
+    }
+    seed.add_row(trial);
 
     trial.reset();
     ffmin.use_gradient();
