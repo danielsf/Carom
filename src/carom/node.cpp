@@ -3781,7 +3781,7 @@ void node::originate_particle_simplex(){
     evaluate(trial_node,&mu,&iFound);
 
     int i_walk;
-    int n_steps=20;
+    int n_steps=50;
     double tol=0.1*(_chisquared->target()-_chisquared->chimin());
 
     if(iFound>=0){
