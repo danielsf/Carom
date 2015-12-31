@@ -3703,8 +3703,8 @@ void node::originate_particle_simplex(){
     }
 
     for(i=0;i<_chisquared->get_dim();i++){
-        min.set(i,_true_min.get_data(i));
-        max.set(i,_true_max.get_data(i));
+        min.set(i,_chisquared->get_min(i));
+        max.set(i,_chisquared->get_max(i));
     }
 
     dchi_boundary_simplex dchi_fn(_chisquared, local_associates);
@@ -3724,7 +3724,7 @@ void node::originate_particle_simplex(){
 
     while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
-            dx=3.0*(max.get_data(i)-min.get_data(i));
+            dx=(max.get_data(i)-min.get_data(i));
             midx=0.5*(max.get_data(i)+min.get_data(i));
             trial.set(i,midx+dx*(_chisquared->random_double()-0.5));
         }
