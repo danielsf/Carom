@@ -4118,6 +4118,10 @@ int node::_ricochet(int iparticle){
         return _ricochet_particles.get_data(iparticle);
     }
 
+    if(_chisquared->get_fn(_ricochet_particles.get_data(iparticle))>=_chisquared->target()){
+        _shift_ricochet(iparticle);
+    }
+
     array_1d<double> gradient,dir_0;
     gradient.set_name("_ricochet_gradient");
     dir_0.set_name("_ricochet_dir_0");
@@ -4148,10 +4152,6 @@ int node::_ricochet(int iparticle){
     }
 
     dirnorm=dir.normalize();
-
-    if(_chisquared->get_fn(_ricochet_particles.get_data(iparticle))>=_chisquared->target()){
-        _shift_ricochet(iparticle);
-    }
 
     iFound=node_bisection_origin_dir(_ricochet_particles.get_data(iparticle), dir);
 
