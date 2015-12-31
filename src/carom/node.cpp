@@ -3776,6 +3776,10 @@ void node::originate_particle_simplex(){
     transform_pt_to_node(trial,trial_node);
     evaluate(trial_node,&mu,&iFound);
 
+    int i_walk;
+    int n_steps=20;
+    double tol=0.1*(_chisquared->target()-_chisquared->chimin());
+
     if(iFound>=0){
         add_to_log(_log_dchi_simplex, iFound);
 
@@ -3783,6 +3787,21 @@ void node::originate_particle_simplex(){
             _ricochet_particles.add(iFound);
             _ricochet_origins.add(_centerdex);
             _ricochet_strikes.add(0);
+
+            local_associates.reset();
+            for(i=0;i<_boundary_points.get_dim();i++){
+                if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()+tol){
+                    local_associates.add(_boundary_points.get_data(i));
+                }
+            }
+            mcmc_walk(_ricochet_particles.get_data(_ricochet_particles.get_dim()-1),
+                      &i_walk, n_steps, local_associates);
+
+            if(i_walk!=iFound){
+                _ricochet_origins.set(_ricochet_origins.get_dim()-1,iFound);
+                _ricochet_particles.set(_ricochet_particles.get_dim()-1,i_walk);
+            }
+
         }
 
     }
