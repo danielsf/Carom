@@ -3720,57 +3720,23 @@ void node::originate_particle_simplex(){
     trial_node.set_name("orig_particle_simplex_trial_node");
     double mu,dx,midx;
     double start_min=2.0*exception_value;
-    int iFound,iCenter;
+    int iFound;
 
-    iCenter=-1;
-    while(iCenter<0 && seed.get_rows()==0){
+    while(seed.get_rows()<_chisquared->get_dim()+1){
         for(i=0;i<_chisquared->get_dim();i++){
             dx=3.0*(max.get_data(i)-min.get_data(i));
             midx=0.5*(max.get_data(i)+min.get_data(i));
             trial.set(i,midx+dx*(_chisquared->random_double()-0.5));
         }
         transform_pt_to_node(trial,trial_node);
-        evaluate(trial_node,&mu,&iCenter);
-        if(mu<exception_value && iCenter>=0){
-            seed.add_row(trial);
-            mu=dchi_fn(_chisquared->get_pt(iCenter)[0]);
-            if(mu<start_min){
-                start_min=mu;
-            }
-        }
-    }
-
-    double radius;
-    radius=0.0;
-    for(i=0;i<_chisquared->get_dim();i++){
-        radius+=power((_chisquared->get_pt(iCenter,i)-_chisquared->get_pt(_centerdex,i))/(max.get_data(i)-min.get_data(i)),2);
-    }
-    radius=sqrt(radius);
-    array_1d<double> dir;
-    dir.set_name("orig_particle_simplex_dir");
-
-    printf("radius %e start_min %e\n",radius,start_min);
-
-    while(seed.get_rows()<_chisquared->get_dim()+1){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-        }
-        dir.normalize();
-        for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,_chisquared->get_pt(iCenter,i)+0.5*radius*dir.get_data(i)*(max.get_data(i)-min.get_data(i)));
-        }
-
-        transform_pt_to_node(trial,trial_node);
-
         evaluate(trial_node,&mu,&iFound);
-        if(mu<exception_value){
+        if(mu<exception_value && iFound>=0){
             seed.add_row(_chisquared->get_pt(iFound)[0]);
             mu=dchi_fn(_chisquared->get_pt(iFound)[0]);
             if(mu<start_min){
                 start_min=mu;
             }
         }
-
     }
 
     trial.reset();
