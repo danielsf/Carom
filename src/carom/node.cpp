@@ -3776,6 +3776,9 @@ void node::originate_particle_simplex(){
 
     }
 
+    printf("simplex found %e %e from %e\n",_chisquared->get_fn(iFound),
+    dchi_fn(_chisquared->get_pt(iFound)[0]),start_min);
+
     increment_simplex_growth();
 
 }
