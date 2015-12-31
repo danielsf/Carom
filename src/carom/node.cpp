@@ -3758,29 +3758,29 @@ void node::originate_particle_simplex(){
 
     if(iFound>=0){
         add_to_log(_log_dchi_simplex, iFound);
+    }
 
-        if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
-            _ricochet_particles.add(iFound);
-            _ricochet_origins.add(_centerdex);
-            _ricochet_strikes.add(0);
+    if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
+        _ricochet_particles.add(iFound);
+        _ricochet_origins.add(_centerdex);
+        _ricochet_strikes.add(0);
 
-            local_associates.reset();
-            for(i=0;i<_boundary_points.get_dim();i++){
-                if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()+tol){
-                    local_associates.add(_boundary_points.get_data(i));
-                }
+        local_associates.reset();
+        for(i=0;i<_boundary_points.get_dim();i++){
+            if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()+tol){
+                local_associates.add(_boundary_points.get_data(i));
             }
-            mcmc_walk(_ricochet_particles.get_data(_ricochet_particles.get_dim()-1),
-                      &i_walk, n_steps, local_associates);
+        }
+        mcmc_walk(_ricochet_particles.get_data(_ricochet_particles.get_dim()-1),
+                  &i_walk, n_steps, local_associates);
 
-            if(i_walk!=iFound){
-                _ricochet_origins.set(_ricochet_origins.get_dim()-1,iFound);
-                _ricochet_particles.set(_ricochet_particles.get_dim()-1,i_walk);
-            }
-
+        if(i_walk!=iFound){
+            _ricochet_origins.set(_ricochet_origins.get_dim()-1,iFound);
+            _ricochet_particles.set(_ricochet_particles.get_dim()-1,i_walk);
         }
 
     }
+
 
     printf("simplex found %e %e from %e\n",_chisquared->get_fn(iFound),
     dchi_fn(_chisquared->get_pt(iFound)[0]),start_min);
