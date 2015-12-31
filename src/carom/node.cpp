@@ -3776,20 +3776,12 @@ void node::originate_particle_simplex(){
     transform_pt_to_node(trial,trial_node);
     evaluate(trial_node,&mu,&iFound);
 
-    double dd,ddmin;
-    int i_other=-1;
-
-    int i_origin=-1;
-    double other_side,tol;
-
     if(iFound>=0){
         add_to_log(_log_dchi_simplex, iFound);
 
-        i_other=_centerdex;
-
-        if(iFound>=0 && i_other>=0 && iFound!=i_other){
+        if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
             _ricochet_particles.add(iFound);
-            _ricochet_origins.add(i_other);
+            _ricochet_origins.add(_centerdex);
             _ricochet_strikes.add(0);
         }
 
