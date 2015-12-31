@@ -3780,13 +3780,31 @@ void node::originate_particle_simplex(){
     transform_pt_to_node(trial,trial_node);
     evaluate(trial_node,&mu,&iFound);
 
+    int i_walk;
+    int n_steps=50;
+    double tol=0.1*(_chisquared->target()-_chisquared->chimin());
+
     if(iFound>=0){
         add_to_log(_log_dchi_simplex, iFound);
 
         if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
             _ricochet_particles.add(iFound);
-            _ricochet_origins.add(-1);
+            _ricochet_origins.add(_centerdex);
             _ricochet_strikes.add(0);
+
+            local_associates.reset();
+            for(i=0;i<_boundary_points.get_dim();i++){
+                if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()+tol){
+                    local_associates.add(_boundary_points.get_data(i));
+                }
+            }
+            mcmc_walk(_ricochet_particles.get_data(_ricochet_particles.get_dim()-1),
+                      &i_walk, n_steps, local_associates);
+
+            if(i_walk!=iFound){
+                _ricochet_origins.set(_ricochet_origins.get_dim()-1,iFound);
+                _ricochet_particles.set(_ricochet_particles.get_dim()-1,i_walk);
+            }
 
         }
 
@@ -4116,37 +4134,9 @@ int node::_ricochet(int iparticle){
 
     gnorm=gradient.normalize();
     component=0.0;
-
-    double dotproduct_0,dotproduct_1;
-    int use_it;
-    if(_ricochet_origins.get_data(iparticle)>=0){
-        for(i=0;i<_chisquared->get_dim();i++){
-            dir_0.set(i,get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_ricochet_origins.get_data(iparticle),i));
-        }
+    for(i=0;i<_chisquared->get_dim();i++){
+        dir_0.set(i,get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_ricochet_origins.get_data(iparticle),i));
     }
-    else{
-        if(_chisquared->get_fn(_ricochet_particles.get_data(iparticle))>=_chisquared->target()){
-            _shift_ricochet(iparticle);
-        }
-        use_it=0;
-        while(use_it==0){
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir_0.set(i,normal_deviate(_chisquared->get_dice(),0.0,1.0));
-            }
-            dir_0.normalize();
-            dotproduct_0=0.0;
-            dotproduct_1=0.0;
-            for(i=0;i<_chisquared->get_dim();i++){
-                dotproduct_0+=dir_0.get_data(i)*gradient.get_data(i);
-                dotproduct_1+=dir_0.get_data(i)*(get_pt(_ricochet_particles.get_data(iparticle),i)-get_pt(_centerdex,i));
-            }
-
-            if(dotproduct_0>0.0 && dotproduct_1>0.0){
-                use_it=1;
-            }
-        }
-    }
-
     dir_0.normalize();
 
     for(i=0;i<_chisquared->get_dim();i++){
@@ -4186,21 +4176,19 @@ void node::_shift_ricochet(int ix){
 
     int i,iFound;
     double mu;
-    if(_ricochet_origins.get_data(ix)>=0){
+    for(i=0;i<_chisquared->get_dim();i++){
+        trial.set(i,0.5*(get_pt(_ricochet_particles.get_data(ix),i)+
+                         get_pt(_ricochet_origins.get_data(ix),i)));
+    }
+    evaluate(trial,&mu,&iFound);
+    if(iFound>=0 && mu<_chisquared->target()){
         for(i=0;i<_chisquared->get_dim();i++){
-            trial.set(i,0.5*(get_pt(_ricochet_particles.get_data(ix),i)+
-                             get_pt(_ricochet_origins.get_data(ix),i)));
+            dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-trial.get_data(i));
         }
-        evaluate(trial,&mu,&iFound);
-        if(iFound>=0 && mu<_chisquared->target()){
-            for(i=0;i<_chisquared->get_dim();i++){
-                dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-trial.get_data(i));
-            }
-            iFound=node_bisection_origin_dir(iFound,dir);
-            if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
-                _ricochet_particles.set(ix,iFound);
-                return;
-            }
+        iFound=node_bisection_origin_dir(iFound,dir);
+        if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
+            _ricochet_particles.set(ix,iFound);
+            return;
         }
     }
 
