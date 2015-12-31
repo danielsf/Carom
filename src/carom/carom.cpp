@@ -351,6 +351,10 @@ void carom::simplex_search(){
     trial.set_name("carom_simplex_search_trial");
     seed_dex.set_name("carom_simplex_search_seed_dex");
 
+    if(_calls_to_simplex==1){
+        seed.add_row(_chifn.get_pt(_chifn.mindex())[0]);
+    }
+
     while(seed.get_rows()<_chifn.get_dim()+1){
         for(i=0;i<_chifn.get_dim();i++){
             trial.set(i,min.get_data(i)+_chifn.random_double()*(max.get_data(i)-min.get_data(i)));

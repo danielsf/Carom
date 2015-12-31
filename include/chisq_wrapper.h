@@ -34,6 +34,7 @@ public:
 
     double target();
     double chimin();
+    int mindex();
     double get_deltachi();
     int get_pts();
     int get_dim();
