@@ -117,7 +117,14 @@ void chiSquaredData::initialize_data(){
     params.set_name("jellyBeanData_initiailize_params");
     int ix,ic;
 
-    for(ix=0;ix<_dim;ix++)params.set(ix,0.0);
+    for(ix=0;ix<_dim;ix++){
+        if(ix%4==2){
+            params.set(ix,10.0);
+        }
+        else{
+            params.set(ix,0.0);
+        }
+    }
 
     array_1d<double> samples;
     samples.set_name("jellyBeanData_initialize_samples");
@@ -350,7 +357,7 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
     int ix;
     for(ix=2;ix<_dim;ix++){
         if(ix%4==2){
-            out.set(ix,10.0-exp((pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
+            out.set(ix,exp((pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
         }
         else{
             out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
