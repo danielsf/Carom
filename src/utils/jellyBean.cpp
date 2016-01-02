@@ -261,6 +261,23 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 
     }
 
+    int i,j;
+    for(i=0;i<_dim;i++){
+        for(j=0;j<_dim;j++){
+            if(i==j){
+                _bases.set(i,j,1.0);
+            }
+            else{
+                _bases.set(i,j,0.0);
+            }
+        }
+    }
+
+    _parabola_x.set(0,0,1.0);
+    _parabola_x.set(0,1,0.0);
+    _parabola_y.set(0,0,0.0);
+    _parabola_y.set(0,1,1.0);
+
 }
 
 
