@@ -3697,8 +3697,8 @@ void node::originate_particle_simplex(){
     array_1d<int> local_associates;
     local_associates.set_name("orig_particle_simplex_local_associates");
 
-    int i,ct_start;
-    ct_start=_chisquared->get_called();
+    int i,pts_start;
+    pts_start=_chisquared->get_pts();
     for(i=0;i<_boundary_points.get_dim();i++){
         local_associates.add(_boundary_points.get_data(i));
     }
@@ -3755,25 +3755,68 @@ void node::originate_particle_simplex(){
         add_to_log(_log_dchi_simplex, iFound);
     }
 
-    if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
-        _ricochet_particles.add(iFound);
-        _ricochet_origins.add(_centerdex);
-        _ricochet_strikes.add(0);
+    int i_p=-1,i_o=-1;
+    array_1d<int> acceptable;
+    acceptable.set_name("orig_simplex_acceptable");
 
-        local_associates.reset();
-        for(i=0;i<_boundary_points.get_dim();i++){
-            if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()+tol){
-                local_associates.add(_boundary_points.get_data(i));
+    double dd,dd_best;
+
+    if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
+        for(i=pts_start;i<_chisquared->get_pts();i++){
+            if(_chisquared->get_fn(i)<_chisquared->target()){
+                acceptable.add(i);
             }
         }
-        mcmc_walk(_ricochet_particles.get_data(_ricochet_particles.get_dim()-1),
-                  &i_walk, n_steps, local_associates);
 
-        if(i_walk!=iFound){
-            _ricochet_origins.set(_ricochet_origins.get_dim()-1,iFound);
-            _ricochet_particles.set(_ricochet_particles.get_dim()-1,i_walk);
+        if(acceptable.get_dim()>0){
+            for(i=0;i<acceptable.get_dim();i++){
+                dd=node_distance(_centerdex,acceptable.get_data(i));
+                if(i_p<0 || dd>dd_best){
+                    dd_best=dd;
+                    i_p=acceptable.get_data(i);
+                }
+            }
         }
 
+        if(acceptable.get_dim()>1){
+            for(i=0;i<acceptable.get_dim();i++){
+                if(acceptable.get_data(i)!=i_p){
+                    dd=node_distance(acceptable.get_data(i),i_p);
+                    if(i_o<0 || dd<dd_best){
+                        dd_best=dd;
+                        i_o=acceptable.get_data(i);
+                    }
+                }
+            }
+        }
+
+        if(i_p>=0 && i_o>=0){
+            _ricochet_particles.add(i_p);
+            _ricochet_origins.add(i_o);
+            _ricochet_strikes.add(0);
+        }
+        else{
+            if(i_p<0){
+                i_p=iFound;
+            }
+            _ricochet_particles.add(i_p);
+            _ricochet_origins.add(_centerdex);
+            _ricochet_strikes.add(0);
+
+            local_associates.reset();
+            for(i=0;i<_boundary_points.get_dim();i++){
+                if(_chisquared->get_fn(_associates.get_data(i))<_chisquared->target()+tol){
+                    local_associates.add(_boundary_points.get_data(i));
+                }
+            }
+            mcmc_walk(_ricochet_particles.get_data(_ricochet_particles.get_dim()-1),
+                      &i_walk, n_steps, local_associates);
+
+            if(i_walk!=i_p){
+                _ricochet_origins.set(_ricochet_origins.get_dim()-1,i_p);
+                _ricochet_particles.set(_ricochet_particles.get_dim()-1,i_walk);
+            }
+        }
     }
 
     if(_chisquared->chimin()<chimin0){
