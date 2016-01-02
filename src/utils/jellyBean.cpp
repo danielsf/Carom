@@ -332,7 +332,12 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
 
     int ix;
     for(ix=2;ix<_dim;ix++){
-        out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+        if(ix%4==2){
+            out.set(ix,10.0-exp((pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
+        }
+        else{
+            out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+        }
     }
 
     for(ix=0;ix<_dim;ix++){
