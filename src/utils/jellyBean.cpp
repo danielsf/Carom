@@ -219,11 +219,7 @@ double chiSquaredData::operator()(array_1d<double> &pt){
     _time_spent+=double(time(NULL))-before;
 
     if(isnan(chisq_min)){
-        printf("chisq is nan\n");
-        for(ix=0;ix<_param_buffer.get_dim();ix++){
-            printf("%e\n",_param_buffer.get_data(ix));
-        }
-        exit(1);
+        chisq_min=2.0*exception_value;
     }
 
     if(_with_logging==1){
