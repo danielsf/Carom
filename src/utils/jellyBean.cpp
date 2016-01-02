@@ -277,8 +277,7 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
     y_is=(pt.get_data(0)-_parabola_centers.get_data(ic,0))*_parabola_y.get_data(ic,0)
          +(pt.get_data(1)-_parabola_centers.get_data(ic,1))*_parabola_y.get_data(ic,1);
 
-    double rr=sqrt(power(pt.get_data(0)-_parabola_centers.get_data(ic,0),2)+
-                   power(pt.get_data(1)-_parabola_centers.get_data(ic,1),2));
+    double rr=sqrt(x_is*x_is+y_is*y_is);
 
     double cos_theta,sin_theta;
     cos_theta=x_is/rr;
@@ -320,7 +319,7 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
     y_shldbe=r_shldbe*sin_theta;
 
     double d_radius;
-    d_radius=sqrt(power(x_is-x_shldbe,2)+power(y_is-y_shldbe,2));
+    d_radius=fabs(rr-r_shldbe);
 
     double y_distance;
     y_distance=(y_shldbe+0.5/aa)/_widths.get_data(ic,0);
