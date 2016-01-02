@@ -4165,6 +4165,7 @@ void node::_shift_ricochet(int ix){
         dir.set(i,get_pt(_ricochet_particles.get_data(ix),i)-get_pt(_centerdex,i));
     }
 
+    dir.normalize();
     iFound=node_bisection_origin_dir(_centerdex, dir);
     if(iFound>=0 && _chisquared->get_fn(iFound)<_chisquared->target()){
         _ricochet_particles.set(ix,iFound);
