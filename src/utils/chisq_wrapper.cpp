@@ -346,7 +346,7 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
 
     if(mu<_chimin){
         _chimin=mu;
-        _mindex=_kptr->get_pts();
+        _mindex=_kptr->get_pts()-1;
         if(_adaptive_target==1){
             _target=_chimin+_deltachi;
         }

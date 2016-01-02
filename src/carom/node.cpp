@@ -3689,6 +3689,7 @@ int node::choose_off_center_point(){
 }
 
 void node::originate_particle_simplex(){
+    double chimin0=_chisquared->chimin();
     printf("orig simplex %d\n",_chisquared->get_called());
     array_1d<double> min,max;
     min.set_name("orig_particle_simplex_min");
@@ -3775,9 +3776,14 @@ void node::originate_particle_simplex(){
 
     }
 
+    if(_chisquared->chimin()<chimin0){
+        _centerdex=_chisquared->mindex();
+        _chimin=_chisquared->chimin();
+    }
 
-    printf("simplex found %e %e from %e -- %e\n",_chisquared->get_fn(iFound),
-    dchi_fn(_chisquared->get_pt(iFound)[0]),start_min,_chisquared->chimin());
+    printf("simplex found %e %e from %e -- %e %e %e\n",_chisquared->get_fn(iFound),
+    dchi_fn(_chisquared->get_pt(iFound)[0]),start_min,
+    _chisquared->chimin(),_chimin,_chisquared->get_fn(_centerdex));
 
     increment_simplex_growth();
 
