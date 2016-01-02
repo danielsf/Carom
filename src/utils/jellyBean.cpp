@@ -270,7 +270,7 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 
     _parabola_curvature=4.0;
 
-    int i,j;
+    /*int i,j;
     for(i=0;i<_dim;i++){
         for(j=0;j<_dim;j++){
             if(i==j){
@@ -285,7 +285,7 @@ chiSquaredData(dd, cc, wc, nData, sigma){
     _parabola_x.set(0,0,1.0);
     _parabola_x.set(0,1,0.0);
     _parabola_y.set(0,0,0.0);
-    _parabola_y.set(0,1,1.0);
+    _parabola_y.set(0,1,1.0);*/
 
 }
 
