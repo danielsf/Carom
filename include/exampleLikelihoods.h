@@ -12,6 +12,8 @@ class gaussianJellyBean : public jellyBeanData{
             _widths.set(0,1,1.0);
             _widths.set(0,2,1.0);
             _widths.set(0,3,3.0);
+
+            _parabola_curvature=8.0;
         }
 
 };

@@ -40,6 +40,7 @@ class jellyBeanData : public chiSquaredData{
         
 
     protected:
+        double _parabola_curvature;
         array_2d<double> _parabola_centers,_parabola_x,_parabola_y;
 
         virtual void convert_params(array_1d<double>&, array_1d<double>&, int);

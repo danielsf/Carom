@@ -268,6 +268,8 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 
     }
 
+    _parabola_curvature=4.0;
+
     int i,j;
     for(i=0;i<_dim;i++){
         for(j=0;j<_dim;j++){
@@ -321,24 +323,23 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
         }
     }
 
-    double r_shldbe,aa;
-    aa=4.0;
+    double r_shldbe;
 
     if(fabs(cos_theta)<1.0e-5 && sin_theta>0.0){
-        r_shldbe=1.0e10/aa;
+        r_shldbe=1.0e10/_parabola_curvature;
     }
     else if(fabs(cos_theta)<1.0e-10 && sin_theta<0.0){
-        r_shldbe=0.25/aa;
+        r_shldbe=0.25/_parabola_curvature;
     }
     else{
-        r_shldbe=(1.0+sin_theta)/(2.0*aa*cos_theta*cos_theta);
+        r_shldbe=(1.0+sin_theta)/(2.0*_parabola_curvature*cos_theta*cos_theta);
     }
 
     double d_radius;
     d_radius=fabs(rr-r_shldbe);
 
     double y_distance;
-    y_distance=(y_is+0.25/aa)/_widths.get_data(ic,0);
+    y_distance=(y_is+0.25/_parabola_curvature)/_widths.get_data(ic,0);
     out.set(0,y_distance);
 
     double x_shldbe,dx;
@@ -346,7 +347,7 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
         out.set(1,d_radius/_widths.get_data(ic,1));
     }
     else{
-        x_shldbe=sqrt((y_is+0.25/aa)/aa);
+        x_shldbe=sqrt((y_is+0.25/_parabola_curvature)/_parabola_curvature);
         if(fabs(x_is+x_shldbe)<fabs(x_is-x_shldbe)){
             dx=fabs(x_is+x_shldbe);
         }
