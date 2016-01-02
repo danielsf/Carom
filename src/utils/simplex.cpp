@@ -158,7 +158,9 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
     _chisquared->get_called()-_called_evaluate);*/
 
     if(fval<_min_ff){
-        _last_found=_called_evaluate;
+        if(_min_ff-fval>_min_ff*1.0e-4){
+            _last_found=_called_evaluate;
+        }
         _min_ff=fval;
         //printf("    setting min %e\n",_min_ff);
         //printf("min %e true %e cost %e raw %e\n",
