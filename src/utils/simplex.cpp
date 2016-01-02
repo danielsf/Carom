@@ -137,6 +137,12 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
     double fval,raw;
     fval=_chisquared[0](vv);
 
+    if(_min_pt.get_dim()==0){
+        for(i=0;i<pt.get_dim();i++){
+            _min_pt.set(i,vv.get_data(i));
+        }
+    }
+
     if(fval<_true_min_ff){
         _true_min_ff=fval;
         for(i=0;i<pt.get_dim();i++){
