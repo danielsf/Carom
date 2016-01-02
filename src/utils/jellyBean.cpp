@@ -321,38 +321,46 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
         }
     }
 
-    double x_shldbe,y_shldbe,r_shldbe,aa;
-    //rsq_shldbe=power(_radii.get_data(ic),2)/(cos_theta*cos_theta+sin_theta*sin_theta*16.0);
-    //r_shldbe=sqrt(rsq_shldbe);
-
+    double r_shldbe,aa;
     aa=4.0;
 
     if(fabs(cos_theta)<1.0e-5 && sin_theta>0.0){
         r_shldbe=1.0e10/aa;
     }
     else if(fabs(cos_theta)<1.0e-10 && sin_theta<0.0){
-        r_shldbe=0.5/aa;
+        r_shldbe=0.25/aa;
     }
     else{
         r_shldbe=(1.0+sin_theta)/(2.0*aa*cos_theta*cos_theta);
     }
 
-    //printf("%e %e %e\n",cos_theta,sin_theta,r_shldbe);
-
-    x_shldbe=r_shldbe*cos_theta;
-    y_shldbe=r_shldbe*sin_theta;
-
     double d_radius;
     d_radius=fabs(rr-r_shldbe);
 
     double y_distance;
-    y_distance=(y_shldbe+0.5/aa)/_widths.get_data(ic,0);
-
-    //printf("y_shldbe %.3e y_distance %.3e drad %.3e -- %.3e %.3e %.3e %.3e\n",
-    //y_shldbe,y_distance,d_radius/_widths.get_data(ic,1),pt.get_data(3),cos_theta,sin_theta,r_shldbe);
-
+    y_distance=(y_is+0.25/aa)/_widths.get_data(ic,0);
     out.set(0,y_distance);
-    out.set(1,d_radius/_widths.get_data(ic,1));
+
+    double x_shldbe,dx;
+    if(y_distance<0.0){
+        out.set(1,d_radius/_widths.get_data(ic,1));
+    }
+    else{
+        x_shldbe=sqrt((y_is+0.25/aa)/aa);
+        if(fabs(x_is+x_shldbe)<fabs(x_is-x_shldbe)){
+            dx=fabs(x_is+x_shldbe);
+        }
+        else{
+            dx=fabs(x_is-x_shldbe);
+        }
+
+        out.set(1,dx/_widths.get_data(ic,1));
+    }
+
+    if(out.get_data(1)<0.0){
+        printf("WARNING out 1 %e\n",out.get_data(1));
+        exit(1);
+    }
 
     int ix;
     for(ix=2;ix<_dim;ix++){
