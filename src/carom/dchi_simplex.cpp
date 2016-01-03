@@ -81,8 +81,16 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
     double dmu=fabs(_chisq->target()-mu);
     double delta=_chisq->target()-_chisq->chimin();
 
+    double exp_term;
+    if(_chisq->target()<mu){
+        exp_term=exp(-0.1*dmu/delta);
+    }
+    else{
+        exp_term=1.0;
+    }
+
     _called++;
-    return dmu-exp(-0.1*dmu/delta)*delta*distance*2.0;
+    return dmu-exp_term*delta*distance*2.0;
 }
 
 dchi_multimodal_simplex::dchi_multimodal_simplex(chisq_wrapper *cc, array_1d<int> &aa) :
@@ -117,7 +125,15 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
     double delta=_chisq->target()-_chisq->chimin();
     double dmu=fabs(mu-_chisq->chimin());
 
-    double exp_term=exp(-dmu/delta);
+    double exp_term;
+
+    if(_chisq->target()<mu){
+        exp_term=exp(-0.1*dmu/delta);
+    }
+    else{
+        exp_term=1.0;
+    }
+
     double distance;
     if(exp_term>1.0e-5){
         distance=associate_distance(pt);

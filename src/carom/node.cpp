@@ -4341,8 +4341,14 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
 
     dmu=fabs(_chisquared->get_fn(i_pt)-_chisquared->target());
     delta=_chisquared->target()-_chisquared->chimin();
-    double chi_new,chi_old;
-    chi_old=dmu-exp(-0.1*dmu/delta)*delta*ddmin*2.0;
+    double chi_new,chi_old,exp_term;
+    if(_chisquared->target()<_chisquared->get_fn(i_pt)){
+        exp_term=exp(-0.1*dmu/delta);
+    }
+    else{
+        exp_term=1.0;
+    }
+    chi_old=dmu-exp_term*delta*ddmin*2.0;
 
     int i_step,local_acceptances,accept_it;
     double mu;
@@ -4385,7 +4391,15 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
                 }
             }
             dmu=fabs(mu-_chisquared->target());
-            chi_new=dmu-exp(-0.1*dmu/delta)*delta*ddmin*2.0;
+
+            if(_chisquared->target()<mu){
+                exp_term=exp(-0.1*dmu/delta);
+            }
+            else{
+                exp_term=1.0;
+            }
+
+            chi_new=dmu-exp_term*delta*ddmin*2.0;
 
             if(chi_new<chi_old){
                 accept_it=1;
@@ -4586,7 +4600,15 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
         ddmin=0.0;
     }
 
-    mu[0]=dmu-exp(-0.1*dmu/deltachisq)*deltachisq*ddmin*2.0;
+    double exp_term;
+    if(_chisquared->target()<mu[0]){
+        exp_term=exp(-0.1*dmu/deltachisq);
+    }
+    else{
+        exp_term=1.0;
+    }
+
+    mu[0]=dmu-exp_term*deltachisq*ddmin*2.0;
 
 }
 
