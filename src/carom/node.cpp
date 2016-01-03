@@ -3762,7 +3762,7 @@ void node::originate_particle_simplex(){
     double dd,dd_best;
 
     if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex){
-        for(i=pts_start;i<_chisquared->get_pts();i++){
+        for(i=pts_start+1;i<_chisquared->get_pts();i++){
             if(_chisquared->get_fn(i)<_chisquared->target()){
                 acceptable.add(i);
             }
