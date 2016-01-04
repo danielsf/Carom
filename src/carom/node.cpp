@@ -3741,8 +3741,20 @@ void node::originate_particle_simplex(){
         }
     }
 
+    double dd,dd_best;
+    int i_center;
+    i_center=_centerdex;
+    dd_best=node_distance(i_min,_centerdex);
+    for(i=0;i<_boundary_points.get_dim();i++){
+        dd=node_distance(i_min,_boundary_points.get_data(i));
+        if(dd<dd_best){
+            i_center=_boundary_points.get_data(i);
+            dd_best=dd;
+        }
+    }
+
     for(i=0;i<_chisquared->get_dim();i++){
-        trial.set(i,0.5*(_chisquared->get_pt(_centerdex,i)+_chisquared->get_pt(i_min,i)));
+        trial.set(i,0.5*(_chisquared->get_pt(i_center,i)+_chisquared->get_pt(i_min,i)));
     }
     seed.add_row(trial);
 
@@ -3764,8 +3776,6 @@ void node::originate_particle_simplex(){
     int i_p=-1,i_o=-1;
     array_1d<int> acceptable;
     acceptable.set_name("orig_simplex_acceptable");
-
-    double dd,dd_best;
 
     if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex &&
        _chisquared->get_fn(iFound)<_chisquared->chimin()+2.0*(_chisquared->target()-_chisquared->chimin())){
