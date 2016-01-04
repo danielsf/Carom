@@ -33,7 +33,12 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
         }
 
         for(i=0;i<_chisq->get_dim();i++){
-            _norm.set(i,0.5*(max.get_data(i)-min.get_data(i)));
+            if(max.get_data(i)-min.get_data(i)<1.0e-20){
+                _norm.set(i,1.0);
+            }
+            else{
+                _norm.set(i,0.5*(max.get_data(i)-min.get_data(i)));
+            }
         }
     }
 
