@@ -366,10 +366,10 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
         }
         else  if(ix%4==3){
             if(pt.get_data(ix)>_centers.get_data(ic,ix)){
-                out.set(ix,log(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+                out.set(ix,log(1.0+(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
             }
             else{
-                out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+                out.set(ix,0.3*(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
             }
         }
         else{

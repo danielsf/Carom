@@ -58,14 +58,14 @@ int main(){
     raw_max.set(3,2.189316e+01);
 
     //for integrableJellyBean
-    raw_min.set(0,-23.0);
-    raw_max.set(0,-17.5);
-    raw_min.set(1,26.0);
-    raw_max.set(1, 30.0);
-    raw_min.set(2,13.5);
-    raw_max.set(2,20.0);
-    raw_min.set(3,-31.0);
-    raw_max.set(3,-19.0);
+    raw_min.set(0,-12.0);
+    raw_max.set(0,-6.5);
+    raw_min.set(1,13.0);
+    raw_max.set(1, 16.5);
+    raw_min.set(2,5.5);
+    raw_max.set(2,14.0);
+    raw_min.set(3,-22.0);
+    raw_max.set(3,-8.0);
 
     int i;
     double dd;

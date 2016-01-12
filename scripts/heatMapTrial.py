@@ -29,6 +29,8 @@ if __name__ == "__main__":
                     #c=np.exp(-0.5*data[tag][2]/data[tag][2].max()),
                     cmap=plt.cm.gist_ncar,
                     edgecolor='')
+        ticks=np.linspace(0.0,30.0,5.0,endpoint=True)
+        #plt.contour(data[tag][0], data[tag][1], data[tag][2],ticks)
         xmax=data[tag][0].max()
         xmin=data[tag][0].min()
         ymax=data[tag][1].max()
