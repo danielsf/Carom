@@ -466,6 +466,7 @@ void control_integrator::write_output(int xdex, int ydex,
         printf("WARNING could not open frequentistFullD\n");
         exit(1);
     }
+    fprintf(output,"#chi^2 <= %e\n",chi_lim_freq);
     for(ix=0;ix<boundary.get_rows();ix++){
         fprintf(output,"%e %e\n",
         boundary.get_data(ix,0),boundary.get_data(ix,1));
@@ -475,6 +476,7 @@ void control_integrator::write_output(int xdex, int ydex,
     //points with chisq < chisq_min + delta_chisq(dof)
     sprintf(outname,"%s_frequentistFullDrelative_scatter.txt",outname_root);
     output=fopen(outname,"w");
+    fprintf(output,"#chi^2-_chimin <= %e; chimin %e\n",delta_chi_bayes,_chi_min);
     for(ix=0;ix<frequentistFullDrelative.get_rows();ix++){
         fprintf(output,"%e %e\n",frequentistFullDrelative.get_data(ix,0),frequentistFullDrelative.get_data(ix,1));
     }
@@ -484,6 +486,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
     sprintf(outname,"%s_frequentistFullDrelative.txt",outname_root);
     output=fopen(outname,"w");
+    fprintf(output,"#chi^2-_chimin <= %e; %e\n",delta_chi_bayes,_chi_min);
     if(output==NULL){
         printf("WARNING could not open freqFullDrel\n");
         exit(1);
@@ -503,6 +506,8 @@ void control_integrator::write_output(int xdex, int ydex,
         printf("WARNING could not open freq2d\n");
         exit(1);
     }
+    fprintf(output,"#chi^2 <= chimin+ %e; _chi_min %e\n",delta_chi_2d, _chi_min);
+
     for(ix=0;ix<boundary.get_rows();ix++){
         fprintf(output,"%e %e\n",
         boundary.get_data(ix,0),boundary.get_data(ix,1));
@@ -518,6 +523,7 @@ void control_integrator::write_output(int xdex, int ydex,
         printf("WARNING coudl not open freq2deff\n");
         exit(1);
     }
+    fprintf(output,"#-2 ln(marginalized likelihood) - min_chi2_eff<=%e ; %e\n",delta_chi_2d,min_chi2_eff);
     for(ix=0;ix<boundary.get_rows();ix++){
         fprintf(output,"%e %e\n",
         boundary.get_data(ix,0),boundary.get_data(ix,1));
