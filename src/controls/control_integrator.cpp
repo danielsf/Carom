@@ -234,7 +234,7 @@ void control_integrator::write_output(int xdex, int ydex,
     double delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),confidence_limit);
     double chi_lim_freq=distro.confidence_limit(100.0,confidence_limit);
 
-    double delta_chi_2d=6.0;
+    double delta_chi_2d=distro.confidence_limit(2.0,confidence_limit);
 
     printf("minchi %e\n",chi_vals_sorted.get_data(0));
     array_2d<double> frequentistFullD,frequentist2D,frequentist2Deff,bayesianFullD,bayesian2D;
