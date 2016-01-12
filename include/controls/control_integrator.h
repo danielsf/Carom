@@ -107,6 +107,7 @@ class control_integrator{
 
         void set_chi_lim_freq(double);
 
+        void run_analysis(array_1d<double>&);
         void run_analysis(double);
         void run_analysis();
 
@@ -126,8 +127,7 @@ class control_integrator{
 
     protected:
         array_1d<double> _min,_max,_dx;
-        double _chi_lim_freq,_delta_chi_bayes,_chi_min;
-        double _confidence_limit;
+        double _chi_min;
         function_wrapper *_chisq;
         char _name_root[letters];
 

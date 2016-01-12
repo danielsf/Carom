@@ -80,8 +80,11 @@ int main(){
         printf("dx %e\n",dx.get_data(i));
     }
 
-    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_gross_0.95");
-    integrator.run_analysis(0.95);
+    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_gross");
+    array_1d<double> cc;
+    cc.add(0.95);
+    cc.add(0.68);
+    integrator.run_analysis(cc);
 
     printf("\nrange\n");
     for(i=0;i<4;i++){

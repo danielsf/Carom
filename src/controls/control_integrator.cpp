@@ -22,11 +22,7 @@ control_integrator::control_integrator(function_wrapper &chisq,
         _name_root[i]=name_root[i];
     }
     _name_root[i]=0;
-
-    _chi_lim_freq=124.4;
     _chi_min=2.0*exception_value;
-
-    _confidence_limit=0.95;
 
 }
 
@@ -38,8 +34,10 @@ double control_integrator::get_max(int ii){
     return _max.get_data(ii);
 }
 
-void control_integrator::set_chi_lim_freq(double dd){
-    _chi_lim_freq=dd;
+void control_integrator::run_analysis(double cc){
+    array_1d<double> cc_arr;
+    cc_arr.add(cc);
+    run_analysis(cc_arr);
 }
 
 void control_integrator::run_analysis(){
@@ -56,14 +54,20 @@ void control_integrator::_initialize_iterate(){
 }
 
 
-void control_integrator::run_analysis(double cc){
+void control_integrator::run_analysis(array_1d<double> &cc){
 
     chisquared_distribution distro;
 
-    _confidence_limit=cc;
+    double max_confidence_limit, max_chi_lim_freq;
+    int ic;
+    for(ic=0;ic<cc.get_dim();ic++){
+        if(ic==0 || cc.get_data(ic)>max_confidence_limit){
+            max_confidence_limit=cc.get_data(ic);
+        }
+    }
 
-    _delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),_confidence_limit);
-    _chi_lim_freq=distro.confidence_limit(100.0,_confidence_limit);
+    max_chi_lim_freq=distro.confidence_limit(100.0,max_confidence_limit);
+
 
     printf("nameroot %s\n",_name_root);
 
@@ -118,7 +122,7 @@ void control_integrator::run_analysis(double cc){
 
         if(mu<foundMin)foundMin=mu;
 
-        if(mu<_chi_lim_freq+d_threshold){
+        if(mu<max_chi_lim_freq+d_threshold){
             for(ix=0;ix<_min.get_dim();ix++){
                 if(pt.get_data(ix)<good_min.get_data(ix)){
                     good_min.set(ix,pt.get_data(ix));
@@ -180,16 +184,16 @@ void control_integrator::run_analysis(double cc){
 
     char name[letters];
 
-    for(ix=0;ix<_min.get_dim();ix++){
-        for(iy=ix+1;iy<_min.get_dim();iy++){
-            sprintf(name,"%s_%d_%d",_name_root,ix,iy);
-            write_output(ix,iy,chi_sorted,likelihood_sorted,dexes,coordinates,total,
-                         _chi_lim_freq,name);
+    for(ic=0;ic<cc.get_dim();ic++){
+        for(ix=0;ix<_min.get_dim();ix++){
+            for(iy=ix+1;iy<_min.get_dim();iy++){
+                sprintf(name,"%s_%.2f_%d_%d",_name_root,cc.get_data(ic),ix,iy);
+                write_output(ix,iy,chi_sorted,likelihood_sorted,dexes,coordinates,total,
+                             cc.get_data(ic),name);
 
+            }
         }
     }
-
-    printf("_delta_chi_bayes: %e\n",_delta_chi_bayes);
 }
 
 int control_integrator::get_dex(double value, double min, double dx, int max){
@@ -221,10 +225,14 @@ void control_integrator::write_output(int xdex, int ydex,
                     array_1d<double> &likelihood_sorted,
                     array_1d<int> &dexes, array_2d<int> &coordinates,
                     double totalLikelihood,
-                    double chiLimFullD,
+                    double confidence_limit,
                     char *outname_root){
 
 
+    chisquared_distribution distro;
+
+    double delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),confidence_limit);
+    double chi_lim_freq=distro.confidence_limit(100.0,confidence_limit);
 
     double delta_chi_2d=6.0;
 
@@ -295,8 +303,6 @@ void control_integrator::write_output(int xdex, int ydex,
 
     double min_chi2_eff=-2.0*log(max_likelihood);
 
-
-
     //////assemble the raw frequentist grids
     array_1d<double> trial,found_min,found_max;
     trial.set_name("trial");
@@ -313,7 +319,7 @@ void control_integrator::write_output(int xdex, int ydex,
         for(iy=0;iy<yct;iy++){
             trial.set(1,_min.get_data(ydex)+iy*_dx.get_data(ydex));
 
-            if(minChi2Grid.get_data(ix,iy)+_chi_min<=chiLimFullD){
+            if(minChi2Grid.get_data(ix,iy)+_chi_min<=chi_lim_freq){
                 frequentistFullD.add_row(trial);
 
                 for(i=0;i<2;i++){
@@ -323,7 +329,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
             }
 
-            if(minChi2Grid.get_data(ix,iy)<=_delta_chi_bayes){
+            if(minChi2Grid.get_data(ix,iy)<=delta_chi_bayes){
                 frequentistFullDrelative.add_row(trial);
             }
 
@@ -361,7 +367,7 @@ void control_integrator::write_output(int xdex, int ydex,
     sort_and_check(marginalized_likelihood_line,sorted,sorted_dexes);
     double sum=0.0;
     row=0;
-    for(i=sorted.get_dim()-1;i>=0 && sum<_confidence_limit*totalLikelihood;i--){
+    for(i=sorted.get_dim()-1;i>=0 && sum<confidence_limit*totalLikelihood;i--){
         sum+=sorted.get_data(i);
 
         ix=marginalized_likelihood_dexes.get_data(sorted_dexes.get_data(i),0);
@@ -385,7 +391,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
     sum=0.0;
     row=0;
-    for(i=0;i<chi_vals_sorted.get_dim() && sum<_confidence_limit*totalLikelihood;i++){
+    for(i=0;i<chi_vals_sorted.get_dim() && sum<confidence_limit*totalLikelihood;i++){
         sum+=likelihood_sorted.get_data(i);
         true_dex=dexes.get_data(i);
 
@@ -555,9 +561,9 @@ void control_integrator::write_output(int xdex, int ydex,
     printf("min found max found\n");
     printf("%e %e %e %e\n",_min.get_data(xdex),found_min.get_data(0),_max.get_data(xdex),found_max.get_data(0));
     printf("%e %e %e %e\n",_min.get_data(ydex),found_min.get_data(1),_max.get_data(ydex),found_max.get_data(1));
-    printf("confidence limit %e\n",_confidence_limit);
-    printf("delta_chi_bayes %e\n",_delta_chi_bayes);
-    printf("chi_lim_freq %e\n",_chi_lim_freq);
+    printf("confidence limit %e\n",confidence_limit);
+    printf("delta_chi_bayes %e\n",delta_chi_bayes);
+    printf("chi_lim_freq %e\n",chi_lim_freq);
 
 }
 
