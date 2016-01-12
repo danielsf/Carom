@@ -12,7 +12,7 @@ int main(){
     int dim=4;
     //jellyBeanData chisq(dim,1,100,0.4,angular_width,radial_sigma,curvature_radius);
     //ellipseData chisq(dim,1,100,0.4);
-    gaussianJellyBean chisq;
+    integrableJellyBean chisq;
 
 
     array_1d<double> min,max,dx,raw_min,raw_max;
@@ -57,6 +57,15 @@ int main(){
     raw_min.set(3,1.212955e+01);
     raw_max.set(3,2.189316e+01);
 
+    //for integrableJellyBean
+    raw_min.set(0,-23.0);
+    raw_max.set(0,-17.5);
+    raw_min.set(1,26.0);
+    raw_max.set(1, 30.0);
+    raw_min.set(2,13.5);
+    raw_max.set(2,20.0);
+    raw_min.set(3,-31.0);
+    raw_max.set(3,-19.0);
 
     int i;
     double dd;
@@ -71,7 +80,7 @@ int main(){
         printf("dx %e\n",dx.get_data(i));
     }
 
-    control_integrator integrator(chisq,min,max,dx,"controls/scratch/jellyBean_gross_0.95");
+    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_gross_0.95");
     integrator.run_analysis(0.95);
 
     printf("\nrange\n");

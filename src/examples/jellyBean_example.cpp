@@ -10,6 +10,8 @@ int main(int iargc, char *argv[]){
 //d=8 -> delta_chisq=15.5
 //d=5 -> delta_chisq=11
 
+int chisq_dex=0;
+
 int i,j;
 int seed=99;
 int dim=5;
@@ -35,6 +37,10 @@ for(i=1;i<iargc;i++){
                 printf("d = dim\no = outputname\nt = timingname\n");
                 printf("p = confidence limit\n");
                 exit(1);
+                break;
+            case 'x':
+                i++;
+                chisq_dex=atoi(argv[i]);
                 break;
             case 'p':
                 i++;
@@ -97,11 +103,22 @@ printf("seed %d\n",seed);
 
 //jellyBeanData chisq(dim,1,width,100,0.4,0.4,0.02,20.0);
 
-gaussianJellyBean chisq;
+jellyBeanData *chisq;
+
+if(chisq_dex==0){
+    chisq=new gaussianJellyBean4;
+}
+else if(chisq_dex==1){
+    chisq=new integrableJellyBean;
+}
+else{
+    printf("WARNING do not know what to do with chisq_dex %d\n",chisq_dex);
+    exit(1);
+}
 
 printf("done constructing chisq\n");
 
-chisq.print_mins();
+chisq->print_mins();
 
 //declare APS
 //the '20' below is the number of nearest neighbors to use when seeding the
@@ -130,7 +147,7 @@ carom_test.set_seed(seed);
 carom_test.set_confidence_limit(confidence_limit);
 
 //pass chisq to the aps object
-carom_test.set_chisquared(&chisq);
+carom_test.set_chisquared(chisq);
 
 //how often will APS stop and write its output
 carom_test.set_write_every(3000);
@@ -139,10 +156,10 @@ carom_test.set_write_every(3000);
 array_1d<double> max,min;
 max.set_name("driver_max");
 min.set_name("driver_min");
-max.set_dim(chisq.get_dim());
-min.set_dim(chisq.get_dim());
+max.set_dim(chisq->get_dim());
+min.set_dim(chisq->get_dim());
 
-for(i=0;i<chisq.get_dim();i++){
+for(i=0;i<chisq->get_dim();i++){
     min.set(i,-40.0);
     max.set(i,40.0);
 }
@@ -163,24 +180,24 @@ carom_test.set_max(max);
 
 //initialize aps with 1000 random samples
 printf("time to initialize\n");
-chisq.reset_timer();
+chisq->reset_timer();
 carom_test.initialize(1000);
 int active_nodes=1;
 printf("ready to search\n");
 carom_test.search(nsamples);
-chisq.print_mins();
+chisq->print_mins();
 
 array_1d<double> v0,v1;
-chisq.get_basis(0,v0);
-chisq.get_basis(1,v1);
+chisq->get_basis(0,v0);
+chisq->get_basis(1,v1);
 printf("\nfirst two bases\n");
-for(i=0;i<chisq.get_dim();i++){
+for(i=0;i<chisq->get_dim();i++){
     printf("%e %e\n",v0.get_data(i),v1.get_data(i));
 }
 
 printf("\nwidths\n");
-for(i=0;i<chisq.get_dim();i++){
-    printf("%e\n",chisq.get_width(0,i));
+for(i=0;i<chisq->get_dim();i++){
+    printf("%e\n",chisq->get_width(0,i));
 }
 
 }
