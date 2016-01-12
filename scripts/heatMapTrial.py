@@ -24,8 +24,9 @@ if __name__ == "__main__":
     for ifig, (ix, iy) in enumerate(zip(ix_list, iy_list)):
         tag = '%d_%d' % (ix, iy)
         plt.subplot(3, 2, ifig+1)
-        plt.scatter(data[tag][0], data[tag][1],
-                    c=data[tag][2],
+        indices = np.where(data[tag][2]<50.0)
+        plt.scatter(data[tag][0][indices], data[tag][1][indices],
+                    c=data[tag][2][indices],
                     #c=np.exp(-0.5*data[tag][2]/data[tag][2].max()),
                     cmap=plt.cm.gist_ncar,
                     edgecolor='')
