@@ -58,14 +58,14 @@ int main(){
     raw_max.set(3,2.189316e+01);
 
     //for integrableJellyBean
-    raw_min.set(0,-12.0);
+    raw_min.set(0,-14.0);
     raw_max.set(0,-6.5);
     raw_min.set(1,13.0);
-    raw_max.set(1, 16.5);
+    raw_max.set(1, 17.5);
     raw_min.set(2,5.5);
-    raw_max.set(2,14.0);
+    raw_max.set(2,16.0);
     raw_min.set(3,-22.0);
-    raw_max.set(3,-8.0);
+    raw_max.set(3,-6.0);
 
     int i;
     double dd;
@@ -76,7 +76,7 @@ int main(){
     }
 
     for(i=0;i<4;i++){
-        dx.set(i,(max.get_data(i)-min.get_data(i))*0.005);
+        dx.set(i,(max.get_data(i)-min.get_data(i))*0.01);
         printf("dx %e\n",dx.get_data(i));
     }
 
