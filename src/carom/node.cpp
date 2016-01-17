@@ -2620,7 +2620,7 @@ void node::find_bases(int do_populate){
     }
 
 
-    while(stdev>stdevlim && aborted<max_abort){
+    while(stdev>stdevlim && aborted<max_abort && ct<10000){
         ct++;
         idim=-1;
         while(idim>=_chisquared->get_dim() || idim<0){
