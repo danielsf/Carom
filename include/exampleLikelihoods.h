@@ -163,7 +163,7 @@ class gaussianJellyBean24 : public jellyBeanData{
             _widths.set(0,1,2.0);
             _parabola_curvature=8.0;
 
-            for(i=2;i<12;i++){
+            for(i=2;i<24;i++){
                 _widths.set(0,i,0.5+3.0*constructor_dice.doub());
             }
         }
