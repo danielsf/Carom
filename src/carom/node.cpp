@@ -3690,7 +3690,11 @@ int node::choose_off_center_point(){
 
 void node::originate_particle_simplex(){
     double chimin0=_chisquared->chimin();
-    printf("orig simplex %d\n",_chisquared->get_called());
+
+    printf("orig simplex %d -- %e %e\n",
+    _chisquared->get_called(),
+    _chisquared->target(),_chisquared->get_fn(_centerdex));
+
     array_1d<double> min,max;
     min.set_name("orig_particle_simplex_min");
     max.set_name("orig_particle_simplex_max");
