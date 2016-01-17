@@ -3790,6 +3790,7 @@ void node::originate_particle_simplex(){
         for(i=pts_start+1;i<_chisquared->get_pts();i++){
             if(_chisquared->get_fn(i)<_chisquared->target()){
                 acceptable.add(i);
+                _associates.add(i);
             }
         }
 
@@ -3848,6 +3849,8 @@ void node::originate_particle_simplex(){
         _centerdex=_chisquared->mindex();
         _chimin=_chisquared->chimin();
     }
+
+    recalibrate_max_min();
 
     printf("simplex found %e %e from %e -- %e %e %e\n",_chisquared->get_fn(iFound),
     dchi_fn(_chisquared->get_pt(iFound)[0]),start_min,
