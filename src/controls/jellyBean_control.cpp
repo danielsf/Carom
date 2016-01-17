@@ -76,7 +76,7 @@ int main(){
     }
 
     for(i=0;i<4;i++){
-        dx.set(i,(max.get_data(i)-min.get_data(i))*0.01);
+        dx.set(i,(max.get_data(i)-min.get_data(i))*0.005);
         printf("dx %e\n",dx.get_data(i));
     }
 

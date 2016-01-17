@@ -14,7 +14,7 @@ int chisq_dex=0;
 
 int i,j;
 int seed=99;
-int dim=5;
+int dim=4;
 int nsamples=-1;
 double width=1.0;
 double delta_chisq=-1.0;
@@ -106,7 +106,18 @@ printf("seed %d\n",seed);
 jellyBeanData *chisq;
 
 if(chisq_dex==0){
-    chisq=new gaussianJellyBean4;
+    if(dim==4){
+        chisq=new gaussianJellyBean4;
+    }
+    else if(dim==12){
+        chisq=new gaussianJellyBean12;
+    }
+    else if(dim==24){
+        chisq=new gaussianJellyBean24;
+    }
+    else{
+        printf("WARNING do not know what to do with dim %d\n",dim);
+    }
 }
 else if(chisq_dex==1){
     chisq=new integrableJellyBean;
