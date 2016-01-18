@@ -3691,7 +3691,7 @@ int node::choose_off_center_point(){
 void node::originate_particle_simplex(){
     double chimin0=_chisquared->chimin();
 
-    printf("orig simplex %d %d -- %e %e\n",
+    printf("\norig simplex %d %d -- %e %e\n",
     _chisquared->get_called(),_ricochet_particles.get_dim(),
     _chisquared->target(),_chisquared->get_fn(_centerdex));
 
