@@ -2593,6 +2593,7 @@ void node::find_bases(int do_populate){
     changed_bases=0;
     ct=0;
 
+    printf("center %e min %e\n",_chisquared->get_fn(_centerdex),_chisquared->chimin());
     printf("error0 %e %d -- vol %e proj %e\n",
     error0,_basis_associates.get_dim(),volume(),projected_volume());
 
