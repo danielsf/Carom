@@ -15,6 +15,8 @@ class chiSquaredData : public chisquared{
         void write_data();
         void print_mins();
         
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
+
     protected:
         int _ndata;
         double _sig;
@@ -23,8 +25,6 @@ class chiSquaredData : public chisquared{
         array_1d<double> _wave_phase,_wave_lambda,_env_d_center,_env_width;
         array_1d<double> _wave_amp;
         array_1d<double> _param_buffer;
-
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 
         double data_function(array_1d<double>&, double);
         
