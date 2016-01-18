@@ -367,7 +367,6 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     buffer.set_name("simplex_buffer");
 
     while(_called_evaluate-_last_found<abort_max){
-       printf("ct %d min %e\n",_chisquared->get_called(),_true_min_ff);
        for(i=0;i<dim;i++){
            pbar.set(i,0.0);
            for(j=0;j<dim+1;j++){
