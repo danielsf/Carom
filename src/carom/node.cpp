@@ -3762,22 +3762,55 @@ void node::originate_particle_simplex(){
     }
     seed.add_row(trial);
 
+    int i_actual;
+
     trial.reset();
     ffmin.use_gradient();
     ffmin.set_dice(_chisquared->get_dice());
     ffmin.find_minimum(seed,trial);
     transform_pt_to_node(trial,trial_node);
-    evaluate(trial_node,&mu,&iFound);
+    evaluate(trial_node,&mu,&i_actual);
 
     int i_walk;
     int n_steps=50;
     double tol=0.1*(_chisquared->target()-_chisquared->chimin());
 
+    double desired=_chisquared->chimin()+2.0*(_chisquared->target()-_chisquared->chimin());
+
+    iFound=i_actual;
+
+    int use_it;
+
+    for(i=_chisquared->get_pts()-1;i>pts_start;i--){
+        if(_chisquared->get_fn(i)<_chisquared->target()){
+            _associates.add(i);
+        }
+
+        if(fabs(_chisquared->get_fn(i)-_chisquared->target())<tol){
+            _boundary_points.add(i);
+        }
+
+        if(_chisquared->get_fn(i_actual)>desired && _chisquared->get_fn(i)<desired){
+            use_it=0;
+
+            if(_chisquared->get_fn(iFound)>desired){
+                use_it=1;
+            }
+            else if(_chisquared->get_fn(iFound)>_chisquared->target()+tol &&
+                    _chisquared->get_fn(i)<_chisquared->target()+tol){
+
+                use_it=1;
+            }
+
+            if(use_it==1){
+                iFound=i;
+            }
+        }
+    }
+
     if(iFound>=0){
         add_to_log(_log_dchi_simplex, iFound);
     }
-
-    double desired=_chisquared->chimin()+2.0*(_chisquared->target()-_chisquared->chimin());
 
     int i_p=-1,i_o=-1;
     array_1d<int> acceptable;
@@ -3792,7 +3825,6 @@ void node::originate_particle_simplex(){
         for(i=pts_start+1;i<_chisquared->get_pts();i++){
             if(_chisquared->get_fn(i)<_chisquared->target()){
                 acceptable.add(i);
-                _associates.add(i);
             }
         }
 
