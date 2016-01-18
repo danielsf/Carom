@@ -4069,11 +4069,17 @@ void node::simplex_search(){
         is_acceptable=1;
         if(simplex_min.get_dim()!=_chisquared->get_dim() || simplex_max.get_dim()!=_chisquared->get_dim()){
             is_acceptable=0;
+            printf("not acceptable because of dim %d %d\n",
+            simplex_min.get_dim(),simplex_max.get_dim());
         }
 
         for(i=0;i<_chisquared->get_dim() && is_acceptable==1;i++){
             if(simplex_max.get_data(i)-simplex_min.get_data(i)<1.0e-30){
                 is_acceptable=0;
+                printf("not acceptable because %d %.3e %.3e %.3e -- %.3e\n",
+                i,simplex_min.get_data(i),simplex_max.get_data(i),
+                simplex_max.get_data(i)-simplex_min.get_data(i),
+                _true_max.get_data(i)-_true_min.get_data(i));
             }
         }
 
