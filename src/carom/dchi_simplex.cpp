@@ -88,7 +88,7 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
 
     double exp_term;
     if(_chisq->target()<mu){
-        exp_term=exp(-0.1*dmu/delta);
+        exp_term=exp(-0.1*dmu);
     }
     else{
         exp_term=1.0;
@@ -133,7 +133,7 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
     double exp_term;
 
     if(_chisq->target()<mu){
-        exp_term=exp(-0.1*dmu/delta);
+        exp_term=exp(-0.1*dmu);
     }
     else{
         exp_term=1.0;
