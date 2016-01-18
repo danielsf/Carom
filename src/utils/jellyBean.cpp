@@ -119,7 +119,7 @@ void chiSquaredData::initialize_data(){
 
     for(ix=0;ix<_dim;ix++){
         if(ix%4==2){
-            params.set(ix,10.0);
+            params.set(ix,1.0);
         }
         else{
             params.set(ix,0.0);
@@ -377,8 +377,15 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
         }
     }
 
+    double xx;
     for(ix=0;ix<_dim;ix++){
-        out.multiply_val(ix,0.01);
+        if(ix%4!=2){
+            out.multiply_val(ix,0.01);
+        }
+        else{
+            xx=out.get_data(ix);
+            out.set(ix,1.0+0.01*(xx-1.0));
+        }
     }
 
 
