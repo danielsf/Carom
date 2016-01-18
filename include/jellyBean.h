@@ -38,12 +38,13 @@ class jellyBeanData : public chiSquaredData{
         ~jellyBeanData(){}
         jellyBeanData(int,int,double,int,double);
         
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
+
 
     protected:
         double _parabola_curvature;
         array_2d<double> _parabola_centers,_parabola_x,_parabola_y;
 
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 };
 
 class ellipseData : public chiSquaredData{
@@ -51,11 +52,12 @@ class ellipseData : public chiSquaredData{
     public:
         ~ellipseData(){}
         ellipseData(int, int, int, double);
+
+        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
     
     protected:
         array_1d<double> _dir,_projected;
         
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 
 };
 
@@ -63,8 +65,6 @@ class nonGaussianEllipseData : public ellipseData{
     public:
         ~nonGaussianEllipseData(){}
         nonGaussianEllipseData(int, int, int, double);
-    
-    protected:
         virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
 };
 

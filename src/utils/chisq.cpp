@@ -233,6 +233,10 @@ double chisquared::operator()(array_1d<double> &v){
     return -1.0;
 }
 
+double chisquared::get_basis(int ix, int id){
+    return _bases.get_data(ix,id);
+}
+
 void chisquared::get_basis(int ix, array_1d<double> &v){
     int i;
     if(ix<_dim){

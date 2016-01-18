@@ -35,6 +35,7 @@ public:
     double get_max(int);
 
     void get_basis(int,array_1d<double>&);
+    double get_basis(int,int);
 
     double project_to_basis(int,array_1d<double>&) const;
     void project_to_basis(array_1d<double>&, array_1d<double>&) const;
