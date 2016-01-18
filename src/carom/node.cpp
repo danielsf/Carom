@@ -4057,15 +4057,14 @@ void node::simplex_search(){
     simplex_max.set_name("node_simplex_max");
     found_dexes.set_name("found_dexes");
 
-    if(_true_min.get_dim()==_chisquared->get_dim() && _true_max.get_dim()==_chisquared->get_dim()){
-        for(i=0;i<_chisquared->get_dim();i++){
-            simplex_min.set(i,_true_min.get_data(i));
-            simplex_max.set(i,_true_max.get_data(i));
-        }
-    }
-
     is_acceptable=0;
     while(is_acceptable==0){
+        if(_true_min.get_dim()==_chisquared->get_dim() && _true_max.get_dim()==_chisquared->get_dim()){
+            for(i=0;i<_chisquared->get_dim();i++){
+                simplex_min.set(i,_true_min.get_data(i));
+                simplex_max.set(i,_true_max.get_data(i));
+            }
+        }
         is_acceptable=1;
         if(simplex_min.get_dim()!=_chisquared->get_dim() || simplex_max.get_dim()!=_chisquared->get_dim()){
             is_acceptable=0;
@@ -4091,17 +4090,6 @@ void node::simplex_search(){
             target=_chisquared->get_fn(_centerdex)+(_chisquared->target()-_chisquared->chimin());
             tolerance = 0.01*(_chisquared->target()-_chisquared->chimin());
             iFound=node_bisection_origin_dir(_centerdex, trial, target, tolerance);
-            if(iFound>=0){
-                for(i=0;i<_chisquared->get_dim();i++){
-                    if(i>=simplex_min.get_dim() || get_pt(iFound,i)<simplex_min.get_data(i)){
-                        simplex_min.set(i,_chisquared->get_pt(iFound,i));
-                    }
-
-                    if(i>=simplex_max.get_dim() || get_pt(iFound,i)>simplex_max.get_data(i)){
-                        simplex_max.set(i,_chisquared->get_pt(iFound,i));
-                    }
-                }
-            }
         }
     }
 
