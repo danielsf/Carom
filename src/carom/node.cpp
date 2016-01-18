@@ -3777,16 +3777,18 @@ void node::originate_particle_simplex(){
         add_to_log(_log_dchi_simplex, iFound);
     }
 
+    double desired=_chisquared->chimin()+2.0*(_chisquared->target()-_chisquared->chimin());
+
     int i_p=-1,i_o=-1;
     array_1d<int> acceptable;
     acceptable.set_name("orig_simplex_acceptable");
 
     printf("found %e desired %e\n",
     _chisquared->get_fn(iFound),
-    _chisquared->chimin()+2.0*(_chisquared->target()-_chisquared->chimin()));
+    desired);
 
     if(iFound>=0 && _centerdex>=0 && iFound!=_centerdex &&
-       _chisquared->get_fn(iFound)<_chisquared->chimin()+2.0*(_chisquared->target()-_chisquared->chimin())){
+       _chisquared->get_fn(iFound)<desired){
         for(i=pts_start+1;i<_chisquared->get_pts();i++){
             if(_chisquared->get_fn(i)<_chisquared->target()){
                 acceptable.add(i);
