@@ -3878,6 +3878,9 @@ void node::originate_particle_simplex(){
             }
         }
     }
+    else{
+        originate_particle_shooting();
+    }
 
     if(_chisquared->chimin()<chimin0){
         _centerdex=_chisquared->mindex();
