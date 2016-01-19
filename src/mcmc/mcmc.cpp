@@ -701,7 +701,7 @@ void mcmc::find_fisher_matrix(array_1d<double> &center_in, array_2d<double> &cov
 }
 
 
-void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &center_out, double *min_out){
+void mcmc::find_fisher_eigen(array_1d<double> &center_in, array_2d<double> &bases){
 
     array_2d<double> covar;
     covar.set_name("mcmc_guess_bases_covar");
@@ -709,17 +709,7 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &center_o
     int ix,iy;
     double covarmax=-1.0;
 
-    array_1d<double> min_pt;
-    min_pt.set_name("find_fisher_eigen_min_pt");
-    double fmin;
-    fmin=find_minimum_point(min_pt);
-
-    min_out[0]=fmin;
-    for(ix=0;ix<_chisq->get_dim();ix++){
-        center_out.set(ix,min_pt.get_data(ix));
-    }
-
-    find_fisher_matrix(min_pt,covar);
+    find_fisher_matrix(center_in,covar);
 
     for(ix=0;ix<_chisq->get_dim();ix++){
         for(iy=ix;iy<_chisq->get_dim();iy++){
@@ -840,10 +830,10 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
     double minVal;
 
     center.set_name("mcmc_guess_bases_center");
-
+    minVal=find_minimum_point(center);
 
     try{
-        find_fisher_eigen(temp_bases,center,&minVal);
+        find_fisher_eigen(center,temp_bases);
         for(i=0;i<_chisq->get_dim();i++){
             for(j=0;j<_chisq->get_dim();j++){
                 _bases.set(i,j,temp_bases.get_data(i,j));
