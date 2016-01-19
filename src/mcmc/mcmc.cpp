@@ -336,34 +336,29 @@ void mcmc::sample(int nSamples){
 }
 
 
-void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut, double *minOut){
-
-    array_1d<double> trial,norm;
-    trial.set_name("node_findCovar_trial");
-    norm.set_name("node_findCovar_norm");
-
+double mcmc::find_minimum_point(array_1d<double> &centerOut){
     array_1d<double> center;
     array_2d<double> seed;
     double fcenter;
     center.set_name("mcmc_find_fisher_center");
-    seed.set_name("mcmc_find_fisher_seed");
+    seed.set_name("mcmc_find_min_seed");
 
     int i,j;
     array_1d<double> min,max;
     seed.set_cols(_chisq->get_dim());
 
-    min.set_name("mcmc_find_fisher_min");
-    max.set_name("mcmc_find_fisher_max");
+    min.set_name("mcmc_find_min_min");
+    max.set_name("mcmc_find_min_max");
 
     for(i=0;i<_chisq->get_dim();i++){
-        if(_chisq->get_min(i)<exception_value){
+        if(_chisq->get_min(i)<exception_value && _chisq->get_min(i)>-1.0*exception_value){
             min.set(i,_chisq->get_min(i));
         }
         else{
             min.set(i,_guess_min.get_data(i));
         }
 
-        if(_chisq->get_max(i)>-1.0*exception_value){
+        if(_chisq->get_max(i)>-1.0*exception_value && _chisq->get_max(i)<1.0*exception_value){
             max.set(i,_chisq->get_max(i));
         }
         else{
@@ -382,13 +377,51 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     f_min.use_gradient();
     f_min.find_minimum(seed, center);
     fcenter=f_min.get_minimum();
-    minOut[0]=fcenter;
     for(i=0;i<_chisq->get_dim();i++){
         centerOut.set(i,center.get_data(i));
     }
+    return fcenter;
+}
 
 
-    double sgn;
+void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut, double *minOut){
+
+
+    minOut[0]=find_minimum_point(centerOut);
+
+    int i,j;
+    double sgn,fcenter;
+    array_1d<double> trial,norm,center;
+    trial.set_name("node_findCovar_trial");
+    norm.set_name("node_findCovar_norm");
+    center.set_name("node_findCovar_center");
+
+    array_1d<double> min,max;
+     min.set_name("mcmc_findCovar_min");
+    max.set_name("mcmc_findCovar_max");
+
+    for(i=0;i<_chisq->get_dim();i++){
+        if(_chisq->get_min(i)<exception_value){
+            min.set(i,_chisq->get_min(i));
+        }
+        else{
+            min.set(i,_guess_min.get_data(i));
+        }
+
+        if(_chisq->get_max(i)>-1.0*exception_value){
+            max.set(i,_chisq->get_max(i));
+        }
+        else{
+            max.set(i,_guess_max.get_data(i));
+        }
+
+    }
+
+    fcenter=minOut[0];
+    for(i=0;i<centerOut.get_data(i);i++){
+        center.set(i,centerOut.get_data(i));
+    }
+
     array_1d<double> temp_dir,temp_pt;
     temp_dir.set_name("mcmc_find_fisher_temp_dir");
     temp_pt.set_name("mcmc_find_fisher_temp_pt");

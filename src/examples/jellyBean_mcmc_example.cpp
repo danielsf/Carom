@@ -111,8 +111,8 @@ max.set_name("driver_max");
 min.set_name("driver_min");
 
 for(i=0;i<dim;i++){
-    min.set(i,-30.0);
-    max.set(i,30.0);
+    min.set(i,-40.0);
+    max.set(i,40.0);
 }
 
 
