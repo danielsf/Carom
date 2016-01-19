@@ -384,20 +384,16 @@ double mcmc::find_minimum_point(array_1d<double> &centerOut){
 }
 
 
-void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut, double *minOut){
-
-
-    minOut[0]=find_minimum_point(centerOut);
+void mcmc::find_fisher_matrix(array_1d<double> &center_in, array_2d<double> &covar){
 
     int i,j;
     double sgn,fcenter;
-    array_1d<double> trial,norm,center;
+    array_1d<double> trial,norm;
     trial.set_name("node_findCovar_trial");
     norm.set_name("node_findCovar_norm");
-    center.set_name("node_findCovar_center");
 
     array_1d<double> min,max;
-     min.set_name("mcmc_findCovar_min");
+    min.set_name("mcmc_findCovar_min");
     max.set_name("mcmc_findCovar_max");
 
     for(i=0;i<_chisq->get_dim();i++){
@@ -417,9 +413,11 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
 
     }
 
-    fcenter=minOut[0];
-    for(i=0;i<centerOut.get_data(i);i++){
-        center.set(i,centerOut.get_data(i));
+    fcenter=_chisq[0](center_in);
+    array_1d<double> center;
+    center.set_name("mcmc_find_fisher_center");
+    for(i=0;i<_chisq->get_dim();i++){
+        center.set(i,center_in.get_data(i));
     }
 
     array_1d<double> temp_dir,temp_pt;
@@ -703,7 +701,7 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
 }
 
 
-void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOut, double *minVal){
+void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &center_out, double *min_out){
 
     array_2d<double> covar;
     covar.set_name("mcmc_guess_bases_covar");
@@ -711,7 +709,17 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOu
     int ix,iy;
     double covarmax=-1.0;
 
-    find_fisher_matrix(covar,centerOut,minVal);
+    array_1d<double> min_pt;
+    min_pt.set_name("find_fisher_eigen_min_pt");
+    double fmin;
+    fmin=find_minimum_point(min_pt);
+
+    min_out[0]=fmin;
+    for(ix=0;ix<_chisq->get_dim();ix++){
+        center_out.set(ix,min_pt.get_data(ix));
+    }
+
+    find_fisher_matrix(min_pt,covar);
 
     for(ix=0;ix<_chisq->get_dim();ix++){
         for(iy=ix;iy<_chisq->get_dim();iy++){

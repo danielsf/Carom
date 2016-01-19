@@ -45,7 +45,7 @@ private:
     void validate_bases();
     void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
     double find_minimum_point(array_1d<double>&);
-    void find_fisher_matrix(array_2d<double>&, array_1d<double>&, double*);
+    void find_fisher_matrix(array_1d<double>&, array_2d<double>&);
     void mcmc_bisection(double, array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
 
 };
