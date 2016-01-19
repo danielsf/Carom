@@ -16,6 +16,7 @@ public:
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
+    void guess_bases(array_1d<double>&,double,int);
     void guess_bases(double,int);
     double acceptance_rate();
     double update_bases();

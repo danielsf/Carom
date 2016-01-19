@@ -820,17 +820,22 @@ void mcmc::mcmc_bisection(double deltachi, array_1d<double> &lowball_in, double 
 }
 
 void mcmc::guess_bases(double deltaChi, int seedPoints){
+    double minVal;
+    array_1d<double> center;
+    center.set_name("mcmc_guess_bases_center");
+    minVal=find_minimum_point(center);
+    guess_bases(center,deltaChi,seedPoints);
+}
+
+void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints){
 
     array_2d<double> temp_bases;
     temp_bases.set_name("mcmc_guess_bases_temp_bases");
     temp_bases.set_cols(_chisq->get_dim());
 
-    int i,j;
-    array_1d<double> center;
-    double minVal;
+    double minVal=_chisq[0](center);
 
-    center.set_name("mcmc_guess_bases_center");
-    minVal=find_minimum_point(center);
+    int i,j;
 
     try{
         find_fisher_eigen(center,temp_bases);
