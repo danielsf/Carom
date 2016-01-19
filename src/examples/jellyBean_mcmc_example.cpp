@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "mcmc/mcmc.h"
-#include "jellyBean.h"
+#include "exampleLikelihoods.h"
 
 
 int main(int iargc, char *argv[]){
@@ -16,7 +16,7 @@ double chiLimit=12.6;
 int seed=99;
 int nsamples=50000;
 int burnin=3000;
-int dim=10;
+int dim=4;
 int nChains=4;
 char nameroot[letters];
 char logname[letters];
@@ -87,9 +87,23 @@ printf("seed %d\n",seed);
 //declare the chisquared function APS will be searching
 //ellipses_integrable chisq(dim,ncenters);
 
-jellyBeanData chisq(dim,1,100,0.4,0.4,0.02,20.0);
+jellyBeanData *chisq;
 
-chisq.enable_logging();
+if(dim==4){
+    chisq=new gaussianJellyBean4;
+}
+else if(dim==12){
+    chisq=new gaussianJellyBean12;
+}
+else if(dim==24){
+    chisq=new gaussianJellyBean24;
+}
+else{
+    printf("WARNING do not know what to do with dim %d\n",dim);
+    exit(1);
+}
+
+chisq->enable_logging();
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;
@@ -102,7 +116,7 @@ for(i=0;i<dim;i++){
 }
 
 
-mcmc mcmc_test(nChains,seed,&chisq);
+mcmc mcmc_test(nChains,seed,chisq);
 for(i=0;i<dim;i++){
     mcmc_test.set_min(i,min.get_data(i));
     mcmc_test.set_max(i,max.get_data(i));
@@ -124,11 +138,11 @@ if(logname[0]!=0){
         fprintf(log_test,"p%d ",i);
     }
     fprintf(log_test,"chisq mu sig ling\n");
-    for(i=0;i<chisq.pt_log.get_rows();i++){
+    for(i=0;i<chisq->pt_log.get_rows();i++){
         for(j=0;j<dim;j++){
-            fprintf(log_test,"%.12e ",chisq.pt_log.get_data(i,j));
+            fprintf(log_test,"%.12e ",chisq->pt_log.get_data(i,j));
         }
-        fprintf(log_test,"%.12e 0 0 0\n",chisq.fn_log.get_data(i));
+        fprintf(log_test,"%.12e 0 0 0\n",chisq->fn_log.get_data(i));
     }
 }
 
