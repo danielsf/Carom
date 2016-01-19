@@ -4407,7 +4407,7 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
     delta=_chisquared->target()-_chisquared->chimin();
     double chi_new,chi_old,exp_term;
     if(_chisquared->target()<_chisquared->get_fn(i_pt)){
-        exp_term=exp(-0.1*dmu);
+        exp_term=exp(-0.1*dmu/delta);
     }
     else{
         exp_term=1.0;
@@ -4457,7 +4457,7 @@ void node::mcmc_walk(int i_start, int *i_found, int n_steps,
             dmu=fabs(mu-_chisquared->target());
 
             if(_chisquared->target()<mu){
-                exp_term=exp(-0.1*dmu);
+                exp_term=exp(-0.1*dmu/delta);
             }
             else{
                 exp_term=1.0;
@@ -4666,7 +4666,7 @@ void node::swarm_evaluate(array_1d<double> &pt, double *mu){
 
     double exp_term;
     if(_chisquared->target()<mu[0]){
-        exp_term=exp(-0.1*dmu);
+        exp_term=exp(-0.1*dmu/deltachisq);
     }
     else{
         exp_term=1.0;
