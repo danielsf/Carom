@@ -824,6 +824,7 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
     array_1d<double> center;
     center.set_name("mcmc_guess_bases_center");
     minVal=find_minimum_point(center);
+    printf("found minVal %e\n",minVal);
     guess_bases(center,deltaChi,seedPoints);
 }
 

@@ -69,7 +69,7 @@ for(i=1;i<iargc;i++){
                     logname[j]=argv[i][j];
                 }
                 logname[j]=0;
-            
+
                 break;
         }
     }
@@ -122,7 +122,35 @@ for(i=0;i<dim;i++){
     mcmc_test.set_max(i,max.get_data(i));
 }
 
+array_1d<double> guess_pt;
 if(doGuess==1){
+    /*guess_pt.set(0,-1.280762331898815987e+01);
+    guess_pt.set(1,3.843115617405354012e+00);
+    guess_pt.set(2,-2.519775847962862159e+01);
+    guess_pt.set(3,3.355540163929887409e+00);
+    guess_pt.set(4,-1.922908387893200732e+00);
+    guess_pt.set(5,2.537194900407488962e+00);
+    guess_pt.set(6,-2.516959009732638197e+00);
+    guess_pt.set(7,1.305366119640559397e+01);
+    guess_pt.set(8,-1.022685240009726604e+00);
+    guess_pt.set(9,9.789352071177765069e+00);
+    guess_pt.set(10,-9.509963639307684957e+00);
+    guess_pt.set(11,1.741218781414513117e+01);
+    guess_pt.set(12,-2.913483504016468473e+01);
+    guess_pt.set(13,-2.119019883927364489e+01);
+    guess_pt.set(14,-6.021183229708010343e-01);
+    guess_pt.set(15,5.574040528747243428e+00);
+    guess_pt.set(16,6.070909881360219806e+00);
+    guess_pt.set(17,2.289511182100715914e+00);
+    guess_pt.set(18,-4.321251923659932714e+00);
+    guess_pt.set(19,4.167919802338357349e-01);
+    guess_pt.set(20,-7.665486974048813629e+00);
+    guess_pt.set(21,-4.703327291811577382e+00);
+    guess_pt.set(22,1.311021940994296564e+01);
+    guess_pt.set(23,6.575075801015756838e+00);
+
+    printf("chi guess %e\n",chisq[0](guess_pt));
+    mcmc_test.guess_bases(guess_pt,chiLimit,1);*/
     mcmc_test.guess_bases(chiLimit,1);
 }
 mcmc_test.set_burnin(burnin);
