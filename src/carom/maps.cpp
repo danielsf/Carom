@@ -331,7 +331,8 @@ void maps::simplex_search(){
 
     _log.add(_log_simplex,i_min);
 
-    write_pts();
+    printf("   actually found %e -- %e %e\n",_chifn.get_fn(i_min),_chifn.get_pt(i_min,0), _chifn.get_pt(i_min,1));
+
     delete dchifn;
 }
 
