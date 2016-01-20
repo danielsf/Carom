@@ -249,8 +249,10 @@ void maps::simplex_search(){
 
     dchi_simplex_base *dchifn;
 
+    array_1d<int> empty;
+
     if(_calls_to_simplex==1){
-        dchifn=new dchi_multimodal_simplex(&_chifn, _good_points);
+        dchifn=new dchi_multimodal_simplex(&_chifn, empty);
     }
     else{
         dchifn=new dchi_boundary_simplex(&_chifn,_good_points);
