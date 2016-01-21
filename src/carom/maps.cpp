@@ -357,7 +357,7 @@ void maps::mcmc_search(){
             _mcmc.set_min(i,_chifn.get_min(i));
             _mcmc.set_max(i,_chifn.get_max(i));
         }
-        _mcmc.set_burnin(-1);
+        _mcmc.set_burnin(1000);
         _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0], delta, 1);
         _init_mcmc=1;
         _mcmc_basis_min=_chifn.chimin();
