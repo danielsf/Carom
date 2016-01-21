@@ -63,7 +63,7 @@ private:
 
     char _outname[letters],_timingname[letters];
 
-    array_1d<int> _good_points;
+    array_1d<int> _good_points,_duds;
 
 };
 

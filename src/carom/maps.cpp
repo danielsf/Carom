@@ -14,6 +14,7 @@ maps::maps(){
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
     _good_points.set_name("maps_good_points");
+    _duds.set_name("maps_duds");
 }
 
 maps::~maps(){
@@ -238,7 +239,7 @@ void maps::write_pts(){
 }
 
 void maps::simplex_search(){
-    printf("\ndoing maps.simplex_search()\n");
+    printf("\ndoing maps.simplex_search() -- %e %d\n",_chifn.chimin(),_duds.get_dim());
     _calls_to_simplex++;
     int pt_start=_chifn.get_pts();
 
@@ -288,6 +289,20 @@ void maps::simplex_search(){
     seed_dex.set_name("carom_simplex_search_seed_dex");
     int i_min=-1;
     double mu_min;
+
+    if(_duds.get_dim()>6){
+        printf("using duds\n");
+        for(i=0;i<_duds.get_dim() && seed.get_rows()<_chifn.get_dim();i++){
+            for(j=0;j<_chifn.get_dim();j++){
+                trial.set(j,_chifn.get_pt(_duds.get_data(i),j));
+            }
+            seed.add_row(trial);
+            seed_dex.add(_duds.get_data(i));
+            _duds.remove(i);
+            i--;
+        }
+    }
+
     while(seed.get_rows()<_chifn.get_dim()){
         for(i=0;i<_chifn.get_dim();i++){
             trial.set(i,min.get_data(i)+_chifn.random_double()*(max.get_data(i)-min.get_data(i)));
@@ -344,6 +359,11 @@ void maps::simplex_search(){
             mu_min=mu;
             i_min=i;
         }
+    }
+
+    if(_chifn.get_fn(i_min)>_chifn.target()){
+        printf("    adding to duds\n");
+        _duds.add(i_min);
     }
 
     _log.add(_log_simplex,i_min);
