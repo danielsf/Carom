@@ -296,6 +296,7 @@ void mcmc::sample(int nSamples){
 
         if(_final_ct<_burn_in){
             if(_final_ct>=_last_updated+500){
+                printf("acceptance rate %e factor %e\n",acceptance_rate(),_factor);
 
                 mu=update_bases();
                 sprintf(message,"updating bases -- dotMax %e;",mu);
@@ -332,6 +333,7 @@ void mcmc::sample(int nSamples){
                 ix=0;
             }
 
+            printf("acceptance rate %e factor %e\n",acceptance_rate(),_factor);
             write_timing(0);
             for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                 _chains(iChain)->write_chain(ix);
@@ -351,6 +353,7 @@ void mcmc::sample(int nSamples){
    }
 
     printf("done %d %d -- %d\n",_final_ct,nSamples,_chisq->get_called());
+    printf("acceptance rate %e factor %e\n",acceptance_rate(),_factor);
 
 
 }
