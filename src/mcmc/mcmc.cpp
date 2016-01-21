@@ -25,7 +25,7 @@ void mcmc::set_max(int dex, double dd){
     _guess_max.set(dex,dd);
 }
 
-void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
+void mcmc::initialize(){
     _bases.set_name("mcmc_bases");
     _sigma.set_name("mcmc_sigma");
     _guess_min.set_name("mcmc_guess_min");
@@ -37,7 +37,9 @@ void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
     _time_started=double(time(NULL));
 
     sprintf(_name_root,"chain");
+}
 
+void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
     if(seed<0){
         _dice=new Ran(int(time(NULL)));
     }
@@ -52,12 +54,21 @@ void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
 
 }
 
+mcmc::mcmc(){
+    initialize();
+}
+
 mcmc::mcmc(int nchains, int seed, function_wrapper *fn){
+    initialize();
     initialize(nchains, seed, fn);
 }
 
 void mcmc::write_timing(char *msg){
-   char name[2*letters];
+    if(_chisq==NULL){
+        printf("mcmc cannot write timing; _chisq is NULL\n");
+        exit(1);
+    }
+    char name[2*letters];
     sprintf(name,"%s_timing.txt",_name_root);
 
     FILE *output;
@@ -69,6 +80,10 @@ void mcmc::write_timing(char *msg){
 }
 
 void mcmc::write_timing(int overwrite){
+    if(_chisq==NULL){
+        printf("mcmc cannot write timing; _chisq is NULL\n");
+        exit(1);
+    }
     char name[2*letters];
     sprintf(name,"%s_timing.txt",_name_root);
 
@@ -132,6 +147,10 @@ double mcmc::acceptance_rate(){
 }
 
 double mcmc::update_bases(){
+    if(_chisq==NULL){
+        printf("mcmc cannot update bases; _chisq is NULL\n");
+        exit(1);
+    }
     array_2d<double> covar;
     covar.set_name("mcmc_update_bases_covar");
 
@@ -189,7 +208,10 @@ double mcmc::update_bases(){
 }
 
 void mcmc::sample(int nSamples){
-
+    if(_chisq==NULL){
+        printf("mcmc cannot sample; _chisq is NULL\n");
+        exit(1);
+    }
     write_timing(1);
 
     int i,j;
@@ -336,6 +358,10 @@ void mcmc::sample(int nSamples){
 
 
 double mcmc::find_minimum_point(array_1d<double> &centerOut){
+    if(_chisq==NULL){
+        printf("mcmc cannot find minimum point; _chisq is NULL\n");
+        exit(1);
+    }
     array_1d<double> center;
     array_2d<double> seed;
     double fcenter;
@@ -384,6 +410,11 @@ double mcmc::find_minimum_point(array_1d<double> &centerOut){
 
 
 void mcmc::find_fisher_matrix(array_1d<double> &center_in, array_2d<double> &covar){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot find fisher matrix; _chisq is NULL\n");
+        exit(1);
+    }
 
     int i,j;
     double sgn,fcenter;
@@ -702,6 +733,11 @@ void mcmc::find_fisher_matrix(array_1d<double> &center_in, array_2d<double> &cov
 
 void mcmc::find_fisher_eigen(array_1d<double> &center_in, array_2d<double> &bases){
 
+    if(_chisq==NULL){
+        printf("mcmc cannot find fisher eigen; _chisq is NULL\n");
+        exit(1);
+    }
+
     array_2d<double> covar;
     covar.set_name("mcmc_guess_bases_covar");
     covar.set_cols(_chisq->get_dim());
@@ -753,6 +789,11 @@ void mcmc::find_fisher_eigen(array_1d<double> &center_in, array_2d<double> &base
 }
 
 void mcmc::mcmc_bisection(double deltachi, array_1d<double> &lowball_in, double flow, array_1d<double> &dir, array_1d<double> &found){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot call bisection; _chisq is NULL\n");
+        exit(1);
+    }
 
     double target=flow+deltachi;
 
@@ -819,6 +860,10 @@ void mcmc::mcmc_bisection(double deltachi, array_1d<double> &lowball_in, double 
 }
 
 void mcmc::guess_bases(double deltaChi, int seedPoints){
+    if(_chisq==NULL){
+        printf("mcmc cannot guess bases; _chisq is NULL\n");
+        exit(1);
+    }
     double minVal;
     array_1d<double> center;
     center.set_name("mcmc_guess_bases_center");
@@ -828,6 +873,11 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
 }
 
 void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot guess bases; _chisq is NULL\n");
+        exit(1);
+    }
 
     array_2d<double> temp_bases;
     temp_bases.set_name("mcmc_guess_bases_temp_bases");
@@ -916,6 +966,10 @@ void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints
 }
 
 void mcmc::validate_bases(){
+    if(_chisq==NULL){
+        printf("mcmc cannot validate bases; _chisq is NULL\n");
+        exit(1);
+    }
     array_1d<double> temp;
     temp.set_name("mcmc_validate_bases");
 

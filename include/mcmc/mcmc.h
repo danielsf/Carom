@@ -11,7 +11,9 @@ class mcmc{
 public:
 
     ~mcmc();
+    mcmc();
     mcmc(int, int, function_wrapper*);
+    void initialize(int, int, function_wrapper*);
     void set_burnin(int);
     void set_name_root(char*);
     void set_min(int,double);
@@ -42,7 +44,7 @@ private:
 
     int _burn_in;
 
-    void initialize(int, int, function_wrapper*);
+    void initialize();
     void validate_bases();
     void find_fisher_eigen(array_1d<double>&, array_2d<double>&);
     double find_minimum_point(array_1d<double>&);
