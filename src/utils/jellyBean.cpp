@@ -384,7 +384,9 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
         }
         else{
             xx=out.get_data(ix);
-            out.set(ix,1.0+0.01*(xx-1.0));
+            if(xx>0.1){
+                out.set(ix,1.0+0.1*(xx-1.0));
+            }
         }
     }
 
