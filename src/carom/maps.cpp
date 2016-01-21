@@ -427,3 +427,82 @@ void maps::search(int limit){
 }
 
 
+int maps::bisection(int ilow, int ihigh, double target, double tol){
+    return bisection(_chifn.get_pt(ilow)[0], _chifn.get_pt(ihigh)[0], target, tol);
+}
+
+
+int maps::bisection(int iOrigin, array_1d<double> &dir, double target, double tol){
+
+    array_1d<double> highball;
+    highball.set_name("maps_bisection_dir_highball");
+    double norm=1.0;
+    double fhigh=-2.0*exception_value;
+    int i;
+    for(i=0;i<_chifn.get_dim();i++){
+        highball.set(i,_chifn.get_pt(iOrigin,i));
+    }
+
+    while(fhigh<target+tol){
+        for(i=0;i<_chifn.get_dim();i++){
+            highball.add_val(i,norm*dir.get_data(i));
+        }
+        fhigh=evaluate(highball,&i);
+        norm*=2.0;
+    }
+
+    return bisection(_chifn.get_pt(iOrigin)[0], highball, target, tol);
+}
+
+int maps::bisection(array_1d<double> &low_in, array_1d<double> &high_in,
+                    double target, double tol){
+
+
+    int i;
+    array_1d<double> trial,lowball,highball;
+    trial.set_name("maps_bisection_trial");
+    lowball.set_name("maps_bisection_trial");
+    highball.set_name("maps_bisection_trial");
+
+    for(i=0;i<_chifn.get_dim();i++){
+        lowball.set(i,low_in.get_data(i));
+        highball.set(i,high_in.get_data(i));
+    }
+
+    int iFound,iTrial;
+    double mu,dmu,muFound,dmuFound;
+
+    mu=evaluate(highball,&iFound);
+    muFound=evaluate(lowball, &iFound);
+
+    dmuFound=fabs(muFound-target);
+
+    int ct;
+
+    for(ct=0;(ct<5 || dmuFound>tol) && ct<40;ct++){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
+        }
+        mu=evaluate(trial,&iTrial);
+        if(mu<target){
+            for(i=0;i<_chifn.get_dim();i++){
+                lowball.set(i,trial.get_data(i));
+            }
+        }
+        else{
+            for(i=0;i<_chifn.get_dim();i++){
+                highball.set(i,trial.get_data(i));
+            }
+        }
+
+        dmu=fabs(mu-target);
+        if(dmu<dmuFound){
+            iFound=iTrial;
+            muFound=mu;
+            dmuFound=dmu;
+        }
+    }
+
+    return iFound;
+
+}
