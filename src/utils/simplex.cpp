@@ -164,7 +164,7 @@ double simplex_minimizer::evaluate(array_1d<double> &pt){
     _chisquared->get_called()-_called_evaluate);*/
 
     if(fval<_min_ff){
-        if(_min_ff-fval>_min_ff*1.0e-4){
+        if(_min_ff-fval>fabs(_min_ff*1.0e-4)){
             _last_found=_called_evaluate;
         }
         _min_ff=fval;
@@ -366,6 +366,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     pbar.set_name("simplex_pbar");
     buffer.set_name("simplex_buffer");
 
+    spread=_ff.get_data(_ih)-_ff.get_data(_il);
+
     while(_called_evaluate-_last_found<abort_max){
        for(i=0;i<dim;i++){
            pbar.set(i,0.0);
@@ -453,9 +455,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        if(spread<gradient_threshold &&
            _use_gradient==1 &&
            _called_evaluate>abort_max/2+_last_called_gradient){
-
            gradient_minimizer();
-
        }
 
        if(_called_evaluate-_last_found>=abort_max && !(_temp<_min_temp)){
@@ -572,7 +572,14 @@ void simplex_minimizer::gradient_minimizer(){
     array_1d<double> deviation;
     deviation.set_name("simplex_gradient_deviation");
 
-    for(i=0;i<dim+1;i++){
+    int is_safe=1;
+    for(i=0;i<dim;i++){
+        if(isnan(step.get_data(i)) || isnan(gradient.get_data(i))){
+            is_safe=0;
+        }
+    }
+
+    for(i=0;i<dim+1 && is_safe==1;i++){
         for(j=0;j<dim;j++){
             _pts.add_val(i,j,mu*step.get_data(j));
         }
