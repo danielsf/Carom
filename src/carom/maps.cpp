@@ -6,6 +6,7 @@ maps::maps(){
     _last_wrote_log=-1;
     _last_written=0;
     _ct_simplex=0;
+    _ct_simplex_min=0;
     _ct_mcmc=0;
     _init_mcmc=0;
     _calls_to_simplex=0;
@@ -238,8 +239,119 @@ void maps::write_pts(){
 
 }
 
-void maps::simplex_search(){
-    printf("\ndoing maps.simplex_search() -- %e %d\n",_chifn.chimin(),_duds.get_dim());
+void maps::simplex_min_search(){
+    printf("\ndoing maps.simplex_min_search -- min %e\n",_chifn.chimin());
+    int pt_start=_chifn.get_pts();
+
+    assess_good_points();
+
+    array_1d<int> local_associates;
+    int i;
+    if(_ct_simplex_min>0){
+        for(i=0;i<_good_points.get_dim();i++){
+            local_associates.add(_good_points.get_data(i));
+        }
+    }
+
+    dchi_multimodal_simplex dchifn(&_chifn, local_associates);
+
+    array_1d<int> seed_dex;
+    seed_dex.set_name("carom_simplex_min_search_seed_dex");
+    array_2d<double> seed;
+    seed.set_name("carom_simplex_min_search_seed");
+    seed.set_cols(_chifn.get_dim());
+
+    array_1d<double> dir;
+    dir.set_name("carom_simplex_min_search_dir");
+
+    array_2d<double> old_dir;
+    old_dir.set_name("carom_simplex_min_searc_old_dir");
+    old_dir.set_cols(_chifn.get_dim());
+
+    int iFound,i_min,i_row;
+    double mu,mu_min;
+    double target,tol,delta,component;
+
+    if(_ct_simplex_min==0){
+        seed.add_row(_chifn.get_pt(_chifn.mindex())[0]);
+        while(seed.get_rows()<_chifn.get_dim()+1){
+            for(i=0;i<_chifn.get_dim();i++){
+                dir.set(i,_chifn.get_min(i)+_chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
+            }
+            mu=evaluate(dir,&iFound);
+            if(mu<exception_value && seed_dex.contains(iFound)==0){
+                seed.add_row(dir);
+                seed_dex.add(iFound);
+            }
+        }
+    }
+    else{
+        printf("    using orthogonal dir\n");
+        delta=_chifn.target()-_chifn.chimin();
+        target=_chifn.target();
+        tol=0.05*delta;
+        i_min=-1;
+        while(seed.get_rows()<_chifn.get_dim()){
+            for(i=0;i<_chifn.get_dim();i++){
+                dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+            }
+
+            if(old_dir.get_rows()>0){
+                for(i_row=0;i_row<old_dir.get_rows();i_row++){
+                    component=0.0;
+                    for(i=0;i<_chifn.get_dim();i++){
+                        component+=dir.get_data(i)*old_dir.get_data(i_row,i);
+                    }
+                    for(i=0;i<_chifn.get_dim();i++){
+                        dir.subtract_val(i,component*old_dir.get_data(i_row,i));
+                    }
+                }
+            }
+
+            dir.normalize();
+            iFound=bisection(_chifn.mindex(),dir,target,tol);
+            if(seed_dex.contains(iFound)==0){
+                seed_dex.add(iFound);
+                seed.add_row(_chifn.get_pt(iFound)[0]);
+                old_dir.add_row(dir);
+
+                if(i_min<0 || _chifn.get_fn(iFound)<mu_min){
+                    i_min=iFound;
+                    mu_min=_chifn.get_fn(iFound);
+                }
+            }
+        }
+
+        for(i=0;i<_chifn.get_dim();i++){
+            dir.set(i,0.5*(_chifn.get_pt(_chifn.mindex(),i)+_chifn.get_pt(i_min,i)));
+        }
+        seed.add_row(dir);
+    }
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&dchifn);
+    ffmin.set_dice(_chifn.get_dice());
+    array_1d<double> min,max;
+    min.set_name("carom_simplex_search_min");
+    max.set_name("carom_simplex_search_min");
+    _chifn.get_min(min);
+    _chifn.get_max(max);
+    ffmin.set_minmax(min,max);
+    ffmin.use_gradient();
+
+    array_1d<double> minpt;
+    ffmin.find_minimum(seed,minpt);
+
+    assess_good_points(pt_start);
+
+    _ct_simplex_min+=pt_start-_chifn.get_pts();
+    printf("    min %e\n",_chifn.chimin());
+
+}
+
+
+void maps::simplex_boundary_search(){
+    printf("\ndoing maps.simplex_boundary_search() -- %e %d\n",_chifn.chimin(),_duds.get_dim());
     _calls_to_simplex++;
     int pt_start=_chifn.get_pts();
 
@@ -252,22 +364,12 @@ void maps::simplex_search(){
 
     assess_good_points();
 
-    dchi_simplex_base *dchifn;
-
     array_1d<int> empty;
 
-    if(_calls_to_simplex==1){
-        dchifn=new dchi_multimodal_simplex(&_chifn, empty);
-    }
-    else if(_calls_to_simplex%2==1){
-         dchifn=new dchi_multimodal_simplex(&_chifn,_good_points);
-    }
-    else{
-        dchifn=new dchi_boundary_simplex(&_chifn,_good_points);
-    }
+    dchi_boundary_simplex dchifn(&_chifn,_good_points);
 
     simplex_minimizer ffmin;
-    ffmin.set_chisquared(dchifn);
+    ffmin.set_chisquared(&dchifn);
     ffmin.set_dice(_chifn.get_dice());
     array_1d<double> min,max;
     min.set_name("carom_simplex_search_min");
@@ -321,13 +423,6 @@ void maps::simplex_search(){
         }
     }
 
-    if(_calls_to_simplex==1){
-        if(seed_dex.contains(_chifn.mindex())==0){
-            seed_dex.add(_chifn.mindex());
-            seed.add_row(_chifn.get_pt(_chifn.mindex())[0]);
-        }
-    }
-
     if(seed.get_rows()<_chifn.get_dim()+1){
         for(i=0;i<_chifn.get_dim();i++){
             trial.set(i,0.5*(_chifn.get_pt(i_min,i)+_chifn.get_pt(_chifn.mindex(),i)));
@@ -337,7 +432,7 @@ void maps::simplex_search(){
 
     double mu,start_min;
     for(i=0;i<seed.get_rows();i++){
-        mu=dchifn[0](seed(i)[0]);
+        mu=dchifn(seed(i)[0]);
         if(i==0 || mu<start_min){
             start_min=mu;
         }
@@ -354,7 +449,7 @@ void maps::simplex_search(){
     i_min=-1;
 
     for(i=pt_start+1;i<_chifn.get_pts();i++){
-        mu=dchifn[0](_chifn.get_pt(i)[0]);
+        mu=dchifn(_chifn.get_pt(i)[0]);
         if(i_min<0 || mu<mu_min){
             mu_min=mu;
             i_min=i;
@@ -371,11 +466,10 @@ void maps::simplex_search(){
     printf("    actually found %e -- %e %e\n",
     _chifn.get_fn(i_min),_chifn.get_pt(i_min,0), _chifn.get_pt(i_min,1));
 
-    printf("    adjusted %e\n",dchifn[0](_chifn.get_pt(i_min)[0]));
+    printf("    adjusted %e\n",dchifn(_chifn.get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",_chifn.chimin(),_chifn.target());
 
-    delete dchifn;
     _ct_simplex+=_chifn.get_pts()-pt_start;
 }
 
@@ -414,8 +508,9 @@ void maps::mcmc_search(){
 
 void maps::search(int limit){
     while(_chifn.get_pts()<limit){
-        if(_ct_simplex<=_ct_mcmc){
-            simplex_search();
+        if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
+            simplex_min_search();
+            simplex_boundary_search();
         }
         else{
             mcmc_search();

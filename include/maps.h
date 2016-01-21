@@ -31,7 +31,8 @@ public:
     void set_chisquared(chisquared*);
 
     void search(int);
-    void simplex_search();
+    void simplex_boundary_search();
+    void simplex_min_search();
     void mcmc_search();
     void write_pts();
     void write_log();
@@ -54,7 +55,7 @@ private:
 
     chisq_wrapper _chifn;
     int _write_every,_last_written;
-    int _ct_simplex,_calls_to_simplex,_ct_mcmc;
+    int _ct_simplex,_ct_simplex_min,_calls_to_simplex,_ct_mcmc;
     int _last_wrote_log;
 
     mcmc _mcmc;
