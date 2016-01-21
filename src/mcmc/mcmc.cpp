@@ -926,12 +926,12 @@ void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints
     }
 
     printf("finished guessing bases; %d\n",_chisq->get_called());
-    for(i=0;i<_chisq->get_dim();i++){
+    /*for(i=0;i<_chisq->get_dim();i++){
         printf("%.3e -- ",_sigma.get_data(i));
         for(j=0;j<_chisq->get_dim();j++)printf("%.3e ",_bases.get_data(i,j));
         printf("\n");
     }
-    printf("\n");
+    printf("\n");*/
 
     int k;
     double mu,norm;
