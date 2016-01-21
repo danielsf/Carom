@@ -217,8 +217,9 @@ void maps::write_pts(){
         output=fopen(_timingname,"a");
     }
 
-    fprintf(output,"%d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d -- ",
+    fprintf(output,"%d %d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d -- ",
         _chifn.get_pts(),
+        _chifn.get_called(),
         _chifn.chimin(),
         _chifn.target(),
         double(time(NULL))-_time_started,
