@@ -7,6 +7,7 @@
 #include "chisq_wrapper.h"
 #include "simplex.h"
 #include "search_types.h"
+#include "mcmc/mcmc.h"
 
 class maps{
 
@@ -31,6 +32,7 @@ public:
 
     void search(int);
     void simplex_search();
+    void mcmc_search();
     void write_pts();
     void write_log();
 
@@ -48,8 +50,11 @@ private:
 
     chisq_wrapper _chifn;
     int _write_every,_last_written;
-    int _ct_simplex,_calls_to_simplex;
+    int _ct_simplex,_calls_to_simplex,_ct_mcmc;
     int _last_wrote_log;
+
+    mcmc _mcmc;
+    int _init_mcmc;
 
     asymm_array_2d<int> _log;
 

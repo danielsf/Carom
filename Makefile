@@ -141,7 +141,8 @@ object/jellyBean.o include/exampleLikelihoods.h
 	$(LIBRARIES)
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
-object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h
+object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
+object/mcmc.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
@@ -149,7 +150,8 @@ object/jellyBean.o include/exampleLikelihoods.h
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/dchi_simplex.o object/maps.o object/jellyBean.o \
+	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
+        object/kde.o \
 	$(LIBRARIES)
 
 d24_test: src/examples/test_d24_chisq.cpp object/jellyBean.o \

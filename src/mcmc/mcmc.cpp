@@ -51,7 +51,7 @@ void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
     _chains.initialize(nchains,_chisq->get_dim(),_dice);
 
     _bases.set_cols(_chisq->get_dim());
-
+    write_timing(1);
 }
 
 mcmc::mcmc(){
@@ -124,7 +124,7 @@ void mcmc::set_name_root(char *word){
         _name_root[i]=word[i];
     }
     _name_root[i]=0;
-
+    write_timing(1);
 }
 
 double mcmc::acceptance_rate(){
@@ -212,7 +212,7 @@ void mcmc::sample(int nSamples){
         printf("mcmc cannot sample; _chisq is NULL\n");
         exit(1);
     }
-    write_timing(1);
+    write_timing(0);
 
     int i,j;
     if(_bases.get_rows()==0){

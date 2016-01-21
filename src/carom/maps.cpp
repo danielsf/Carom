@@ -6,6 +6,8 @@ maps::maps(){
     _last_wrote_log=-1;
     _last_written=0;
     _ct_simplex=0;
+    _ct_mcmc=0;
+    _init_mcmc=0;
     _calls_to_simplex=0;
     _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
@@ -338,11 +340,43 @@ void maps::simplex_search(){
     printf("    min is %e target %e\n",_chifn.chimin(),_chifn.target());
 
     delete dchifn;
+    _ct_simplex+=_chifn.get_pts()-pt_start;
+}
+
+void maps::mcmc_search(){
+    printf("\ndoing maps.mcmc_search\n");
+    int pt_start=_chifn.get_pts();
+
+    int i;
+
+    if(_init_mcmc==0){
+        _mcmc.initialize(_chifn.get_dim(),99,&_chifn);
+        _mcmc.set_name_root(_outname);
+        for(i=0;i<_chifn.get_dim();i++){
+            _mcmc.set_min(i,_chifn.get_min(i));
+            _mcmc.set_max(i,_chifn.get_max(i));
+        }
+        _mcmc.set_burnin(500);
+        _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0],
+                          _chifn.target()-_chifn.chimin(),
+                          1);
+        _init_mcmc=1;
+    }
+
+    _mcmc.sample(1000);
+
+    _ct_mcmc+=_chifn.get_pts()-pt_start;
+    printf("min %e target %e\n",_chifn.chimin(),_chifn.target());
 }
 
 void maps::search(int limit){
     while(_chifn.get_pts()<limit){
-        simplex_search();
+        if(_ct_simplex<=_ct_mcmc){
+            simplex_search();
+        }
+        else{
+            mcmc_search();
+        }
         if(_chifn.get_pts()-_last_written>_write_every){
             write_pts();
         }
