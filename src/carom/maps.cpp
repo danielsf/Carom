@@ -374,6 +374,8 @@ void maps::mcmc_search(){
 
     _mcmc.sample(100*_chifn.get_dim());
 
+    assess_good_points(pt_start);
+
     _ct_mcmc+=_chifn.get_pts()-pt_start;
     printf("min %e target %e\n",_chifn.chimin(),_chifn.target());
 }
