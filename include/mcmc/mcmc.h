@@ -30,7 +30,7 @@ public:
 private:
 
     arrayOfChains _chains;
-    chisquared *_chisq;
+    function_wrapper *_chisq;
     Ran *_dice;
 
     double _factor,_time_started;

@@ -26,13 +26,13 @@ public:
     virtual int get_called();
     void reset_timer();
 
-    double get_time_spent();
+    virtual double get_time_spent();
 
     void set_max(int,double);
     void set_min(int,double);
 
-    double get_min(int);
-    double get_max(int);
+    virtual double get_min(int);
+    virtual double get_max(int);
 
     void get_basis(int,array_1d<double>&);
     double get_basis(int,int);
@@ -50,7 +50,7 @@ public:
 
     int get_ncenters();
 
-    int get_dim();
+    virtual int get_dim();
 
     void enable_logging(){
         _with_logging=1;
