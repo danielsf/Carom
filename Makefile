@@ -160,6 +160,15 @@ include/exampleLikelihoods.h
 	object/jellyBean.o \
 	$(LIBRARIES)
 
+d4_test: src/examples/test_d4.cpp object/jellyBean.o \
+include/exampleLikelihoods.h
+	$(gg) -o bin/d4_test src/examples/test_d4.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/jellyBean.o \
+	$(LIBRARIES)
+
+
 ellipse_test: src/examples/ellipse_example.cpp object/carom.o \
 object/jellyBean.o
 	$(gg) -o bin/ellipse_test src/examples/ellipse_example.cpp \
