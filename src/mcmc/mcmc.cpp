@@ -12,6 +12,10 @@ then use another interval of that (sub_divided) to set _factor
 #include "mcmc/mcmc.h"
 
 mcmc::~mcmc(){
+   int iChain;
+   for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+       _chains(iChain)->write_chain(1);
+   }
    if(_dice!=NULL){
        delete _dice;
    }
@@ -350,9 +354,6 @@ void mcmc::sample(int nSamples){
 
     printf("done %d %d -- %d\n",final_ct,nSamples,_chisq->get_called());
 
-   for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-       _chains(iChain)->write_chain(1);
-   }
 
 }
 
