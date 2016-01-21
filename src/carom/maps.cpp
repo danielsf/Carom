@@ -364,8 +364,6 @@ void maps::simplex_boundary_search(){
 
     assess_good_points();
 
-    array_1d<int> empty;
-
     dchi_boundary_simplex dchifn(&_chifn,_good_points);
 
     simplex_minimizer ffmin;
