@@ -320,6 +320,15 @@ void maps::simplex_search(){
         seed.add_row(trial);
     }
 
+    double mu,start_min;
+    for(i=0;i<seed.get_rows();i++){
+        mu=dchifn[0](seed(i)[0]);
+        if(i==0 || mu<start_min){
+            start_min=mu;
+        }
+    }
+    printf("    starting from %e\n",start_min);
+
     array_1d<double> minpt;
     minpt.set_name("carom_simplex_search_minpt");
 
@@ -330,8 +339,9 @@ void maps::simplex_search(){
     i_min=-1;
 
     for(i=pt_start+1;i<_chifn.get_pts();i++){
-        if(i_min<0 || _chifn.get_fn(i)<mu_min){
-            mu_min=_chifn.get_fn(i);
+        mu=dchifn[0](_chifn.get_pt(i)[0]);
+        if(i_min<0 || mu<mu_min){
+            mu_min=mu;
             i_min=i;
         }
     }
@@ -340,6 +350,8 @@ void maps::simplex_search(){
 
     printf("    actually found %e -- %e %e\n",
     _chifn.get_fn(i_min),_chifn.get_pt(i_min,0), _chifn.get_pt(i_min,1));
+
+    printf("    adjusted %e\n",dchifn[0](_chifn.get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",_chifn.chimin(),_chifn.target());
 
