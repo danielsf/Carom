@@ -348,22 +348,27 @@ void maps::mcmc_search(){
     int pt_start=_chifn.get_pts();
 
     int i;
+    double delta=_chifn.target()-_chifn.chimin();
 
     if(_init_mcmc==0){
-        _mcmc.initialize(_chifn.get_dim(),99,&_chifn);
+        _mcmc.initialize(4,99,&_chifn);
         _mcmc.set_name_root(_outname);
         for(i=0;i<_chifn.get_dim();i++){
             _mcmc.set_min(i,_chifn.get_min(i));
             _mcmc.set_max(i,_chifn.get_max(i));
         }
-        _mcmc.set_burnin(500);
-        _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0],
-                          _chifn.target()-_chifn.chimin(),
-                          1);
+        _mcmc.set_burnin(-1);
+        _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0], delta, 1);
         _init_mcmc=1;
+        _mcmc_basis_min=_chifn.chimin();
     }
 
-    _mcmc.sample(1000);
+    if(_mcmc_basis_min-_chifn.chimin()>0.1*delta){
+        _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0], delta, 1);
+        _mcmc_basis_min=_chifn.chimin();
+    }
+
+    _mcmc.sample(100*_chifn.get_dim());
 
     _ct_mcmc+=_chifn.get_pts()-pt_start;
     printf("min %e target %e\n",_chifn.chimin(),_chifn.target());

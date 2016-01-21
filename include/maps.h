@@ -55,6 +55,7 @@ private:
 
     mcmc _mcmc;
     int _init_mcmc;
+    double _mcmc_basis_min;
 
     asymm_array_2d<int> _log;
 
