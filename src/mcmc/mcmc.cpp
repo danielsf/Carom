@@ -40,6 +40,13 @@ void mcmc::initialize(){
     _factor=2.38;
     _time_started=double(time(NULL));
 
+    _final_ct=0;
+    _last_updated=0;
+    _last_updated_factor=0;
+    _last_wrote=0;
+    _last_dumped=0;
+    _update_ct=0;
+
     sprintf(_name_root,"chain");
 }
 
@@ -239,10 +246,9 @@ void mcmc::sample(int nSamples){
     trial.set_name("mcmc_sample_trial");
     dir.set_name("mcmc_sample_dir");
 
-    int iChain,ix,iy,thinby,total_points,update_ct;
-    int final_ct,burn_ct,total_ct,last_wrote,last_assessed;
-    int last_updated,last_updated_factor,something_changed;
-    int last_dumped;
+    int iChain,ix,iy,thinby,total_points;
+    int last_assessed;
+    int something_changed;
 
     double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
@@ -254,16 +260,8 @@ void mcmc::sample(int nSamples){
         _chains(iChain)->set_chain_label(iChain);
     }
 
-    final_ct=0;
-    burn_ct=0;
-    total_ct=0;
-    last_updated=0;
-    last_updated_factor=0;
-    last_wrote=0;
-    last_dumped=0;
-    update_ct=0;
-
-    while(final_ct<nSamples){
+    int local_ct=0;
+    while(local_ct<nSamples){
         for(iChain=0;iChain<_chains.get_n_chains();iChain++){
             mu=2.0*exception_value;
             while(mu>exception_value){
@@ -291,27 +289,27 @@ void mcmc::sample(int nSamples){
             _chains(iChain)->add_point(trial,mu);
 
         }
-        total_ct++;
 
         something_changed=0;
-        final_ct++;
+        _final_ct++;
+        local_ct++;
 
-        if(final_ct<_burn_in){
-            if(final_ct>=last_updated+500){
+        if(_final_ct<_burn_in){
+            if(_final_ct>=_last_updated+500){
 
                 mu=update_bases();
                 sprintf(message,"updating bases -- dotMax %e;",mu);
                 write_timing(message);
-                last_updated=final_ct;
-                last_updated_factor=final_ct;
-                last_dumped=final_ct;
-                last_wrote=final_ct;
+                _last_updated=_final_ct;
+                _last_updated_factor=_final_ct;
+                _last_dumped=_final_ct;
+                _last_wrote=_final_ct;
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain(1);
                 }
             }
-            else if(final_ct>=last_updated_factor+100){
+            else if(_final_ct>=_last_updated_factor+100){
                 acceptance=acceptance_rate();
                 if(fabs(1.0/acceptance-3.0)>1.0){
                     if(acceptance<0.3333333){
@@ -321,14 +319,14 @@ void mcmc::sample(int nSamples){
                         _factor*=1.2;
                     }
                 }
-                last_updated_factor=final_ct;
+                _last_updated_factor=_final_ct;
 
             }
         }
-        else if(final_ct>last_wrote+1000){
-            if(final_ct>last_dumped+5000){
+        else if(_final_ct>_last_wrote+1000){
+            if(_final_ct>_last_dumped+5000){
                 ix=1;
-                last_dumped=final_ct;
+                _last_dumped=_final_ct;
             }
             else{
                 ix=0;
@@ -338,7 +336,7 @@ void mcmc::sample(int nSamples){
             for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                 _chains(iChain)->write_chain(ix);
             }
-            last_wrote=final_ct;
+            _last_wrote=_final_ct;
         }
 
         /*if(something_changed==1){
@@ -352,7 +350,7 @@ void mcmc::sample(int nSamples){
         }*/
    }
 
-    printf("done %d %d -- %d\n",final_ct,nSamples,_chisq->get_called());
+    printf("done %d %d -- %d\n",_final_ct,nSamples,_chisq->get_called());
 
 
 }

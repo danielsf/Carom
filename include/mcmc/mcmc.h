@@ -43,6 +43,8 @@ private:
     char _name_root[letters];
 
     int _burn_in;
+    int _final_ct,_last_updated,_last_updated_factor;
+    int _last_wrote,_last_dumped,_update_ct;
 
     void initialize();
     void validate_bases();
