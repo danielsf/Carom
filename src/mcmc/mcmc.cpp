@@ -25,7 +25,7 @@ void mcmc::set_max(int dex, double dd){
     _guess_max.set(dex,dd);
 }
 
-void mcmc::initialize(){
+void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
     _bases.set_name("mcmc_bases");
     _sigma.set_name("mcmc_sigma");
     _guess_min.set_name("mcmc_guess_min");
@@ -37,11 +37,6 @@ void mcmc::initialize(){
     _time_started=double(time(NULL));
 
     sprintf(_name_root,"chain");
-
-}
-
-mcmc::mcmc(int nchains, int seed, chisquared *fn){
-    initialize();
 
     if(seed<0){
         _dice=new Ran(int(time(NULL)));
@@ -55,6 +50,10 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
 
     _bases.set_cols(_chisq->get_dim());
 
+}
+
+mcmc::mcmc(int nchains, int seed, function_wrapper *fn){
+    initialize(nchains, seed, fn);
 }
 
 void mcmc::write_timing(char *msg){
