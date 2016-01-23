@@ -105,6 +105,23 @@ void chisq_wrapper::set_characteristic_length(int dex, double xx){
     _characteristic_length.set(dex,xx);
 }
 
+double chisq_wrapper::get_characteristic_length(int dex){
+    if(dex<0 || dex>=_characteristic_length.get_dim() ||
+       _characteristic_length.get_data(dex)<0.0){
+
+           if(_chifn->get_max(dex)-_chifn->get_min(dex)<exception_value){
+               return _chifn->get_max(dex)-_chifn->get_min(dex);
+           }
+           else{
+               return 1.0;
+           }
+
+   }
+
+   return _characteristic_length.get_data(dex);
+
+}
+
 void chisq_wrapper::set_deltachi(double xx){
     if(_adaptive_target!=1){
         printf("WARNING chisq_wrapper trying to set detlachi, but not an adaptive target\n");
