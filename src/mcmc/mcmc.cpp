@@ -964,7 +964,7 @@ void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints
 
         }
     }
-
+    printf("leaving guess routine\n");
 }
 
 void mcmc::validate_bases(){

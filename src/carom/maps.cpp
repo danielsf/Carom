@@ -484,7 +484,8 @@ void maps::simplex_boundary_search(){
 }
 
 void maps::mcmc_search(){
-    printf("\ndoing maps.mcmc_search\n");
+    printf("\ndoing maps.mcmc_search %d %e %d %d\n",
+    _ct_mcmc,_chifn.chimin(),_chifn.get_called(),_chifn.get_pts());
     int pt_start=_chifn.get_pts();
 
     int i;
@@ -519,6 +520,8 @@ void maps::mcmc_search(){
 void maps::search(int limit){
     while(_chifn.get_pts()<limit){
         if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
+            printf("\nchoosing simplex %d %d %d -- %d\n",
+            _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
             simplex_min_search();
             simplex_boundary_search();
         }
