@@ -352,7 +352,7 @@ void maps::simplex_min_search(){
 
     assess_good_points(pt_start);
 
-    _ct_simplex_min+=pt_start-_chifn.get_pts();
+    _ct_simplex_min+=_chifn.get_pts()-pt_start;
     printf("    min %e\n",_chifn.chimin());
 
     if(_chifn.mindex()!=pre_fmin_mindex){
