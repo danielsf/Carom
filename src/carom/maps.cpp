@@ -227,7 +227,7 @@ void maps::write_pts(){
 
     if(_last_written==0){
         output=fopen(_timingname,"w");
-        fprintf(output,"seed %d\n",_chifn.get_seed());
+        fprintf(output,"#seed %d\n",_chifn.get_seed());
     }
     else{
         output=fopen(_timingname,"a");
