@@ -493,10 +493,10 @@ void maps::simplex_boundary_search(){
         }
     }
 
-    if(_chifn.get_fn(i_min)>_chifn.target()){
+    /*if(_chifn.get_fn(i_min)>_chifn.target()){
         printf("    adding to duds\n");
         _duds.add(i_min);
-    }
+    }*/
 
     _log.add(_log_simplex,i_min);
 
