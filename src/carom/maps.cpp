@@ -304,6 +304,8 @@ void maps::simplex_min_search(){
 
     dchi_multimodal_simplex dchifn(&_chifn, empty);
 
+    array_1d<int> seed_dex;
+    seed_dex.set_name("carom_simplex_min_search_seed_dex");
     array_2d<double> seed;
     seed.set_name("carom_simplex_min_search_seed");
     seed.set_cols(_chifn.get_dim());
@@ -420,71 +422,52 @@ void maps::simplex_boundary_search(){
     seed.set_cols(_chifn.get_dim());
     int iFound;
     array_1d<double> trial;
+    array_1d<int> seed_dex;
     double ftrial;
     trial.set_name("carom_simplex_search_trial");
+    seed_dex.set_name("carom_simplex_search_seed_dex");
     int i_min=-1;
-    double mu,mu_min;
+    double mu_min;
 
-    array_1d<double> dir,previous_min,norm;
-    dir.set_name("simplex_boundary_dir");
-    previous_min.set_name("simplex_boundary_previous_min");
-    norm.set_name("simplex_boundary_norm");
-    array_2d<double> old_dir;
-    old_dir.set_name("simplex_boundary_old_dir");
-
-    for(i=0;i<_chifn.get_dim();i++){
-        norm.set(i,_chifn.get_characteristic_length(i));
-    }
-
-    for(i=0;i<100;i++){
-        for(j=0;j<_chifn.get_dim();j++){
-            trial.set(j,_chifn.get_min(j)+_chifn.random_double()*(_chifn.get_max(j)-_chifn.get_min(j)));
-        }
-        mu=dchifn(trial);
-        if(i==0 || mu<mu_min){
+    if(_duds.get_dim()>6){
+        printf("using duds\n");
+        for(i=0;i<_duds.get_dim() && seed.get_rows()<_chifn.get_dim();i++){
             for(j=0;j<_chifn.get_dim();j++){
-                previous_min.set(j,trial.get_data(j));
-            }
-            mu_min=mu;
-        }
-    }
-
-    seed.add_row(previous_min);
-    for(i=0;i<_chifn.get_dim();i++){
-        dir.set(i,(_chifn.get_pt(_chifn.mindex(),i)-previous_min.get_data(i))/norm.get_data(i));
-    }
-    for(i=0;i<_chifn.get_dim();i++){
-        trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+1.5*dir.get_data(i)*norm.get_data(i));
-    }
-    seed.add_row(trial);
-    double rr,component;
-    rr=dir.normalize();
-    old_dir.add_row(dir);
-
-    while(seed.get_rows()<_chifn.get_dim()+1){
-        for(i=0;i<_chifn.get_dim();i++){
-            dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
-        }
-        for(i=0;i<old_dir.get_rows();i++){
-            component=0.0;
-            for(j=0;j<_chifn.get_dim();j++){
-                component+=dir.get_data(j)*old_dir.get_data(i,j);
-            }
-            for(j=0;j<_chifn.get_dim();j++){
-                dir.subtract_val(j,component*old_dir.get_data(i,j));
-            }
-        }
-        
-        component=dir.normalize();
-        if(component>1.0e-10){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+rr*norm.get_data(i)*(old_dir.get_data(0,i)+0.1*dir.get_data(i)));
+                trial.set(j,_chifn.get_pt(_duds.get_data(i),j));
             }
             seed.add_row(trial);
+            seed_dex.add(_duds.get_data(i));
+            _duds.remove(i);
+            i--;
         }
     }
 
-    double start_min;
+    while(seed.get_rows()<_chifn.get_dim()){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,min.get_data(i)+_chifn.random_double()*(max.get_data(i)-min.get_data(i)));
+        }
+        ftrial=evaluate(trial,&iFound);
+
+        if(ftrial<exception_value){
+            if(seed_dex.contains(iFound)==0){
+                seed_dex.add(iFound);
+                seed.add_row(trial);
+                if(i_min<0 || ftrial<mu_min){
+                    i_min=iFound;
+                    mu_min=ftrial;
+                }
+            }
+        }
+    }
+
+    if(seed.get_rows()<_chifn.get_dim()+1){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,0.5*(_chifn.get_pt(i_min,i)+_chifn.get_pt(_chifn.mindex(),i)));
+        }
+        seed.add_row(trial);
+    }
+
+    double mu,start_min;
     for(i=0;i<seed.get_rows();i++){
         mu=dchifn(seed(i)[0]);
         if(i==0 || mu<start_min){
