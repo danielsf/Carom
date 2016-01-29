@@ -519,15 +519,15 @@ void maps::mcmc_search(){
 
 void maps::search(int limit){
     while(_chifn.get_pts()<limit){
-        if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
+        //if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
             printf("\nchoosing simplex %d %d %d -- %d\n",
             _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
             simplex_min_search();
             simplex_boundary_search();
-        }
-        else{
-            mcmc_search();
-        }
+        //}
+        //else{
+        //    mcmc_search();
+        //}
         if(_chifn.get_pts()-_last_written>_write_every){
             write_pts();
         }
