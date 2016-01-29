@@ -908,6 +908,8 @@ void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints
 
     int ix;
     double sgn,dd,d;
+    double min_sigma=2.0*exception_value;
+    double max_sigma=-2.0*exception_value;
     for(ix=0;ix<_chisq->get_dim();ix++){
         dd=0.0;
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
@@ -923,10 +925,27 @@ void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints
             dd+=sqrt(d);
 
         }
-        _sigma.set(ix,dd);
+
+        if(fabs(dd)>1.0e-10){
+            _sigma.set(ix,dd);
+        }
+        else{
+            _sigma.set(ix,1.0);
+        }
+
+        if(dd<min_sigma){
+            min_sigma=dd;
+        }
+        if(dd>max_sigma){
+            max_sigma=dd;
+        }
     }
 
-    printf("finished guessing bases; %d\n",_chisq->get_called());
+    printf("finished guessing bases; %d; %e < sigma < %e\n",
+    _chisq->get_called(),min_sigma,max_sigma);
+
+    validate_bases();
+
     /*for(i=0;i<_chisq->get_dim();i++){
         printf("%.3e -- ",_sigma.get_data(i));
         for(j=0;j<_chisq->get_dim();j++)printf("%.3e ",_bases.get_data(i,j));
