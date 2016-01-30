@@ -140,6 +140,18 @@ object/jellyBean.o include/exampleLikelihoods.h
 	object/dchi_simplex.o object/node.o object/carom.o object/jellyBean.o \
 	$(LIBRARIES)
 
+object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
+object/wrappers.o
+	$(gg) -c -o object/gp.o src/utils/gp.cpp
+
+test_gp: src/tests/test_gp.cpp object/gp.o object/jellyBean.o \
+include/exampleLikelihoods.h object/chisq_wrapper.o
+	$(gg) -o bin/test_gp src/tests/test_gp.cpp object/goto_tools.o \
+	object/containers.o \
+	object/wrappers.o object/eigen_wrapper.o object/kd.o object/gp.o \
+	object/chisq_wrapper.o object/chisq.o object/jellyBean.o \
+	$(LIBRARIES)
+
 object/maps.o: src/carom/maps.cpp include/maps.h \
 object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
 object/mcmc.o
