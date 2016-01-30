@@ -554,10 +554,10 @@ void maps::search(int limit){
         //if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
             printf("\nchoosing simplex %d %d %d -- %d\n",
             _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
+            simplex_boundary_search();
+            simplex_boundary_search();
+            simplex_boundary_search();
             simplex_min_search();
-            simplex_boundary_search();
-            simplex_boundary_search();
-            simplex_boundary_search();
         //}
         //else{
         //    mcmc_search();
