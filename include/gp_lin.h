@@ -1,15 +1,15 @@
-#ifndef GP_H
-#define GP_H
+#ifndef GP_LIN_H
+#define GP_LIN_H
 
 #include "wrappers.h"
 #include "eigen_wrapper.h"
 #include "kd.h"
 
-class gp : public function_wrapper{
+class gp_lin : public function_wrapper{
 
     public:
-        ~gp(){}
-        gp(){
+        ~gp_lin(){}
+        gp_lin(){
             _fn.set_name("gp_fn");
             _dexes.set_name("gp_dexes");
             _covarin.set_name("gp_covarin");
@@ -33,10 +33,6 @@ class gp : public function_wrapper{
 
         array_2d<double> _covarin;
         array_1d<int> _dexes;
-
-        void _set_covarin();
-        double _covariogram(array_1d<double>&, array_1d<double>&);
-
 
 };
 

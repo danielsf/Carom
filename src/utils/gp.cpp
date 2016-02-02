@@ -25,11 +25,27 @@ double gp::operator()(array_1d<double> &pt){
     local_distance.set_name("gp_operator_local_distance");
 
     _kd.nn_srch(pt, _nn, local_dex, local_distance);
-    printf("\n    nearest dd %e -- %e\n",
-    local_distance.get_data(0),_fn.get_data(local_dex.get_data(0)));
-    printf("    mid fn %e\n",_fn.get_data(local_dex.get_data(_nn/2)));
 
-    int i;
+    int i,j;
+
+    array_1d<double> distance,distance_sorted;
+    array_1d<int> distance_dex;
+    int ct=0;
+    for(i=0;i<_nn;i++){
+        for(j=i+1;j<_nn;j++){
+            distance.add(_kd.distance(local_dex.get_data(i), local_dex.get_data(j)));
+            distance_dex.add(ct);
+            ct++;
+        }
+    }
+
+    sort_and_check(distance,distance_sorted,distance_dex);
+    _ell=_ell_factor*distance_sorted.get_data(ct/2);
+
+    //printf("\n    nearest dd %e -- %e\n",
+    //local_distance.get_data(0),_fn.get_data(local_dex.get_data(0)));
+    //printf("    mid fn %e\n",_fn.get_data(local_dex.get_data(_nn/2)));
+
     int use_it=0;
     if(_dexes.get_dim()!=local_dex.get_dim()){
         use_it=1;
@@ -57,7 +73,6 @@ double gp::operator()(array_1d<double> &pt){
     }
 
     double ans=_fbar;
-    int j;
     for(i=0;i<_dexes.get_dim();i++){
         for(j=0;j<_dexes.get_dim();j++){
             ans+=_covarin.get_data(i,j)*gq.get_data(i)*(_fn.get_data(_dexes.get_data(j))-_fbar);
@@ -72,35 +87,10 @@ void gp::_set_covarin(){
     _fbar=0.0;
     int i,j,ct;
 
-    array_1d<double> distance,sorted_distance;
-    array_1d<int> distance_dex;
-    distance.set_name("gp_set_covarin_distance");
-    sorted_distance.set_name("gp_set_covarin_sorted_distance");
-    distance_dex.set_name("gp_set_covarin_distance_dex");
-    ct=0;
     for(i=0;i<_dexes.get_dim();i++){
-        for(j=i+1;j<_dexes.get_dim();j++){
-            ct++;
-            distance.add(_kd.distance(_dexes.get_data(i), _dexes.get_data(j)));
-            distance_dex.add(ct);
-        }
+        _fbar+=_fn.get_data(_dexes.get_data(i));
     }
-
-    sort_and_check(distance, sorted_distance, distance_dex);
-    _ell=_ell_factor*sorted_distance.get_data(distance.get_dim()/2);
-    //_ell=sorted_distance.get_data(20);
-    printf("    ell %e\n",_ell);
-
- 
-    distance.reset_preserving_room();
-    sorted_distance.reset_preserving_room();
-    distance_dex.reset_preserving_room();
-    for(i=0;i<_dexes.get_dim();i++){
-        distance.set(i,_fn.get_data(_dexes.get_data(i)));
-        distance_dex.set(i,i);
-    }
-    sort_and_check(distance,sorted_distance,distance_dex);
-    _fbar=sorted_distance.get_data(distance.get_dim()/2);
+    _fbar=_fbar/double(_dexes.get_dim());
  
     array_2d<double> covar;
     covar.set_cols(_dexes.get_dim());
@@ -139,10 +129,10 @@ void gp::_set_covarin(){
 
     sort_and_check(terms,sorted_terms,term_dexes);
 
-    printf("    fb %e\n",_fbar);
-    printf("    minterm %e\n",minterm);
-    printf("    maxterm %e\n",maxterm);
-    printf("    medterm %e\n",sorted_terms.get_data(term_dexes.get_dim()/2));
+    //printf("    fb %e\n",_fbar);
+    //printf("    minterm %e\n",minterm);
+    //printf("    maxterm %e\n",maxterm);
+    //printf("    medterm %e\n",sorted_terms.get_data(term_dexes.get_dim()/2));
 
 }
 
@@ -150,4 +140,39 @@ void gp::_set_covarin(){
 double gp::_covariogram(array_1d<double> &p1, array_1d<double> &p2){
     double dd=_kd.distance(p1,p2);
     return exp(-0.5*dd/_ell);
+}
+
+
+void gp::optimize(array_2d<double> &pts, array_1d<double> &ff){
+
+    double log_ell,ell_best;
+    double cost,cost_best,ln10;
+    int i;
+    array_1d<double> cost_arr,cost_sorted;
+    array_1d<int> cost_dex;
+    cost_best=2.0*exception_value;
+    ell_best=-1.0;
+    ln10=log(10.0);
+    for(log_ell=-1.0;log_ell<3.0;log_ell+=0.5){
+        _ell_factor=exp(ln10*log_ell);
+        for(i=0;i<pts.get_rows();i++){
+            cost=fabs(this[0](pts(i)[0])-ff.get_data(i))/ff.get_data(i);
+            cost_arr.set(i,cost);
+            cost_dex.set(i,i);
+        }
+        sort_and_check(cost_arr,cost_sorted,cost_dex);
+        cost=cost_sorted.get_data(pts.get_rows()/2);
+        if(cost<cost_best || ell_best<0.0){
+             //printf("   best cost %e best ell %e\n",cost,_ell);
+             cost_best=cost;
+             ell_best=_ell_factor;
+        }
+        printf("    cost %.2e min %.2e quart %.2e ell %.2e\n",
+        cost,cost_sorted.get_data(0),
+        cost_sorted.get_data(pts.get_rows()/4),_ell_factor);
+    }
+
+    printf("    best cost %e ell %e\n",cost_best,ell_best);
+    _ell_factor=ell_best;
+
 }

@@ -144,12 +144,18 @@ object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
 object/wrappers.o
 	$(gg) -c -o object/gp.o src/utils/gp.cpp
 
+
+object/gp_lin.o: src/utils/gp_lin.cpp include/gp_lin.h object/kd.o object/eigen_wrapper.o \
+object/wrappers.o
+	$(gg) -c -o object/gp_lin.o src/utils/gp_lin.cpp
+
 test_gp: src/tests/test_gp.cpp object/gp.o object/jellyBean.o \
-include/exampleLikelihoods.h object/chisq_wrapper.o
+include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
 	$(gg) -o bin/test_gp src/tests/test_gp.cpp object/goto_tools.o \
 	object/containers.o \
 	object/wrappers.o object/eigen_wrapper.o object/kd.o object/gp.o \
 	object/chisq_wrapper.o object/chisq.o object/jellyBean.o \
+        object/gp_lin.o \
 	$(LIBRARIES)
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
