@@ -146,7 +146,7 @@ double gp::_covariogram(array_1d<double> &p1, array_1d<double> &p2){
 void gp::optimize(array_2d<double> &pts, array_1d<double> &ff){
 
     double log_ell,ell_best;
-    double cost,cost_best,ln10;
+    double cost,cost_best,ln10,val;
     int i;
     array_1d<double> cost_arr,cost_sorted;
     array_1d<int> cost_dex;
@@ -156,7 +156,13 @@ void gp::optimize(array_2d<double> &pts, array_1d<double> &ff){
     for(log_ell=-1.0;log_ell<3.0;log_ell+=0.5){
         _ell_factor=exp(ln10*log_ell);
         for(i=0;i<pts.get_rows();i++){
-            cost=fabs(this[0](pts(i)[0])-ff.get_data(i))/ff.get_data(i);
+            val=this[0](pts(i)[0]);
+            if(fabs(ff.get_data(i))<fabs(val)){
+                cost=fabs((val-ff.get_data(i))/ff.get_data(i));
+            }
+            else{
+                cost=fabs((val-ff.get_data(i))/val);
+            }
             cost_arr.set(i,cost);
             cost_dex.set(i,i);
         }

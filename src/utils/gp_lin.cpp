@@ -126,7 +126,12 @@ void gp_lin::optimize(array_2d<double> &pts, array_1d<double> &ff){
         _ell_factor=exp(ln10*log_ell);
         for(i=0;i<pts.get_rows();i++){
             mu=this[0](pts(i)[0]);
-            dmu=fabs(mu-ff.get_data(i))/ff.get_data(i);
+            if(fabs(ff.get_data(i))<fabs(mu)){
+                dmu=fabs((mu-ff.get_data(i))/ff.get_data(i));
+            }
+            else{
+                dmu=fabs((mu-ff.get_data(i))/mu);
+            }
             cost_arr.set(i,dmu);
             cost_dex.set(i,i);
             if(dmu>worst_dmu){
