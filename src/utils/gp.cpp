@@ -153,7 +153,7 @@ void gp::optimize(array_2d<double> &pts, array_1d<double> &ff){
     cost_best=2.0*exception_value;
     ell_best=-1.0;
     ln10=log(10.0);
-    for(log_ell=-1.0;log_ell<3.0;log_ell+=0.5){
+    for(log_ell=-1.0;log_ell<5.0;log_ell+=0.25){
         _ell_factor=exp(ln10*log_ell);
         for(i=0;i<pts.get_rows();i++){
             val=this[0](pts(i)[0]);
