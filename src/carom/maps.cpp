@@ -483,6 +483,7 @@ void maps::simplex_boundary_search(){
     _chifn.get_fn(i_min),_chifn.get_pt(i_min,0), _chifn.get_pt(i_min,1));
 
     printf("    adjusted %e\n",dchifn(_chifn.get_pt(i_min)[0]));
+    printf("    interpolated %e\n",_interpolator(_chifn.get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",_chifn.chimin(),_chifn.target());
 

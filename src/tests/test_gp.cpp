@@ -20,7 +20,7 @@ int main(){
         gmin.set(i,0.0);
         gmax.set(i,1.0);
     }
-    for(i=0;i<30000;i++){
+    for(i=0;i<5000;i++){
         for(j=0;j<dim;j++){
             trial.set(j,min.get_data(j)+dice.doub()*(max.get_data(j)-min.get_data(j)));
         }
@@ -36,16 +36,16 @@ int main(){
     array_2d<double> test_set;
     array_1d<double> test_ff;
     test_set.set_cols(dim);
-    for(i=0;i<10000;i++){
+    for(i=0;i<5000;i++){
         for(j=0;j<dim;j++){
             trial.set(j,min.get_data(j)+dice.doub()*(max.get_data(j)-min.get_data(j)));
         }
         test_ff.add(chifn(trial));
         test_set.add_row(trial);
     }
-    //gg.optimize(test_set,test_ff);
-    //printf("\nnow lin\n");
-    //gg_lin.optimize(test_set,test_ff);
+    gg.optimize(test_set,test_ff);
+    printf("\nnow lin\n");
+    gg_lin.optimize(test_set,test_ff);
     gg.set_ell_factor(5.623414e4);
     gg_lin.set_ell_factor(10.0);
 
