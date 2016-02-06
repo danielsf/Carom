@@ -6,6 +6,9 @@
 #include "eigen_wrapper.h"
 #include "chisq_wrapper.h"
 #include "simplex.h"
+#include "gp_lin.h"
+#include "dchi_simplex.h"
+#include "dchi_simplex_gp.h"
 #include "search_types.h"
 #include "mcmc/mcmc.h"
 
@@ -54,6 +57,7 @@ public:
 private:
 
     chisq_wrapper _chifn;
+    gp_lin _interpolator;
     int _write_every,_last_written;
     int _ct_simplex,_ct_simplex_min,_calls_to_simplex,_ct_mcmc;
     int _last_wrote_log;

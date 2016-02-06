@@ -1,5 +1,4 @@
 #include "maps.h"
-#include "dchi_simplex.h"
 
 maps::maps(){
     _write_every=3000;
@@ -127,6 +126,7 @@ void maps::set_timingname(char *nn){
 void maps::initialize(int npts){
     _chifn.initialize(npts);
     assess_good_points(0);
+    _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
     write_pts();
 }
 
@@ -403,7 +403,7 @@ void maps::simplex_boundary_search(){
 
     assess_good_points();
 
-    dchi_boundary_simplex dchifn(&_chifn,_good_points);
+    dchi_boundary_simplex_gp dchifn(&_chifn,&_interpolator,_good_points);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -428,19 +428,6 @@ void maps::simplex_boundary_search(){
     seed_dex.set_name("carom_simplex_search_seed_dex");
     int i_min=-1;
     double mu_min;
-
-    if(_duds.get_dim()>6){
-        printf("using duds\n");
-        for(i=0;i<_duds.get_dim() && seed.get_rows()<_chifn.get_dim();i++){
-            for(j=0;j<_chifn.get_dim();j++){
-                trial.set(j,_chifn.get_pt(_duds.get_data(i),j));
-            }
-            seed.add_row(trial);
-            seed_dex.add(_duds.get_data(i));
-            _duds.remove(i);
-            i--;
-        }
-    }
 
     while(seed.get_rows()<_chifn.get_dim()){
         for(i=0;i<_chifn.get_dim();i++){
@@ -481,22 +468,9 @@ void maps::simplex_boundary_search(){
 
     ffmin.find_minimum(seed,minpt);
 
+    mu=evaluate(minpt, &i_min);
+
     assess_good_points(pt_start);
-
-    i_min=-1;
-
-    for(i=pt_start+1;i<_chifn.get_pts();i++){
-        mu=dchifn(_chifn.get_pt(i)[0]);
-        if(i_min<0 || mu<mu_min){
-            mu_min=mu;
-            i_min=i;
-        }
-    }
-
-    /*if(_chifn.get_fn(i_min)>_chifn.target()){
-        printf("    adding to duds\n");
-        _duds.add(i_min);
-    }*/
 
     _log.add(_log_simplex,i_min);
 
@@ -554,10 +528,13 @@ void maps::search(int limit){
         //if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
             printf("\nchoosing simplex %d %d %d -- %d\n",
             _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
-            simplex_boundary_search();
-            simplex_boundary_search();
-            simplex_boundary_search();
-            simplex_min_search();
+
+            if(_ct_simplex<_ct_simplex_min){
+                simplex_boundary_search();
+            }
+            else{
+                simplex_min_search();
+            }
         //}
         //else{
         //    mcmc_search();

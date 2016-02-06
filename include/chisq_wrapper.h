@@ -75,6 +75,7 @@ public:
     int get_seed();
 
     kd_tree* get_tree();
+    array_1d<double>* get_fn_arr();
 
 private:
     double _chimin,_deltachi,_target,_ddmin;

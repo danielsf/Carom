@@ -464,6 +464,11 @@ kd_tree* chisq_wrapper::get_tree(){
     return _kptr;
 }
 
+array_1d<double>* chisq_wrapper::get_fn_arr(){
+    is_it_safe("get_fn_arr");
+    return &_fn;
+}
+
 double chisq_wrapper::get_min(int dex){
     if(dex<0 or dex>=_range_min.get_dim()){
         printf("WARNING asked chisq_wrapper for min %d of %d\n",
