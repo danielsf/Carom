@@ -6,11 +6,11 @@ int main(){
 
     Ran dice(42);
 
-    gaussianJellyBean24 chifn;
+    gaussianJellyBean4 chifn;
 
     array_2d<double> points;
     array_1d<double> fn,max,min,gmax,gmin,trial;
-    int dim=24;
+    int dim=4;
     points.set_cols(dim);
 
     int i,j;
