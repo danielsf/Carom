@@ -3,18 +3,44 @@
 void gp_lin::build(array_2d<double> &pt_in, array_1d<double> &fn_in,
                array_1d<double> &min_in, array_1d<double> &max_in){
 
-    int i;
-    for(i=0;i<fn_in.get_dim();i++){
-        _fn.set(i,fn_in.get_data(i));
+    if(_kd!=NULL){
+        printf("WARNING cannot build _kd; is not NULL\n");
+        exit(1);
     }
 
-    _kd.build_tree(pt_in,min_in,max_in);
+    if(_fn!=NULL){
+        printf("WARNING cannot build _fn; is not NULL\n");
+        exit(1);
+    }
+
+    _kd=new kd_tree;
+    _fn=new array_1d<double>;
+
+    _fn->set_name("gp_lin_fn");
+
+    int i;
+    for(i=0;i<fn_in.get_dim();i++){
+        _fn->set(i,fn_in.get_data(i));
+    }
+
+    _kd->build_tree(pt_in,min_in,max_in);
+
+    _built_here=1;
 
 }
 
 void gp_lin::add_pt(array_1d<double> &pt, double ff){
-    _kd.add(pt);
-    _fn.add(ff);
+    if(_built_here==0){
+        printf("cannot call gp_lin::add_pt; kd tree was not built here\n");
+        exit(1);
+    }
+
+    if(_kd==NULL || _fn==NULL){
+        printf("cannot call gp_lin::add_pt; null pointers\n");
+        exit(1);
+    }
+    _kd->add(pt);
+    _fn->add(ff);
 }
 
 double gp_lin::operator()(array_1d<double> &pt){
@@ -24,7 +50,7 @@ double gp_lin::operator()(array_1d<double> &pt){
     array_1d<double> local_distance;
     local_distance.set_name("gp_operator_local_distance");
 
-    _kd.nn_srch(pt, _nn, local_dex, local_distance);
+    _kd->nn_srch(pt, _nn, local_dex, local_distance);
 
     array_1d<double> dir,mu,trial;
     dir.set_name("operator_dir");
@@ -35,7 +61,7 @@ double gp_lin::operator()(array_1d<double> &pt){
     int p1,p2;
     double d1,d2;
     double dd,dmu,slope,aa,denom;
-    
+
 
     array_1d<double> distance,distance_sorted;
     array_1d<int> distance_dex;
@@ -51,28 +77,28 @@ double gp_lin::operator()(array_1d<double> &pt){
         for(ix2=ix1+1;ix2<local_dex.get_dim();ix2++){
             p2=local_dex.get_data(ix2);
             for(i=0;i<pt.get_dim();i++){
-                dir.set(i,_kd.get_pt(p2,i)-_kd.get_pt(p1,i));
+                dir.set(i,_kd->get_pt(p2,i)-_kd->get_pt(p1,i));
             }
             dd=dir.normalize();
-            dmu=_fn.get_data(p2)-_fn.get_data(p1);
+            dmu=_fn->get_data(p2)-_fn->get_data(p1);
             slope=dmu/dd;
             aa=0.0;
             denom=0.0;
             for(i=0;i<pt.get_dim();i++){
                 denom+=dir.get_data(i)*dir.get_data(i);
-                aa+=dir.get_data(i)*(pt.get_data(i)-_kd.get_pt(p1,i));
+                aa+=dir.get_data(i)*(pt.get_data(i)-_kd->get_pt(p1,i));
             }
             aa=aa/denom;
-            mu.add(_fn.get_data(p1)+slope*aa);
+            mu.add(_fn->get_data(p1)+slope*aa);
             mu_dex.add(mu.get_dim()-1);
             dd=0.0;
             for(i=0;i<pt.get_dim();i++){
-                trial.set(i,_kd.get_pt(p1,i)+aa*dir.get_data(i));
+                trial.set(i,_kd->get_pt(p1,i)+aa*dir.get_data(i));
             }
-            dd=_kd.distance(pt,trial);
-            /*dd+=_kd.distance(p1,p2);
-            d1=_kd.distance(p1,pt);
-            d2=_kd.distance(p2,pt);
+            dd=_kd->distance(pt,trial);
+            /*dd+=_kd->distance(p1,p2);
+            d1=_kd->distance(p1,pt);
+            d2=_kd->distance(p2,pt);
             if(d1<d2){
                 dd+=d1;
             }
@@ -98,13 +124,13 @@ double gp_lin::operator()(array_1d<double> &pt){
         total_wgt+=ww;
         wgt.add(ww);
     }
-    
+
 
     double sum=0.0;
     for(i=0;i<mu.get_dim()-1 && sum<total_wgt*0.5;i++){
         sum+=wgt.get_data(mu_dex.get_data(i));
     }
-    
+
     return mu_sorted.get_data(i);
 
 }
