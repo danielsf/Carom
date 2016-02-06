@@ -21,6 +21,9 @@ class gp : public function_wrapper{
         void add_pt(array_1d<double>&, double);
         virtual double operator()(array_1d<double>&);
         void optimize(array_2d<double>&, array_1d<double>&);
+        void set_ell_factor(double nn){
+            _ell_factor=nn;
+        }
 
 
     private:
