@@ -468,11 +468,22 @@ void maps::simplex_boundary_search(){
 
     ffmin.find_minimum(seed,minpt);
 
+    double interp_val=_interpolator(minpt);
+
     mu=evaluate(minpt, &i_min);
 
-    assess_good_points(pt_start);
+    printf("    interp %e actual %e -- %e\n",interp_val,_interpolator(minpt),mu);
 
-    _log.add(_log_simplex,i_min);
+    if(i_min<0){
+        i_min=bisection(_chifn.get_pt(_chifn.mindex())[0],minpt,_chifn.target(),0.1);
+        printf("    set i_min to %d\n",i_min);
+    }
+    else{
+        _log.add(_log_simplex,i_min);
+    }
+
+
+    assess_good_points(pt_start);
 
     double tol=0.01*(_chifn.target()-_chifn.chimin());
     if(_chifn.get_fn(i_min)-_chifn.target()>tol){
