@@ -45,6 +45,17 @@ void gp_lin::add_pt(array_1d<double> &pt, double ff){
 
 double gp_lin::operator()(array_1d<double> &pt){
 
+    int i;
+
+    if(_fn->get_dim()>_pt_when_mindex){
+        for(i=_pt_when_mindex;i<_fn->get_dim();i++){
+            if(_fn->get_data(i)<_fn->get_data(_mindex)){
+                _mindex=i;
+            }
+        }
+        _pt_when_mindex=_fn->get_dim();
+    }
+
     array_1d<int> local_dex;
     local_dex.set_name("gp_operator_local_dex");
     array_1d<double> local_distance;
@@ -52,12 +63,16 @@ double gp_lin::operator()(array_1d<double> &pt){
 
     _kd->nn_srch(pt, _nn, local_dex, local_distance);
 
+    if(local_dex.contains(_mindex)==0){
+        local_dex.add(_mindex);
+    }
+
     array_1d<double> dir,mu,trial;
     dir.set_name("operator_dir");
     mu.set_name("operator_mu");
     trial.set_name("operator_trial");
 
-    int i,ix1,ix2;
+    int ix1,ix2;
     int p1,p2;
     double d1,d2;
     double dd,dmu,slope,aa,denom;

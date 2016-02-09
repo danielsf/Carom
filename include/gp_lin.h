@@ -29,6 +29,8 @@ class gp_lin : public function_wrapper{
             _ell_factor=0.1;
             _nn=40;
             _nugget=1.0e-4;
+            _mindex=0;
+            _pt_when_mindex=0;
         }
 
         void build(array_2d<double>&, array_1d<double>&, array_1d<double>&, array_1d<double>&);
@@ -71,6 +73,8 @@ class gp_lin : public function_wrapper{
 
         array_2d<double> _covarin;
         array_1d<int> _dexes;
+
+        int _mindex,_pt_when_mindex;
 
 };
 
