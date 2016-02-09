@@ -268,8 +268,10 @@ void maps::simplex_min_search(){
         norm.set(i,_chifn.get_characteristic_length(i));
     }
 
+    int chosen_dud;
+
     previous_mindex=-1;
-    if(local_associates.get_dim()<2){
+    if(_duds.get_dim()<1){
         for(i=_last_did_min;i<_chifn.get_pts();i++){
             if(i!=_chifn.mindex()){
                 if(previous_mindex<0 || _chifn.get_fn(i)<mu_previous_min){
@@ -280,18 +282,14 @@ void maps::simplex_min_search(){
         }
     }
     else{
-        for(i=0;i<local_associates.get_dim();i++){
-            if(local_associates.get_data(i)!=_chifn.mindex()){
-                mu=0.0;
-                for(j=0;j<_chifn.get_dim();j++){
-                    mu+=power((_chifn.get_pt(_chifn.mindex(),j)-_chifn.get_pt(local_associates.get_data(i),j))/norm.get_data(j),2);
-                }
-                if(previous_mindex<0 || mu>mu_previous_min){
-                    previous_mindex=local_associates.get_data(i);
-                    mu_previous_min=mu;
-                }
+        for(i=0;i<_duds.get_dim();i++){
+            if(previous_mindex<0 || _chifn.get_fn(_duds.get_data(i))<_chifn.get_fn(previous_mindex)){
+                previous_mindex=_duds.get_data(i);
+                chosen_dud=i;
             }
         }
+
+        _duds.remove(chosen_dud);
     }
 
     if(previous_mindex<0){
@@ -471,6 +469,10 @@ void maps::simplex_boundary_search(){
     double interp_val=_interpolator(minpt);
 
     mu=evaluate(minpt, &i_min);
+
+    if(i_min>=0){
+        _duds.add(i_min);
+    }
 
     printf("    interp %e actual %e -- %e\n",interp_val,_interpolator(minpt),mu);
 
