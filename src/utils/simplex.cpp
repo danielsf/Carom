@@ -106,7 +106,7 @@ void simplex_minimizer::find_il(){
        if(i==0 || _ff.get_data(i)>_ff.get_data(_ih))_ih=i;
    }
 
-   _min_ff=_ff.get_data(_il);
+   //_min_ff=_ff.get_data(_il);
    //printf("    find_il set min %e %d\n",_min_ff,_il);
    /*double mu;
    mu=evaluate(_pts(_il)[0]);
