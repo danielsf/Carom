@@ -6,7 +6,6 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
 
     _called=0;
     _chisq=chi_in;
-    _min_0=_chisq->chimin();
     _associates.set_name("dchi_simplex_associates");
     int i,j;
     for(i=0;i<associates_in.get_dim();i++){
@@ -83,10 +82,6 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
     double mu;
     int i_found;
     _chisq->evaluate(pt,&mu,&i_found);
-
-    if(mu<_min_0){
-        return mu;
-    }
 
     double dmu=fabs(_chisq->target()-mu);
     double delta=_chisq->target()-_chisq->chimin();

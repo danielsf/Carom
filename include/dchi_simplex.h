@@ -18,7 +18,6 @@ class dchi_simplex_base : public function_wrapper{
         array_1d<double> _norm;
         chisq_wrapper *_chisq;
         int _called;
-        double _min_0;
 };
 
 class dchi_boundary_simplex : public dchi_simplex_base{
