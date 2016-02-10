@@ -244,7 +244,6 @@ void maps::simplex_min_search(){
     printf("\ndoing maps.simplex_min_search -- min %e\n",_chifn.chimin());
     int pt_start=_chifn.get_pts();
 
-    int previous_mindex;
     double mu_previous_min,mu;
 
     assess_good_points();
@@ -268,97 +267,35 @@ void maps::simplex_min_search(){
         norm.set(i,_chifn.get_characteristic_length(i));
     }
 
-    int chosen_dud;
-
-    previous_mindex=-1;
-    if(_duds.get_dim()<1){
-        for(i=_last_did_min;i<_chifn.get_pts();i++){
-            if(i!=_chifn.mindex()){
-                if(previous_mindex<0 || _chifn.get_fn(i)<mu_previous_min){
-                    mu_previous_min=_chifn.get_fn(i);
-                    previous_mindex=i;
-                }
-            }
-        }
-    }
-    else{
-        for(i=0;i<_duds.get_dim();i++){
-            if(previous_mindex<0 || _chifn.get_fn(_duds.get_data(i))<_chifn.get_fn(previous_mindex)){
-                previous_mindex=_duds.get_data(i);
-                chosen_dud=i;
-            }
-        }
-
-        _duds.remove(chosen_dud);
-    }
-
-    if(previous_mindex<0){
-        printf("WARNING previous mindex %d\n",previous_mindex);
-        printf("n_local_associates %d\n",local_associates.get_dim());
-        exit(1);
-    }
 
     array_1d<int> empty;
 
     dchi_multimodal_simplex dchifn(&_chifn, empty);
 
-    array_1d<int> seed_dex;
-    seed_dex.set_name("carom_simplex_min_search_seed_dex");
     array_2d<double> seed;
     seed.set_name("carom_simplex_min_search_seed");
     seed.set_cols(_chifn.get_dim());
 
-    array_2d<double> old_dir;
-    old_dir.set_name("carom_simplex_min_searc_old_dir");
-    old_dir.set_cols(_chifn.get_dim());
-
-    int iFound,i_min,i_row;
-    double mu_min;
-    double target,tol,delta;
-
-    array_1d<double> dir,arm,trial,trial_dir;
-    dir.set_name("maps_min_dir");
-    arm.set_name("maps_min_arm");
-    trial.set_name("maps_min_trial");
-    trial_dir.set_name("maps_min_trial_dir");
-
-    for(i=0;i<_chifn.get_dim();i++){
-        dir.set(i,(_chifn.get_pt(_chifn.mindex(),i)-_chifn.get_pt(previous_mindex,i))/norm.get_data(i));
+    array_1d<double> dud_mu,dud_mu_sorted;
+    array_1d<int> dud_dex;
+    for(i=0;i<_duds.get_dim();i++){
+        dud_mu.add(_chifn.get_fn(_duds.get_data(i)));
+        dud_dex.add(i);
+    }
+    sort_and_check(dud_mu,dud_mu_sorted,dud_dex);
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        seed.add_row(_chifn.get_pt(_duds.get_data(dud_dex.get_data(i)))[0]);
     }
 
-    for(i=0;i<_chifn.get_dim();i++){
-       trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+1.5*dir.get_data(i)*norm.get_data(i));
-    }
-    seed.add_row(trial);
-    seed.add_row(_chifn.get_pt(previous_mindex)[0]);
-
-    double rr;
-    rr=dir.normalize();
-    old_dir.add_row(dir);
-    double component,length;
-    while(seed.get_rows()<_chifn.get_dim()+1){
-        for(i=0;i<_chifn.get_dim();i++){
-            trial_dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
-        }
-        trial_dir.normalize();
-        for(i=0;i<old_dir.get_rows();i++){
-            component=0.0;
-            for(j=0;j<_chifn.get_dim();j++){
-                component+=trial_dir.get_data(j)*old_dir.get_data(i,j);
-            }
-            for(j=0;j<_chifn.get_dim();j++){
-                trial_dir.subtract_val(j,component*old_dir.get_data(i,j));
+    int i_target;
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        i_target=dud_dex.get_data(i);
+        _duds.remove(i_target);
+        for(j=i+1;j<_chifn.get_dim()+1;j++){
+            if(dud_dex.get_data(j)>i_target){
+                dud_dex.subtract_val(j,1);
             }
         }
-        length=trial_dir.normalize();
-        if(length>1.0e-10){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+norm.get_data(i)*rr*(dir.get_data(i)+0.1*trial_dir.get_data(i)));
-            }
-            seed.add_row(trial);
-            old_dir.add_row(trial_dir);
-        }
-
     }
 
     printf("got seed\n");
@@ -543,7 +480,7 @@ void maps::search(int limit){
             printf("\nchoosing simplex %d %d %d -- %d\n",
             _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
 
-            if(_ct_simplex<_ct_simplex_min){
+            if(_ct_simplex<_ct_simplex_min || _duds.get_dim()<_chifn.get_dim()+1){
                 simplex_boundary_search();
             }
             else{
