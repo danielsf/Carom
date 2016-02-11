@@ -72,7 +72,7 @@ private:
 
     char _outname[letters],_timingname[letters];
 
-    array_1d<int> _good_points,_duds;
+    array_1d<int> _good_points,_duds,_duds_for_min;
 
     int _last_did_min;
 
