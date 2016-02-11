@@ -425,33 +425,72 @@ void maps::simplex_boundary_search(){
 
     mu=evaluate(minpt, &i_min);
 
-    if(i_min>=0 && _chifn.get_fn(i_min)>_chifn.target()){
-        _duds.add(i_min);
-    }
-
     printf("    interp %e actual %e -- %e\n",interp_val,_interpolator(minpt),mu);
 
-    if(i_min<0){
-        i_min=bisection(_chifn.get_pt(_chifn.mindex())[0],minpt,_chifn.target(),0.1);
-        printf("    set i_min to %d\n",i_min);
+    simplex_minimizer other_ffmin;
+    array_2d<double> other_seed,other_dir;
+    array_1d<double> dir,trial_dir;
+    double rr,component,norm;
+    double step=0.5;
+
+    if(i_min>=0 && _chifn.get_fn(i_min)>_chifn.target()){
+        _duds.add(i_min);
+        if(_chifn.get_fn(i_min)<2.0*_chifn.chimin()){
+            for(i=0;i<_chifn.get_dim();i++){
+                dir.set(i,_chifn.get_pt(_chifn.mindex(),i)-_chifn.get_pt(i_min,i));
+            }
+            rr=dir.normalize();
+            other_seed.add_row(_chifn.get_pt(i_min)[0]);
+            other_dir.add_row(dir);
+            for(i=0;i<_chifn.get_dim();i++){
+                trial.set(i,_chifn.get_pt(i_min,i)+step*rr*dir.get_data(i));
+            }
+            other_seed.add_row(trial);
+            while(other_seed.get_rows()<_chifn.get_dim()+1){
+                for(i=0;i<_chifn.get_dim();i++){
+                    trial_dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+                }
+                for(i=0;i<other_dir.get_rows();i++){
+                    component=0.0;
+                    for(j=0;j<_chifn.get_dim();j++){
+                        component+=trial_dir.get_data(j)*other_dir.get_data(i,j);
+                    }
+                    for(j=0;j<_chifn.get_dim();j++){
+                        trial_dir.subtract_val(j,component*other_dir.get_data(i,j));
+                    }
+                }
+                norm=trial_dir.normalize();
+                if(norm>1.0e-20){
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,_chifn.get_pt(i_min,i)+step*rr*dir.get_data(i)+0.1*rr*trial_dir.get_data(i));
+                    }
+                    other_seed.add_row(trial);
+                    other_dir.add_row(trial_dir);
+                }
+            }
+            other_ffmin.set_minmax(min,max);
+            other_ffmin.set_chisquared(&_chifn);
+            other_ffmin.use_gradient();
+            other_ffmin.find_minimum(other_seed,minpt);
+        }
+        else{
+            j=bisection(_chifn.mindex(),i_min,_chifn.target(),0.01);
+            if(j>0){
+                printf("    bisected to %d %e\n",j,_chifn.get_fn(j));
+            }
+            else{
+                printf("    bisected to %d\n",j);
+            }
+        }
     }
-    else{
+
+
+    if(i_min>0){
         _log.add(_log_simplex,i_min);
     }
 
 
     assess_good_points(pt_start);
-
-    double tol=0.01*(_chifn.target()-_chifn.chimin());
-    if(_chifn.get_fn(i_min)-_chifn.target()>tol){
-        bisection(_chifn.mindex(),i_min,_chifn.target(),tol);
-    }
-
-    printf("    actually found %e -- %e %e\n",
-    _chifn.get_fn(i_min),_chifn.get_pt(i_min,0), _chifn.get_pt(i_min,1));
-
-    printf("    adjusted %e\n",dchifn(_chifn.get_pt(i_min)[0]));
-    printf("    interpolated %e\n",_interpolator(_chifn.get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",_chifn.chimin(),_chifn.target());
 
