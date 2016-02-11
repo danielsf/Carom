@@ -84,11 +84,14 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
     int i_found;
     _chisq->evaluate(pt,&mu,&i_found);
 
-    if(mu<_min_0){
-        return mu;
-    }
+    double dmu;
 
-    double dmu=fabs(_chisq->target()-mu);
+    if(mu>_min_0){
+        dmu=fabs(_chisq->target()-mu);
+    }
+    else{
+        dmu=mu-_min_0;
+    }
     double delta=_chisq->target()-_chisq->chimin();
 
     double exp_term;
