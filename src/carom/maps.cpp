@@ -9,7 +9,7 @@ maps::maps(){
     _ct_mcmc=0;
     _init_mcmc=0;
     _last_did_min=0;
-    _calls_to_simplex=0;
+    _calls_to_simplex_boundary=0;
     _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
@@ -230,7 +230,7 @@ void maps::write_pts(){
         _chifn.get_time_spent(),
         _chifn.get_time_spent()/double(_chifn.get_pts()),
         (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()),
-        _calls_to_simplex);
+        _calls_to_simplex_boundary);
 
     fprintf(output,"\n");
     fclose(output);
@@ -344,7 +344,7 @@ void maps::simplex_min_search(){
 
 void maps::simplex_boundary_search(){
     printf("\ndoing maps.simplex_boundary_search() -- %e %d\n",_chifn.chimin(),_duds.get_dim());
-    _calls_to_simplex++;
+    _calls_to_simplex_boundary++;
     int pt_start=_chifn.get_pts();
 
     array_1d<int> local_associates;
