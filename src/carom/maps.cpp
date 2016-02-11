@@ -244,8 +244,6 @@ void maps::simplex_min_search(){
     printf("\ndoing maps.simplex_min_search -- min %e\n",_chifn.chimin());
     int pt_start=_chifn.get_pts();
 
-    double mu_previous_min,mu;
-
     assess_good_points();
 
     array_1d<int> local_associates;
@@ -261,13 +259,6 @@ void maps::simplex_min_search(){
         }
     }
 
-    array_1d<double> norm;
-    norm.set_name("simplex_min_search_norm");
-    for(i=0;i<_chifn.get_dim();i++){
-        norm.set(i,_chifn.get_characteristic_length(i));
-    }
-
-
     array_1d<int> empty;
 
     dchi_multimodal_simplex dchifn(&_chifn, empty);
@@ -282,21 +273,48 @@ void maps::simplex_min_search(){
         dud_mu.add(_chifn.get_fn(_duds.get_data(i)));
         dud_dex.add(i);
     }
+
     sort_and_check(dud_mu,dud_mu_sorted,dud_dex);
-    for(i=0;i<_chifn.get_dim()+1;i++){
-        seed.add_row(_chifn.get_pt(_duds.get_data(dud_dex.get_data(i)))[0]);
+
+    array_1d<int> chosen_duds;
+    for(i=0;seed.get_rows()<_chifn.get_dim();i++){
+        if(dud_dex.get_data(i)!=_chifn.mindex()){
+            seed.add_row(_chifn.get_pt(_duds.get_data(dud_dex.get_data(i)))[0]);
+            chosen_duds.add(dud_dex.get_data(i));
+        }
     }
 
     int i_target;
-    for(i=0;i<_chifn.get_dim()+1;i++){
-        i_target=dud_dex.get_data(i);
+    for(i=0;i<chosen_duds.get_dim();i++){
+        i_target=chosen_duds.get_data(i);
         _duds.remove(i_target);
-        for(j=i+1;j<_chifn.get_dim()+1;j++){
-            if(dud_dex.get_data(j)>i_target){
-                dud_dex.subtract_val(j,1);
+        for(j=i+1;j<chosen_duds.get_dim();j++){
+            if(chosen_duds.get_data(j)>i_target){
+                chosen_duds.subtract_val(j,1);
             }
         }
     }
+
+    double mu_min_seed,mu;
+    int i_min_seed;
+    for(i=0;i<seed.get_rows();i++){
+        mu=evaluate(seed(i)[0],&j);
+        if(i==0 || mu<mu_min_seed){
+            mu_min_seed=mu;
+            i_min_seed=i;
+        }
+    }
+
+    array_1d<double> dir;
+    for(i=0;i<_chifn.get_dim();i++){
+        dir.set(i,_chifn.get_pt(_chifn.mindex(),i)-seed.get_data(i_min_seed,i));
+    }
+    double rr=dir.normalize();
+    array_1d<double> trial;
+    for(i=0;i<_chifn.get_dim();i++){
+        trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+rr*dir.get_data(i));
+    }
+    seed.add_row(trial);
 
     printf("got seed\n");
 
@@ -407,7 +425,7 @@ void maps::simplex_boundary_search(){
 
     mu=evaluate(minpt, &i_min);
 
-    if(i_min>=0){
+    if(i_min>=0 && _chifn.get_fn(i_min)>_chifn.target()){
         _duds.add(i_min);
     }
 
@@ -480,7 +498,7 @@ void maps::search(int limit){
             printf("\nchoosing simplex %d %d %d -- %d\n",
             _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
 
-            if(_ct_simplex<_ct_simplex_min || _duds.get_dim()<_chifn.get_dim()+1){
+            if(_ct_simplex<_ct_simplex_min || _duds.get_dim()<_chifn.get_dim()+2){
                 simplex_boundary_search();
             }
             else{
