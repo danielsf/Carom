@@ -14,6 +14,10 @@ double dchi_boundary_simplex_gp::operator()(array_1d<double> &pt){
     int i_found;
     mu=_interpolator[0](pt);
 
+    if(mu<_min_0){
+        return mu;
+    }
+
     double dmu=fabs(_chisq->target()-mu);
     double delta=_chisq->target()-_chisq->chimin();
 
