@@ -11,6 +11,7 @@
 #include "dchi_simplex_gp.h"
 #include "search_types.h"
 #include "mcmc/mcmc.h"
+#include "dalex.h"
 
 class maps{
 
@@ -63,6 +64,7 @@ private:
     int _last_wrote_log;
 
     mcmc _mcmc;
+    dalex _cloud;
     int _init_mcmc;
     double _mcmc_basis_min;
 

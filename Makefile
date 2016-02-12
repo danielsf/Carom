@@ -161,9 +161,13 @@ include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
         object/gp_lin.o \
 	$(LIBRARIES)
 
+object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
+object/goto_tools.o object/chisq_wrapper.o
+	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
+
 object/maps.o: src/carom/maps.cpp include/maps.h \
 object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
-object/mcmc.o object/gp_lin.o object/dchi_simplex_gp.o
+object/mcmc.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
@@ -172,7 +176,7 @@ object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
-        object/kde.o object/gp_lin.o object/dchi_simplex_gp.o \
+        object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
 	$(LIBRARIES)
 
 d24_test: src/examples/test_d24_chisq.cpp object/jellyBean.o \
