@@ -38,7 +38,7 @@ double maps::evaluate(array_1d<double> &pt, int *dex){
 }
 
 void maps::assess_good_points(){
-    assess_good_points(0,0);
+    assess_good_points(0,_chifn.get_pts());
 }
 
 void maps::assess_good_points(int i_min){
