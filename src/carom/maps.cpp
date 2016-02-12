@@ -513,10 +513,13 @@ void maps::mcmc_search(){
 void maps::search(int limit){
     while(_chifn.get_pts()<limit){
         //if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
-            printf("\nchoosing simplex %d %d %d -- %d\n",
-            _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc);
+            assess_good_points();
+            printf("\nchoosing simplex %d %d %d -- %d -- %d\n",
+            _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc,
+            _good_points.get_dim());
 
             if(_ct_simplex<_ct_simplex_min || _duds_for_min.get_dim()<_chifn.get_dim()+2){
+                printf("choosing boundary because %d \n",_duds_for_min.get_dim());
                 simplex_boundary_search();
             }
             else{
