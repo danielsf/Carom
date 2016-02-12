@@ -14,10 +14,79 @@ void dalex::build(chisq_wrapper *cc){
 void dalex::search(){
     safety_check("search");
     int i;
+    int mindex_0 = _chifn->mindex();
     for(i=0;i<_chifn->get_dim();i++){
         propagate(i);
     }
+
+    if(_chifn->mindex()!=mindex_0){
+        simplex_search();
+    }
+
 }
+
+
+void dalex::simplex_search(){
+    printf("    doing dalex_simplex %e\n",_chifn->chimin());
+    safety_check("simplex_search");
+    array_1d<double> min,max;
+    min.set_name("dalex_simplex_min");
+    max.set_name("dalex_simplex_max");
+    array_2d<double> seed;
+    seed.set_name("dalex_simplex_seed");
+    int i,j;
+
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,2.0*exception_value);
+        max.set(i,-2.0*exception_value);
+    }
+
+    for(i=0;i<_particles.get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            if(_chifn->get_pt(_particles.get_data(i),j)<min.get_data(j)){
+                min.set(j,_chifn->get_pt(_particles.get_data(i),j));
+            }
+            if(_chifn->get_pt(_particles.get_data(i),j)>max.get_data(j)){
+                max.set(j,_chifn->get_pt(_particles.get_data(i),j));
+            }
+        }
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        if(max.get_data(i)-min.get_data(i)<1.0e-20){
+            min.set(i,0.0);
+            max.set(i,_chifn->get_characteristic_length(i));
+        }
+    }
+
+    double mu_min;
+    int i_min=-1;
+    for(i=0;i<_particles.get_dim();i++){
+        seed.add_row(_chifn->get_pt(_origins.get_data(i))[0]);
+        if(i_min<0 || _chifn->get_fn(_particles.get_data(i))<mu_min){
+            if(_particles.get_data(i)!=_chifn->mindex()){
+                mu_min=_chifn->get_fn(_particles.get_data(i));
+                i_min=_particles.get_data(i);
+            }
+        }
+    }
+
+    array_1d<double> trial;
+    for(i=0;i<_chifn->get_dim();i++){
+        trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+0.5*(_chifn->get_pt(_chifn->mindex(),i)-_chifn->get_pt(i_min,i)));
+    }
+    seed.add_row(trial);
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(_chifn);
+    ffmin.set_minmax(min,max);
+    ffmin.set_dice(_chifn->get_dice());
+    ffmin.use_gradient();
+    ffmin.find_minimum(seed,trial);
+
+    printf("    after dalex_simplex chimin %e\n",_chifn->chimin());
+}
+
 
 int dalex::bisection(int ilow, array_1d<double> &dir, double target, double tol){
     safety_check("bisection(int, arr)");
@@ -61,6 +130,11 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
     double mu,flow,fhigh;
     _chifn->evaluate(lowball_in, &flow, &ii);
     _chifn->evaluate(highball_in, &fhigh, &jj);
+
+    if(flow>target){
+        printf("WARNING flow is greater than target %e %e\n",flow,target);
+        exit(1);
+    }
 
     i_found=ii;
 
@@ -191,6 +265,12 @@ void dalex::propagate(int dex){
 void dalex::_propagate_bisection(int dex){
     safety_check("_propagate_bisection");
     printf("   bisecting %d %e %d\n",dex,_chifn->chimin(),_chifn->get_pts());
+    if(dex<_particles.get_dim()){
+        printf("    %d %d %e %e\n",
+        _particles.get_data(dex),_origins.get_data(dex),
+        _chifn->get_fn(_particles.get_data(dex)),
+        _chifn->get_fn(_origins.get_data(dex)));
+    }
     array_1d<double> dir;
     dir.set_name("dalex_propagate_bisection_dir");
     int i,i_particle,i_origin;

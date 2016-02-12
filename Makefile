@@ -162,7 +162,7 @@ include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
 	$(LIBRARIES)
 
 object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
-object/goto_tools.o object/chisq_wrapper.o
+object/goto_tools.o object/chisq_wrapper.o object/simplex.o
 	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
 
 object/maps.o: src/carom/maps.cpp include/maps.h \

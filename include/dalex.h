@@ -4,6 +4,7 @@
 #include "containers.h"
 #include "goto_tools.h"
 #include "chisq_wrapper.h"
+#include "simplex.h"
 
 class dalex{
 
@@ -17,6 +18,7 @@ class dalex{
 
         void build(chisq_wrapper*);
         void search();
+        void simplex_search();
 
         void calculate_gradient(int, array_1d<double>&);
         void propagate(int);
