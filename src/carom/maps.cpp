@@ -6,6 +6,7 @@ maps::maps(){
     _last_written=0;
     _ct_simplex_boundary=0;
     _ct_simplex_min=0;
+    _ct_dalex=0;
     _ct_mcmc=0;
     _init_mcmc=0;
     _last_did_min=0;
@@ -512,6 +513,7 @@ void maps::mcmc_search(){
 }
 
 void maps::search(int limit){
+    int pt_start;
     while(_chifn.get_pts()<limit){
         //if(_ct_simplex_boundary+_ct_simplex_min<=_ct_mcmc){
             assess_good_points();
@@ -527,7 +529,10 @@ void maps::search(int limit){
             else{
                 simplex_min_search();
             }
+            pt_start=_chifn.get_pts();
             _cloud.search();
+            _ct_dalex+=_chifn.get_pts()-pt_start;
+            assess_good_points(pt_start);
         //}
         //else{
         //    mcmc_search();
