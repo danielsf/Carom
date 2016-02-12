@@ -398,23 +398,30 @@ void maps::simplex_boundary_search(){
             }
         }
 
-        if(seed.get_rows()<_chifn.get_dim()+1){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,0.5*(_chifn.get_pt(i_min,i)+_chifn.get_pt(_chifn.mindex(),i)));
-            }
-            seed.add_row(trial);
-        }
+
     }
     else{
         //use duds as seeds
         printf("    seeding from duds\n");
-        while(seed.get_rows()<_chifn.get_dim()+1){
+        i_min=-1;
+        while(seed.get_rows()<_chifn.get_dim()){
             i=_chifn.random_int()%_duds.get_dim();
             if(seed_dex.contains(_duds.get_data(i))==0){
                 seed_dex.add(_duds.get_data(i));
                 seed.add_row(_chifn.get_pt(_duds.get_data(i))[0]);
+                if(i_min<0 || _chifn.get_fn(_duds.get_data(i))<mu_min){
+                   i_min=_duds.get_data(i);
+                   mu_min=_chifn.get_fn(i_min);
+                }
             }
         }
+    }
+
+    if(seed.get_rows()<_chifn.get_dim()+1){
+            for(i=0;i<_chifn.get_dim();i++){
+                trial.set(i,0.5*(_chifn.get_pt(i_min,i)+_chifn.get_pt(_chifn.mindex(),i)));
+            }
+            seed.add_row(trial);
     }
 
     double mu,start_min;
