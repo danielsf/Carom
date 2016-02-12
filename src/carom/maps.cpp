@@ -4,7 +4,7 @@ maps::maps(){
     _write_every=3000;
     _last_wrote_log=-1;
     _last_written=0;
-    _ct_simplex=0;
+    _ct_simplex_boundary=0;
     _ct_simplex_min=0;
     _ct_mcmc=0;
     _init_mcmc=0;
@@ -474,7 +474,7 @@ void maps::simplex_boundary_search(){
 
     printf("    min is %e target %e\n",_chifn.chimin(),_chifn.target());
 
-    _ct_simplex+=_chifn.get_pts()-pt_start;
+    _ct_simplex_boundary+=_chifn.get_pts()-pt_start;
 }
 
 void maps::mcmc_search(){
@@ -513,13 +513,14 @@ void maps::mcmc_search(){
 
 void maps::search(int limit){
     while(_chifn.get_pts()<limit){
-        //if(_ct_simplex+_ct_simplex_min<=_ct_mcmc){
+        //if(_ct_simplex_boundary+_ct_simplex_min<=_ct_mcmc){
             assess_good_points();
             printf("\nchoosing simplex %d %d %d -- %d -- %d\n",
-            _ct_simplex,_ct_simplex_min,_ct_simplex+_ct_simplex_min,_ct_mcmc,
+            _ct_simplex_boundary,_ct_simplex_min,
+            _ct_simplex_boundary+_ct_simplex_min,_ct_mcmc,
             _good_points.get_dim());
 
-            if(_ct_simplex<_ct_simplex_min || _duds_for_min.get_dim()<_chifn.get_dim()+2){
+            if(_ct_simplex_boundary<_ct_simplex_min || _duds_for_min.get_dim()<_chifn.get_dim()+2){
                 printf("choosing boundary because %d \n",_duds_for_min.get_dim());
                 simplex_boundary_search();
             }
