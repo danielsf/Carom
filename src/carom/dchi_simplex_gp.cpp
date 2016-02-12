@@ -12,7 +12,11 @@ double dchi_boundary_simplex_gp::operator()(array_1d<double> &pt){
     double distance=associate_distance(pt);
     double mu;
     int i_found;
+
     mu=_interpolator[0](pt);
+    if(mu<_min_0){
+        mu=_chisq[0](pt);
+    }
 
     double dmu;
 
