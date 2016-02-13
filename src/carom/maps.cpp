@@ -250,19 +250,11 @@ void maps::simplex_min_search(){
     int pt_start=_chifn.get_pts();
 
     assess_good_points();
-
-    array_1d<int> local_associates;
     int i,j;
-
-    if(_ct_simplex_min>0){
-        for(i=0;i<_good_points.get_dim();i++){
-            local_associates.add(_good_points.get_data(i));
-        }
-    }
 
     array_1d<int> empty;
 
-    dchi_multimodal_simplex dchifn(&_chifn, empty);
+    dchi_multimodal_simplex dchifn(&_chifn, _good_points);
 
     array_2d<double> seed,old_dir;
     seed.set_name("carom_simplex_min_search_seed");
