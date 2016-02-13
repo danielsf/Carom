@@ -360,8 +360,6 @@ void maps::simplex_min_search(){
         }
     }
 
-    _chifn.get_min(min);
-    _chifn.get_max(max);
     ffmin.set_minmax(min,max);
     ffmin.use_gradient();
 
@@ -427,8 +425,6 @@ void maps::simplex_boundary_search(){
         }
     }
 
-    _chifn.get_min(min);
-    _chifn.get_max(max);
     ffmin.set_minmax(min,max);
     ffmin.use_gradient();
 
@@ -448,7 +444,7 @@ void maps::simplex_boundary_search(){
     if(_calls_to_simplex_boundary%2==0 || _duds.get_dim()<_chifn.get_dim()+1){
         while(seed.get_rows()<_chifn.get_dim()){
             for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,min.get_data(i)+_chifn.random_double()*(max.get_data(i)-min.get_data(i)));
+                trial.set(i,_chifn.get_min(i)+_chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
             }
             ftrial=evaluate(trial,&iFound);
 
