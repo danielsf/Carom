@@ -27,7 +27,7 @@ void dalex::search(){
 
 
 void dalex::simplex_search(){
-    printf("    doing dalex_simplex %e\n",_chifn->chimin());
+    printf("\n    doing dalex_simplex %e\n",_chifn->chimin());
     safety_check("simplex_search");
     array_1d<double> min,max;
     min.set_name("dalex_simplex_min");
@@ -264,13 +264,13 @@ void dalex::propagate(int dex){
 
 void dalex::_propagate_bisection(int dex){
     safety_check("_propagate_bisection");
-    printf("   bisecting %d %e %d\n",dex,_chifn->chimin(),_chifn->get_pts());
+    /*printf("   bisecting %d %e %d\n",dex,_chifn->chimin(),_chifn->get_pts());
     if(dex<_particles.get_dim()){
         printf("    %d %d %e %e\n",
         _particles.get_data(dex),_origins.get_data(dex),
         _chifn->get_fn(_particles.get_data(dex)),
         _chifn->get_fn(_origins.get_data(dex)));
-    }
+    }*/
     array_1d<double> dir;
     dir.set_name("dalex_propagate_bisection_dir");
     int i,i_particle,i_origin;
@@ -307,7 +307,7 @@ void dalex::_propagate_bisection(int dex){
 
 void dalex::_propagate_ricochet(int dex){
     safety_check("_propagate_ricochet");
-    printf("    ricocheting %d\n",dex);
+    //printf("    ricocheting %d\n",dex);
     array_1d<double> dir,gradient,reflected_dir;
     dir.set_name("dalex_propagate_ricochet_dir");
     gradient.set_name("dalex_propagate_ricochet_gradient");
