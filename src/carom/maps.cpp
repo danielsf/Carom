@@ -341,6 +341,33 @@ void maps::simplex_min_search(){
     array_1d<double> min,max;
     min.set_name("carom_simplex_search_min");
     max.set_name("carom_simplex_search_min");
+
+    for(i=0;i<_chifn.get_dim();i++){
+        min.set(i,2.0*exception_value);
+        max.set(i,-2.0*exception_value);
+    }
+
+    for(i=0;i<_good_points.get_dim();i++){
+        for(j=0;j<_chifn.get_dim();j++){
+            rr=_chifn.get_pt(_good_points.get_data(i),j);
+
+            if(rr<min.get_data(j)){
+                min.set(j,rr);
+            }
+
+            if(rr>max.get_data(j)){
+                max.set(j,rr);
+            }
+        }
+    }
+
+    for(i=0;i<_chifn.get_dim();i++){
+        if(max.get_data(i)-min.get_data(i)<1.0e-20){
+            min.set(i,0.0);
+            max.set(i,_chifn.get_characteristic_length(i));
+        }
+    }
+
     _chifn.get_min(min);
     _chifn.get_max(max);
     ffmin.set_minmax(min,max);
@@ -381,6 +408,33 @@ void maps::simplex_boundary_search(){
     array_1d<double> min,max;
     min.set_name("carom_simplex_search_min");
     max.set_name("carom_simplex_search_min");
+
+    for(i=0;i<_chifn.get_dim();i++){
+        min.set(i,2.0*exception_value);
+        max.set(i,-2.0*exception_value);
+    }
+
+    for(i=0;i<_good_points.get_dim();i++){
+        for(j=0;j<_chifn.get_dim();j++){
+            xx=_chifn.get_pt(_good_points.get_data(i),j);
+
+            if(xx<min.get_data(j)){
+                min.set(j,xx);
+            }
+
+            if(xx>max.get_data(j)){
+                max.set(j,xx);
+            }
+        }
+    }
+
+    for(i=0;i<_chifn.get_dim();i++){
+        if(max.get_data(i)-min.get_data(i)<1.0e-20){
+            min.set(i,0.0);
+            max.set(i,_chifn.get_characteristic_length(i));
+        }
+    }
+
     _chifn.get_min(min);
     _chifn.get_max(max);
     ffmin.set_minmax(min,max);
