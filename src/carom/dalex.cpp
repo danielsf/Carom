@@ -59,63 +59,23 @@ void dalex::simplex_search(){
         }
     }
 
-    double mu_max;
-    int i_max=-1;
+    double mu_min;
+    int i_min=-1;
     for(i=0;i<_particles.get_dim();i++){
-        if(i_max<0 || _chifn->get_fn(_particles.get_data(i))>mu_max){
+        seed.add_row(_chifn->get_pt(_origins.get_data(i))[0]);
+        if(i_min<0 || _chifn->get_fn(_particles.get_data(i))<mu_min){
             if(_particles.get_data(i)!=_chifn->mindex()){
-                mu_max=_chifn->get_fn(_particles.get_data(i));
-                i_max=_particles.get_data(i);
-            }
-        }
-    }
-    for(i=0;i<_origins.get_dim();i++){
-        if(i_max<0 || _chifn->get_fn(_origins.get_data(i))>mu_max){
-            if(_origins.get_data(i)!=_chifn->mindex()){
-                mu_max=_chifn->get_fn(_origins.get_data(i));
-                i_max=_origins.get_data(i);
+                mu_min=_chifn->get_fn(_particles.get_data(i));
+                i_min=_particles.get_data(i);
             }
         }
     }
 
-
-    array_2d<double> old_dir;
-    array_1d<double> trial,dir,trial_dir;
-    double rr;
+    array_1d<double> trial;
     for(i=0;i<_chifn->get_dim();i++){
-        dir.set(i,_chifn->get_pt(_chifn->mindex(),i)-_chifn->get_pt(i_max,i));
-    }
-    rr=dir.normalize();
-    old_dir.add_row(dir);
-    for(i=0;i<_chifn->get_dim();i++){
-        trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+rr*dir.get_data(i));
+        trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+0.5*(_chifn->get_pt(_chifn->mindex(),i)-_chifn->get_pt(i_min,i)));
     }
     seed.add_row(trial);
-    seed.add_row(_chifn->get_pt(i_max)[0]);
-
-    double component;
-    while(seed.get_rows()<_chifn->get_dim()+1){
-       for(i=0;i<_chifn->get_dim();i++){
-           trial_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-       }
-       for(i=0;i<old_dir.get_rows();i++){
-           component=0.0;
-           for(j=0;j<_chifn->get_dim();j++){
-               component+=trial_dir.get_data(j)*old_dir.get_data(i,j);
-           }
-           for(j=0;j<_chifn->get_dim();j++){
-               trial_dir.subtract_val(j,component*old_dir.get_data(i,j));
-           }
-       }
-       mu_max=trial_dir.normalize();
-       if(mu_max>1.0e-20){
-           old_dir.add_row(trial_dir);
-           for(i=0;i<_chifn->get_dim();i++){
-               trial.set(i,seed.get_data(0,i)+0.1*rr*trial_dir.get_data(i));
-           }
-           seed.add_row(trial);
-       }
-    }
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(_chifn);
