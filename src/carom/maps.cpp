@@ -577,7 +577,7 @@ void maps::search(int limit){
     while(_chifn.get_pts()<limit){
          assess_good_points();
 
-         if(_ct_simplex_min>_ct_dalex){
+         if(_ct_simplex_min<_ct_dalex){
              simplex_min_search();
          }
 
