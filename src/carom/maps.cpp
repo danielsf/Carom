@@ -10,6 +10,7 @@ maps::maps(){
     _ct_mcmc=0;
     _init_mcmc=0;
     _last_did_min=0;
+    _simplex_mindex=-1;
     _calls_to_simplex_boundary=0;
     _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
@@ -128,6 +129,7 @@ void maps::set_timingname(char *nn){
 void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
+    _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
     write_pts();
@@ -262,58 +264,74 @@ void maps::simplex_min_search(){
 
     dchi_multimodal_simplex dchifn(&_chifn, empty);
 
-    array_2d<double> seed;
+    array_2d<double> seed,old_dir;
     seed.set_name("carom_simplex_min_search_seed");
-    seed.set_cols(_chifn.get_dim());
+    old_dir.set_name("carom_simplex_min_search_old_dir");
+    array_1d<double> dir,trial,trial_dir;
+    dir.set_name("carom_simplex_min_search_dir");
+    trial.set_name("carom_simplex_min_search_trial");
+    trial_dir.set_name("carom_simplex_min_searc_trial_dir");
+    double rr,mu_best,dd;
 
-    array_1d<double> dud_mu,dud_mu_sorted;
-    array_1d<int> dud_dex;
-    for(i=0;i<_duds_for_min.get_dim();i++){
-        dud_mu.add(_chifn.get_fn(_duds_for_min.get_data(i)));
-        dud_dex.add(i);
-    }
-
-    sort_and_check(dud_mu,dud_mu_sorted,dud_dex);
-
-    array_1d<int> chosen_duds;
-    for(i=0;seed.get_rows()<_chifn.get_dim();i++){
-        if(dud_dex.get_data(i)!=_chifn.mindex()){
-            seed.add_row(_chifn.get_pt(_duds_for_min.get_data(dud_dex.get_data(i)))[0]);
-            chosen_duds.add(dud_dex.get_data(i));
-        }
-    }
-
-    int i_target;
-    for(i=0;i<chosen_duds.get_dim();i++){
-        i_target=chosen_duds.get_data(i);
-        _duds_for_min.remove(i_target);
-        for(j=i+1;j<chosen_duds.get_dim();j++){
-            if(chosen_duds.get_data(j)>i_target){
-                chosen_duds.subtract_val(j,1);
+    if(_simplex_mindex==_chifn.mindex() && _good_points.get_dim()>=2){
+        mu_best=-2.0*exception_value;
+        for(i=0;i<_good_points.get_dim();i++){
+            if(_good_points.get_data(i)!=_chifn.mindex()){
+                dd=_chifn.distance(_chifn.get_pt(_chifn.mindex())[0], _chifn.get_pt(_good_points.get_data(i))[0]);
+                if(dd>mu_best){
+                    _simplex_mindex=_good_points.get_data(i);
+                    mu_best=dd;
+                }
             }
         }
     }
-
-    double mu_min_seed,mu;
-    int i_min_seed;
-    for(i=0;i<seed.get_rows();i++){
-        mu=evaluate(seed(i)[0],&j);
-        if(i==0 || mu<mu_min_seed){
-            mu_min_seed=mu;
-            i_min_seed=i;
-        }
+    else if(_simplex_mindex==_chifn.mindex() && _good_points.get_dim()<2){
+        _ct_simplex_min+=1000;
+        return;
     }
 
-    array_1d<double> dir;
     for(i=0;i<_chifn.get_dim();i++){
-        dir.set(i,_chifn.get_pt(_chifn.mindex(),i)-seed.get_data(i_min_seed,i));
+        dir.set(i,_chifn.get_pt(_chifn.mindex(),i)-_chifn.get_pt(_simplex_mindex,i));
     }
-    double rr=dir.normalize();
-    array_1d<double> trial;
+    rr=dir.normalize();
+
+    seed.add_row(_chifn.get_pt(_simplex_mindex)[0]);
+
+    old_dir.add_row(dir);
     for(i=0;i<_chifn.get_dim();i++){
         trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+rr*dir.get_data(i));
     }
     seed.add_row(trial);
+
+    double component;
+
+    while(seed.get_rows()<_chifn.get_dim()+1){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial_dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+        }
+
+        trial_dir.normalize();
+
+        for(i=0;i<old_dir.get_rows();i++){
+            component=0.0;
+
+            for(j=0;j<_chifn.get_dim();j++){
+                component+=trial_dir.get_data(j)*old_dir.get_data(i,j);
+            }
+
+            for(j=0;j<_chifn.get_dim();j++){
+                trial_dir.subtract_val(j,component*old_dir.get_data(i,j));
+            }
+        }
+        component=trial_dir.normalize();
+        if(component>1.0e-20){
+            old_dir.add_row(trial_dir);
+            for(i=0;i<_chifn.get_dim();i++){
+                trial.set(i,seed.get_data(0,i)+0.1*rr*trial_dir.get_data(i));
+            }
+            seed.add_row(trial);
+        }
+    }
 
     printf("got seed\n");
 
@@ -331,13 +349,13 @@ void maps::simplex_min_search(){
     array_1d<double> minpt;
     ffmin.find_minimum(seed,minpt);
 
-    assess_good_points(pt_start);
+    assess_good_points();
 
     _last_did_min=_chifn.get_pts();
 
     _ct_simplex_min+=_chifn.get_pts()-pt_start;
     printf("    min %e\n",_chifn.chimin());
-
+    _simplex_mindex=_chifn.mindex();
 }
 
 
@@ -515,28 +533,19 @@ void maps::mcmc_search(){
 void maps::search(int limit){
     int pt_start;
     while(_chifn.get_pts()<limit){
-        //if(_ct_simplex_boundary+_ct_simplex_min<=_ct_mcmc){
-            assess_good_points();
-            printf("\nchoosing simplex %d %d %d -- %d -- %d\n",
-            _ct_simplex_boundary,_ct_simplex_min,
-            _ct_simplex_boundary+_ct_simplex_min,_ct_mcmc,
-            _good_points.get_dim());
+         assess_good_points();
 
-            if(_ct_simplex_boundary<_ct_simplex_min || _duds_for_min.get_dim()<_chifn.get_dim()+2){
-                printf("choosing boundary because %d \n",_duds_for_min.get_dim());
-                simplex_boundary_search();
-            }
-            else{
-                simplex_min_search();
-            }
+         if(_ct_dalex<_ct_simplex_min){
             pt_start=_chifn.get_pts();
             _cloud.search();
             _ct_dalex+=_chifn.get_pts()-pt_start;
-            assess_good_points(pt_start);
-        //}
-        //else{
-        //    mcmc_search();
-        //}
+            simplex_boundary_search();
+
+         }
+         else{
+             simplex_min_search();
+         }
+
         if(_chifn.get_pts()-_last_written>_write_every){
             write_pts();
         }
