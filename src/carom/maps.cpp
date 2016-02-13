@@ -589,16 +589,14 @@ void maps::search(int limit){
     while(_chifn.get_pts()<limit){
          assess_good_points();
 
-         if(_ct_dalex<_ct_simplex_min){
-            pt_start=_chifn.get_pts();
-            _cloud.search();
-            _ct_dalex+=_chifn.get_pts()-pt_start;
-            simplex_boundary_search();
-
-         }
-         else{
+         if(_ct_simplex_min>_ct_dalex){
              simplex_min_search();
          }
+
+        pt_start=_chifn.get_pts();
+        _cloud.search();
+        _ct_dalex+=_chifn.get_pts()-pt_start;
+        simplex_boundary_search();
 
         if(_chifn.get_pts()-_last_written>_write_every){
             write_pts();
