@@ -259,27 +259,31 @@ void maps::simplex_min_search(){
     array_2d<double> seed,old_dir;
     seed.set_name("carom_simplex_min_search_seed");
     old_dir.set_name("carom_simplex_min_search_old_dir");
-    array_1d<double> dir,trial,trial_dir;
+    array_1d<double> dir,trial,trial_dir,origin;
     dir.set_name("carom_simplex_min_search_dir");
     trial.set_name("carom_simplex_min_search_trial");
     trial_dir.set_name("carom_simplex_min_searc_trial_dir");
     double rr,mu_best,dd;
 
-    if(_simplex_mindex==_chifn.mindex() && _good_points.get_dim()>=2){
-        mu_best=-2.0*exception_value;
-        for(i=0;i<_good_points.get_dim();i++){
-            if(_good_points.get_data(i)!=_chifn.mindex()){
-                dd=_chifn.distance(_chifn.get_pt(_chifn.mindex())[0], _chifn.get_pt(_good_points.get_data(i))[0]);
-                if(dd>mu_best){
-                    _simplex_mindex=_good_points.get_data(i);
-                    mu_best=dd;
+    int n_samples=10000;
+    _simplex_mindex=-1;
+    while(_simplex_mindex==-1){
+        for(i=0;i<n_samples;i++){
+            for(j=0;j<_chifn.get_dim();j++){
+                trial.set(j,_chifn.get_min(j)+_chifn.random_double()*(_chifn.get_max(j)-_chifn.get_min(j)));
+            }
+            dd=_chifn.distance(_chifn.get_pt(_chifn.mindex())[0], trial);
+            if(i==0 || dd>mu_best){
+                for(j=0;j<_chifn.get_dim();j++){
+                    origin.set(j,trial.get_data(j));
                 }
+                mu_best=dd;
             }
         }
-    }
-    else if(_simplex_mindex==_chifn.mindex() && _good_points.get_dim()<2){
-        _ct_simplex_min+=1000;
-        return;
+        dd=evaluate(trial,&_simplex_mindex);
+        if(dd>exception_value){
+            _simplex_mindex=-1;
+        }
     }
 
     for(i=0;i<_chifn.get_dim();i++){
@@ -291,7 +295,7 @@ void maps::simplex_min_search(){
 
     old_dir.add_row(dir);
     for(i=0;i<_chifn.get_dim();i++){
-        trial.set(i,_chifn.get_pt(_chifn.mindex(),i)+rr*dir.get_data(i));
+        trial.set(i,0.5*(_chifn.get_pt(_chifn.mindex(),i)+_chifn.get_pt(_simplex_mindex,i)));
     }
     seed.add_row(trial);
 
