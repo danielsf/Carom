@@ -88,7 +88,7 @@ void dalex::simplex_search(){
 }
 
 
-int dalex::bisection(int ilow, array_1d<double> &dir, double target, double tol){
+int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, double tol){
     safety_check("bisection(int, arr)");
     array_1d<double> trial_high;
     trial_high.set_name("dalex_bisection_trial_high");
@@ -99,26 +99,26 @@ int dalex::bisection(int ilow, array_1d<double> &dir, double target, double tol)
         trial_high.set(ii,_chifn->get_pt(ilow,ii));
     }
 
-    while(mu<=target){
+    while(mu<=local_target){
         for(ii=0;ii<_chifn->get_dim();ii++){
             trial_high.add_val(ii,rr*dir.get_data(ii));
         }
         _chifn->evaluate(trial_high, &mu, &i_found);
     }
 
-    return bisection(_chifn->get_pt(ilow)[0], trial_high, target, tol);
+    return bisection(_chifn->get_pt(ilow)[0], trial_high, local_target, tol);
 }
 
 
-int dalex::bisection(int ilow, int ihigh, double target, double tol){
+int dalex::bisection(int ilow, int ihigh, double local_target, double tol){
     safety_check("bisection(int, int)");
     return bisection(_chifn->get_pt(ilow)[0], _chifn->get_pt(ihigh)[0],
-                     target, tol);
+                     local_target, tol);
 }
 
 
 int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in,
-                     double target, double tol){
+                     double local_target, double tol){
 
     safety_check("bisection(arr, arr)");
     array_1d<double> trial,lowball,highball;
@@ -131,8 +131,8 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
     _chifn->evaluate(lowball_in, &flow, &ii);
     _chifn->evaluate(highball_in, &fhigh, &jj);
 
-    if(flow>target){
-        printf("WARNING flow is greater than target %e %e\n",flow,target);
+    if(flow>local_target){
+        printf("WARNING flow is greater than target %e %e\n",flow,local_target);
         exit(1);
     }
 
@@ -145,7 +145,7 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
 
     int ct;
     for(ct=0;ct<20 &&
-       (ct<5 || fabs(_chifn->get_fn(i_found)-target)>tol); ct++){
+       (ct<5 || fabs(_chifn->get_fn(i_found)-local_target)>tol); ct++){
 
         for(ii=0;ii<_chifn->get_dim();ii++){
             trial.set(ii, 0.5*(lowball.get_data(ii)+highball.get_data(ii)));
@@ -153,7 +153,7 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
 
         _chifn->evaluate(trial,&mu,&i_trial);
 
-        if(mu<target){
+        if(mu<local_target){
             for(ii=0;ii<_chifn->get_dim();ii++){
                 lowball.set(ii,trial.get_data(ii));
             }
@@ -164,7 +164,7 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
             }
         }
 
-        if(mu<target && fabs(mu-target)<fabs(_chifn->get_fn(i_found)-target)){
+        if(mu<local_target && fabs(mu-local_target)<fabs(_chifn->get_fn(i_found)-local_target)){
             i_found=i_trial;
         }
     }
