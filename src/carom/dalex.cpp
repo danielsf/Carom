@@ -27,7 +27,7 @@ void dalex::search(){
 
 
 void dalex::simplex_search(){
-    printf("\n    doing dalex_simplex %e\n",_chifn->chimin());
+    printf("\n    doing dalex_simplex %e -- %e %e\n",_chifn->chimin(),target(),_target_factor);
     safety_check("simplex_search");
     array_1d<double> min,max;
     min.set_name("dalex_simplex_min");
