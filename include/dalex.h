@@ -14,6 +14,7 @@ class dalex{
             _chifn=NULL;
             _particles.set_name("dalex_particles");
             _origins.set_name("dalex_origins");
+            _target_factor=1.0;
         };
 
         void build(chisq_wrapper*);
@@ -27,6 +28,10 @@ class dalex{
         int bisection(int, array_1d<double>&, double, double);
         int bisection(array_1d<double>&, array_1d<double>&, double, double);
 
+        void set_target_factor(double tt){
+            _target_factor=tt;
+        }
+
     private:
 
         void safety_check(char *word){
@@ -36,8 +41,14 @@ class dalex{
             }
         }
 
+        double target(){
+            safety_check("target");
+            return _target_factor*_chifn->target();
+        }
+
         array_1d<int> _particles,_origins;
         chisq_wrapper *_chifn;
+        double _target_factor;
 
         void _propagate_bisection(int);
         void _propagate_ricochet(int);

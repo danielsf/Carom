@@ -253,7 +253,7 @@ void dalex::propagate(int dex){
     if(i_particle<=0 || i_origin<=0){
         _propagate_bisection(dex);
     }
-    else if(_chifn->get_fn(i_particle)>_chifn->target() || i_particle==i_origin){
+    else if(_chifn->get_fn(i_particle)>target() || i_particle==i_origin){
         _propagate_bisection(dex);
     }
     else{
@@ -281,7 +281,7 @@ void dalex::_propagate_bisection(int dex){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
         dir.normalize();
-        i_particle=bisection(_chifn->mindex(),dir,_chifn->target(),0.1);
+        i_particle=bisection(_chifn->mindex(),dir,target(),0.1);
         if(_particles.contains(i_particle)==1){
             i_particle=-1;
         }
@@ -295,7 +295,7 @@ void dalex::_propagate_bisection(int dex){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
         dir.normalize();
-        i_origin=bisection(_chifn->mindex(),dir,_chifn->target(),0.1);
+        i_origin=bisection(_chifn->mindex(),dir,target(),0.1);
         if(_origins.contains(i_origin)==1 || _particles.contains(i_origin)==1){
             i_origin=-1;
         }
@@ -335,7 +335,7 @@ void dalex::_propagate_ricochet(int dex){
     }
 
     int new_particle;
-    new_particle=bisection(i_particle,reflected_dir,_chifn->target(),0.1);
+    new_particle=bisection(i_particle,reflected_dir,target(),0.1);
 
     _origins.set(dex,i_particle);
     _particles.set(dex,new_particle);
