@@ -268,67 +268,12 @@ void maps::simplex_min_search(){
     double rr,mu_best,dd;
 
     int n_samples=10000;
-    _simplex_mindex=-1;
-    while(_simplex_mindex==-1){
-        for(i=0;i<n_samples;i++){
-            for(j=0;j<_chifn.get_dim();j++){
-                trial.set(j,_chifn.get_min(j)+_chifn.random_double()*(_chifn.get_max(j)-_chifn.get_min(j)));
-            }
-            dd=_chifn.distance(_chifn.get_pt(_chifn.mindex())[0], trial);
-            if(i==0 || dd>mu_best){
-                for(j=0;j<_chifn.get_dim();j++){
-                    origin.set(j,trial.get_data(j));
-                }
-                mu_best=dd;
-            }
-        }
-        dd=evaluate(trial,&_simplex_mindex);
-        if(dd>exception_value){
-            _simplex_mindex=-1;
-        }
-    }
-
-    for(i=0;i<_chifn.get_dim();i++){
-        dir.set(i,_chifn.get_pt(_chifn.mindex(),i)-_chifn.get_pt(_simplex_mindex,i));
-    }
-    rr=dir.normalize();
-
-    seed.add_row(_chifn.get_pt(_simplex_mindex)[0]);
-
-    old_dir.add_row(dir);
-    for(i=0;i<_chifn.get_dim();i++){
-        trial.set(i,0.5*(_chifn.get_pt(_chifn.mindex(),i)+_chifn.get_pt(_simplex_mindex,i)));
-    }
-    seed.add_row(trial);
-
-    double component;
-
     while(seed.get_rows()<_chifn.get_dim()+1){
         for(i=0;i<_chifn.get_dim();i++){
-            trial_dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+            trial.set(i,_chifn.get_min(i)+
+                        _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
         }
-
-        trial_dir.normalize();
-
-        for(i=0;i<old_dir.get_rows();i++){
-            component=0.0;
-
-            for(j=0;j<_chifn.get_dim();j++){
-                component+=trial_dir.get_data(j)*old_dir.get_data(i,j);
-            }
-
-            for(j=0;j<_chifn.get_dim();j++){
-                trial_dir.subtract_val(j,component*old_dir.get_data(i,j));
-            }
-        }
-        component=trial_dir.normalize();
-        if(component>1.0e-20){
-            old_dir.add_row(trial_dir);
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,seed.get_data(0,i)+0.1*rr*trial_dir.get_data(i));
-            }
-            seed.add_row(trial);
-        }
+        seed.add_row(trial);
     }
 
     printf("got seed\n");
