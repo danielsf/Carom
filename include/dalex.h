@@ -15,6 +15,7 @@ class dalex{
             _particles.set_name("dalex_particles");
             _origins.set_name("dalex_origins");
             _target_factor=1.0;
+            _simplex_mindex=-1;
         };
 
         void build(chisq_wrapper*);
@@ -49,6 +50,7 @@ class dalex{
         array_1d<int> _particles,_origins;
         chisq_wrapper *_chifn;
         double _target_factor;
+        int _simplex_mindex;
 
         void _propagate_bisection(int);
         void _propagate_ricochet(int);

@@ -14,12 +14,11 @@ void dalex::build(chisq_wrapper *cc){
 void dalex::search(){
     safety_check("search");
     int i;
-    int mindex_0 = _chifn->mindex();
     for(i=0;i<_chifn->get_dim();i++){
         propagate(i);
     }
 
-    if(_chifn->mindex()!=mindex_0){
+    if(_chifn->mindex()!=_simplex_mindex){
         simplex_search();
     }
 
@@ -85,6 +84,7 @@ void dalex::simplex_search(){
     ffmin.find_minimum(seed,trial);
 
     printf("    after dalex_simplex chimin %e\n",_chifn->chimin());
+    _simplex_mindex=_chifn->mindex();
 }
 
 
