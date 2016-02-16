@@ -257,7 +257,8 @@ void dalex::propagate(int dex){
         _propagate_bisection(dex);
     }
     else{
-        _propagate_ricochet(dex);
+        //_propagate_ricochet(dex);
+        _propagate_midpt(dex);
     }
 }
 
@@ -302,6 +303,12 @@ void dalex::_propagate_bisection(int dex){
     }
     _origins.set(dex,i_origin);
 
+    for(i=0;i<_chifn->get_dim();i++){
+        dir.set(i,0.5*(_chifn->get_pt(i_particle,i)+_chifn->get_pt(i_origin,i)));
+    }
+    double mu;
+    _chifn->evaluate(dir,&mu,&i);
+
 }
 
 
@@ -339,4 +346,53 @@ void dalex::_propagate_ricochet(int dex){
 
     _origins.set(dex,i_particle);
     _particles.set(dex,new_particle);
+}
+
+
+void dalex::_propagate_midpt(int dex){
+    safety_check("_propagate_midpt");
+    array_1d<double> midpt,dir,dir_0;
+    midpt.set_name("prop_mid_mid");
+    dir.set_name("prop_mid_dir");
+    dir_0.set_name("prop_mid_dir_0");
+
+    int i_particle,i_origin;
+    i_particle=_particles.get_data(dex);
+    i_origin=_origins.get_data(dex);
+
+    int i;
+    double mu;
+    for(i=0;i<_chifn->get_dim();i++){
+        midpt.set(i,0.5*(_chifn->get_pt(i_particle,i)+_chifn->get_pt(i_origin,i)));
+        dir_0.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
+    }
+    int i_mid;
+    double mu_mid;
+    _chifn->evaluate(midpt, &mu_mid, &i_mid);
+    if(i_mid<0 || mu_mid>_chifn->target() || i_particle==i_origin){
+        _propagate_bisection(dex);
+        return;
+    }
+
+     dir_0.normalize();
+     double component=0.0;
+     for(i=0;i<_chifn->get_dim();i++){
+         dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+     }
+     for(i=0;i<_chifn->get_dim();i++){
+         component+=dir.get_data(i)*dir_0.get_data(i);
+     }
+     for(i=0;i<_chifn->get_dim();i++){
+         dir.subtract_val(i,component*dir_0.get_data(i));
+     }
+     dir.normalize();
+     int i_found_1,i_found_2;
+     i_found_1=bisection(i_mid,dir,_chifn->target(),0.1);
+     for(i=0;i<_chifn->get_dim();i++){
+         dir.multiply_val(i,-1.0);
+     }
+     i_found_2=bisection(i_mid, dir, _chifn->target(), 0.1);
+     _particles.set(dex,i_found_1);
+     _origins.set(dex,i_found_2);
+
 }

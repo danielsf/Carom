@@ -54,6 +54,7 @@ class dalex{
 
         void _propagate_bisection(int);
         void _propagate_ricochet(int);
+        void _propagate_midpt(int);
 
 };
 
