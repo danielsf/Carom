@@ -321,8 +321,11 @@ void maps::simplex_min_search(){
 
     _last_did_min=_chifn.get_pts();
 
+    double mu_found;
+    mu_found=evaluate(minpt,&i);
+
     _ct_simplex_min+=_chifn.get_pts()-pt_start;
-    printf("    min %e\n",_chifn.chimin());
+    printf("    min %e -- %e\n",_chifn.chimin(),mu_found);
     _simplex_mindex=_chifn.mindex();
 }
 
