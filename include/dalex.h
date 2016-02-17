@@ -14,6 +14,7 @@ class dalex{
             _chifn=NULL;
             _particles.set_name("dalex_particles");
             _origins.set_name("dalex_origins");
+            _particle_log.set_name("dalex_particle_log");
             _target_factor=1.0;
             _simplex_mindex=-1;
         };
@@ -47,7 +48,7 @@ class dalex{
             return _target_factor*_chifn->target();
         }
 
-        array_1d<int> _particles,_origins;
+        array_1d<int> _particles,_origins,_particle_log;
         chisq_wrapper *_chifn;
         double _target_factor;
         int _simplex_mindex;

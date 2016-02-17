@@ -274,40 +274,58 @@ void dalex::_propagate_bisection(int dex){
     }*/
     array_1d<double> dir;
     dir.set_name("dalex_propagate_bisection_dir");
-    int i,i_particle,i_origin;
-    i_particle=-1;
+    int i,i_found_1,i_found_2;
+    i_found_1=-1;
 
-    while(i_particle<0){
+    while(i_found_1<0){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
         dir.normalize();
-        i_particle=bisection(_chifn->mindex(),dir,target(),0.1);
-        if(_particles.contains(i_particle)==1){
-            i_particle=-1;
+        i_found_1=bisection(_chifn->mindex(),dir,target(),0.1);
+        if(_particles.contains(i_found_1)==1 || _origins.contains(i_found_1)==1){
+            i_found_1=-1;
         }
     }
 
-    _particles.set(dex,i_particle);
 
-    i_origin=-1;
-    while(i_origin<0){
+    i_found_2=-1;
+    while(i_found_2<0){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
         dir.normalize();
-        i_origin=bisection(_chifn->mindex(),dir,target(),0.1);
-        if(_origins.contains(i_origin)==1 || _particles.contains(i_origin)==1){
-            i_origin=-1;
+        i_found_2=bisection(_chifn->mindex(),dir,target(),0.1);
+        if(_origins.contains(i_found_2)==1 || _particles.contains(i_found_2)==1 || i_found_2==i_found_1){
+            i_found_2=-1;
         }
     }
-    _origins.set(dex,i_origin);
 
-    for(i=0;i<_chifn->get_dim();i++){
-        dir.set(i,0.5*(_chifn->get_pt(i_particle,i)+_chifn->get_pt(i_origin,i)));
+    double dd,dd1,dd2;
+    dd1=2.0*exception_value;
+    dd2=2.0*exception_value;
+    for(i=0;i<_particle_log.get_dim();i++){
+        dd=_chifn->distance(i_found_1,_particle_log.get_data(i));
+        if(dd<dd1){
+            dd1=dd;
+        }
+        dd=_chifn->distance(i_found_2,_particle_log.get_data(i));
+        if(dd<dd2){
+            dd2=dd;
+        }
     }
-    double mu;
-    _chifn->evaluate(dir,&mu,&i);
+
+    if(dd1>dd2){
+        _particles.set(dex,i_found_1);
+        _origins.set(dex,i_found_2);
+    }
+    else{
+        _particles.set(dex,i_found_2);
+        _origins.set(dex,i_found_1);
+    }
+
+    _particle_log.add(i_found_1);
+    _particle_log.add(i_found_2);
 
 }
 
@@ -363,7 +381,7 @@ void dalex::_propagate_midpt(int dex){
     int i;
     double mu;
     for(i=0;i<_chifn->get_dim();i++){
-        midpt.set(i,0.5*(_chifn->get_pt(i_particle,i)+_chifn->get_pt(i_origin,i)));
+        midpt.set(i,0.666*_chifn->get_pt(i_particle,i)+0.333*_chifn->get_pt(i_origin,i));
         dir_0.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
     }
     int i_mid;
@@ -392,7 +410,31 @@ void dalex::_propagate_midpt(int dex){
          dir.multiply_val(i,-1.0);
      }
      i_found_2=bisection(i_mid, dir, _chifn->target(), 0.1);
-     _particles.set(dex,i_found_1);
-     _origins.set(dex,i_found_2);
+
+     double dd1,dd2,dd;
+     dd1=2.0*exception_value;
+     dd2=2.0*exception_value;
+     for(i=0;i<_particle_log.get_dim();i++){
+         dd=_chifn->distance(i_found_1,_particle_log.get_data(i));
+         if(dd<dd1){
+             dd1=dd;
+         }
+         dd=_chifn->distance(i_found_2,_particle_log.get_data(i));
+         if(dd<dd2){
+             dd2=dd;
+         }
+     }
+
+     if(dd1>dd2){
+         _particles.set(dex,i_found_1);
+         _origins.set(dex,i_found_2);
+     }
+     else{
+         _particles.set(dex,i_found_2);
+         _origins.set(dex,i_found_1);
+     }
+
+    _particle_log.add(i_found_1);
+    _particle_log.add(i_found_2);
 
 }
