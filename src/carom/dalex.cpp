@@ -295,14 +295,10 @@ void dalex::propagate(int dex){
     int i_particle=_particles.get_data(dex);
     int i_origin=_origins.get_data(dex);
 
-    if(i_particle<=0 || i_origin<=0){
-        _propagate_bisection(dex);
-    }
-    else if(_chifn->get_fn(i_particle)>target() || i_particle==i_origin){
+    if(i_particle<=0 || i_origin<=0 || _chifn->get_fn(i_particle)>target() || i_particle==i_origin){
         _propagate_bisection(dex);
     }
     else{
-        //_propagate_ricochet(dex);
         _propagate_midpt(dex);
     }
 }
