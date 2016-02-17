@@ -314,7 +314,7 @@ void dalex::propagate(int dex){
     int i_particle=_particles.get_data(dex);
     int i_origin=_origins.get_data(dex);
 
-    if(i_particle<=0 || i_origin<=0 || _chifn->get_fn(i_particle)>target() || i_particle==i_origin){
+    if(i_particle<=0 || i_origin<=0 || i_particle==i_origin){
         _propagate_bisection(dex);
     }
     else{
@@ -467,6 +467,7 @@ void dalex::_propagate_midpt(int dex){
      int i_found_1,i_found_2;
      i_found_1=bisection(i_mid,dir,_chifn->target(),0.1);
      if(_chifn->get_fn(i_mid)>_chifn->target()){
+         _propagate_bisection(dex);
          return;
      }
 
@@ -476,6 +477,7 @@ void dalex::_propagate_midpt(int dex){
      i_found_2=bisection(i_mid, dir, _chifn->target(), 0.1);
 
      if(i_found_1<0 || i_found_2<0){
+         _propagate_bisection(dex);
          return;
      }
 
