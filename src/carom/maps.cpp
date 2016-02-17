@@ -537,7 +537,7 @@ void maps::search(int limit){
 
         pt_start=_chifn.get_pts();
         _cloud.search();
-        _outer_cloud.search();
+        //_outer_cloud.search();
         _ct_dalex+=_chifn.get_pts()-pt_start;
         simplex_boundary_search();
 
