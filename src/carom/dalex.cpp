@@ -447,10 +447,18 @@ void dalex::_propagate_midpt(int dex){
      dir.normalize();
      int i_found_1,i_found_2;
      i_found_1=bisection(i_mid,dir,_chifn->target(),0.1);
+     if(_chifn->get_fn(i_mid)>_chifn->target()){
+         return;
+     }
+
      for(i=0;i<_chifn->get_dim();i++){
          dir.multiply_val(i,-1.0);
      }
      i_found_2=bisection(i_mid, dir, _chifn->target(), 0.1);
+
+     if(i_found_1<0 || i_found_2<0){
+         return;
+     }
 
      double dd1,dd2,dd;
      dd1=2.0*exception_value;
