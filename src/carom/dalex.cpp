@@ -80,6 +80,9 @@ void dalex::simplex_search(){
     }
     double gnorm,target=_chifn->target();
     i_found=i_min;
+    if(_chifn->get_fn(i_min)>_chifn->target()){
+        target=_chifn->get_fn(i_min)+_chifn->target()-_chifn->chimin();
+    }
     gnorm=grad.normalize();
     while(i_found==i_min){
         i_found = bisection(i_min,grad,target,0.1);
