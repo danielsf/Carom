@@ -189,6 +189,51 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
         trial.set(jj,_chifn->get_pt(i_origin,jj));
     }
 
+    array_1d<double> norm,max,min;
+    norm.set_dim(_chifn->get_dim());
+    for(ii=0;ii<_chifn->get_dim();ii++){
+        max.set(ii, -2.0*exception_value);
+        min.set(ii, 2.0*exception_value);
+    }
+
+    int ip;
+    for(ii=0;ii<_particles.get_dim();ii++){
+        if(_particles.get_data(ii)>0){
+            ip=_particles.get_data(ii);
+            for(jj=0;jj<_chifn->get_dim();jj++){
+                if(_chifn->get_pt(ip,jj)<min.get_data(jj)){
+                    min.set(jj,_chifn->get_pt(ip,jj));
+                }
+                if(_chifn->get_pt(ip,jj)>max.get_data(jj)){
+                    max.set(jj,_chifn->get_pt(ip,jj));
+                }
+            }
+        }
+    }
+
+    for(ii=0;ii<_origins.get_dim();ii++){
+        if(_origins.get_data(ii)>0){
+            ip=_origins.get_data(ii);
+            for(jj=0;jj<_chifn->get_dim();jj++){
+                if(_chifn->get_pt(ip,jj)<min.get_data(jj)){
+                    min.set(jj,_chifn->get_pt(ip,jj));
+                }
+                if(_chifn->get_pt(ip,jj)>max.get_data(jj)){
+                    max.set(jj,_chifn->get_pt(ip,jj));
+                }
+            }
+        }
+    }
+
+    for(ii=0;ii<_chifn->get_dim();ii++){
+        if(max.get_data(ii)-min.get_data(ii)>1.0e-20 && fabs(max.get_data(ii)-min.get_data(ii))<exception_value){
+            norm.set(ii,max.get_data(ii)-min.get_data(ii));
+        }
+        else{
+            norm.set(ii,_chifn->get_characteristic_length(ii));
+        }
+    }
+
     zero_dim=0;
     aborted=0;
 
@@ -198,12 +243,12 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
 
             trial.set(ii,_chifn->get_pt(i_origin,ii));
 
-            trial.add_val(ii,step_factor*_chifn->get_characteristic_length(ii));
+            trial.add_val(ii,step_factor*norm.get_data(ii));
             _chifn->evaluate(trial,&mu,&i_found);
 
             if(i_found<0 || i_found==i_origin){
                 trial.set(ii,_chifn->get_pt(i_origin,ii));
-                trial.subtract_val(ii,step_factor*_chifn->get_characteristic_length(ii));
+                trial.subtract_val(ii,step_factor*norm.get_data(ii));
                 _chifn->evaluate(trial,&mu,&i_found);
             }
 
