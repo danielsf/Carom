@@ -543,8 +543,6 @@ void simplex_minimizer::gradient_minimizer(){
 
     array_1d<double> gradient;
     gradient.set_name("simplex_gradient");
-    array_2d<double> step_vectors;
-    step_vectors.set_name("simplex_step_vectors");
 
     double step,dd;
     int i,j,k;
@@ -563,14 +561,12 @@ void simplex_minimizer::gradient_minimizer(){
         }
     }
 
-    for(i=0;i<_pts.get_rows();i++){
-        calculate_gradient(_pts(i)[0], gradient);
-        gradient.normalize();
-        for(j=0;j<_pts.get_cols();j++){
-            gradient.multiply_val(j,-1.0*step*0.1);
-        }
-        step_vectors.add_row(gradient);
+    calculate_gradient(_pts(_il)[0], gradient);
+    gradient.normalize();
+    for(i=0;i<_pts.get_cols();i++){
+        gradient.multiply_val(i,-1.0);
     }
+
 
     array_1d<double> perturbation;
     double mu;
@@ -580,7 +576,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
         perturbation.normalize();
         for(j=0;j<_pts.get_cols();j++){
-            _pts.add_val(i,j,step_vectors.get_data(i,j)+0.05*step*perturbation.get_data(j));
+            _pts.add_val(i,j,step*0.1*gradient.get_data(j)+0.05*step*perturbation.get_data(j));
         }
         mu=evaluate(_pts(i)[0]);
         _ff.set(i,mu);
