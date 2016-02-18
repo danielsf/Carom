@@ -505,7 +505,7 @@ void dalex::_propagate_midpt(int dex){
      for(i=0;i<_chifn->get_dim();i++){
          dir.multiply_val(i,-1.0);
      }
-     i_found_2=bisection(i_mid, dir, _chifn->target(), 0.1);
+     i_found_2=bisection(i_mid, dir, target(), 0.1);
 
      if(i_found_1<0 || i_found_2<0){
          _propagate_bisection(dex);
