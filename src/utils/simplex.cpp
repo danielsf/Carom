@@ -545,12 +545,25 @@ void simplex_minimizer::gradient_minimizer(){
     _freeze_temp=1;
     _freeze_called=1;
 
-    array_1d<double> gradient;
+    array_1d<double> gradient,avg_pt;
     gradient.set_name("simplex_gradient");
+    avg_pt.set_name("simplex_avg_pt");
 
     double step,dd;
     int i,j,k;
     step=-1.0;
+
+    for(i=0;i<_pts.get_cols();i++){
+        avg_pt.set(i,0.0);
+    }
+    for(i=0;i<_pts.get_rows();i++){
+        for(j=0;j<_pts.get_cols();j++){
+            avg_pt.add_val(j,_pts.get_data(i,j));
+        }
+    }
+    for(i=0;i<_pts.get_cols();i++){
+        avg_pt.divide_val(i,double(_pts.get_rows()));
+    }
 
     for(i=0;i<_pts.get_rows();i++){
         for(j=i+1;j<_pts.get_rows();j++){
@@ -565,7 +578,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
     }
 
-    calculate_gradient(_pts(_il)[0], gradient);
+    calculate_gradient(avg_pt, gradient);
     gradient.normalize();
     for(i=0;i<_pts.get_cols();i++){
         gradient.multiply_val(i,-1.0);
