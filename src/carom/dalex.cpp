@@ -107,17 +107,17 @@ void dalex::simplex_search(){
     for(i=0;i<_chifn->get_dim();i++){
         grad.multiply_val(i,-1.0);
     }
-    double gnorm,target=_chifn->target();
+    double gnorm,local_target=target();
     int i_min=_chifn->mindex();
     i_found=i_min;
     gnorm=grad.normalize();
     while(i_found==i_min){
-        i_found = bisection(i_min,grad,target,0.1);
+        i_found = bisection(i_min,grad,local_target,0.1);
 
         if(i_found==i_min){
-            printf("    need to increase gradient target %e %e %e\n",target,_chifn->get_fn(i_min),gnorm);
+            printf("    need to increase gradient target %e %e %e\n",local_target,_chifn->get_fn(i_min),gnorm);
         }
-        target*=2.0;
+        local_target*=2.0;
     }
     if(i_min==i_found){
         printf("cannot proceed with simplex; gradient did not move %e\n",grad.normalize());
@@ -477,7 +477,7 @@ void dalex::_propagate_midpt(int dex){
     int i_mid;
     double mu_mid;
     _chifn->evaluate(midpt, &mu_mid, &i_mid);
-    if(i_mid<0 || mu_mid>_chifn->target() || i_particle==i_origin){
+    if(i_mid<0 || mu_mid>target() || i_particle==i_origin){
         _propagate_bisection(dex);
         return;
     }
@@ -495,8 +495,8 @@ void dalex::_propagate_midpt(int dex){
      }
      dir.normalize();
      int i_found_1,i_found_2;
-     i_found_1=bisection(i_mid,dir,_chifn->target(),0.1);
-     if(_chifn->get_fn(i_mid)>_chifn->target()){
+     i_found_1=bisection(i_mid,dir,target(),0.1);
+     if(_chifn->get_fn(i_mid)>target()){
          _propagate_bisection(dex);
          return;
      }
