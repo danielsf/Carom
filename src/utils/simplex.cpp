@@ -477,6 +477,52 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     _freeze_temp=-1;
 }
 
+
+double simplex_minimizer::get_dx(int dex){
+
+    double max,min;
+    int i;
+    for(i=0;i<_pts.get_rows();i++){
+        if(i==0 || _pts.get_data(i,dex)<min){
+            min=_pts.get_data(i,dex);
+        }
+        if(i==0 || _pts.get_data(i,dex)>max){
+            max=_pts.get_data(i,dex);
+        }
+    }
+
+    if(max-min<1.0e-20){
+        return 1.0;
+    }
+
+    return max-min;
+
+}
+
+
+void simplex_minimizer::calculate_gradient(array_1d<double> &pp, array_1d<double> &grad){
+
+    array_1d<double> trial;
+    trial.set_name("simplex_calculate_gradient_trial");
+    int i;
+    for(i=0;i<pp.get_dim();i++){
+        trial.set(i,pp.get_data(i));
+    }
+
+    double dx=0.01;
+    double y1,y2,xnorm;
+    y1=evaluate(trial);
+    for(i=0;i<pp.get_dim();i++){
+        xnorm=get_dx(i);
+        trial.add_val(i,dx*xnorm);
+        y2=evaluate(trial);
+        grad.set(i,(y1-y2)/(dx*xnorm));
+        trial.set(i,pp.get_data(i));
+    }
+
+}
+
+
 void simplex_minimizer::gradient_minimizer(){
     if(_dice==NULL){
         printf("WARNING cannot use simplex gradient; _dice is NULL\n");
@@ -495,119 +541,47 @@ void simplex_minimizer::gradient_minimizer(){
     _freeze_temp=1;
     _freeze_called=1;
 
-    array_1d<double> gradient,trial;
+    array_1d<double> gradient;
     gradient.set_name("simplex_gradient");
-    trial.set_name("simplex_gradient_trial");
+    array_2d<double> step_vectors;
+    step_vectors.set_name("simplex_step_vectors");
 
-    int ix,dim,i,j,k;
-    double x1,x2,mu1,mu2,mu,dx;
+    double step,dd;
+    int i,j,k;
+    step=-1.0;
 
-    dim=_pts.get_cols();
-
-    for(ix=0;ix<dim;ix++){
-        for(i=0;i<dim;i++){
-            trial.set(i,_pts.get_data(_il,i));
-        }
-
-        dx=0.1;
-        k=0;
-        mu1=2.0*exception_value;
-        while(!(mu1<exception_value) && k<5){
-            k++;
-            x1=_pts.get_data(_il,ix)-dx;
-            trial.set(ix,x1);
-            mu1=evaluate(trial);
-
-            if(!(mu1<exception_value)){
-                dx*=0.5;
+    for(i=0;i<_pts.get_rows();i++){
+        for(j=i+1;j<_pts.get_rows();j++){
+            dd=0.0;
+            for(k=0;k<_pts.get_cols();k++){
+                dd+=power(_pts.get_data(i,k)-_pts.get_data(j,k),2);
             }
-        }
-
-        dx=0.1;
-        k=0;
-        mu2=2.0*exception_value;
-        while(!(mu2<exception_value) && k<5){
-            k++;
-            x2=_pts.get_data(_il,ix)-dx;
-            trial.set(ix,x2);
-            mu2=evaluate(trial);
-
-            if(!(mu2<exception_value)){
-                dx*=0.5;
-            }
-        }
-
-        gradient.set(ix,(mu1-mu2)/(x1-x2));
-    }
-
-    mu2=gradient.normalize();
-    array_1d<double> step;
-    step.set_name("simplex_gradient_step");
-
-    if(_last_improved_ff.get_dim()>0){
-        for(i=0;i<dim+1;i++){
-            if(i==0 || _last_improved_ff.get_data(i)<_last_improved_ff.get_data(j))j=i;
-        }
-
-        for(i=0;i<dim;i++){
-            step.set(i,_pts.get_data(_il,i)-_last_improved_pts.get_data(j,i));
-        }
-        mu=step.normalize();
-
-        if(!isnan(mu2)){
-            for(i=0;i<dim;i++){
-                mu1=0.5*(step.get_data(i)+gradient.get_data(i));
-                step.set(i,mu1);
-            }
-        }
-    }
-    else{
-        mu=1.0;//should this be something smaller? in the other case, it is the size of
-               //the step from old _il to new _il
-        for(i=0;i<dim;i++)step.set(i,gradient.get_data(i));
-    }
-
-    step.normalize();
-    double theta;
-    array_1d<double> deviation;
-    deviation.set_name("simplex_gradient_deviation");
-
-    int is_safe=1;
-    for(i=0;i<dim;i++){
-        if(isnan(step.get_data(i)) || isnan(gradient.get_data(i))){
-            is_safe=0;
-        }
-    }
-
-    for(i=0;i<dim+1 && is_safe==1;i++){
-        for(j=0;j<dim;j++){
-            _pts.add_val(i,j,mu*step.get_data(j));
-        }
-
-        if(i!=_il){
-            theta=0.0;
-            mu1=-1.0;
-            while(mu1<0.0 || isnan(mu1)){
-                theta=0.0;
-                for(j=0;j<dim;j++){
-                    deviation.set(j,normal_deviate(_dice,0.0,1.0));
-                    theta+=deviation.get_data(j)*step.get_data(j);
-                }
-
-                for(j=0;j<dim;j++){
-                    deviation.subtract_val(j,theta*step.get_data(j));
-                }
-
-                mu1=deviation.normalize();
-            }
-
-            for(j=0;j<dim;j++){
-                _pts.add_val(i,j,0.1*deviation.get_data(j));
+            dd=sqrt(dd);
+            if(dd>step){
+                step=dd;
             }
         }
     }
 
-    for(i=0;i<dim+1;i++){
+    for(i=0;i<_pts.get_rows();i++){
+        calculate_gradient(_pts(i)[0], gradient);
+        gradient.normalize();
+        for(j=0;j<_pts.get_cols();j++){
+            gradient.multiply_val(j,-1.0*step*0.1);
+        }
+        step_vectors.add_row(gradient);
+    }
+
+    array_1d<double> perturbation;
+    double mu;
+    for(i=0;i<_pts.get_rows();i++){
+        for(j=0;j<_pts.get_cols();j++){
+            perturbation.set(j,normal_deviate(_dice,0.0,1.0));
+        }
+        perturbation.normalize();
+        for(j=0;j<_pts.get_cols();j++){
+            _pts.add_val(i,j,step_vectors.get_data(i,j)+0.05*step*perturbation.get_data(j));
+        }
         mu=evaluate(_pts(i)[0]);
         _ff.set(i,mu);
     }

@@ -37,6 +37,8 @@ private:
     void cool_off();
     
     void gradient_minimizer();
+    void calculate_gradient(array_1d<double>&, array_1d<double>&);
+    double get_dx(int);
     void expand();
     
     void find_il();
