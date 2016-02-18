@@ -34,6 +34,8 @@ class dalex{
             _target_factor=tt;
         }
 
+        double get_norm(int);
+
     private:
 
         void safety_check(char *word){

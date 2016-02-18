@@ -11,6 +11,39 @@ void dalex::build(chisq_wrapper *cc){
 
 }
 
+double dalex::get_norm(int dex){
+
+    if(_particles.get_dim()==0 && _origins.get_dim()==0){
+        return _chifn->get_characteristic_length(dex);
+    }
+
+    double min,max;
+    int i,ip;
+    for(i=0;i<_particles.get_dim()+_origins.get_dim();i++){
+
+        if(i>=_particles.get_dim()){
+            ip=_origins.get_data(i-_particles.get_dim());
+        }
+        else{
+            ip=_particles.get_data(i);
+        }
+
+        if(i==0 || _chifn->get_pt(ip,dex)<min){
+            min=_chifn->get_pt(ip,dex);
+        }
+
+        if(i==0 || _chifn->get_pt(ip,dex)>max){
+            max=_chifn->get_pt(ip,dex);
+        }
+    }
+
+    if(max-min<1.0e-20){
+        return _chifn->get_characteristic_length(dex);
+    }
+
+    return max-min;
+}
+
 void dalex::search(){
     safety_check("search");
     int i;
