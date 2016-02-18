@@ -473,7 +473,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     for(i=0;i<dim;i++){
         min_pt.set(i,_min_pt.get_data(i));
     }
-    printf("    leaving simplex %d %d %d\n",_called_evaluate,_last_found,abort_max);
+    printf("    leaving simplex %d %d %d %d\n",_called_evaluate,_last_found,_last_called_gradient,abort_max);
     printf("    temp %e\n",_temp);
     printf("    actually called %d\n",_chisquared->get_called()-ibefore);
     printf("    _true_min_ff %e\n",_true_min_ff);
