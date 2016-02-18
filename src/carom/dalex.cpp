@@ -130,6 +130,7 @@ void dalex::simplex_search(){
     ffmin.set_minmax(min,max);
     ffmin.set_dice(_chifn->get_dice());
     ffmin.use_gradient();
+    ffmin.set_abort_max_factor(100);
     ffmin.find_minimum(seed,trial);
 
     printf("    after dalex_simplex chimin %e\n",_chifn->chimin());
