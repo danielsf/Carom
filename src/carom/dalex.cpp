@@ -60,37 +60,31 @@ void dalex::simplex_search(){
         }
     }
 
-    double mu_min,mu;
-    int i_min=-1,i_found;
+    int i_found;
+    double wgt;
     for(i=0;i<_particles.get_dim();i++){
+        wgt=_chifn->random_double();
         for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,0.5*(_chifn->get_pt(_origins.get_data(i),j)+_chifn->get_pt(_particles.get_data(i),j)));
+            trial.set(j,wgt*_chifn->get_pt(_origins.get_data(i),j)+(1.0-wgt)*_chifn->get_pt(_particles.get_data(i),j));
         }
         seed.add_row(trial);
-        _chifn->evaluate(trial,&mu,&i_found);
-        if(i_min<0 || mu<mu_min){
-            mu_min=mu;
-            i_min=i_found;
-        }
     }
 
-    calculate_gradient(i_min, grad);
+    calculate_gradient(_chifn->mindex(), grad);
     for(i=0;i<_chifn->get_dim();i++){
         grad.multiply_val(i,-1.0);
     }
     double gnorm,target=_chifn->target();
+    int i_min=_chifn->mindex();
     i_found=i_min;
-    if(_chifn->get_fn(i_min)>_chifn->target()){
-        target=_chifn->get_fn(i_min)+_chifn->target()-_chifn->chimin();
-    }
     gnorm=grad.normalize();
     while(i_found==i_min){
         i_found = bisection(i_min,grad,target,0.1);
-        target*=2.0;
 
         if(i_found==i_min){
-            printf("    need to increase gradient target %e %e\n",target,gnorm);
+            printf("    need to increase gradient target %e %e %e\n",target,_chifn->get_fn(i_min),gnorm);
         }
+        target*=2.0;
     }
     if(i_min==i_found){
         printf("cannot proceed with simplex; gradient did not move %e\n",grad.normalize());
