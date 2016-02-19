@@ -589,7 +589,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
         else{
             for(j=0;j<_pts.get_cols();j++){
-                _pts.add_val(i,j,step*0.1*gradient.get_data(j));
+                _pts.add_val(i,j,step*0.5*gradient.get_data(j));
             }
         }
         mu=evaluate(_pts(i)[0]);
