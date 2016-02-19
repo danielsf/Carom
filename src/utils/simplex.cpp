@@ -545,25 +545,12 @@ void simplex_minimizer::gradient_minimizer(){
     _freeze_temp=1;
     _freeze_called=1;
 
-    array_1d<double> gradient,avg_pt;
+    array_1d<double> gradient;
     gradient.set_name("simplex_gradient");
-    avg_pt.set_name("simplex_avg_pt");
 
     double step,dd;
     int i,j,k;
     step=-1.0;
-
-    for(i=0;i<_pts.get_cols();i++){
-        avg_pt.set(i,0.0);
-    }
-    for(i=0;i<_pts.get_rows();i++){
-        for(j=0;j<_pts.get_cols();j++){
-            avg_pt.add_val(j,_pts.get_data(i,j));
-        }
-    }
-    for(i=0;i<_pts.get_cols();i++){
-        avg_pt.divide_val(i,double(_pts.get_rows()));
-    }
 
     for(i=0;i<_pts.get_rows();i++){
         for(j=i+1;j<_pts.get_rows();j++){
@@ -578,7 +565,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
     }
 
-    calculate_gradient(avg_pt, gradient);
+    calculate_gradient(_pts(_il)[0], gradient);
     gradient.normalize();
     for(i=0;i<_pts.get_cols();i++){
         gradient.multiply_val(i,-1.0);
@@ -588,12 +575,19 @@ void simplex_minimizer::gradient_minimizer(){
     array_1d<double> perturbation;
     double mu;
     for(i=0;i<_pts.get_rows();i++){
-        for(j=0;j<_pts.get_cols();j++){
-            perturbation.set(j,normal_deviate(_dice,0.0,1.0));
+        if(i!=_il){
+            for(j=0;j<_pts.get_cols();j++){
+                perturbation.set(j,normal_deviate(_dice,0.0,1.0));
+            }
+            perturbation.normalize();
+            for(j=0;j<_pts.get_cols();j++){
+                _pts.add_val(i,j,step*0.1*gradient.get_data(j)+0.05*step*perturbation.get_data(j));
+            }
         }
-        perturbation.normalize();
-        for(j=0;j<_pts.get_cols();j++){
-            _pts.add_val(i,j,step*0.1*gradient.get_data(j)+0.05*step*perturbation.get_data(j));
+        else{
+            for(j=0;j<_pts.get_cols();j++){
+                _pts.add_val(i,j,step*0.1*gradient.get_data(j));
+            }
         }
         mu=evaluate(_pts(i)[0]);
         _ff.set(i,mu);
