@@ -95,12 +95,23 @@ void dalex::simplex_search(){
 
     int i_found;
     double wgt;
+    double mu_best,mu;
+    array_1d<double> trial_best;
     for(i=0;i<_particles.get_dim();i++){
-        wgt=_chifn->random_double();
-        for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,wgt*_chifn->get_pt(_origins.get_data(i),j)+(1.0-wgt)*_chifn->get_pt(_particles.get_data(i),j));
+        mu_best=2.0*exception_value;
+        for(wgt=0.25;wgt<1.0;wgt+=0.25){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.set(j,wgt*_chifn->get_pt(_origins.get_data(i),j)+(1.0-wgt)*_chifn->get_pt(_particles.get_data(i),j));
+            }
+            _chifn->evaluate(trial,&mu,&j);
+            if(mu<mu_best){
+                mu_best=mu;
+                for(j=0;j<_chifn->get_dim();j++){
+                    trial_best.set(j,trial.get_data(j));
+                }
+            }
         }
-        seed.add_row(trial);
+        seed.add_row(trial_best);
     }
 
     calculate_gradient(_chifn->mindex(), grad);
