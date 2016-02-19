@@ -192,14 +192,8 @@ void chisq_wrapper::initialize(int npts){
     temp_max.set_name("chisq_wrapper_initialize_temp_max");
     temp_min.set_name("chisq_wrapper_initialize_temp_min");
     for(i=0;i<_chifn->get_dim();i++){
-        if(_characteristic_length.get_dim()>i && _characteristic_length.get_data(i)>0.0){
-            temp_min.set(i,0.0);
-            temp_max.set(i,_characteristic_length.get_data(i));
-        }
-        else{
-            temp_min.set(i,_range_min.get_data(i));
-            temp_max.set(i,_range_max.get_data(i));
-        }
+        temp_min.set(i,0.0);
+        temp_max.set(i,get_characteristic_length(i));
     }
 
     _kptr=new kd_tree(data,temp_min,temp_max);
