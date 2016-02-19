@@ -514,13 +514,16 @@ void simplex_minimizer::calculate_gradient(array_1d<double> &pp, array_1d<double
     }
 
     double dx=0.01;
-    double y1,y2,xnorm;
-    y1=evaluate(trial);
+    double y1,y2,x1,x2,xnorm;
     for(i=0;i<pp.get_dim();i++){
         xnorm=get_dx(i);
         trial.add_val(i,dx*xnorm);
+        y1=evaluate(trial);
+        x1=trial.get_data(i);
+        trial.subtract_val(i,2.0*dx*xnorm);
         y2=evaluate(trial);
-        grad.set(i,(y1-y2)/(pp.get_data(i)-trial.get_data(i)));
+        x2=trial.get_data(i);
+        grad.set(i,(y1-y2)/(x1-x2));
         trial.set(i,pp.get_data(i));
     }
 
