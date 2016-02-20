@@ -307,13 +307,17 @@ void maps::simplex_min_search(){
 
     _ct_simplex_min+=_chifn.get_pts()-pt_start;
     printf("    min %e -- %e\n",_chifn.chimin(),mu_found);
-    printf("    traveled %e\n",
-    _chifn.distance(_chifn.mindex(),i_min_0));
-    for(i=0;i<_chifn.get_dim();i++){
-        printf("    %e %e -- %e\n",
-        _chifn.get_pt(_chifn.mindex(),i),_chifn.get_pt(i_min_0,i),
-        _chifn.get_characteristic_length(i));
+
+    if(_chifn.mindex()!=i_min_0){
+        printf("    traveled %e\n",
+        _chifn.distance(_chifn.mindex(),i_min_0));
+        for(i=0;i<_chifn.get_dim();i++){
+            printf("    %e %e -- %e\n",
+            _chifn.get_pt(_chifn.mindex(),i),_chifn.get_pt(i_min_0,i),
+            _chifn.get_characteristic_length(i));
+        }
     }
+
     _simplex_mindex=_chifn.mindex();
 }
 
