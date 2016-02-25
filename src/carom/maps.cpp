@@ -318,6 +318,14 @@ void maps::simplex_min_search(){
         }
     }
 
+    FILE *output;
+    output=fopen("junk.txt","a");
+    for(i=0;i<_chifn.get_dim();i++){
+        fprintf(output,"%e ",minpt.get_data(i));
+    }
+    fprintf(output,"%e\n",mu_found);
+    fclose(output);
+
     _simplex_mindex=_chifn.mindex();
 }
 
