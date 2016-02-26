@@ -270,7 +270,6 @@ void maps::simplex_min_search(){
     trial_dir.set_name("carom_simplex_min_searc_trial_dir");
     double rr,mu_best,dd;
 
-    int n_samples=10000;
     while(seed.get_rows()<_chifn.get_dim()+1){
         for(i=0;i<_chifn.get_dim();i++){
             trial.set(i,_chifn.get_min(i)+
