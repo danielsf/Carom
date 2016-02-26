@@ -530,6 +530,75 @@ void simplex_minimizer::calculate_gradient(array_1d<double> &pp, array_1d<double
 
 }
 
+void simplex_minimizer::gradient_cloud(){
+    if(_dice==NULL){
+        printf("WARNING cannot use simplex gradient; _dice is NULL\n");
+        exit(1);
+    }
+    find_il();
+
+    double true_min_0=_true_min_ff;
+
+    int need_thaw_temp,need_thaw_called;
+
+    if(_freeze_temp==0)need_thaw_temp=1;
+    else need_thaw_temp=0;
+
+    if(_freeze_called==0)need_thaw_called=1;
+    else need_thaw_called=0;
+
+    _freeze_temp=1;
+    _freeze_called=1;
+
+    array_1d<double> gradient;
+    gradient.set_name("simplex_gradient");
+
+    double step,dd;
+    int i,j,k;
+    step=-1.0;
+
+    for(i=0;i<_pts.get_rows();i++){
+        for(j=i+1;j<_pts.get_rows();j++){
+            dd=0.0;
+            for(k=0;k<_pts.get_cols();k++){
+                dd+=power(_pts.get_data(i,k)-_pts.get_data(j,k),2);
+            }
+            dd=sqrt(dd);
+            if(dd>step){
+                step=dd;
+            }
+        }
+    }
+
+    int ix;
+    for(ix=0;ix<_pts.get_rows();ix++){
+
+        calculate_gradient(_pts(ix)[0], gradient);
+        gradient.normalize();
+        for(i=0;i<_pts.get_cols();i++){
+            gradient.multiply_val(i,-1.0);
+        }
+        for(i=0;i<_pts.get_cols();i++){
+            _pts.add_val(ix,i,0.5*step*gradient.get_data(i));
+        }
+
+    }
+
+    double mu;
+
+    for(i=0;i<_pts.get_rows();i++){
+        mu=evaluate(_pts(i)[0]);
+        _ff.set(i,mu);
+    }
+    find_il();
+    if(need_thaw_temp==1)_freeze_temp=0;
+    if(need_thaw_called==1)_freeze_called=0;
+    _last_called_gradient=_called_evaluate;
+
+    printf("    delta from gradient_cloud %e\n",_true_min_ff-true_min_0);
+
+}
+
 
 void simplex_minimizer::gradient_minimizer(){
     if(_dice==NULL){
