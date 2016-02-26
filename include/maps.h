@@ -77,6 +77,7 @@ private:
     char _outname[letters],_timingname[letters];
 
     array_1d<int> _good_points,_duds,_duds_for_min;
+    array_1d<int> _failed_mins;
 
     int _last_did_min;
 

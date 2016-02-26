@@ -19,6 +19,7 @@ maps::maps(){
     _good_points.set_name("maps_good_points");
     _duds.set_name("maps_duds");
     _duds_for_min.set_name("maps_duds_for_min");
+    _failed_mins.set_name("maps_failed_mins");
 }
 
 maps::~maps(){
@@ -251,6 +252,7 @@ void maps::simplex_min_search(){
     printf("\ndoing maps.simplex_min_search -- min %e %d\n",
     _chifn.chimin(),_chifn.get_pts());
     int pt_start=_chifn.get_pts();
+    int mindex_0=_chifn.mindex();
 
     assess_good_points();
     int i,j;
@@ -305,6 +307,9 @@ void maps::simplex_min_search(){
 
     double mu_found;
     mu_found=evaluate(minpt,&i);
+    if(i>=0 && _chifn.mindex()==mindex_0){
+        _failed_mins.add(i);
+    }
 
     _ct_simplex_min+=_chifn.get_pts()-pt_start;
     printf("    min %e -- %e\n",_chifn.chimin(),mu_found);
