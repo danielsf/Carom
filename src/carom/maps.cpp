@@ -270,6 +270,26 @@ void maps::simplex_min_search(){
     trial_dir.set_name("carom_simplex_min_searc_trial_dir");
     double rr,mu_best,dd;
 
+    array_1d<int> i_scratch;
+    i_scratch.set_name("simplex_min_i_scratch");
+
+    if(_failed_mins.get_dim()>0){
+        if(_failed_mins.get_dim()<_chifn.get_dim()/2){
+            for(i=0;i<_failed_mins.get_dim();i++){
+                seed.add_row(_chifn.get_pt(_failed_mins.get_data(i))[0]);
+            }
+        }
+        else{
+            while(seed.get_rows()<_chifn.get_dim()/2){
+                i=_chifn.random_int()%_failed_mins.get_dim();
+                if(i_scratch.contains(i)==0){
+                    i_scratch.add(i);
+                    seed.add_row(_chifn.get_pt(_failed_mins.get_data(i))[0]);
+                }
+            }
+        }
+    }
+
     while(seed.get_rows()<_chifn.get_dim()+1){
         for(i=0;i<_chifn.get_dim();i++){
             trial.set(i,_chifn.get_min(i)+
