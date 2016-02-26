@@ -368,11 +368,12 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
 
     spread=_ff.get_data(_ih)-_ff.get_data(_il);
 
-    int step_ct=0,last_grad=0;
+    if(_use_gradient==1){
+        abort_max*=2;
+    }
 
     printf("    simplex starts with %e\n",_true_min_ff);
     while(_called_evaluate-_last_found<abort_max){
-       step_ct++;
        for(i=0;i<dim;i++){
            pbar.set(i,0.0);
            for(j=0;j<dim+1;j++){
@@ -457,9 +458,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        else gradient_threshold=0.1*_min_ff;
 
        if(_use_gradient==1){
-           if(step_ct-last_grad>=100){
-               last_grad=step_ct;
-               gradient_cloud();
+           if(_called_evaluate>abort_max/2+_last_called_gradient){
+               gradient_minimizer();
            }
        }
 
