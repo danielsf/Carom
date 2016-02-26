@@ -130,7 +130,7 @@ void maps::set_timingname(char *nn){
 void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
-    _outer_cloud.set_target_factor(100.0);
+    _outer_cloud.set_target_factor(1.33);
     _outer_cloud.build(&_chifn);
     _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
