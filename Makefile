@@ -170,6 +170,11 @@ object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_typ
 object/mcmc.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
+test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
+	$(gg) -o bin/test_sa src/tests/test_simulated_annealing.cpp \
+	object/containers.o object/goto_tools.o object/chisq.o \
+	object/jellyBean.o object/wrappers.o
+
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
 object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
