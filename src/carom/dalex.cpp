@@ -47,12 +47,9 @@ double dalex::get_norm(int dex){
 void dalex::search(){
     safety_check("search");
     int i;
-    printf("\ndalex searching\n");
     for(i=0;i<_chifn->get_dim();i++){
         propagate(i);
     }
-
-    printf("done propagating\n");
 
     if(_chifn->mindex()!=_simplex_mindex){
         simplex_search();
@@ -167,10 +164,8 @@ int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, doubl
             trial_high.add_val(ii,rr*dir.get_data(ii));
         }
         _chifn->evaluate(trial_high, &mu, &i_found);
-        printf("    mu %e target %e\n",mu,local_target);
     }
 
-    printf("got high\n");
     return bisection(_chifn->get_pt(ilow)[0], trial_high, local_target, tol);
 }
 
@@ -351,7 +346,6 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
 
 
 void dalex::propagate(int dex){
-    printf("    propagating %d\n",dex);
     safety_check("propagate");
 
     if(dex>_particles.get_dim()){
@@ -362,11 +356,9 @@ void dalex::propagate(int dex){
     int i_origin=_origins.get_data(dex);
 
     if(i_particle<=0 || i_origin<=0 || i_particle==i_origin){
-        printf("doing bisection\n");
         _propagate_bisection(dex);
     }
     else{
-        printf("doing midpt\n");
         _propagate_midpt(dex);
     }
 }
@@ -501,8 +493,6 @@ void dalex::_propagate_midpt(int dex){
         return;
     }
 
-     printf("    imid %d %e %e\n",i_mid,_chifn->get_fn(i_mid),target());
-
      dir_0.normalize();
      double component=0.0;
      for(i=0;i<_chifn->get_dim();i++){
@@ -521,8 +511,6 @@ void dalex::_propagate_midpt(int dex){
          _propagate_bisection(dex);
          return;
      }
-
-     printf("    ready to do i_found_2 %d\n",i_found_1);
 
      for(i=0;i<_chifn->get_dim();i++){
          dir.multiply_val(i,-1.0);
