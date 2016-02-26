@@ -164,6 +164,7 @@ int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, doubl
             trial_high.add_val(ii,rr*dir.get_data(ii));
         }
         _chifn->evaluate(trial_high, &mu, &i_found);
+        rr*=2.0;
     }
 
     return bisection(_chifn->get_pt(ilow)[0], trial_high, local_target, tol);
