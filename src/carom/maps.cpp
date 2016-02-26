@@ -248,7 +248,8 @@ void maps::write_pts(){
 }
 
 void maps::simplex_min_search(){
-    printf("\ndoing maps.simplex_min_search -- min %e\n",_chifn.chimin());
+    printf("\ndoing maps.simplex_min_search -- min %e %d\n",
+    _chifn.chimin(),_chifn.get_pts());
     int pt_start=_chifn.get_pts();
 
     assess_good_points();
