@@ -530,6 +530,13 @@ void maps::search(int limit){
             write_pts();
         }
     }
+
+    int i;
+    printf("minpt -- %e\n",_chifn.get_fn(_chifn.mindex()));
+    for(i=0;i<_chifn.get_dim();i++){
+        printf("    %.3e\n",_chifn.get_pt(_chifn.mindex(),i));
+    }
+    printf("\n\n");
 }
 
 
