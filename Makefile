@@ -175,6 +175,12 @@ test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
 	object/containers.o object/goto_tools.o object/chisq.o \
 	object/jellyBean.o object/wrappers.o
 
+test_fill: src/tests/test_filling_function.cpp object/jellyBean.o \
+object/simplex.o
+	$(gg) -o bin/test_fill src/tests/test_filling_function.cpp \
+	object/containers.o object/goto_tools.o object/chisq.o \
+	object/jellyBean.o object/wrappers.o object/simplex.o
+
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
 object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
