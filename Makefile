@@ -181,6 +181,15 @@ object/simplex.o
 	object/containers.o object/goto_tools.o object/chisq.o \
 	object/jellyBean.o object/wrappers.o object/simplex.o
 
+test_tunnel: src/tests/test_tunneling_function.cpp object/jellyBean.o \
+object/simplex.o object/chisq_wrapper.o
+	$(gg) -o bin/test_tunnel src/tests/test_tunneling_function.cpp \
+	object/containers.o object/goto_tools.o object/chisq.o \
+	object/jellyBean.o object/wrappers.o object/simplex.o \
+	object/kd.o object/chisq_wrapper.o
+
+
+
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
 object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
