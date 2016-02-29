@@ -360,7 +360,8 @@ void dalex::propagate(int dex){
         _propagate_bisection(dex);
     }
     else{
-        _propagate_midpt(dex);
+        //_propagate_midpt(dex);
+        _propagate_ricochet(dex);
     }
 }
 
@@ -439,6 +440,11 @@ void dalex::_propagate_ricochet(int dex){
     dir.set_name("dalex_propagate_ricochet_dir");
     gradient.set_name("dalex_propagate_ricochet_gradient");
     reflected_dir.set_name("dalex_propagate_ricochet_relfected_dir");
+
+    if(_chifn->get_fn(_particles.get_data(dex))>_chifn->target()){
+        _propagate_bisection(dex);
+        return;
+    }
 
     int i_particle,i_origin;
     i_particle=_particles.get_data(dex);
