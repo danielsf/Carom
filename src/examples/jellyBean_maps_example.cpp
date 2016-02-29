@@ -122,6 +122,7 @@ if(chisq_dex==0){
     }
     else{
         printf("WARNING do not know what to do with dim %d\n",dim);
+        exit(1);
     }
 }
 else if(chisq_dex==1){
