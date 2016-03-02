@@ -51,7 +51,7 @@ void dalex::search(){
         propagate(i);
     }
 
-    if(_chifn->mindex()!=_simplex_mindex){
+    if(mindex()!=_simplex_mindex){
         simplex_search();
     }
 
@@ -114,12 +114,12 @@ void dalex::simplex_search(){
         seed.add_row(trial_best);
     }
 
-    calculate_gradient(_chifn->mindex(), grad);
+    calculate_gradient(mindex(), grad);
     for(i=0;i<_chifn->get_dim();i++){
         grad.multiply_val(i,-1.0);
     }
     double gnorm,local_target=target();
-    int i_min=_chifn->mindex();
+    int i_min=mindex();
     i_found=i_min;
     gnorm=grad.normalize();
     while(i_found==i_min){
@@ -144,7 +144,7 @@ void dalex::simplex_search(){
     ffmin.find_minimum(seed,trial);
 
     printf("    after dalex_simplex chimin %e\n",_chifn->chimin());
-    _simplex_mindex=_chifn->mindex();
+    _simplex_mindex=mindex();
 }
 
 
@@ -385,7 +385,7 @@ void dalex::_propagate_bisection(int dex){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
         dir.normalize();
-        i_found_1=bisection(_chifn->mindex(),dir,target(),0.1);
+        i_found_1=bisection(mindex(),dir,target(),0.1);
         if(_particles.contains(i_found_1)==1 || _origins.contains(i_found_1)==1){
             i_found_1=-1;
         }
@@ -398,7 +398,7 @@ void dalex::_propagate_bisection(int dex){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
         dir.normalize();
-        i_found_2=bisection(_chifn->mindex(),dir,target(),0.1);
+        i_found_2=bisection(mindex(),dir,target(),0.1);
         if(_origins.contains(i_found_2)==1 || _particles.contains(i_found_2)==1 || i_found_2==i_found_1){
             i_found_2=-1;
         }

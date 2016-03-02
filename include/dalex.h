@@ -38,6 +38,11 @@ class dalex{
 
     private:
 
+        int mindex(){
+            safety_check("mindex");
+            return _chifn->mindex();
+        }
+
         void safety_check(char *word){
             if(_chifn==NULL){
                 printf("ERROR: dalex called %s but _chifn is NULL\n", word);
