@@ -38,6 +38,11 @@ class dalex{
 
     private:
 
+        double chimin(){
+            safety_check("chimin");
+            return _chifn->chimin();
+        }
+
         int mindex(){
             safety_check("mindex");
             return _chifn->mindex();

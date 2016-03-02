@@ -59,7 +59,7 @@ void dalex::search(){
 
 
 void dalex::simplex_search(){
-    printf("\n    doing dalex_simplex %e -- %e %e\n",_chifn->chimin(),target(),_target_factor);
+    printf("\n    doing dalex_simplex %e -- %e %e\n",chimin(),target(),_target_factor);
     safety_check("simplex_search");
     array_1d<double> min,max;
     min.set_name("dalex_simplex_min");
@@ -143,7 +143,7 @@ void dalex::simplex_search(){
     ffmin.use_gradient();
     ffmin.find_minimum(seed,trial);
 
-    printf("    after dalex_simplex chimin %e\n",_chifn->chimin());
+    printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
 }
 
@@ -368,7 +368,7 @@ void dalex::propagate(int dex){
 
 void dalex::_propagate_bisection(int dex){
     safety_check("_propagate_bisection");
-    /*printf("   bisecting %d %e %d\n",dex,_chifn->chimin(),_chifn->get_pts());
+    /*printf("   bisecting %d %e %d\n",dex,chimin(),_chifn->get_pts());
     if(dex<_particles.get_dim()){
         printf("    %d %d %e %e\n",
         _particles.get_data(dex),_origins.get_data(dex),
