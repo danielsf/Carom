@@ -207,27 +207,35 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
     }
 
     int ct;
+    double wgt_low;
     for(ct=0;ct<20 &&
        (ct<5 || fabs(_chifn->get_fn(i_found)-local_target)>tol); ct++){
 
+        wgt_low=(fhigh-local_target)/(fhigh-flow);
+        if(wgt_low<0.25 || wgt_low>0.75){
+            wgt_low=0.5;
+        }
+
         for(ii=0;ii<_chifn->get_dim();ii++){
-            trial.set(ii, 0.5*(lowball.get_data(ii)+highball.get_data(ii)));
+            trial.set(ii, wgt_low*lowball.get_data(ii)+(1.0-wgt_low)*highball.get_data(ii));
         }
 
         _chifn->evaluate(trial,&mu,&i_trial);
 
         if(mu<local_target){
+            flow=mu;
             for(ii=0;ii<_chifn->get_dim();ii++){
                 lowball.set(ii,trial.get_data(ii));
             }
         }
         else{
+            fhigh=mu;
             for(ii=0;ii<_chifn->get_dim();ii++){
                 highball.set(ii,trial.get_data(ii));
             }
         }
 
-        if(mu<local_target && fabs(mu-local_target)<fabs(_chifn->get_fn(i_found)-local_target)){
+        if(fabs(mu-local_target)<fabs(_chifn->get_fn(i_found)-local_target)){
             i_found=i_trial;
         }
     }
