@@ -191,7 +191,7 @@ object/simplex.o object/chisq_wrapper.o
 
 
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
-object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o
+object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \

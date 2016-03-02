@@ -5,6 +5,7 @@
 #include "goto_tools.h"
 #include "chisq_wrapper.h"
 #include "simplex.h"
+#include "eigen_wrapper.h"
 
 class dalex{
 
@@ -84,6 +85,11 @@ class dalex{
         array_2d<double> _basis_vectors,_basis_ddsq;
 
         double basis_error(array_2d<double>&, array_1d<double>&);
+        void find_trial_bases(int, array_1d<double>&, array_2d<double> &out_bases);
+        void validate_bases(array_2d<double>&, char*);
+        void guess_bases(array_2d<double>&);
+        void find_covariance_matrix(int, array_2d<double>&);
+        void find_bases();
 
 };
 
