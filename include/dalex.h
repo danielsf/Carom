@@ -17,6 +17,14 @@ class dalex{
             _particle_log.set_name("dalex_particle_log");
             _target_factor=1.0;
             _simplex_mindex=-1;
+
+            _basis_associates.set_name("dalex_basis_associates");
+            _basis_mm.set_name("dalex_basis_mm");
+            _basis_vv.set_name("dalex_basis_vv");
+            _basis_lengths.set_name("dalex_basis_lengths");
+            _basis_vectors.set_name("dalex_basis_vectors");
+            _basis_ddsq.set_name("dalex_basis_ddsq");
+
         };
 
         void build(chisq_wrapper*);
@@ -68,6 +76,14 @@ class dalex{
         void _propagate_bisection(int);
         void _propagate_ricochet(int);
         void _propagate_midpt(int);
+
+        ////////code related to finding basis vectors
+        array_1d<int> _basis_associates;
+        array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
+        array_1d<double> _basis_lengths;
+        array_2d<double> _basis_vectors,_basis_ddsq;
+
+        double basis_error(array_2d<double>&, array_1d<double>&);
 
 };
 

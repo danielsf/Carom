@@ -556,3 +556,93 @@ void dalex::_propagate_midpt(int dex){
     _particle_log.add(i_found_2);
 
 }
+
+
+double dalex::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_model){
+
+    if(_basis_associates.get_dim()<=0){
+        printf("WARNING cannot calculate basis error there are only %d associates\n",
+        _basis_associates.get_dim());
+
+        exit(1);
+    }
+
+    safety_check("basis_error");
+
+    trial_model.zero();
+    if(_basis_ddsq.get_rows()>_basis_associates.get_dim()){
+        _basis_ddsq.reset();
+    }
+
+    if(_basis_ddsq.get_cols()!=_chifn->get_dim()){
+        _basis_ddsq.set_cols(_chifn->get_dim());
+    }
+
+    if(_basis_mm.get_dim()!=_chifn->get_dim()*_chifn->get_dim()){
+        _basis_mm.set_dim(_chifn->get_dim()*_chifn->get_dim());
+    }
+
+    if(_basis_bb.get_dim()!=_chifn->get_dim()){
+        _basis_bb.set_dim(_chifn->get_dim());
+    }
+
+    if(_basis_vv.get_dim()!=_chifn->get_dim()){
+        _basis_vv.set_dim(_chifn->get_dim());
+    }
+
+    _basis_mm.zero();
+    _basis_bb.zero();
+    _basis_vv.zero();
+    _basis_ddsq.zero();
+
+    int i,j,ix;
+    double mu;
+    for(ix=0;ix<_basis_associates.get_dim();ix++){
+        for(i=0;i<_chifn->get_dim();i++){
+            mu=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                mu+=(_chifn->get_pt(_basis_associates.get_data(ix),j)-_chifn->get_pt(mindex(),j))*trial_bases.get_data(i,j);
+            }
+            _basis_ddsq.set(ix,i,mu*mu);
+        }
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_basis_associates.get_dim();j++){
+            _basis_bb.add_val(i,_basis_ddsq.get_data(j,i)*(_chifn->get_fn(_basis_associates.get_data(j))-chimin()));
+        }
+    }
+
+    int k;
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=i;j<_chifn->get_dim();j++){
+            ix=i*_chifn->get_dim()+j;
+            for(k=0;k<_basis_associates.get_dim();k++){
+                _basis_mm.add_val(ix,_basis_ddsq.get_data(k,i)*_basis_ddsq.get_data(k,j));
+            }
+            if(j!=i){
+                _basis_mm.set(j*_chifn->get_dim()+i,_basis_mm.get_data(ix));
+            }
+        }
+    }
+
+    try{
+        naive_gaussian_solver(_basis_mm,_basis_bb,trial_model,_chifn->get_dim());
+    }
+    catch(int iex){
+        printf("WARNING basis_error was no good\n");
+        return 2.0*exception_value;
+    }
+
+    double error=0.0,chi_model;
+    for(i=0;i<_basis_associates.get_dim();i++){
+        chi_model=chimin();
+        for(j=0;j<_chifn->get_dim();j++){
+            chi_model+=trial_model.get_data(j)*_basis_ddsq.get_data(i,j);
+        }
+        error+=power(_chifn->get_fn(_basis_associates.get_data(i))-chi_model,2);
+    }
+
+    return error/double(_basis_associates.get_dim());
+
+}
