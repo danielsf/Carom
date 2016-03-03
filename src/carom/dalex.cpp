@@ -407,8 +407,8 @@ void dalex::propagate(int dex){
         _propagate_bisection(dex);
     }
     else{
-        _propagate_midpt(dex);
-        //_propagate_ricochet(dex);
+        //_propagate_midpt(dex);
+        _propagate_ricochet(dex);
     }
 }
 
@@ -958,7 +958,7 @@ void dalex::find_bases(){
 
     _basis_chimin=chimin();
 
-    double dd,dd1,dd2;
+    /*double dd,dd1,dd2;
     int ip1,ip2,k;
     for(i=0;i<_chifn->get_dim() && changed_bases==1;i++){
         ip1=cand_1.get_data(i);
@@ -986,7 +986,7 @@ void dalex::find_bases(){
             _particles.set(i,ip2);
             _origins.set(i,ip1);
         }
-    }
+    }*/
 
 
     printf("done finding bases\n");
