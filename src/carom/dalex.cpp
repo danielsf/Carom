@@ -332,7 +332,7 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
 
     for(ii=0;ii<_chifn->get_dim();ii++){
         step_factor=0.001;
-        while(grad.get_dim()<=ii){
+        while(grad_basis.get_dim()<=ii){
 
             for(kk=0.0;kk<_chifn->get_dim();kk++){
                 trial.set(kk,_chifn->get_pt(i_origin,kk));
