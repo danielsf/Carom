@@ -733,11 +733,17 @@ void dalex::find_bases(){
     safety_check("find_bases");
 
     array_1d<double> dir;
-    _basis_associates.reset();
     int i,j;
+    for(i=0;i<_basis_associates.get_dim();i++){
+        if(_chifn->get_fn(_basis_associates.get_data(i))>target()){
+            _basis_associates.remove(i);
+            i--;
+        }
+    }
     int i_pt;
     double mu;
-    while(_basis_associates.get_dim()<4*_chifn->get_dim()){
+    int n_0=_basis_associates.get_dim();
+    while(_basis_associates.get_dim()<4*_chifn->get_dim()+n_0){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
@@ -745,7 +751,7 @@ void dalex::find_bases(){
         i_pt=bisection(mindex(),dir,0.5*(target()+chimin()),0.1);
         if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
             _basis_associates.add(i_pt);
-            i_pt=bisection(mindex(),dir,target(),0.1);
+            i_pt=bisection(mindex(),dir,0.25*chimin()+0.75*target(),0.1);
             if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
                 _basis_associates.add(i_pt);
             }
