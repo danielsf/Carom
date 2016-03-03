@@ -270,9 +270,6 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
 
     int ii,jj,i_found,zero_dim,aborted;
     double step_factor,mu,dx,dy;
-    for(jj=0;jj<_chifn->get_dim();jj++){
-        trial.set(jj,_chifn->get_pt(i_origin,jj));
-    }
 
     array_1d<double> norm,max,min;
     norm.set_dim(_chifn->get_dim());
@@ -281,16 +278,20 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
         min.set(ii, 2.0*exception_value);
     }
 
-    int ip;
+    int ip,kk;
     for(ii=0;ii<_particles.get_dim();ii++){
         if(_particles.get_data(ii)>0){
             ip=_particles.get_data(ii);
             for(jj=0;jj<_chifn->get_dim();jj++){
-                if(_chifn->get_pt(ip,jj)<min.get_data(jj)){
-                    min.set(jj,_chifn->get_pt(ip,jj));
+                mu=0.0;
+                for(kk=0;kk<_chifn->get_dim();kk++){
+                    mu+=_chifn->get_pt(ip,kk)*_basis_vectors.get_data(jj,kk);
                 }
-                if(_chifn->get_pt(ip,jj)>max.get_data(jj)){
-                    max.set(jj,_chifn->get_pt(ip,jj));
+                if(mu<min.get_data(jj)){
+                    min.set(jj,mu);
+                }
+                if(mu>max.get_data(jj)){
+                    max.set(jj,mu);
                 }
             }
         }
@@ -300,11 +301,15 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
         if(_origins.get_data(ii)>0){
             ip=_origins.get_data(ii);
             for(jj=0;jj<_chifn->get_dim();jj++){
-                if(_chifn->get_pt(ip,jj)<min.get_data(jj)){
-                    min.set(jj,_chifn->get_pt(ip,jj));
+                mu=0.0;
+                for(kk=0;kk<_chifn->get_dim();kk++){
+                    mu+=_chifn->get_pt(ip,kk)*_basis_vectors.get_data(jj,kk);
                 }
-                if(_chifn->get_pt(ip,jj)>max.get_data(jj)){
-                    max.set(jj,_chifn->get_pt(ip,jj));
+                if(mu<min.get_data(jj)){
+                    min.set(jj,mu);
+                }
+                if(mu>max.get_data(jj)){
+                    max.set(jj,mu);
                 }
             }
         }
@@ -315,32 +320,42 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
             norm.set(ii,max.get_data(ii)-min.get_data(ii));
         }
         else{
-            norm.set(ii,_chifn->get_characteristic_length(ii));
+            norm.set(ii,1.0);
         }
     }
 
     zero_dim=0;
     aborted=0;
 
+    array_1d<double> grad_basis;
+    grad_basis.set_name("dalex_calc_grad_grad_basis");
+
     for(ii=0;ii<_chifn->get_dim();ii++){
         step_factor=0.001;
         while(grad.get_dim()<=ii){
 
-            trial.set(ii,_chifn->get_pt(i_origin,ii));
+            for(kk=0.0;kk<_chifn->get_dim();kk++){
+                trial.set(kk,_chifn->get_pt(i_origin,kk));
+                trial.add_val(kk,step_factor*norm.get_data(kk)*_basis_vectors.get_data(ii,kk));
+            }
 
-            trial.add_val(ii,step_factor*norm.get_data(ii));
             _chifn->evaluate(trial,&mu,&i_found);
 
             if(i_found<0 || i_found==i_origin){
-                trial.set(ii,_chifn->get_pt(i_origin,ii));
-                trial.subtract_val(ii,step_factor*norm.get_data(ii));
+                for(kk=0.0;kk<_chifn->get_dim();kk++){
+                    trial.set(kk,_chifn->get_pt(i_origin,kk));
+                    trial.subtract_val(kk,step_factor*norm.get_data(kk)*_basis_vectors.get_data(ii,kk));
+                }
                 _chifn->evaluate(trial,&mu,&i_found);
             }
 
             if(i_found>=0 && i_found!=i_origin){
-                dx=_chifn->get_pt(i_origin,ii)-trial.get_data(ii);
+                dx=0.0;
+                for(kk=0;kk<_chifn->get_dim();kk++){
+                    dx+=(_chifn->get_pt(i_origin,kk)-trial.get_data(kk))*_basis_vectors.get_data(ii,kk);
+                }
                 dy=_chifn->get_fn(i_origin)-mu;
-                grad.add(dy/dx);
+                grad_basis.set(ii,dy/dx);
             }
             else if(i_found==i_origin){
                 step_factor*=1.8;
@@ -353,13 +368,21 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
 
             if(aborted>=15){
                 zero_dim++;
-                grad.add(0.0);
+                grad_basis.set(ii,0.0);
             }
 
         }
 
-        trial.set(ii,_chifn->get_pt(i_origin,ii));
+    }
 
+    for(ii=0;ii<_chifn->get_dim();ii++){
+        grad.set(ii,0.0);
+    }
+
+    for(ii=0;ii<_chifn->get_dim();ii++){
+        for(kk=0;kk<_chifn->get_dim();kk++){
+            grad.add_val(kk,grad_basis.get_data(ii)*_basis_vectors.get_data(ii,kk));
+        }
     }
 
     if(zero_dim==_chifn->get_dim()){
