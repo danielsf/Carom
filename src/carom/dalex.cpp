@@ -367,7 +367,7 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
 void dalex::propagate(int dex){
     safety_check("propagate");
 
-    if(dex>_particles.get_dim()){
+    if(dex>=_particles.get_dim()){
         _propagate_bisection(dex);
     }
 
