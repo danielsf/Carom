@@ -888,6 +888,14 @@ void dalex::find_bases(){
         }
     }
 
+    double penalty=0.0;
+    for(i=0;i<_chifn->get_dim();i++){
+        if(_basis_model.get_data(i)<0.0){
+            penalty+=1.0;
+        }
+    }
+
+    double pp0=penalty;
 
     while(stdev>stdevlim && aborted<max_abort){
         ct++;
@@ -904,6 +912,12 @@ void dalex::find_bases(){
         error=basis_error(trial_bases,trial_model);
 
         if(error<errorBest){
+            penalty=0.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                if(trial_model.get_data(i)<0.0){
+                    penalty+=1.0;
+                }
+            }
             if(error1-error>1.0e-5*error){
                 aborted=0;
             }
@@ -933,8 +947,8 @@ void dalex::find_bases(){
 
         if(ct%1000==0){
             error1=errorBest;
-            printf("    ct %d error %e from %e min %e associates %d\n",
-            ct,errorBest,error0,chimin(),_basis_associates.get_dim());
+            printf("    ct %d error %.2e pp %.1e from %.2e %.1e min %.3e pts %d\n",
+            ct,errorBest,penalty,error0,pp0,chimin(),_basis_associates.get_dim());
         }
     }
 
