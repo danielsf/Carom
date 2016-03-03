@@ -393,49 +393,8 @@ void maps::simplex_boundary_search(){
     int i_min=-1;
     double mu_min;
 
-    if(_calls_to_simplex_boundary%2==0 || _duds.get_dim()<_chifn.get_dim()+1){
-        while(seed.get_rows()<_chifn.get_dim()){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,_chifn.get_min(i)+_chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
-            }
-            ftrial=evaluate(trial,&iFound);
-
-            if(ftrial<exception_value){
-                if(seed_dex.contains(iFound)==0){
-                    seed_dex.add(iFound);
-                    seed.add_row(trial);
-                    if(i_min<0 || ftrial<mu_min){
-                        i_min=iFound;
-                        mu_min=ftrial;
-                    }
-                }
-            }
-        }
-
-
-    }
-    else{
-        //use duds as seeds
-        printf("    seeding from duds\n");
-        i_min=-1;
-        while(seed.get_rows()<_chifn.get_dim()){
-            i=_chifn.random_int()%_duds.get_dim();
-            if(seed_dex.contains(_duds.get_data(i))==0){
-                seed_dex.add(_duds.get_data(i));
-                seed.add_row(_chifn.get_pt(_duds.get_data(i))[0]);
-                if(i_min<0 || _chifn.get_fn(_duds.get_data(i))<mu_min){
-                   i_min=_duds.get_data(i);
-                   mu_min=_chifn.get_fn(i_min);
-                }
-            }
-        }
-    }
-
-    if(seed.get_rows()<_chifn.get_dim()+1){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,0.5*(_chifn.get_pt(i_min,i)+_chifn.get_pt(_chifn.mindex(),i)));
-            }
-            seed.add_row(trial);
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        seed.add_row(_chifn.get_pt(_explorers.get_data(i))[0]);
     }
 
     double mu,start_min;
@@ -648,7 +607,7 @@ void maps::search(int limit){
         _cloud.search();
         _outer_cloud.search();
         _ct_dalex+=_chifn.get_pts()-pt_start;
-        //simplex_boundary_search();
+        simplex_boundary_search();
 
         if(_chifn.get_pts()-_last_written>_write_every){
             write_pts();
