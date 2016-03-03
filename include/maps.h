@@ -35,6 +35,7 @@ public:
     void set_chisquared(chisquared*);
 
     void search(int);
+    void explore();
     void simplex_boundary_search();
     void simplex_min_search();
     void mcmc_search();
@@ -78,8 +79,10 @@ private:
 
     array_1d<int> _good_points,_duds,_duds_for_min;
     array_1d<int> _failed_mins;
+    array_1d<int> _explorers;
 
     int _last_did_min;
+    double _explorer_temp;
 
 };
 

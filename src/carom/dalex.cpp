@@ -4,9 +4,21 @@ void dalex::build(chisq_wrapper *cc){
 
     _chifn=cc;
 
-    int i;
+    int i,j;
     for(i=0;i<_chifn->get_dim();i++){
         _propagate_bisection(i);
+    }
+
+    _basis_vectors.set_cols(_chifn->get_dim());
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            if(i==j){
+                _basis_vectors.set(i,j,1.0);
+            }
+            else{
+                _basis_vectors.set(i,j,0.0);
+            }
+        }
     }
 
 }
@@ -894,8 +906,8 @@ void dalex::find_bases(){
 
         if(ct%1000==0){
             error1=errorBest;
-            printf("    ct %d error %e from %e min %e associates %d\n",
-            ct,errorBest,error0,chimin(),_basis_associates.get_dim());
+            //printf("    ct %d error %e from %e min %e associates %d\n",
+            //ct,errorBest,error0,chimin(),_basis_associates.get_dim());
         }
     }
 

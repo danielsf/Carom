@@ -20,6 +20,8 @@ maps::maps(){
     _duds.set_name("maps_duds");
     _duds_for_min.set_name("maps_duds_for_min");
     _failed_mins.set_name("maps_failed_mins");
+    _explorers.set_name("maps_explorers");
+    _explorer_temp=1.0;
 }
 
 maps::~maps(){
@@ -135,6 +137,21 @@ void maps::initialize(int npts){
     _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
+
+    array_1d<double> trial;
+    int i,i_pt;
+    double mu;
+    while(_explorers.get_dim()<_chifn.get_dim()+1){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,_chifn.get_min(i)+
+                        _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
+        }
+        mu=evaluate(trial, &i_pt);
+        if(i_pt>=0 && mu<exception_value){
+            _explorers.add(i_pt);
+        }
+    }
+
     write_pts();
 }
 
@@ -270,12 +287,8 @@ void maps::simplex_min_search(){
     trial_dir.set_name("carom_simplex_min_searc_trial_dir");
     double rr,mu_best,dd;
 
-    while(seed.get_rows()<_chifn.get_dim()+1){
-        for(i=0;i<_chifn.get_dim();i++){
-            trial.set(i,_chifn.get_min(i)+
-                        _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
-        }
-        seed.add_row(trial);
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        seed.add_row(_chifn.get_pt(_explorers.get_data(i))[0]);
     }
 
     printf("got seed %e\n",_chifn.chimin());
@@ -511,9 +524,120 @@ void maps::mcmc_search(){
     printf("min %e target %e\n",_chifn.chimin(),_chifn.target());
 }
 
+void maps::explore(){
+
+    array_1d<double> min,max,norm;
+    min.set_name("maps_explore_min");
+    max.set_name("maps_explore_max");
+    norm.set_name("maps_explore_norm");
+
+    int ip,i,j;
+    double mu;
+    for(ip=0;ip<_explorers.get_dim();ip++){
+        for(i=0;i<_chifn.get_dim();i++){
+            mu=0.0;
+            for(j=0;j<_chifn.get_dim();j++){
+                mu+=_chifn.get_pt(_explorers.get_data(ip),j)*_cloud.get_basis(i,j);
+            }
+
+            if(i>=min.get_dim() || mu<min.get_data(i)){
+                min.set(i,mu);
+            }
+
+            if(i>=max.get_dim() || mu>max.get_data(i)){
+                max.set(i,mu);
+            }
+        }
+    }
+
+    for(i=0;i<_chifn.get_dim();i++){
+        if(max.get_data(i)-min.get_data(i)>1.0e-20){
+            norm.set(i,max.get_data(i)-min.get_data(i));
+        }
+        else{
+            norm.set(i,1.0);
+        }
+    }
+
+    array_1d<double> f_val,f_val_sorted;
+    array_1d<int> f_val_dex;
+    f_val.set_name("maps_explore_fval");
+    f_val_sorted.set_name("maps_explore_fval_sorted");
+    f_val_dex.set_name("maps_explore_f_val_dex");
+    for(i=0;i<_explorers.get_dim();i++){
+        f_val.add(_chifn.get_fn(_explorers.get_data(i)));
+        f_val_dex.add(i);
+    }
+    sort_and_check(f_val,f_val_sorted,f_val_dex);
+
+    double f_val_median=f_val_sorted.get_data(f_val_dex.get_dim()/2);
+
+    array_1d<double> dir,trial;
+    dir.set_name("maps_explore_dir");
+    trial.set_name("maps_explore_trial");
+
+    double accepted=0.0;
+    double took=0.0;
+
+    double roll,ratio;
+    int i_pt,accept_it;
+
+    int n_steps=100;
+    int i_step;
+    double rr=0.1/double(_chifn.get_dim());
+    for(i_step=0;i_step<n_steps;i_step++){
+        for(ip=0;ip<_explorers.get_dim();ip++){
+            for(i=0;i<_chifn.get_dim();i++){
+                dir.set(i,normal_deviate(_chifn.get_dice(),0.0,rr*norm.get_data(i)));
+            }
+            for(i=0;i<_chifn.get_dim();i++){
+                trial.set(i,_chifn.get_pt(_explorers.get_data(ip),i)+dir.get_data(i));
+            }
+            mu=evaluate(trial, &i_pt);
+            accept_it=0;
+            if(mu<_chifn.get_fn(_explorers.get_data(ip))){
+                accept_it=1;
+            }
+            else{
+                roll=_chifn.random_double();
+                ratio=exp((_chifn.get_fn(_explorers.get_data(ip))-mu)/_explorer_temp);
+                if(roll<ratio){
+                    accept_it=1;
+                }
+            }
+
+            took+=1.0;
+            if(accept_it==1){
+                accepted+=1.0;
+                _explorers.set(ip,i_pt);
+            }
+        }
+    }
+
+    double acceptance_rate=accepted/took;
+    if(acceptance_rate<0.3){
+        _explorer_temp*=10.0;
+    }
+    else if(acceptance_rate>0.7){
+        _explorer_temp*=0.15;
+    }
+
+    for(i=0;i<_explorers.get_dim();i++){
+        ip=_explorers.get_data(i);
+        if(i==0 || _chifn.get_fn(ip)<mu){
+            mu=_chifn.get_fn(ip);
+        }
+    }
+
+    printf("acceptance rate %e == %e/%e min: %e\n",accepted/took,accepted,took,mu);
+
+}
+
+
 void maps::search(int limit){
     int pt_start;
     while(_chifn.get_pts()<limit){
+         explore();
          assess_good_points();
 
          if(_ct_simplex_min<_ct_dalex){

@@ -39,6 +39,10 @@ class dalex{
         int bisection(int, array_1d<double>&, double, double);
         int bisection(array_1d<double>&, array_1d<double>&, double, double);
 
+        double get_basis(int i, int j){
+            return _basis_vectors.get_data(i,j);
+        }
+
         void set_target_factor(double tt){
             _target_factor=tt;
         }
