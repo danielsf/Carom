@@ -856,7 +856,7 @@ void dalex::find_bases(){
     }
 
 
-    while(stdev>stdevlim && aborted<max_abort && ct<10000){
+    while(stdev>stdevlim && aborted<max_abort){
         ct++;
         idim=-1;
         while(idim>=_chifn->get_dim() || idim<0){
@@ -900,8 +900,8 @@ void dalex::find_bases(){
 
         if(ct%1000==0){
             error1=errorBest;
-            //printf("    ct %d error %e from %e min %e associates %d\n",
-            //ct,errorBest,error0,chimin(),_basis_associates.get_dim());
+            printf("    ct %d error %e from %e min %e associates %d\n",
+            ct,errorBest,error0,chimin(),_basis_associates.get_dim());
         }
     }
 
