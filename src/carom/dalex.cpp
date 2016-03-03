@@ -905,18 +905,26 @@ void dalex::find_bases(){
         }
     }
 
+    array_1d<int> cand_1,cand_2;
+    cand_1.set_name("dalex_find_bases_cand_1");
+    cand_2.set_name("dalex_find_bases_cand_2");
+
     if(changed_bases==1){
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
                 dir.set(j,-1.0*_basis_vectors.get_data(i,j));
             }
             i_pt=bisection(mindex(),_basis_vectors(i)[0],target(),0.1);
+            _particle_log.add(i_pt);
+            cand_1.add(i_pt);
             if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
                 printf("WARNING at end of basis %e wanted %e\n",
                 _chifn->get_fn(i_pt),target());
                 exit(1);
             }
             i_pt=bisection(mindex(),dir,target(),0.1);
+            _particle_log.add(i_pt);
+            cand_2.add(i_pt);
             if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
                 printf("WARNING at end of basis %e wanted %e\n",
                 _chifn->get_fn(i_pt),target());
@@ -926,6 +934,37 @@ void dalex::find_bases(){
     }
 
     _basis_chimin=chimin();
+
+    double dd,dd1,dd2;
+    int ip1,ip2,k;
+    for(i=0;i<_chifn->get_dim();i++){
+        ip1=cand_1.get_data(i);
+        ip2=cand_2.get_data(i);
+        dd1=2.0*exception_value;
+        dd2=2.0*exception_value;
+        for(j=0;j<_particle_log.get_dim();j++){
+            if(_particle_log.get_data(j)!=ip1 && _particle_log.get_data(j)!=ip2){
+                 dd=_chifn->distance(ip1,_particle_log.get_data(j));
+                 if(dd<dd1){
+                     dd1=dd;
+                 }
+                 dd=_chifn->distance(ip2,_particle_log.get_data(j));
+                 if(dd<dd2){
+                     dd2=dd;
+                 }
+            }
+        }
+
+        if(dd1>dd2){
+            _particles.set(i,ip1);
+            _origins.set(i,ip2);
+        }
+        else{
+            _particles.set(i,ip2);
+            _origins.set(i,ip1);
+        }
+    }
+
 
     printf("done finding bases\n");
 
