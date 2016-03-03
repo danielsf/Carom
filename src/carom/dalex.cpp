@@ -602,6 +602,16 @@ void dalex::_propagate_midpt(int dex){
     _particle_log.add(i_found_1);
     _particle_log.add(i_found_2);
 
+    if(_log!=NULL){
+        if(i_found_1>=0){
+            _log->add(_log_ricochet, i_found_1);
+        }
+
+        if(i_found_2>=0){
+            _log->add(_log_ricochet, i_found_2);
+        }
+    }
+
 }
 
 
@@ -939,6 +949,9 @@ void dalex::find_bases(){
             }
             i_pt=bisection(mindex(),_basis_vectors(i)[0],target(),0.1);
             _particle_log.add(i_pt);
+            if(_log!=NULL && i_pt>=0){
+                _log->add(_log_compass, i_pt);
+            }
             cand_1.add(i_pt);
             if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
                 printf("WARNING at end of basis %e wanted %e\n",
@@ -947,6 +960,9 @@ void dalex::find_bases(){
             }
             i_pt=bisection(mindex(),dir,target(),0.1);
             _particle_log.add(i_pt);
+            if(_log!=NULL && i_pt>=0){
+                _log->add(_log_compass, i_pt);
+            }
             cand_2.add(i_pt);
             if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
                 printf("WARNING at end of basis %e wanted %e\n",

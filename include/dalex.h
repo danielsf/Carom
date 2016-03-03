@@ -6,6 +6,7 @@
 #include "chisq_wrapper.h"
 #include "simplex.h"
 #include "eigen_wrapper.h"
+#include "search_types.h"
 
 class dalex{
 
@@ -18,6 +19,7 @@ class dalex{
             _particle_log.set_name("dalex_particle_log");
             _target_factor=1.0;
             _simplex_mindex=-1;
+            _log=NULL;
 
             _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
@@ -30,6 +32,11 @@ class dalex{
         };
 
         void build(chisq_wrapper*);
+
+        void set_log(asymm_array_2d<int> *_ll){
+            _log=_ll;
+        }
+
         void search();
         void simplex_search();
 
@@ -75,6 +82,7 @@ class dalex{
         }
 
         array_1d<int> _particles,_origins,_particle_log;
+        asymm_array_2d<int> *_log;
         chisq_wrapper *_chifn;
         double _target_factor;
         int _simplex_mindex;

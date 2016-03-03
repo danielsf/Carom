@@ -132,6 +132,7 @@ void maps::set_timingname(char *nn){
 void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
+    _cloud.set_log(&_log);
     _outer_cloud.set_target_factor(1.33);
     _outer_cloud.build(&_chifn);
     _simplex_mindex=_chifn.mindex();
@@ -319,6 +320,11 @@ void maps::simplex_min_search(){
 
     double mu_found;
     mu_found=evaluate(minpt,&i);
+
+    if(i>=0){
+        _log.add(_log_simplex, i);
+    }
+
     if(i>=0 && _chifn.mindex()==mindex_0){
         _failed_mins.add(i);
     }
@@ -427,7 +433,7 @@ void maps::simplex_boundary_search(){
         printf("    set i_min to %d\n",i_min);
     }
     else{
-        _log.add(_log_simplex,i_min);
+        _log.add(_log_dchi_simplex,i_min);
     }
 
 
