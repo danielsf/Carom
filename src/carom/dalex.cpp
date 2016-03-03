@@ -864,7 +864,28 @@ void dalex::find_bases(){
 
         if(ct%1000==0){
             error1=errorBest;
-            printf("    ct %d error %e from %e min %e\n",ct,errorBest,error0,chimin());
+            printf("    ct %d error %e from %e min %e associates %d\n",
+            ct,errorBest,error0,chimin(),_basis_associates.get_dim());
+        }
+    }
+
+    if(changed_bases==1){
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                dir.set(j,-1.0*_basis_vectors.get_data(i,j));
+            }
+            i_pt=bisection(mindex(),_basis_vectors(i)[0],target(),0.1);
+            if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
+                printf("WARNING at end of basis %e wanted %e\n",
+                _chifn->get_fn(i_pt),target());
+                exit(1);
+            }
+            i_pt=bisection(mindex(),dir,target(),0.1);
+            if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
+                printf("WARNING at end of basis %e wanted %e\n",
+                _chifn->get_fn(i_pt),target());
+                exit(1);
+            }
         }
     }
 
