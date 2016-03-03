@@ -63,15 +63,9 @@ void dalex::search(){
         propagate(i);
     }
 
-    double old_min=2.0*exception_value;
-
-    if(_simplex_mindex>=0){
-        old_min=_chifn->get_fn(_simplex_mindex);
-    }
-
     if(mindex()!=_simplex_mindex){
         simplex_search();
-        if(chimin()<old_min-0.1*(target()-chimin())){
+        if(chimin()<_basis_chimin-(target()-chimin())){
             find_bases();
         }
     }
@@ -930,6 +924,8 @@ void dalex::find_bases(){
             }
         }
     }
+
+    _basis_chimin=chimin();
 
     printf("done finding bases\n");
 

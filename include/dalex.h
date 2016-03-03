@@ -19,6 +19,7 @@ class dalex{
             _target_factor=1.0;
             _simplex_mindex=-1;
 
+            _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
             _basis_mm.set_name("dalex_basis_mm");
             _basis_vv.set_name("dalex_basis_vv");
@@ -87,6 +88,7 @@ class dalex{
         array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
         array_1d<double> _basis_lengths;
         array_2d<double> _basis_vectors,_basis_ddsq;
+        double _basis_chimin;
 
         double basis_error(array_2d<double>&, array_1d<double>&);
         void find_trial_bases(int, array_1d<double>&, array_2d<double> &out_bases);
