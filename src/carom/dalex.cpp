@@ -937,7 +937,7 @@ void dalex::find_bases(){
 
     double dd,dd1,dd2;
     int ip1,ip2,k;
-    for(i=0;i<_chifn->get_dim();i++){
+    for(i=0;i<_chifn->get_dim() && changed_bases==1;i++){
         ip1=cand_1.get_data(i);
         ip2=cand_2.get_data(i);
         dd1=2.0*exception_value;
