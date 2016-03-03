@@ -626,6 +626,7 @@ void maps::search(int limit){
         printf("    %.3e\n",_chifn.get_pt(_chifn.mindex(),i));
     }
     printf("\n\n");
+    write_pts();
 }
 
 
