@@ -440,8 +440,12 @@ void maps::simplex_boundary_search(){
     assess_good_points(pt_start);
 
     double tol=0.01*(_chifn.target()-_chifn.chimin());
+    int i_bisect;
     if(_chifn.get_fn(i_min)-_chifn.target()>tol){
-        bisection(_chifn.mindex(),i_min,_chifn.target(),tol);
+        i_bisect=bisection(_chifn.mindex(),i_min,_chifn.target(),tol);
+        if(i_bisect>=0){
+            _log.add(_log_dchi_simplex,i_bisect);
+        }
     }
 
     printf("    actually found %e -- %e %e\n",
