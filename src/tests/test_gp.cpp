@@ -6,11 +6,11 @@ int main(){
 
     Ran dice(42);
 
-    gaussianJellyBean4 chifn;
+    gaussianJellyBean12 chifn;
 
     array_2d<double> points;
     array_1d<double> fn,max,min,gmax,gmin,trial;
-    int dim=4;
+    int dim=chifn.get_dim();
     points.set_cols(dim);
 
     int i,j;
@@ -33,6 +33,8 @@ int main(){
     gg.build(points,fn,min,max);
     gg_lin.build(points,fn,min,max);
 
+    printf("\nbuilt\n");
+
     array_2d<double> test_set;
     array_1d<double> test_ff;
     test_set.set_cols(dim);
@@ -43,11 +45,11 @@ int main(){
         test_ff.add(chifn(trial));
         test_set.add_row(trial);
     }
-    gg.optimize(test_set,test_ff);
+    //gg.optimize(test_set,test_ff);
     printf("\nnow lin\n");
     gg_lin.optimize(test_set,test_ff);
     gg.set_ell_factor(5.623414e4);
-    gg_lin.set_ell_factor(10.0);
+    //gg_lin.set_ell_factor(10.0);
 
     double gp_guess,lin_guess,truth;
 
@@ -70,6 +72,9 @@ int main(){
     t_lin=0.0;
 
     for(i=0;i<10000;i++){
+        if(i%1000==0){
+            printf("    ii %d\n",i);
+        }
         for(j=0;j<dim;j++){
             trial.set(j,min.get_data(j)+dice.doub()*(max.get_data(j)-min.get_data(j)));
         }
