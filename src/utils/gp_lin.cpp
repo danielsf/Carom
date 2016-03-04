@@ -47,15 +47,6 @@ double gp_lin::operator()(array_1d<double> &pt){
 
     int i;
 
-    if(_fn->get_dim()>_pt_when_mindex){
-        for(i=_pt_when_mindex;i<_fn->get_dim();i++){
-            if(_fn->get_data(i)<_fn->get_data(_mindex)){
-                _mindex=i;
-            }
-        }
-        _pt_when_mindex=_fn->get_dim();
-    }
-
     array_1d<int> local_dex;
     local_dex.set_name("gp_operator_local_dex");
     array_1d<double> local_distance;
@@ -63,8 +54,14 @@ double gp_lin::operator()(array_1d<double> &pt){
 
     _kd->nn_srch(pt, _nn, local_dex, local_distance);
 
-    if(local_dex.contains(_mindex)==0){
-        local_dex.add(_mindex);
+    int local_mindex;
+    double mu_min;
+
+    for(i=0;i<local_dex.get_dim();i++){
+        if(i==0 || _fn->get_data(local_dex.get_data(i))<mu_min){
+            mu_min=_fn->get_data(local_dex.get_data(i));
+            local_mindex=local_dex.get_data(i);
+        }
     }
 
     array_1d<double> dir,mu,trial;
@@ -89,8 +86,8 @@ double gp_lin::operator()(array_1d<double> &pt){
 
     for(ix1=0;ix1<local_dex.get_dim();ix1++){
         p1=local_dex.get_data(ix1);
-        for(ix2=ix1+1;ix2<local_dex.get_dim();ix2++){
-            p2=local_dex.get_data(ix2);
+        if(p1!=local_mindex){
+            p2=local_mindex;
             for(i=0;i<pt.get_dim();i++){
                 dir.set(i,_kd->get_pt(p2,i)-_kd->get_pt(p1,i));
             }
