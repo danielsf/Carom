@@ -70,6 +70,8 @@ void dalex::search(){
         }
     }
 
+    simplex_boundary_search();
+
 }
 
 
@@ -1360,3 +1362,105 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
+void dalex::simplex_boundary_search(){
+    printf("\ndoing dalex.simplex_boundary_search()\n");
+    int pt_start=_chifn->get_pts();
+
+    int i_node,i_pt;
+    int i,j;
+    double xmin,xmax,xx;
+
+    assess_good_points();
+
+    gp_lin interpolator;
+    interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
+    interpolator.set_ell_factor(1.0);
+
+    dchi_boundary_simplex_gp dchifn(_chifn,&interpolator,_good_points);
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&dchifn);
+    ffmin.set_dice(_chifn->get_dice());
+    array_1d<double> min,max;
+    min.set_name("dalex_simplex_search_min");
+    max.set_name("dalex_simplex_search_min");
+
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,0.0);
+        max.set(i,get_norm(i));
+    }
+
+    ffmin.set_minmax(min,max);
+    ffmin.use_gradient();
+
+    array_2d<double> seed;
+    seed.set_name("dalex_simplex_search_seed");
+
+    seed.set_cols(_chifn->get_dim());
+    int iFound;
+    array_1d<double> trial;
+    array_1d<int> seed_dex;
+    double ftrial;
+    trial.set_name("dalex_simplex_search_trial");
+    seed_dex.set_name("dalex_simplex_search_seed_dex");
+    int i_min=-1;
+    double mu_min;
+
+    while(seed.get_rows()<_chifn->get_dim()+1){
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+normal_deviate(_chifn->get_dice(),0.0,get_norm(i)));
+        }
+        seed.add_row(trial);
+    }
+
+    double mu,start_min;
+    for(i=0;i<seed.get_rows();i++){
+        mu=dchifn(seed(i)[0]);
+        if(i==0 || mu<start_min){
+            start_min=mu;
+        }
+    }
+    printf("    starting from %e\n",start_min);
+
+    array_1d<double> minpt;
+    minpt.set_name("dalex_simplex_search_minpt");
+
+    ffmin.find_minimum(seed,minpt);
+
+    double interp_val=interpolator(minpt);
+
+    evaluate(minpt, &mu, &i_min);
+
+    printf("    interp %e actual %e -- %e\n",interp_val,interpolator(minpt),mu);
+
+    if(i_min<0){
+        i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
+        printf("    set i_min to %d\n",i_min);
+    }
+    else{
+        if(_log!=NULL){
+            _log->add(_log_dchi_simplex,i_min);
+        }
+    }
+
+
+    assess_good_points();
+
+    double tol=0.01*(target()-chimin());
+    int i_bisect;
+    if(_chifn->get_fn(i_min)-target()>tol){
+        i_bisect=bisection(_chifn->mindex(),i_min,target(),tol);
+        if(i_bisect>=0 && _log!=NULL){
+            _log->add(_log_dchi_simplex,i_bisect);
+        }
+    }
+
+    printf("    actually found %e -- %e %e\n",
+    _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
+
+    printf("    adjusted %e\n",dchifn(_chifn->get_pt(i_min)[0]));
+    printf("    interpolated %e\n",interpolator(_chifn->get_pt(i_min)[0]));
+
+    printf("    min is %e target %e\n",chimin(),target());
+
+}

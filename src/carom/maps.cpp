@@ -636,7 +636,7 @@ void maps::search(int limit){
         _cloud.search();
         _outer_cloud.search();
         _ct_dalex+=_chifn.get_pts()-pt_start;
-        simplex_boundary_search();
+        //simplex_boundary_search();
 
         if(_chifn.get_pts()-_last_written>_write_every){
             write_pts();

@@ -7,6 +7,8 @@
 #include "simplex.h"
 #include "eigen_wrapper.h"
 #include "search_types.h"
+#include "gp_lin.h"
+#include "dchi_simplex_gp.h"
 
 class dalex{
 
@@ -40,6 +42,7 @@ class dalex{
 
         void search();
         void simplex_search();
+        void simplex_boundary_search();
 
         void calculate_gradient(int, array_1d<double>&);
         void propagate(int);
