@@ -585,6 +585,10 @@ void maps::explore(){
         }
     }
 
+    for(i=0;i<_explorers.get_dim();i++){
+        _log.add(_log_mcmc, _explorers.get_data(i));
+    }
+
     int min_acc,max_acc;
     for(i=0;i<accepted.get_dim();i++){
         if(i==0 || accepted.get_data(i)<min_acc){
