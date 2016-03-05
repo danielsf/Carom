@@ -86,12 +86,8 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
 
     double dmu;
 
-    if(mu>_min_0){
-        dmu=fabs(_chisq->target()-mu);
-    }
-    else{
-        dmu=mu-_min_0;
-    }
+    dmu=fabs(_chisq->target()-mu);
+
     double delta=_chisq->target()-_chisq->chimin();
 
     double exp_term;
