@@ -546,8 +546,10 @@ void maps::explore(){
     dir.set_name("maps_explore_dir");
     trial.set_name("maps_explore_trial");
 
-    double accepted=0.0;
-    double took=0.0;
+    array_1d<int> accepted;
+    for(i=0;i<_explorers.get_dim();i++){
+        accepted.set(i,0);
+    }
 
     double roll,ratio;
     int i_pt,accept_it;
@@ -576,19 +578,27 @@ void maps::explore(){
                 }
             }
 
-            took+=1.0;
             if(accept_it==1){
-                accepted+=1.0;
+                accepted.add_val(ip,1);
                 _explorers.set(ip,i_pt);
             }
         }
     }
 
-    double acceptance_rate=accepted/took;
-    if(acceptance_rate<0.3){
+    int min_acc,max_acc;
+    for(i=0;i<accepted.get_dim();i++){
+        if(i==0 || accepted.get_data(i)<min_acc){
+            min_acc=accepted.get_data(i);
+        }
+        if(i==0 || accepted.get_data(i)>max_acc){
+            max_acc=accepted.get_data(i);
+        }
+    }
+
+    if(min_acc<n_steps/3){
         _explorer_temp*=10.0;
     }
-    else if(acceptance_rate>0.7){
+    else if(max_acc>(3*n_steps)/4){
         _explorer_temp*=0.15;
     }
 
@@ -599,7 +609,8 @@ void maps::explore(){
         }
     }
 
-    printf("acceptance rate %e == %e/%e min: %e\n",accepted/took,accepted,took,mu);
+    printf("min_acc %e max_acc %e min %e -- temp %e\n",
+    double(min_acc)/double(n_steps),double(max_acc)/double(n_steps),mu,_explorer_temp);
 
 }
 
