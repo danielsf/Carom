@@ -617,11 +617,14 @@ void maps::explore(){
 
 void maps::search(int limit){
     int pt_start;
+
+    explore();
+
     while(_chifn.get_pts()<limit){
          explore();
          assess_good_points();
 
-         if(_ct_simplex_min<_ct_dalex){
+         if(_ct_simplex_min<_ct_dalex || _ct_simplex_min==0){
              simplex_min_search();
          }
 
