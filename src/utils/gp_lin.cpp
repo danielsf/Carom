@@ -54,19 +54,7 @@ double gp_lin::operator()(array_1d<double> &pt){
 
     _kd->nn_srch(pt, _nn, local_dex, local_distance);
 
-    int local_mindex;
-    double mu_min;
-
-    array_1d<double> raw_ff,raw_ff_sorted;
-    array_1d<int> raw_ff_dex;
-
-    for(i=0;i<local_dex.get_dim();i++){
-        raw_ff.add(_fn->get_data(local_dex.get_data(i)));
-        raw_ff_dex.add(local_dex.get_data(i));
-    }
-
-    sort_and_check(raw_ff, raw_ff_sorted, raw_ff_dex);
-    local_mindex=raw_ff_dex.get_data(raw_ff.get_dim()/2);
+    int local_mindex=local_dex.get_data(0);
 
     array_1d<double> dir,mu,trial;
     dir.set_name("operator_dir");
