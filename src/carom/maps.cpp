@@ -138,7 +138,7 @@ void maps::initialize(int npts){
     _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
-    _interpolator.set_ell_factor(0.5);
+    _interpolator.set_ell_factor(1.0);
 
     array_1d<double> trial;
     int i,i_pt;
