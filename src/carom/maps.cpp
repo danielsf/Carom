@@ -369,8 +369,7 @@ void maps::simplex_boundary_search(){
 
     assess_good_points();
 
-    //dchi_boundary_simplex_gp dchifn(&_chifn,&_interpolator,_good_points);
-    dchi_boundary_simplex dchifn(&_chifn,_good_points);
+    dchi_boundary_simplex_gp dchifn(&_chifn,&_interpolator,_good_points);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
