@@ -54,7 +54,27 @@ double gp_lin::operator()(array_1d<double> &pt){
 
     _kd->nn_srch(pt, _nn, local_dex, local_distance);
 
-    int local_mindex=local_dex.get_data(0);
+    array_1d<int> upper_rank, lower_rank;
+    array_1d<double> raw_ff,raw_ff_sorted;
+    array_1d<int> raw_ff_dex;
+    lower_rank.add(local_dex.get_data(0));
+    for(i=1;i<local_dex.get_dim();i++){
+        raw_ff.add(_fn->get_data(local_dex.get_data(i)));
+        raw_ff_dex.add(local_dex.get_data(i));
+    }
+    sort_and_check(raw_ff,raw_ff_sorted,raw_ff_dex);
+    lower_rank.add(raw_ff_dex.get_data(raw_ff.get_dim()/2));
+    for(i=0;i<raw_ff_dex.get_dim();i++){
+        if(lower_rank.contains(raw_ff_dex.get_data(i))==0){
+            upper_rank.add(raw_ff_dex.get_data(i));
+        }
+    }
+
+    if(upper_rank.get_dim()!=_nn-2){
+        printf("WARNING upper rank has %d should have %d\n",
+        upper_rank.get_dim(),_nn-2);
+        exit(1);
+    }
 
     array_1d<double> dir,mu,trial;
     dir.set_name("operator_dir");
@@ -76,10 +96,10 @@ double gp_lin::operator()(array_1d<double> &pt){
     array_1d<double> mu_sorted;
     array_1d<int> mu_dex;
 
-    for(ix1=0;ix1<local_dex.get_dim();ix1++){
-        p1=local_dex.get_data(ix1);
-        if(p1!=local_mindex){
-            p2=local_mindex;
+    for(ix1=0;ix1<upper_rank.get_dim();ix1++){
+        p1=upper_rank.get_data(ix1);
+        for(ix2=0;ix2<lower_rank.get_dim();ix2++){
+            p2=lower_rank.get_data(ix2);
             for(i=0;i<pt.get_dim();i++){
                 dir.set(i,_kd->get_pt(p2,i)-_kd->get_pt(p1,i));
             }
