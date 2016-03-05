@@ -118,7 +118,7 @@ void dalex::simplex_search(){
             for(j=0;j<_chifn->get_dim();j++){
                 trial.set(j,wgt*_chifn->get_pt(_origins.get_data(i),j)+(1.0-wgt)*_chifn->get_pt(_particles.get_data(i),j));
             }
-            _chifn->evaluate(trial,&mu,&j);
+            evaluate(trial,&mu,&j);
             if(mu<mu_best){
                 mu_best=mu;
                 for(j=0;j<_chifn->get_dim();j++){
@@ -178,7 +178,7 @@ int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, doubl
         for(ii=0;ii<_chifn->get_dim();ii++){
             trial_high.add_val(ii,rr*dir.get_data(ii));
         }
-        _chifn->evaluate(trial_high, &mu, &i_found);
+        evaluate(trial_high, &mu, &i_found);
         rr*=2.0;
     }
 
@@ -204,8 +204,8 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
     int i_found,ii,jj,i_trial;
 
     double mu,flow,fhigh;
-    _chifn->evaluate(lowball_in, &flow, &ii);
-    _chifn->evaluate(highball_in, &fhigh, &jj);
+    evaluate(lowball_in, &flow, &ii);
+    evaluate(highball_in, &fhigh, &jj);
 
     if(flow>local_target){
         printf("WARNING flow is greater than target %e %e\n",flow,local_target);
@@ -234,7 +234,7 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
             trial.set(ii, wgt_low*lowball.get_data(ii)+(1.0-wgt_low)*highball.get_data(ii));
         }
 
-        _chifn->evaluate(trial,&mu,&i_trial);
+        evaluate(trial,&mu,&i_trial);
 
         if(mu<local_target){
             flow=mu;
@@ -339,14 +339,14 @@ void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
                 trial.add_val(kk,step_factor*norm.get_data(kk)*_basis_vectors.get_data(ii,kk));
             }
 
-            _chifn->evaluate(trial,&mu,&i_found);
+            evaluate(trial,&mu,&i_found);
 
             if(i_found<0 || i_found==i_origin){
                 for(kk=0.0;kk<_chifn->get_dim();kk++){
                     trial.set(kk,_chifn->get_pt(i_origin,kk));
                     trial.subtract_val(kk,step_factor*norm.get_data(kk)*_basis_vectors.get_data(ii,kk));
                 }
-                _chifn->evaluate(trial,&mu,&i_found);
+                evaluate(trial,&mu,&i_found);
             }
 
             if(i_found>=0 && i_found!=i_origin){
@@ -541,7 +541,7 @@ void dalex::_propagate_midpt(int dex){
     }
     int i_mid;
     double mu_mid;
-    _chifn->evaluate(midpt, &mu_mid, &i_mid);
+    evaluate(midpt, &mu_mid, &i_mid);
     if(i_mid<0 || mu_mid>target() || i_particle==i_origin){
         _propagate_bisection(dex);
         return;
@@ -1189,7 +1189,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
         keepGoing=1;
         trial.set(ix,center.get_data(ix)+2.0*dx.get_data(ix)*norm.get_data(ix));
-        _chifn->evaluate(trial,&mu,&if2p);
+        evaluate(trial,&mu,&if2p);
 
         if(if2p>=0 && if2p!=iCenter){
             f2p.set(ix,mu);
@@ -1202,7 +1202,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
         }
         else if(if2p<0){
             center.subtract_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
-            _chifn->evaluate(center,&fcenter,&iCenter);
+            evaluate(center,&fcenter,&iCenter);
             keepGoing=0;
             ix--;
             ctAbort++;
@@ -1210,7 +1210,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
         if(keepGoing==1){
             trial.set(ix,center.get_data(ix)-2.0*dx.get_data(ix)*norm.get_data(ix));
-            _chifn->evaluate(trial,&mu,&if2m);
+            evaluate(trial,&mu,&if2m);
 
             if(if2m>=0 && if2m!=iCenter){
                 f2m.set(ix,mu);
@@ -1223,7 +1223,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
             }
             else if(if2m<0){
                 center.add_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
-                _chifn->evaluate(center,&fcenter,&iCenter);
+                evaluate(center,&fcenter,&iCenter);
                 keepGoing=0;
                 ix--;
                 ctAbort++;
@@ -1250,7 +1250,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
             trial.set(ix,center.get_data(ix)+dx.get_data(ix)*norm.get_data(ix));
             trial.set(iy,center.get_data(iy)+dx.get_data(iy)*norm.get_data(iy));
-            _chifn->evaluate(trial,&mu,&ifpp);
+            evaluate(trial,&mu,&ifpp);
             if(ifpp>=0 && ifpp!=iCenter){
                 fpp.set(ix,iy,mu);
             }
@@ -1264,7 +1264,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
             else if(ifpp<0){
                 center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
                 center.subtract_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
-                _chifn->evaluate(center,&fcenter,&iCenter);
+                evaluate(center,&fcenter,&iCenter);
                 keepGoing=0;
                 ix--;
                 ctAbort++;
@@ -1272,7 +1272,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
             if(keepGoing==1){
                trial.set(iy,center.get_data(iy)-dx.get_data(iy)*norm.get_data(iy));
-               _chifn->evaluate(trial,&mu,&ifpm);
+               evaluate(trial,&mu,&ifpm);
                if(ifpm>=0 && ifpm!=iCenter){
                    fpm.set(ix,iy,mu);
                }
@@ -1286,7 +1286,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
                else if(ifpm<0){
                    center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
                    center.add_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
-                   _chifn->evaluate(center,&fcenter,&iCenter);
+                   evaluate(center,&fcenter,&iCenter);
                    keepGoing=0;
                    ix--;
                    ctAbort++;
@@ -1295,7 +1295,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
             if(keepGoing==1){
                 trial.set(ix,center.get_data(ix)-dx.get_data(ix)*norm.get_data(ix));
-                _chifn->evaluate(trial,&mu,&ifmm);
+                evaluate(trial,&mu,&ifmm);
                 if(ifmm>=0 && ifmm!=iCenter){
                     fmm.set(ix,iy,mu);
                 }
@@ -1309,7 +1309,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
                 else if(ifmm<0){
                     center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
                     center.add_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
-                    _chifn->evaluate(center,&fcenter,&iCenter);
+                    evaluate(center,&fcenter,&iCenter);
                     keepGoing=0;
                     ix--;
                     ctAbort++;
@@ -1318,7 +1318,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
             if(keepGoing==1){
                 trial.set(iy,center.get_data(iy)+dx.get_data(iy)*norm.get_data(iy));
-                _chifn->evaluate(trial,&mu,&ifmp);
+                evaluate(trial,&mu,&ifmp);
                 if(ifmp>=0 && ifmp!=iCenter){
                     fmp.set(ix,iy,mu);
                 }
@@ -1332,7 +1332,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
                 else if(ifmp<0){
                     center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
                     center.subtract_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
-                    _chifn->evaluate(center,&fcenter,&iCenter);
+                    evaluate(center,&fcenter,&iCenter);
                     keepGoing=0;
                     ix--;
                     ctAbort++;

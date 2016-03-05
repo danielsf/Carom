@@ -17,6 +17,7 @@ class dalex{
             _particles.set_name("dalex_particles");
             _origins.set_name("dalex_origins");
             _particle_log.set_name("dalex_particle_log");
+            _good_points.set_name("dalex_good_points");
             _target_factor=1.0;
             _simplex_mindex=-1;
             _log=NULL;
@@ -59,6 +60,13 @@ class dalex{
 
     private:
 
+        void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
+            _chifn->evaluate(pt,mu_out,i_out);
+            if(mu_out[0]<target()){
+                _good_points.add(i_out[0]);
+            }
+        }
+
         double chimin(){
             safety_check("chimin");
             return _chifn->chimin();
@@ -86,6 +94,7 @@ class dalex{
         chisq_wrapper *_chifn;
         double _target_factor;
         int _simplex_mindex;
+        array_1d<int> _good_points;
 
         void _propagate_bisection(int);
         void _propagate_ricochet(int);
