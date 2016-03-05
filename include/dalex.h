@@ -20,6 +20,8 @@ class dalex{
             _origins.set_name("dalex_origins");
             _particle_log.set_name("dalex_particle_log");
             _good_points.set_name("dalex_good_points");
+            _explorers.set_name("dalex_explorers");
+            _explorer_temp=1.0;
             _target_factor=1.0;
             _simplex_mindex=-1;
             _log=NULL;
@@ -43,6 +45,7 @@ class dalex{
         void search();
         void simplex_search();
         void simplex_boundary_search();
+        void explore();
 
         void calculate_gradient(int, array_1d<double>&);
         void propagate(int);
@@ -126,6 +129,11 @@ class dalex{
         void guess_bases(array_2d<double>&);
         void find_covariance_matrix(int, array_2d<double>&);
         void find_bases();
+
+
+        ///////code related to explorers
+        array_1d<int> _explorers;
+        double _explorer_temp;
 
 };
 

@@ -66,10 +66,12 @@ void dalex::search(){
     if(mindex()!=_simplex_mindex){
         simplex_search();
         if(chimin()<_basis_chimin-(target()-chimin())){
+            _explorers.reset();
             find_bases();
         }
     }
 
+    explore();
     simplex_boundary_search();
 
 }
@@ -1462,5 +1464,153 @@ void dalex::simplex_boundary_search(){
     printf("    interpolated %e\n",interpolator(_chifn->get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",chimin(),target());
+
+}
+
+
+void dalex::explore(){
+
+    array_1d<double> trial;
+    trial.set_name("dalex_explore_trial");
+    int i;
+    int i_found,i_high;
+    double mu;
+    while(_explorers.get_dim()<_chifn->get_dim()+1){
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_min(i)+
+                      _chifn->random_double()*(_chifn->get_max(i)-_chifn->get_min(i)));
+        }
+        evaluate(trial,&mu,&i_high);
+        if(mu>target()){
+            i_found=bisection(_chifn->mindex(),i_high,target(),0.1);
+        }
+        else{
+            i_found=i_high;
+        }
+        if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0){
+            _explorers.add(i_found);
+        }
+    }
+
+
+    array_1d<double> norm,min,max;
+    norm.set_name("dalex_explore_norm");
+    min.set_name("dalex_explore_min");
+    max.set_name("dalex_explore_max");
+    int j,k;
+    for(i=0;i<_explorers.get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            mu=0.0;
+            for(k=0;k<_chifn->get_dim();k++){
+                mu+=_chifn->get_pt(_explorers.get_data(i),k)*_basis_vectors.get_data(j,k);
+            }
+            if(i==0 || mu<min.get_data(j)){
+                min.set(j,mu);
+            }
+            if(i==0 || mu>max.get_data(j)){
+                max.set(j,mu);
+            }
+        }
+
+    }
+
+
+    for(i=0;i<_chifn->get_dim();i++){
+        if(max.get_data(i)-min.get_data(i)>1.0e-20){
+            norm.set(i,max.get_data(i)-min.get_data(i));
+        }
+        else{
+            norm.set(i,1.0);
+        }
+    }
+
+    double roll,ratio;
+    int i_step,n_steps;
+
+    n_steps=20;
+
+    array_2d<double> pts;
+    pts.set_name("dalex_explore_pts");
+    for(i=0;i<_explorers.get_dim();i++){
+        pts.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
+    }
+
+    assess_good_points();
+    gp_lin interpolator;
+    interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
+    interpolator.set_ell_factor(1.0);
+
+    dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
+
+    double rr=0.1/double(_chifn->get_dim());
+
+    int ip;
+    array_1d<double> dir;
+    dir.set_name("dalex_explore_dir");
+
+    int accept_it;
+    array_1d<int> acceptance;
+    array_1d<double> ff_val;
+    acceptance.set_name("dalex_explore_acceptance");
+    ff_val.set_name("dalex_explore_ff_val");
+    for(i=0;i<_explorers.get_dim();i++){
+        acceptance.set(i,0);
+        ff_val.set(i,dchifn(pts(i)[0]));
+    }
+
+    for(i_step=0;i_step<n_steps;i_step++){
+        for(ip=0;ip<_explorers.get_dim();ip++){
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,rr*norm.get_data(i)));
+            }
+
+            for(i=0;i<_chifn->get_dim();i++){
+                trial.set(i,pts.get_data(ip,i)+dir.get_data(i));
+            }
+            mu=dchifn(trial);
+
+            accept_it=0;
+            if(mu<ff_val.get_data(ip)){
+                 accept_it=1;
+            }
+            else{
+                roll=_chifn->random_double();
+                ratio=exp((ff_val.get_data(ip)-mu)/_explorer_temp);
+                if(roll<ratio){
+                   accept_it=1;
+                }
+            }
+
+            if(accept_it==1){
+                acceptance.add_val(ip,1);
+                ff_val.set(ip,mu);
+                for(i=0;i<_chifn->get_dim();i++){
+                    pts.set(ip,i,trial.get_data(i));
+                }
+            }
+        }
+    }
+
+    for(i=0;i<_explorers.get_dim();i++){
+        evaluate(pts(i)[0],&mu,&ip);
+        _explorers.set(i,ip);
+    }
+
+    int min_acc,max_acc;
+    for(i=0;i<acceptance.get_dim();i++){
+        if(i==0 || acceptance.get_data(i)<min_acc){
+            min_acc=acceptance.get_data(i);
+        }
+        if(i==0 || acceptance.get_data(i)>max_acc){
+            max_acc=acceptance.get_data(i);
+        }
+    }
+
+    if(min_acc<n_steps/3){
+        _explorer_temp*=10.0;
+    }
+    else if(max_acc>(3*n_steps)/4){
+        _explorer_temp*=0.15;
+    }
 
 }
