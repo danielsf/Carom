@@ -143,7 +143,7 @@ void maps::initialize(int npts){
     array_1d<double> trial;
     int i,i_pt;
     double mu;
-    while(_explorers.get_dim()<_chifn.get_dim()+1){
+    while(_explorers.get_dim()<2*_chifn.get_dim()){
         for(i=0;i<_chifn.get_dim();i++){
             trial.set(i,_chifn.get_min(i)+
                         _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
@@ -289,8 +289,14 @@ void maps::simplex_min_search(){
     trial_dir.set_name("carom_simplex_min_searc_trial_dir");
     double rr,mu_best,dd;
 
-    for(i=0;i<_chifn.get_dim()+1;i++){
-        seed.add_row(_chifn.get_pt(_explorers.get_data(i))[0]);
+    array_1d<int> chosen_exp;
+
+    while(seed.get_rows()<_chifn.get_dim()+1){
+        i=_chifn.random_int()%_explorers.get_dim();
+        if(chosen_exp.contains(i)==0){
+            seed.add_row(_chifn.get_pt(_explorers.get_data(i))[0]);
+            chosen_exp.add(i);
+        }
     }
 
     printf("got seed %e\n",_chifn.chimin());
