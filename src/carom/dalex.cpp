@@ -411,8 +411,8 @@ void dalex::propagate(int dex){
         _propagate_bisection(dex);
     }
     else{
-        _propagate_midpt(dex);
-        //_propagate_ricochet(dex);
+        //_propagate_midpt(dex);
+        _propagate_ricochet(dex);
     }
 }
 
