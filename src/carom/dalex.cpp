@@ -1558,7 +1558,7 @@ void dalex::explore(){
 
     dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
 
-    double rr=0.1/double(_chifn->get_dim());
+    double rr=1.0/sqrt(double(_chifn->get_dim()));
 
     int ip;
     array_1d<double> dir;
