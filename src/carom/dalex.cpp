@@ -1408,11 +1408,8 @@ void dalex::simplex_boundary_search(){
     int i_min=-1;
     double mu_min;
 
-    while(seed.get_rows()<_chifn->get_dim()+1){
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+normal_deviate(_chifn->get_dice(),0.0,get_norm(i)));
-        }
-        seed.add_row(trial);
+    for(i=0;i<_chifn->get_dim()+1;i++){
+        seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
     }
 
     double mu,start_min;
@@ -1439,10 +1436,9 @@ void dalex::simplex_boundary_search(){
         i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
         printf("    set i_min to %d\n",i_min);
     }
-    else{
-        if(_log!=NULL){
-            _log->add(_log_dchi_simplex,i_min);
-        }
+
+    if(_log!=NULL){
+        _log->add(_log_dchi_simplex,i_min);
     }
 
 
@@ -1469,6 +1465,7 @@ void dalex::simplex_boundary_search(){
 
 
 void dalex::explore(){
+    printf("\nexploring\n");
 
     array_1d<double> trial;
     trial.set_name("dalex_explore_trial");
@@ -1591,8 +1588,16 @@ void dalex::explore(){
         }
     }
 
+    double mu_min,mu_max;
+
     for(i=0;i<_explorers.get_dim();i++){
         evaluate(pts(i)[0],&mu,&ip);
+        if(i==0 || mu<mu_min){
+            mu_min=mu;
+        }
+        if(i==0 || mu>mu_max){
+            mu_max=mu;
+        }
         _explorers.set(i,ip);
     }
 
@@ -1613,4 +1618,8 @@ void dalex::explore(){
         _explorer_temp*=0.15;
     }
 
+    printf("done exploring %e %e %e\nmin %e max %e\n",
+    double(min_acc)/double(n_steps),
+    double(max_acc)/double(n_steps),
+    _explorer_temp,mu_min,mu_max);
 }
