@@ -1617,6 +1617,10 @@ void dalex::explore(){
         if(i==0 || mu>mu_max){
             mu_max=mu;
         }
+        if(ip<0){
+            j=ip;
+            ip=bisection(_chifn->get_pt(_chifn->mindex())[0],pts(i)[0],target()+(target()-chimin()),0.1);
+        }
         _explorers.set(i,ip);
     }
 
