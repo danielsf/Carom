@@ -1479,12 +1479,12 @@ void dalex::explore(){
         }
         evaluate(trial,&mu,&i_high);
         if(mu>target()){
-            i_found=bisection(_chifn->mindex(),i_high,target(),0.1);
+            i_found=bisection(_chifn->get_pt(_chifn->mindex())[0],trial,target(),0.1);
         }
         else{
             i_found=i_high;
         }
-        if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0){
+        if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0 && i_found>=0){
             _explorers.add(i_found);
         }
     }
