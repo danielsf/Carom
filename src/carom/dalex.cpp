@@ -523,6 +523,9 @@ void dalex::_propagate_ricochet(int dex){
 
     _origins.set(dex,i_particle);
     _particles.set(dex,new_particle);
+    if(_log!=NULL){
+        _log->add(_log_ricochet,new_particle);
+    }
 }
 
 
