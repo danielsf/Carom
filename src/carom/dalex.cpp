@@ -1412,6 +1412,7 @@ void dalex::simplex_boundary_search(){
     double mu_min;
 
     for(i=0;i<_chifn->get_dim()+1;i++){
+        printf("    explorer is %d\n",_explorers.get_data(i));
         seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
     }
 
@@ -1493,6 +1494,7 @@ void dalex::explore(){
         }
     }
 
+    printf("past initialization\n");
 
     array_1d<double> norm,min,max;
     norm.set_name("dalex_explore_norm");
@@ -1540,6 +1542,8 @@ void dalex::explore(){
         }
     }
 
+    printf("got norm\n");
+
     double roll,ratio;
     int i_step,n_steps;
 
@@ -1550,6 +1554,8 @@ void dalex::explore(){
     for(i=0;i<_explorers.get_dim();i++){
         pts.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
     }
+
+    printf("set points\n");
 
     assess_good_points();
     gp_lin interpolator;
@@ -1573,6 +1579,8 @@ void dalex::explore(){
         acceptance.set(i,0);
         ff_val.set(i,dchifn(pts(i)[0]));
     }
+
+    printf("taking steps\n");
 
     for(i_step=0;i_step<n_steps;i_step++){
         for(ip=0;ip<_explorers.get_dim();ip++){
@@ -1606,6 +1614,8 @@ void dalex::explore(){
             }
         }
     }
+
+    printf("done with steps\n");
 
     double mu_min,mu_max;
 
