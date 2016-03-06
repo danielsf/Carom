@@ -1515,6 +1515,21 @@ void dalex::explore(){
 
     }
 
+    assess_good_points();
+    for(i=0;i<_good_points.get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            mu=0.0;
+            for(k=0;k<_chifn->get_dim();k++){
+                mu+=_chifn->get_pt(_good_points.get_data(i),k)*_basis_vectors.get_data(j,k);
+            }
+            if(i==0 || mu<min.get_data(j)){
+                min.set(j,mu);
+            }
+            if(i==0 || mu>max.get_data(j)){
+                max.set(j,mu);
+            }
+        }
+    }
 
     for(i=0;i<_chifn->get_dim();i++){
         if(max.get_data(i)-min.get_data(i)>1.0e-20){
