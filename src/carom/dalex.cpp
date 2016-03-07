@@ -1385,7 +1385,8 @@ void dalex::simplex_boundary_search(){
     interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
     interpolator.set_ell_factor(1.0);
 
-    dchi_boundary_simplex_gp dchifn(_chifn,&interpolator,_good_points);
+    //dchi_boundary_simplex_gp dchifn(_chifn,&interpolator,_good_points);
+    dchi_boundary_simplex dchifn(_chifn,_good_points);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -1571,7 +1572,8 @@ void dalex::explore(){
     interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
     interpolator.set_ell_factor(1.0);
 
-    dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
+    //dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
+    dchi_boundary_simplex dchifn(_chifn, _good_points);
 
     double rr=1.0/sqrt(double(_chifn->get_dim()));
 
