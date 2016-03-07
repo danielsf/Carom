@@ -1477,36 +1477,17 @@ void dalex::simplex_boundary_search(){
 
 void dalex::explore(){
     printf("\nexploring\n");
+    int pt_0=_chifn->get_pts();
 
-    array_1d<double> trial;
-    trial.set_name("dalex_explore_trial");
-    int i;
-    int i_found,i_high;
-    double mu;
-    while(_explorers.get_dim()<_chifn->get_dim()+1){
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,_chifn->get_min(i)+
-                      _chifn->random_double()*(_chifn->get_max(i)-_chifn->get_min(i)));
-        }
-        evaluate(trial,&mu,&i_high);
-        if(mu>target()){
-            i_found=bisection(_chifn->get_pt(_chifn->mindex())[0],trial,target(),0.1);
-        }
-        else{
-            i_found=i_high;
-        }
-        if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0 && i_found>=0){
-            _explorers.add(i_found);
-        }
-    }
-
-    printf("past initialization\n");
+    assess_good_points();
+    add_good_points();
 
     array_1d<double> norm,min,max;
     norm.set_name("dalex_explore_norm");
     min.set_name("dalex_explore_min");
     max.set_name("dalex_explore_max");
-    int j,k;
+    int i,j,k;
+    double mu;
     for(i=0;i<_explorers.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             mu=0.0;
@@ -1523,7 +1504,6 @@ void dalex::explore(){
 
     }
 
-    assess_good_points();
     for(i=0;i<_good_points.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             mu=0.0;
@@ -1545,10 +1525,33 @@ void dalex::explore(){
         }
         else{
             norm.set(i,1.0);
+            min.set(i,_chifn->get_min(i));
+            max.set(i,_chifn->get_max(i));
         }
     }
 
     printf("got norm\n");
+
+    array_1d<double> trial;
+    trial.set_name("dalex_explore_trial");
+    int i_found;
+    int ct=0;
+    while(_explorers.get_dim()<_chifn->get_dim()+1){
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,min.get_data(i)+
+                      2.0*_chifn->random_double()*(max.get_data(i)-min.get_data(i)));
+        }
+        evaluate(trial,&mu,&i_found);
+
+        if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0 && i_found>=0){
+            _explorers.add(i_found);
+        }
+        printf("    ct %d i_found %d mu %e mindex %d\n",
+        ct,i_found,mu,_chifn->mindex());
+        ct++;
+    }
+
+    printf("past initialization\n");
 
     double roll,ratio;
     int i_step,n_steps;
@@ -1656,6 +1659,8 @@ void dalex::explore(){
     else if(max_acc>(3*n_steps)/4){
         _explorer_temp*=0.15;
     }
+
+    _add_good_points(pt_0);
 
     printf("done exploring %e %e %e\nmin %e max %e\n",
     double(min_acc)/double(n_steps),
