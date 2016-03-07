@@ -88,6 +88,7 @@ void dalex::simplex_search(){
     array_1d<double> trial,grad;
 
     int i,j;
+    int pt_0=_chifn->get_pts();
 
     for(i=0;i<_chifn->get_dim();i++){
         min.set(i,2.0*exception_value);
@@ -161,6 +162,8 @@ void dalex::simplex_search(){
     ffmin.set_dice(_chifn->get_dice());
     ffmin.use_gradient();
     ffmin.find_minimum(seed,trial);
+
+    _add_good_points(pt_0);
 
     printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
@@ -1375,6 +1378,7 @@ void dalex::simplex_boundary_search(){
     int i,j;
     double xmin,xmax,xx;
 
+    add_good_points();
     assess_good_points();
 
     gp_lin interpolator;
@@ -1457,6 +1461,8 @@ void dalex::simplex_boundary_search(){
             _log->add(_log_dchi_simplex,i_bisect);
         }
     }
+
+    _add_good_points(pt_start);
 
     printf("    actually found %e -- %e %e\n",
     _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
