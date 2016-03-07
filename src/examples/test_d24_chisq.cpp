@@ -2,7 +2,7 @@
 
 int main(){
 
-    gaussianJellyBean24 chisq;
+    gaussianJellyBean12 chisq;
 
     int dim=chisq.get_dim();
 
@@ -11,7 +11,7 @@ int main(){
     for(i=0;i<dim;i++){
 
             pt_projected.set(i,chisq.get_center(0,i));
-        
+
     }
 
 
@@ -21,8 +21,8 @@ int main(){
     chimin=2.0*exception_value;
 
     double xx,yy;
-    for(xx=-40.0;xx<40.0;xx+=0.04){
-        for(yy=-40.0;yy<40.0;yy+=0.04){
+    for(xx=-40.0;xx<40.0;xx+=0.4){
+        for(yy=-40.0;yy<40.0;yy+=0.4){
             pt_projected.set(0,xx);
             pt_projected.set(0,yy);
             for(i=0;i<dim;i++){
@@ -33,7 +33,7 @@ int main(){
                     pt.add_val(i,pt_projected.get_data(j)*chisq.get_basis(j,i));
                 }
             }
-            
+
             chisq.convert_params(pt, params, 0);
             for(i=2;i<dim;i++){
                 if(i%4==2){
@@ -67,5 +67,51 @@ int main(){
     for(i=0;i<dim;i++){
         printf("%e\n",min_pt.get_data(i));
     }
+
+    char word[100];
+    double chisq_val;
+    double junk;
+    FILE *input;
+    input=fopen("../Multinest_v3.9/chains/gaussianJellyBean_d12_s99_n300_carom.sav","r");
+    for(i=0;i<dim+5;i++){
+        fscanf(input,"%s",word);
+    }
+    printf("word %s\n",word);
+
+    array_1d<double> trial;
+    trial.set_name("trial");
+    int n_connected=0;
+    int n_disconnected=0;
+    double target=129.0;
+    while(fscanf(input,"%le",&mu)==1){
+        pt.set(0,mu);
+        for(i=1;i<dim;i++){
+            fscanf(input,"%le",&mu);
+            pt.set(i,mu);
+        }
+        fscanf(input,"%le",&chisq_val);
+        for(i=0;i<3;i++){
+            fscanf(input,"%le",&mu);
+        }
+        if(chisq_val<target){
+            for(i=0;i<dim;i++){
+                trial.set(i,0.5*(pt.get_data(i)+min_pt.get_data(i)));
+            }
+            mu=chisq(trial);
+            if(mu>target){
+                printf("WARNING disconnected %e\n",mu);
+                exit(1);
+            }
+            else{
+                n_connected++;
+                if(n_connected%1000==0){
+                    printf("n_connected %d\n",n_connected);
+                }
+            }
+        }
+    }
+
+    fclose(input);
+    printf("n_connected %d\n",n_connected);
 
 }
