@@ -22,6 +22,7 @@ class dalex{
             _good_points.set_name("dalex_good_points");
             _explorers.set_name("dalex_explorers");
             _explorer_temp=1.0;
+            _explorer_step=1.0;
             _target_factor=1.0;
             _simplex_mindex=-1;
             _last_checked_good=0;
@@ -169,7 +170,7 @@ class dalex{
 
         ///////code related to explorers
         array_1d<int> _explorers;
-        double _explorer_temp;
+        double _explorer_temp,_explorer_step;
         int _last_checked_good;
 
 };

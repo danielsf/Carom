@@ -1575,7 +1575,7 @@ void dalex::explore(){
     //dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
     dchi_boundary_simplex dchifn(_chifn, _good_points);
 
-    double rr=1.0/sqrt(double(_chifn->get_dim()));
+    double rr=_explorer_step/sqrt(double(_chifn->get_dim()));
 
     int ip;
     array_1d<double> dir;
@@ -1655,17 +1655,23 @@ void dalex::explore(){
         }
     }
 
-    if(min_acc<n_steps/3){
+    if(min_acc<n_steps/3 && max_acc<n_steps/3){
         _explorer_temp*=10.0;
     }
+    else if(min_acc>(3*n_steps)/4 && max_acc>(3*n_steps)/4){
+        _explorer_temp*=0.2;
+    }
+    else if(min_acc<n_steps/3){
+        _explorer_step*=0.4;
+    }
     else if(max_acc>(3*n_steps)/4){
-        _explorer_temp*=0.15;
+        _explorer_step*=2.0;
     }
 
     _add_good_points(pt_0);
 
-    printf("done exploring %e %e %e\nmin %e max %e\n",
+    printf("done exploring %e %e %e %e\nmin %e max %e\n",
     double(min_acc)/double(n_steps),
     double(max_acc)/double(n_steps),
-    _explorer_temp,mu_min,mu_max);
+    _explorer_temp,_explorer_step,mu_min,mu_max);
 }
