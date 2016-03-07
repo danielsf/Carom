@@ -68,6 +68,21 @@ int main(){
         printf("%e\n",min_pt.get_data(i));
     }
 
+    min_pt.set(0,1.585e+00);
+    min_pt.set(1,1.588e+01);
+    min_pt.set(2,-5.004e+00);
+    min_pt.set(3,1.515e+01);
+    min_pt.set(4,-7.553e+00);
+    min_pt.set(5,-4.807e+00);
+    min_pt.set(6,3.819e+00);
+    min_pt.set(7,2.069e+01);
+    min_pt.set(8,-7.932e+00);
+    min_pt.set(9,8.844e+00);
+    min_pt.set(10,6.206e+00);
+    min_pt.set(11,7.611e-01);
+
+    printf("chisq at by hand min %e\n",chisq(min_pt));
+
     char word[100];
     double chisq_val;
     double junk;
@@ -82,7 +97,7 @@ int main(){
     trial.set_name("trial");
     int n_connected=0;
     int n_disconnected=0;
-    double target=119.0;
+    double target=21.0+chisq(min_pt);
     while(fscanf(input,"%le",&mu)==1){
         pt.set(0,mu);
         for(i=1;i<dim;i++){
