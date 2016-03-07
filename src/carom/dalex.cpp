@@ -807,12 +807,12 @@ void dalex::find_bases(){
         dir.normalize();
         i_pt=bisection(mindex(),dir,0.5*(target()+chimin()),0.1);
 
-        if(fabs(_chifn->get_fn(i_pt)-0.5*(target()+chimin()))>1.0 && chimin()<500.0){
+        /*if(fabs(_chifn->get_fn(i_pt)-0.5*(target()+chimin()))>1.0 && chimin()<500.0){
             printf("WARNING failed to get associate within tol %e %e-- %e %e\n",
             0.5*(target()+chimin()),_chifn->get_fn(i_pt),chimin(),target());
             printf("first\n");
             exit(1);
-        }
+        }*/
 
         if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
             _basis_associates.add(i_pt);
@@ -820,12 +820,12 @@ void dalex::find_bases(){
             if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
                 _basis_associates.add(i_pt);
 
-                if(fabs(_chifn->get_fn(i_pt)-(0.75*target()+0.25*chimin()))>1.0 && chimin()<500.0){
+                /*if(fabs(_chifn->get_fn(i_pt)-(0.75*target()+0.25*chimin()))>1.0 && chimin()<500.0){
                     printf("WARNING failed to get associate within tol %e %e -- %e %e\n",
                     0.75*target()+0.25*chimin(),_chifn->get_fn(i_pt),chimin(),target());
                     printf("second\n");
                     exit(1);
-                }
+                }*/
 
             }
         }
@@ -977,22 +977,22 @@ void dalex::find_bases(){
                 _log->add(_log_compass, i_pt);
             }
             cand_1.add(i_pt);
-            if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
+           /* if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
                 printf("WARNING at end of basis %e wanted %e\n",
                 _chifn->get_fn(i_pt),target());
                 exit(1);
-            }
+            }*/
             i_pt=bisection(mindex(),dir,target(),0.1);
             _particle_log.add(i_pt);
             if(_log!=NULL && i_pt>=0){
                 _log->add(_log_compass, i_pt);
             }
             cand_2.add(i_pt);
-            if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
+            /*if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
                 printf("WARNING at end of basis %e wanted %e\n",
                 _chifn->get_fn(i_pt),target());
                 exit(1);
-            }
+            }*/
         }
     }
 
