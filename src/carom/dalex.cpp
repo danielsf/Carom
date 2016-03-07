@@ -1531,25 +1531,33 @@ void dalex::explore(){
         }
     }
 
-    printf("got norm\n");
+    printf("got norm -- goodpoints %d min %e targ %e\n",_good_points.get_dim(),chimin(),target());
 
     array_1d<double> trial;
     trial.set_name("dalex_explore_trial");
     int i_found;
     int ct=0;
     while(_explorers.get_dim()<_chifn->get_dim()+1){
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,min.get_data(i)+
-                      2.0*_chifn->random_double()*(max.get_data(i)-min.get_data(i)));
-        }
-        evaluate(trial,&mu,&i_found);
+        if(_good_points.get_dim()<_chifn->get_dim()+1){
+            for(i=0;i<_chifn->get_dim();i++){
+                trial.set(i,min.get_data(i)+
+                          2.0*_chifn->random_double()*(max.get_data(i)-min.get_data(i)));
+            }
+            evaluate(trial,&mu,&i_found);
 
-        if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0 && i_found>=0){
-            _explorers.add(i_found);
+            if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0 && i_found>=0){
+                _explorers.add(i_found);
+            }
+            printf("    ct %d i_found %d mu %e mindex %d\n",
+            ct,i_found,mu,_chifn->mindex());
+            ct++;
         }
-        printf("    ct %d i_found %d mu %e mindex %d\n",
-        ct,i_found,mu,_chifn->mindex());
-        ct++;
+        else{
+            i=_chifn->random_int()%_good_points.get_dim();
+            if(_explorers.contains(_good_points.get_data(i))==0){
+                _explorers.add(_good_points.get_data(i));
+            }
+        }
     }
 
     printf("past initialization\n");
