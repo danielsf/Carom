@@ -21,8 +21,8 @@ int main(){
     chimin=2.0*exception_value;
 
     double xx,yy;
-    for(xx=-40.0;xx<40.0;xx+=0.4){
-        for(yy=-40.0;yy<40.0;yy+=0.4){
+    for(xx=-40.0;xx<40.0;xx+=0.1){
+        for(yy=-40.0;yy<40.0;yy+=0.1){
             pt_projected.set(0,xx);
             pt_projected.set(0,yy);
             for(i=0;i<dim;i++){
@@ -82,7 +82,7 @@ int main(){
     trial.set_name("trial");
     int n_connected=0;
     int n_disconnected=0;
-    double target=129.0;
+    double target=119.0;
     while(fscanf(input,"%le",&mu)==1){
         pt.set(0,mu);
         for(i=1;i<dim;i++){
@@ -99,19 +99,18 @@ int main(){
             }
             mu=chisq(trial);
             if(mu>target){
-                printf("WARNING disconnected %e\n",mu);
-                exit(1);
+                n_disconnected++;
             }
             else{
                 n_connected++;
                 if(n_connected%1000==0){
-                    printf("n_connected %d\n",n_connected);
+                    printf("n_connected %d dis %d\n",n_connected,n_disconnected);
                 }
             }
         }
     }
 
     fclose(input);
-    printf("n_connected %d\n",n_connected);
+    printf("n_connected %d n_dis %d\n",n_connected,n_disconnected);
 
 }
