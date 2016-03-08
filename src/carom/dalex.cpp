@@ -1525,7 +1525,7 @@ void dalex::explore(){
             norm.set(i,max.get_data(i)-min.get_data(i));
         }
         else{
-            norm.set(i,1.0);
+            norm.set(i,_chifn->get_characteristic_length(i));
             min.set(i,_chifn->get_min(i));
             max.set(i,_chifn->get_max(i));
         }
