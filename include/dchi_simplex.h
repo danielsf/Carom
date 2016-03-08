@@ -41,4 +41,11 @@ class dchi_multimodal_simplex : public dchi_simplex_base{
         virtual double operator()(array_1d<double>&);
 };
 
+class dchi_interior_simplex : public dchi_simplex_base{
+    public:
+        dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
+        ~dchi_interior_simplex(){};
+        virtual double operator()(array_1d<double>&);
+};
+
 #endif

@@ -153,3 +153,25 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
 
     return mu-exp_term*distance*delta*2.0;
 }
+
+dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &aa) :
+                         dchi_simplex_base(cc, aa){}
+
+double dchi_interior_simplex::operator()(array_1d<double> &pt){
+
+    _called++;
+
+    double mu;
+    int i_found;
+    _chisq->evaluate(pt,&mu,&i_found);
+
+    if(_associates.get_dim()==0 || mu>_chisq->target()){
+        return mu;
+    }
+
+    double delta=_chisq->target()-_chisq->chimin();
+
+    double distance=associate_distance(pt);
+
+    return mu-2.0*distance*delta;
+}
