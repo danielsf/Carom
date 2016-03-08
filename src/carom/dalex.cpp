@@ -1652,6 +1652,9 @@ void dalex::explore(){
             ip=bisection(_chifn->get_pt(_chifn->mindex())[0],pts(i)[0],target()+(target()-chimin()),0.1);
         }
         _explorers.set(i,ip);
+        if(_log!=NULL){
+            _log->add(_log_mcmc,ip);
+        }
     }
 
     int min_acc,max_acc;
