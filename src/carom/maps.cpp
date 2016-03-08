@@ -135,6 +135,7 @@ void maps::initialize(int npts){
     _cloud.set_log(&_log);
     _outer_cloud.set_target_factor(1.33);
     _outer_cloud.build(&_chifn);
+    _outer_cloud.set_log(&_log);
     _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
