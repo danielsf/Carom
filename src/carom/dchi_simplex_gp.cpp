@@ -5,6 +5,7 @@ dchi_boundary_simplex_gp::dchi_boundary_simplex_gp(chisq_wrapper *cc,
                           dchi_boundary_simplex(cc, ii){
 
     _interpolator=gg;
+    _last_real_call=0;
 
 }
 
@@ -14,18 +15,15 @@ double dchi_boundary_simplex_gp::operator()(array_1d<double> &pt){
     int i_found;
 
     mu=_interpolator[0](pt);
-    if(mu<_min_0){
+    if(_called>0 && _called-_last_real_call>50){
         mu=_chisq[0](pt);
+        _last_real_call=_called;
     }
 
     double dmu;
 
-    if(mu>_min_0){
-        dmu=fabs(_chisq->target()-mu);
-    }
-    else{
-        dmu=mu-_min_0;
-    }
+    dmu=fabs(_chisq->target()-mu);
+
     double delta=_chisq->target()-_chisq->chimin();
 
     double exp_term;

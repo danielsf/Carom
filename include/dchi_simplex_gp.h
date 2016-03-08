@@ -14,6 +14,7 @@ class dchi_boundary_simplex_gp : public dchi_boundary_simplex{
 
     private:
         gp_lin *_interpolator;
+        int _last_real_call;
 
 };
 
