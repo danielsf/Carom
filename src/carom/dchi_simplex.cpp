@@ -132,7 +132,7 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
     }
 
     double delta=_chisq->target()-_chisq->chimin();
-    double dmu=fabs(mu-_chisq->chimin());
+    double dmu=fabs(mu-_chisq->target());
 
     double exp_term;
 
