@@ -64,7 +64,7 @@ private:
 
     Ran *_dice;
     function_wrapper *_chisquared, *_cost;
-    
+
     /*
     cost will need to be a function_wrapper sub-class
     that has pointers to all of the aps nodes.
