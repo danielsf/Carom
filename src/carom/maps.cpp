@@ -133,8 +133,8 @@ void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
     _cloud.set_log(&_log);
-    //_outer_cloud.set_target_factor(1.33);
-    //_outer_cloud.build(&_chifn);
+    _outer_cloud.set_target_factor(1.33);
+    _outer_cloud.build(&_chifn);
     _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
@@ -640,7 +640,7 @@ void maps::search(int limit){
 
         pt_start=_chifn.get_pts();
         _cloud.search();
-        //_outer_cloud.search();
+        _outer_cloud.search();
         _ct_dalex+=_chifn.get_pts()-pt_start;
         //simplex_boundary_search();
 
