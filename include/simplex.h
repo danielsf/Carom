@@ -22,6 +22,7 @@ public:
     void freeze_temp();
     void unfreeze_temp();
     void get_minpt(array_1d<double>&);
+    void is_a_model();
     
     /*
     the array_2d will be the input array of points;
@@ -43,6 +44,7 @@ private:
     void expand();
     
     void find_il();
+    void paranoia();
     
     void initialize();
     
@@ -54,6 +56,7 @@ private:
     int _freeze_called,_last_called_gradient;
     int _last_found,_called_evaluate,_abort_max_factor;
     int _last_cooled_off;
+    int _is_a_model;
     array_1d<double> _transform, _origin,_ff,_pstar,_pstarstar,_min_pt;
     array_1d<double> _last_improved_ff;
     array_1d<double> _min,_max;

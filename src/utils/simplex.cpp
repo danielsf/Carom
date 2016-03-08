@@ -40,6 +40,8 @@ void simplex_minimizer::initialize(){
     _pts.set_name("simplex_pts");
     _last_improved_ff.set_name("simplex_last_improved_ff");
     _last_improved_pts.set_name("simplex_last_improved_pts");
+
+    _is_a_model=0;
 }
 
 void simplex_minimizer::set_abort_max_factor(int ii){
@@ -56,6 +58,10 @@ void simplex_minimizer::set_cost(function_wrapper *cc){
 
 void simplex_minimizer::set_dice(Ran *dd){
     _dice=dd;
+}
+
+void simplex_minimizer::is_a_model(){
+    _is_a_model=1;
 }
 
 void simplex_minimizer::use_gradient(){
@@ -84,6 +90,29 @@ void simplex_minimizer::set_minmax(array_1d<double> &min, array_1d<double> &max)
     for(i=0;i<min.get_dim();i++){
         _origin.set(i,min.get_data(i));
         _transform.set(i,max.get_data(i)-min.get_data(i));
+    }
+
+}
+
+void simplex_minimizer::paranoia(){
+
+    int need_to_thaw=0;
+    if(_freeze_called==0){
+        _freeze_called=1;
+        need_to_thaw=1;
+    }
+
+    int i;
+    double mu;
+    for(i=0;i<_pts.get_rows();i++){
+        mu=evaluate(_pts(i)[0]);
+        _ff.set(i,mu);
+    }
+
+    find_il();
+
+    if(need_to_thaw==1){
+        _freeze_called=0;
     }
 
 }
@@ -374,6 +403,11 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
 
     printf("    simplex starts with %e\n",_true_min_ff);
     while(_called_evaluate-_last_found<abort_max){
+
+       if(_is_a_model==1){
+           paranoia();
+       }
+
        for(i=0;i<dim;i++){
            pbar.set(i,0.0);
            for(j=0;j<dim+1;j++){
