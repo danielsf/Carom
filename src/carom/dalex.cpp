@@ -1593,7 +1593,7 @@ void dalex::explore(){
     //dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
     dchi_multimodal_simplex dchifn(_chifn, _good_points);
 
-    double rr=_explorer_step/sqrt(double(_chifn->get_dim()));
+    double rr;
 
     int ip;
     array_1d<double> dir;
@@ -1614,7 +1614,12 @@ void dalex::explore(){
     for(i_step=0;i_step<n_steps;i_step++){
         for(ip=0;ip<_explorers.get_dim();ip++){
             for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,rr*norm.get_data(i)));
+                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+            dir.normalize();
+            rr=normal_deviate(_chifn->get_dice(),0.0,0.1);
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.multiply_val(i,rr*norm.get_data(i));
             }
 
             for(i=0;i<_chifn->get_dim();i++){
