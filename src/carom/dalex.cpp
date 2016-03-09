@@ -1681,17 +1681,11 @@ void dalex::explore(){
         }
     }
 
-    if(min_acc<n_steps/3 && max_acc<n_steps/3){
+    if(min_acc<n_steps/3){
         _explorer_temp*=10.0;
     }
-    else if(min_acc>(3*n_steps)/4 && max_acc>(3*n_steps)/4){
-        _explorer_temp*=0.2;
-    }
-    else if(min_acc<n_steps/3){
-        _explorer_step*=0.4;
-    }
     else if(max_acc>(3*n_steps)/4){
-        _explorer_step*=2.0;
+        _explorer_temp*=0.2;
     }
 
     printf("done exploring %e %e %e %e\nmin %e max %e\n",
