@@ -59,6 +59,10 @@ double dalex::get_norm(int dex){
 void dalex::search(){
     safety_check("search");
     int i;
+    int pts_0=_chifn->get_pts();
+    assess_good_points();
+    add_good_points();
+
     for(i=0;i<_chifn->get_dim();i++){
         propagate(i);
     }
@@ -163,10 +167,9 @@ void dalex::simplex_search(){
     ffmin.use_gradient();
     ffmin.find_minimum(seed,trial);
 
-    _add_good_points(pt_0);
-
     printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
+    _add_good_points(pt_0);
 }
 
 
@@ -1378,7 +1381,6 @@ void dalex::simplex_boundary_search(){
     int i,j;
     double xmin,xmax,xx;
 
-    add_good_points();
     assess_good_points();
 
     gp_lin interpolator;
@@ -1465,8 +1467,6 @@ void dalex::simplex_boundary_search(){
         }
     }
 
-    _add_good_points(pt_start);
-
     printf("    actually found %e -- %e %e\n",
     _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
 
@@ -1474,6 +1474,8 @@ void dalex::simplex_boundary_search(){
     printf("    interpolated %e\n",interpolator(_chifn->get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",chimin(),target());
+
+    _add_good_points(pt_start);
 
 }
 
@@ -1483,7 +1485,6 @@ void dalex::explore(){
     int pt_0=_chifn->get_pts();
 
     assess_good_points();
-    add_good_points();
 
     array_1d<double> norm,min,max;
     norm.set_name("dalex_explore_norm");
@@ -1681,10 +1682,10 @@ void dalex::explore(){
         _explorer_step*=2.0;
     }
 
-    _add_good_points(pt_0);
-
     printf("done exploring %e %e %e %e\nmin %e max %e\n",
     double(min_acc)/double(n_steps),
     double(max_acc)/double(n_steps),
     _explorer_temp,_explorer_step,mu_min,mu_max);
+
+    _add_good_points(pt_0);
 }
