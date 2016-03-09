@@ -1541,11 +1541,17 @@ void dalex::explore(){
     trial.set_name("dalex_explore_trial");
     int i_found;
     int ct=0;
-    while(_explorers.get_dim()<_chifn->get_dim()+1){
+    double rando;
+    while(_explorers.get_dim()<2*_chifn->get_dim()){
         if(_good_points.get_dim()<_chifn->get_dim()+1){
             for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,min.get_data(i)+
-                          2.0*_chifn->random_double()*(max.get_data(i)-min.get_data(i)));
+                trial.set(i,0.0);
+            }
+            for(i=0;i<_chifn->get_dim();i++){
+                rando=3.0*_chifn->random_double();
+                for(j=0;j<_chifn->get_dim();j++){
+                    trial.add_val(j,norm.get_data(i)*(min.get_data(i)+rando*(max.get_data(i)+min.get_data(i)))*_basis_vectors.get_data(i,j));
+                }
             }
             evaluate(trial,&mu,&i_found);
 
