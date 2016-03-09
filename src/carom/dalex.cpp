@@ -77,6 +77,7 @@ void dalex::search(){
 
     explore();
     simplex_boundary_search();
+    _add_good_points(pts_0);
 
 }
 
