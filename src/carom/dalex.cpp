@@ -83,6 +83,9 @@ void dalex::search(){
 
 
 void dalex::simplex_search(){
+    if(_explorers.get_dim()==0){
+        return;
+    }
     printf("\n    doing dalex_simplex %e -- %e %e\n",chimin(),target(),_target_factor);
     safety_check("simplex_search");
     array_1d<double> min,max;
@@ -118,48 +121,14 @@ void dalex::simplex_search(){
         }
     }
 
-    int i_found;
-    double wgt;
-    double mu_best,mu;
-    array_1d<double> trial_best;
-    for(i=0;i<_particles.get_dim();i++){
-        mu_best=2.0*exception_value;
-        for(wgt=0.25;wgt<1.0;wgt+=0.25){
-            for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,wgt*_chifn->get_pt(_origins.get_data(i),j)+(1.0-wgt)*_chifn->get_pt(_particles.get_data(i),j));
-            }
-            evaluate(trial,&mu,&j);
-            if(mu<mu_best){
-                mu_best=mu;
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial_best.set(j,trial.get_data(j));
-                }
-            }
+    array_1d<int> chosen_exp;
+    while(seed.get_rows()<_chifn->get_dim()+1){
+        i=_chifn->random_int()%_explorers.get_dim();
+        if(chosen_exp.contains(i)==0){
+            seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
+            chosen_exp.add(i);
         }
-        seed.add_row(trial_best);
     }
-
-    calculate_gradient(mindex(), grad);
-    for(i=0;i<_chifn->get_dim();i++){
-        grad.multiply_val(i,-1.0);
-    }
-    double gnorm,local_target=target();
-    int i_min=mindex();
-    i_found=i_min;
-    gnorm=grad.normalize();
-    while(i_found==i_min){
-        i_found = bisection(i_min,grad,local_target,0.1);
-
-        if(i_found==i_min){
-            printf("    need to increase gradient target %e %e %e\n",local_target,_chifn->get_fn(i_min),gnorm);
-        }
-        local_target*=2.0;
-    }
-    if(i_min==i_found){
-        printf("cannot proceed with simplex; gradient did not move %e\n",grad.normalize());
-        exit(1);
-    }
-    seed.add_row(_chifn->get_pt(i_found)[0]);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(_chifn);
@@ -1421,9 +1390,15 @@ void dalex::simplex_boundary_search(){
     int i_min=-1;
     double mu_min;
 
-    for(i=0;i<_chifn->get_dim()+1;i++){
-        printf("    explorer is %d\n",_explorers.get_data(i));
-        seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
+    array_1d<int> chosen_exp;
+
+    while(seed.get_rows()<_chifn->get_dim()+1){
+        i=_chifn->random_int()%_explorers.get_dim();
+        if(chosen_exp.contains(i)==0){
+            printf("    explorer is %d\n",_explorers.get_data(i));
+            seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
+            chosen_exp.add(i);
+        }
     }
 
     double mu,start_min;
