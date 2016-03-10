@@ -232,7 +232,7 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
     int i_found;
     _chifn->evaluate(pt,&mu,&i_found);
 
-    if(_associates.get_dim()==0 || mu>_chifn->target()){
+    if(_associates.get_dim()==0){
         return mu;
     }
 
@@ -240,5 +240,13 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
     double distance=nn_distance(pt);
 
-    return mu-2.0*distance*delta;
+    double exp_term;
+    if(mu<_chifn->target()){
+        exp_term=1.0;
+    }
+    else{
+        exp_term=exp(_chifn->target()-mu);
+    }
+
+    return mu-2.0*distance*delta*exp_term;
 }

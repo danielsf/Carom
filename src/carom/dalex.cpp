@@ -1127,7 +1127,8 @@ void dalex::explore(){
     interpolator.set_ell_factor(1.0);
 
     //dchi_boundary_simplex_gp dchifn(_chifn, &interpolator, _good_points);
-    dchi_interior_simplex dchifn(_chifn, _good_points);
+    //dchi_interior_simplex dchifn(_chifn, _good_points);
+    //dchi_multimodal_simplex dchifn(_chifn, _good_points);
 
     double rr;
 
@@ -1142,7 +1143,7 @@ void dalex::explore(){
     ff_val.set_name("dalex_explore_ff_val");
     for(i=0;i<_explorers.get_dim();i++){
         acceptance.set(i,0);
-        ff_val.set(i,dchifn(pts(i)[0]));
+        ff_val.set(i,_chifn[0](pts(i)[0]));
     }
 
     printf("taking steps\n");
@@ -1153,15 +1154,20 @@ void dalex::explore(){
                 dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
             }
             dir.normalize();
-            rr=normal_deviate(_chifn->get_dice(),0.0,0.1);
+            rr=fabs(normal_deviate(_chifn->get_dice(),0.1,0.05));
             for(i=0;i<_chifn->get_dim();i++){
                 dir.multiply_val(i,rr*norm.get_data(i));
             }
 
             for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,pts.get_data(ip,i)+dir.get_data(i));
+                trial.set(i,pts.get_data(ip,i));
             }
-            mu=dchifn(trial);
+            for(i=0;i<_chifn->get_dim();i++){
+                for(j=0;j<_chifn->get_dim();j++){
+                    trial.add_val(j,dir.get_data(i)*_basis_vectors.get_data(i,j));
+                }
+            }
+            mu=_chifn[0](trial);
 
             accept_it=0;
             if(mu<ff_val.get_data(ip)){
@@ -1217,6 +1223,7 @@ void dalex::explore(){
         }
     }
 
+    printf("temp was %e\n",_explorer_temp);
     if(min_acc<n_steps/3){
         _explorer_temp*=10.0;
     }

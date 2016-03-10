@@ -555,14 +555,21 @@ void maps::explore(){
 
     int n_steps=100;
     int i_step;
-    double rr=0.1/double(_chifn.get_dim());
+    double rr;
     for(i_step=0;i_step<n_steps;i_step++){
         for(ip=0;ip<_explorers.get_dim();ip++){
             for(i=0;i<_chifn.get_dim();i++){
-                dir.set(i,normal_deviate(_chifn.get_dice(),0.0,rr*norm.get_data(i)));
+                dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+            }
+            dir.normalize();
+            rr=fabs(normal_deviate(_chifn.get_dice(),0.0,0.1));
+            for(i=0;i<_chifn.get_dim();i++){
+                trial.set(i,_chifn.get_pt(_explorers.get_data(ip),i));
             }
             for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,_chifn.get_pt(_explorers.get_data(ip),i)+dir.get_data(i));
+                for(j=0;j<_chifn.get_dim();j++){
+                    trial.add_val(j,rr*norm.get_data(i)*dir.get_data(i)*_cloud.get_basis(i,j));
+                }
             }
             mu=evaluate(trial, &i_pt);
             accept_it=0;
