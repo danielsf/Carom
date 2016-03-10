@@ -61,7 +61,8 @@ void dalex::search(){
     int i;
     int pts_0=_chifn->get_pts();
     assess_good_points();
-    add_good_points();
+    //add_good_points();
+    _add_good_points(_last_checked_good);
 
     for(i=0;i<_chifn->get_dim();i++){
         propagate(i);
