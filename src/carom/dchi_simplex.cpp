@@ -5,8 +5,8 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
                                      array_1d<int> &associates_in){
 
     _called=0;
-    _chisq=chi_in;
-    _min_0=_chisq->chimin();
+    _chifn=chi_in;
+    _min_0=_chifn->chimin();
     _associates.set_name("dchi_simplex_associates");
     int i,j;
     for(i=0;i<associates_in.get_dim();i++){
@@ -21,8 +21,8 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
     double mu;
     if(_associates.get_dim()>0){
         for(i=0;i<_associates.get_dim();i++){
-            for(j=0;j<_chisq->get_dim();j++){
-                mu=_chisq->get_pt(i,j);
+            for(j=0;j<_chifn->get_dim();j++){
+                mu=_chifn->get_pt(i,j);
                 if(i==0 || mu<min.get_data(j)){
                     min.set(j,mu);
                 }
@@ -33,7 +33,7 @@ dchi_simplex_base::dchi_simplex_base(chisq_wrapper *chi_in,
             }
         }
 
-        for(i=0;i<_chisq->get_dim();i++){
+        for(i=0;i<_chifn->get_dim();i++){
             if(max.get_data(i)-min.get_data(i)<1.0e-20){
                 _norm.set(i,1.0);
             }
@@ -60,8 +60,8 @@ double dchi_simplex_base::associate_distance(array_1d<double> &pt){
      ddmin=0.0;
      for(i=0;i<_associates.get_dim();i++){
          dd=0.0;
-         for(j=0;j<_chisq->get_dim();j++){
-            dd+=power((pt.get_data(j)-_chisq->get_pt(_associates.get_data(i),j))/_norm.get_data(j),2);
+         for(j=0;j<_chifn->get_dim();j++){
+            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm.get_data(j),2);
          }
          if(i==0 || dd<ddmin){
              ddmin=dd;
@@ -82,16 +82,16 @@ double dchi_boundary_simplex::operator()(array_1d<double> &pt){
     double distance=associate_distance(pt);
     double mu;
     int i_found;
-    _chisq->evaluate(pt,&mu,&i_found);
+    _chifn->evaluate(pt,&mu,&i_found);
 
     double dmu;
 
-    dmu=fabs(_chisq->target()-mu);
+    dmu=fabs(_chifn->target()-mu);
 
-    double delta=_chisq->target()-_chisq->chimin();
+    double delta=_chifn->target()-_chifn->chimin();
 
     double exp_term;
-    if(_chisq->target()<mu){
+    if(_chifn->target()<mu){
         exp_term=exp(-0.1*fabs(dmu)/delta);
     }
     else{
@@ -125,18 +125,18 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
 
     double mu;
     int i_found;
-    _chisq->evaluate(pt,&mu,&i_found);
+    _chifn->evaluate(pt,&mu,&i_found);
 
     if(_associates.get_dim()==0){
         return mu;
     }
 
-    double delta=_chisq->target()-_chisq->chimin();
-    double dmu=fabs(mu-_chisq->target());
+    double delta=_chifn->target()-_chifn->chimin();
+    double dmu=fabs(mu-_chifn->target());
 
     double exp_term;
 
-    if(_chisq->target()<mu){
+    if(_chifn->target()<mu){
         exp_term=exp(-0.1*dmu/delta);
     }
     else{
@@ -154,8 +154,75 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
     return mu-exp_term*distance*delta*2.0;
 }
 
-dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &aa) :
-                         dchi_simplex_base(cc, aa){}
+dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &aa){
+
+    _called=0;
+
+    _chifn=cc;
+
+    int i;
+    for(i=0;i<aa.get_dim();i++){
+        _associates.add(aa.get_data(i));
+    }
+
+    array_1d<double> norm;
+    for(i=0;i<_chifn->get_dim();i++){
+        norm.set(i,_chifn->get_characteristic_length(i));
+    }
+    array_1d<double> min,max;
+    int j;
+    for(i=0;i<_associates.get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            if(i==0 || _chifn->get_pt(_associates.get_data(i),j)<min.get_data(j)){
+                min.set(j,_chifn->get_pt(_associates.get_data(i),j));
+            }
+            if(i==0 || _chifn->get_pt(_associates.get_data(i),j)>max.get_data(j)){
+                max.set(j,_chifn->get_pt(_associates.get_data(i),j));
+            }
+        }
+    }
+
+    if(min.get_dim()>0){
+        for(i=0;i<_chifn->get_dim();i++){
+            if(max.get_data(i)-min.get_data(i)<norm.get_data(i)){
+                norm.set(i,max.get_data(i)-min.get_data(i));
+            }
+        }
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        if(i==0 || norm.get_data(i)<_norm){
+            _norm=norm.get_data(i);
+        }
+    }
+
+}
+
+double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
+    if(_associates.get_dim()==0){
+        return 0.0;
+    }
+    double dd_min=2.0*exception_value;
+
+    double dd;
+    int i,j;
+    for(i=0;i<_associates.get_dim();i++){
+        dd=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm,2);
+        }
+        if(dd<dd_min){
+            dd_min=dd;
+        }
+    }
+
+    return sqrt(dd_min);
+}
+
+
+int dchi_interior_simplex::get_called(){
+   return _called;
+}
 
 double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
@@ -163,15 +230,15 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
     double mu;
     int i_found;
-    _chisq->evaluate(pt,&mu,&i_found);
+    _chifn->evaluate(pt,&mu,&i_found);
 
-    if(_associates.get_dim()==0 || mu>_chisq->target()){
+    if(_associates.get_dim()==0 || mu>_chifn->target()){
         return mu;
     }
 
-    double delta=_chisq->target()-_chisq->chimin();
+    double delta=_chifn->target()-_chifn->chimin();
 
-    double distance=associate_distance(pt);
+    double distance=nn_distance(pt);
 
     return mu-2.0*distance*delta;
 }
