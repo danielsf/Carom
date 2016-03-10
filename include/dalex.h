@@ -16,9 +16,6 @@ class dalex{
         ~dalex(){};
         dalex(){
             _chifn=NULL;
-            _particles.set_name("dalex_particles");
-            _origins.set_name("dalex_origins");
-            _particle_log.set_name("dalex_particle_log");
             _good_points.set_name("dalex_good_points");
             _explorers.set_name("dalex_explorers");
             _explorer_temp=1.0;
@@ -48,9 +45,6 @@ class dalex{
         void simplex_search();
         void simplex_boundary_search();
         void explore();
-
-        void calculate_gradient(int, array_1d<double>&);
-        void propagate(int);
 
         int bisection(int, int, double, double);
         int bisection(int, array_1d<double>&, double, double);
@@ -142,16 +136,11 @@ class dalex{
             return _target_factor*_chifn->target();
         }
 
-        array_1d<int> _particles,_origins,_particle_log;
         asymm_array_2d<int> *_log;
         chisq_wrapper *_chifn;
         double _target_factor;
         int _simplex_mindex;
         array_1d<int> _good_points;
-
-        void _propagate_bisection(int);
-        void _propagate_ricochet(int);
-        void _propagate_midpt(int);
 
         ////////code related to finding basis vectors
         array_1d<int> _basis_associates;

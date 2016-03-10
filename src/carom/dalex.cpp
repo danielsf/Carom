@@ -5,10 +5,6 @@ void dalex::build(chisq_wrapper *cc){
     _chifn=cc;
 
     int i,j;
-    for(i=0;i<_chifn->get_dim();i++){
-        _propagate_bisection(i);
-    }
-
     _basis_vectors.set_cols(_chifn->get_dim());
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
@@ -25,20 +21,15 @@ void dalex::build(chisq_wrapper *cc){
 
 double dalex::get_norm(int dex){
 
-    if(_particles.get_dim()==0 && _origins.get_dim()==0){
+    if(_good_points.get_dim()==0){
         return _chifn->get_characteristic_length(dex);
     }
 
     double min,max;
     int i,ip;
-    for(i=0;i<_particles.get_dim()+_origins.get_dim();i++){
+    for(i=0;i<_good_points.get_dim();i++){
 
-        if(i>=_particles.get_dim()){
-            ip=_origins.get_data(i-_particles.get_dim());
-        }
-        else{
-            ip=_particles.get_data(i);
-        }
+        ip=_good_points.get_data(i);
 
         if(i==0 || _chifn->get_pt(ip,dex)<min){
             min=_chifn->get_pt(ip,dex);
@@ -61,12 +52,7 @@ void dalex::search(){
     int i;
     int pts_0=_chifn->get_pts();
     assess_good_points();
-    //add_good_points();
     _add_good_points(_last_checked_good);
-
-    for(i=0;i<_chifn->get_dim();i++){
-        propagate(i);
-    }
 
     if(mindex()!=_simplex_mindex){
         simplex_search();
@@ -104,13 +90,13 @@ void dalex::simplex_search(){
         max.set(i,-2.0*exception_value);
     }
 
-    for(i=0;i<_particles.get_dim();i++){
+    for(i=0;i<_good_points.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
-            if(_chifn->get_pt(_particles.get_data(i),j)<min.get_data(j)){
-                min.set(j,_chifn->get_pt(_particles.get_data(i),j));
+            if(_chifn->get_pt(_good_points.get_data(i),j)<min.get_data(j)){
+                min.set(j,_chifn->get_pt(_good_points.get_data(i),j));
             }
-            if(_chifn->get_pt(_particles.get_data(i),j)>max.get_data(j)){
-                max.set(j,_chifn->get_pt(_particles.get_data(i),j));
+            if(_chifn->get_pt(_good_points.get_data(i),j)>max.get_data(j)){
+                max.set(j,_chifn->get_pt(_good_points.get_data(i),j));
             }
         }
     }
@@ -236,365 +222,6 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
     }
 
     return i_found;
-
-}
-
-
-void dalex::calculate_gradient(int i_origin, array_1d<double> &grad){
-
-    safety_check("gradient");
-
-    grad.reset_preserving_room();
-
-    array_1d<double> trial;
-    trial.set_name("dalex_gradient_trial");
-
-    int ii,jj,i_found,zero_dim,aborted;
-    double step_factor,mu,dx,dy;
-
-    array_1d<double> norm,max,min;
-    norm.set_dim(_chifn->get_dim());
-    for(ii=0;ii<_chifn->get_dim();ii++){
-        max.set(ii, -2.0*exception_value);
-        min.set(ii, 2.0*exception_value);
-    }
-
-    int ip,kk;
-    for(ii=0;ii<_particles.get_dim();ii++){
-        if(_particles.get_data(ii)>0){
-            ip=_particles.get_data(ii);
-            for(jj=0;jj<_chifn->get_dim();jj++){
-                mu=0.0;
-                for(kk=0;kk<_chifn->get_dim();kk++){
-                    mu+=_chifn->get_pt(ip,kk)*_basis_vectors.get_data(jj,kk);
-                }
-                if(mu<min.get_data(jj)){
-                    min.set(jj,mu);
-                }
-                if(mu>max.get_data(jj)){
-                    max.set(jj,mu);
-                }
-            }
-        }
-    }
-
-    for(ii=0;ii<_origins.get_dim();ii++){
-        if(_origins.get_data(ii)>0){
-            ip=_origins.get_data(ii);
-            for(jj=0;jj<_chifn->get_dim();jj++){
-                mu=0.0;
-                for(kk=0;kk<_chifn->get_dim();kk++){
-                    mu+=_chifn->get_pt(ip,kk)*_basis_vectors.get_data(jj,kk);
-                }
-                if(mu<min.get_data(jj)){
-                    min.set(jj,mu);
-                }
-                if(mu>max.get_data(jj)){
-                    max.set(jj,mu);
-                }
-            }
-        }
-    }
-
-    for(ii=0;ii<_chifn->get_dim();ii++){
-        if(max.get_data(ii)-min.get_data(ii)>1.0e-20 && fabs(max.get_data(ii)-min.get_data(ii))<exception_value){
-            norm.set(ii,max.get_data(ii)-min.get_data(ii));
-        }
-        else{
-            norm.set(ii,1.0);
-        }
-    }
-
-    zero_dim=0;
-    aborted=0;
-
-    array_1d<double> grad_basis;
-    grad_basis.set_name("dalex_calc_grad_grad_basis");
-
-    for(ii=0;ii<_chifn->get_dim();ii++){
-        step_factor=0.001;
-        while(grad_basis.get_dim()<=ii){
-
-            for(kk=0.0;kk<_chifn->get_dim();kk++){
-                trial.set(kk,_chifn->get_pt(i_origin,kk));
-                trial.add_val(kk,step_factor*norm.get_data(kk)*_basis_vectors.get_data(ii,kk));
-            }
-
-            evaluate(trial,&mu,&i_found);
-
-            if(i_found<0 || i_found==i_origin){
-                for(kk=0.0;kk<_chifn->get_dim();kk++){
-                    trial.set(kk,_chifn->get_pt(i_origin,kk));
-                    trial.subtract_val(kk,step_factor*norm.get_data(kk)*_basis_vectors.get_data(ii,kk));
-                }
-                evaluate(trial,&mu,&i_found);
-            }
-
-            if(i_found>=0 && i_found!=i_origin){
-                dx=0.0;
-                for(kk=0;kk<_chifn->get_dim();kk++){
-                    dx+=(_chifn->get_pt(i_origin,kk)-trial.get_data(kk))*_basis_vectors.get_data(ii,kk);
-                }
-                dy=_chifn->get_fn(i_origin)-mu;
-                grad_basis.set(ii,dy/dx);
-            }
-            else if(i_found==i_origin){
-                step_factor*=1.8;
-                aborted++;
-            }
-            else{
-                step_factor*=0.5;
-                aborted++;
-            }
-
-            if(aborted>=15){
-                zero_dim++;
-                grad_basis.set(ii,0.0);
-            }
-
-        }
-
-    }
-
-    for(ii=0;ii<_chifn->get_dim();ii++){
-        grad.set(ii,0.0);
-    }
-
-    for(ii=0;ii<_chifn->get_dim();ii++){
-        for(kk=0;kk<_chifn->get_dim();kk++){
-            grad.add_val(kk,grad_basis.get_data(ii)*_basis_vectors.get_data(ii,kk));
-        }
-    }
-
-    if(zero_dim==_chifn->get_dim()){
-        printf("WARNING dalex gradient zeroed out all dimensions\n");
-        exit(1);
-    }
-
-}
-
-
-void dalex::propagate(int dex){
-    safety_check("propagate");
-
-    if(dex>=_particles.get_dim()){
-        _propagate_bisection(dex);
-    }
-
-    int i_particle=_particles.get_data(dex);
-    int i_origin=_origins.get_data(dex);
-
-    if(i_particle<=0 || i_origin<=0 || i_particle==i_origin){
-        _propagate_bisection(dex);
-    }
-    else{
-        //_propagate_midpt(dex);
-        _propagate_ricochet(dex);
-    }
-}
-
-
-void dalex::_propagate_bisection(int dex){
-    safety_check("_propagate_bisection");
-    /*printf("   bisecting %d %e %d\n",dex,chimin(),_chifn->get_pts());
-    if(dex<_particles.get_dim()){
-        printf("    %d %d %e %e\n",
-        _particles.get_data(dex),_origins.get_data(dex),
-        _chifn->get_fn(_particles.get_data(dex)),
-        _chifn->get_fn(_origins.get_data(dex)));
-    }*/
-    array_1d<double> dir;
-    dir.set_name("dalex_propagate_bisection_dir");
-    int i,i_found_1,i_found_2;
-    i_found_1=-1;
-
-    while(i_found_1<0){
-        for(i=0;i<_chifn->get_dim();i++){
-            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-        }
-        dir.normalize();
-        i_found_1=bisection(mindex(),dir,target(),0.1);
-        if(_particles.contains(i_found_1)==1 || _origins.contains(i_found_1)==1){
-            i_found_1=-1;
-        }
-    }
-
-
-    i_found_2=-1;
-    while(i_found_2<0){
-        for(i=0;i<_chifn->get_dim();i++){
-            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-        }
-        dir.normalize();
-        i_found_2=bisection(mindex(),dir,target(),0.1);
-        if(_origins.contains(i_found_2)==1 || _particles.contains(i_found_2)==1 || i_found_2==i_found_1){
-            i_found_2=-1;
-        }
-    }
-
-    double dd,dd1,dd2;
-    dd1=2.0*exception_value;
-    dd2=2.0*exception_value;
-    for(i=0;i<_particle_log.get_dim();i++){
-        dd=_chifn->distance(i_found_1,_particle_log.get_data(i));
-        if(dd<dd1){
-            dd1=dd;
-        }
-        dd=_chifn->distance(i_found_2,_particle_log.get_data(i));
-        if(dd<dd2){
-            dd2=dd;
-        }
-    }
-
-    if(dd1>dd2){
-        _particles.set(dex,i_found_1);
-        _origins.set(dex,i_found_2);
-    }
-    else{
-        _particles.set(dex,i_found_2);
-        _origins.set(dex,i_found_1);
-    }
-
-    _particle_log.add(i_found_1);
-    _particle_log.add(i_found_2);
-
-}
-
-
-void dalex::_propagate_ricochet(int dex){
-    safety_check("_propagate_ricochet");
-    //printf("    ricocheting %d\n",dex);
-    array_1d<double> dir,gradient,reflected_dir;
-    dir.set_name("dalex_propagate_ricochet_dir");
-    gradient.set_name("dalex_propagate_ricochet_gradient");
-    reflected_dir.set_name("dalex_propagate_ricochet_relfected_dir");
-
-    if(_chifn->get_fn(_particles.get_data(dex))>_chifn->target()){
-        _propagate_bisection(dex);
-        return;
-    }
-
-    int i_particle,i_origin;
-    i_particle=_particles.get_data(dex);
-    i_origin=_origins.get_data(dex);
-
-    calculate_gradient(i_particle, gradient);
-    gradient.normalize();
-    int i;
-    for(i=0;i<_chifn->get_dim();i++){
-        dir.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
-    }
-    dir.normalize();
-
-    double component=0.0;
-    for(i=0;i<_chifn->get_dim();i++){
-        component+=dir.get_data(i)*gradient.get_data(i);
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        reflected_dir.set(i,dir.get_data(i)-2.0*component*gradient.get_data(i));
-    }
-
-    int new_particle;
-    new_particle=bisection(i_particle,reflected_dir,target(),0.1);
-
-    _origins.set(dex,i_particle);
-    _particles.set(dex,new_particle);
-    if(_log!=NULL){
-        _log->add(_log_ricochet,new_particle);
-    }
-}
-
-
-void dalex::_propagate_midpt(int dex){
-    safety_check("_propagate_midpt");
-    array_1d<double> midpt,dir,dir_0;
-    midpt.set_name("prop_mid_mid");
-    dir.set_name("prop_mid_dir");
-    dir_0.set_name("prop_mid_dir_0");
-
-    int i_particle,i_origin;
-    i_particle=_particles.get_data(dex);
-    i_origin=_origins.get_data(dex);
-
-    int i;
-    double mu;
-    for(i=0;i<_chifn->get_dim();i++){
-        midpt.set(i,0.666*_chifn->get_pt(i_particle,i)+0.333*_chifn->get_pt(i_origin,i));
-        dir_0.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
-    }
-    int i_mid;
-    double mu_mid;
-    evaluate(midpt, &mu_mid, &i_mid);
-    if(i_mid<0 || mu_mid>target() || i_particle==i_origin){
-        _propagate_bisection(dex);
-        return;
-    }
-
-     dir_0.normalize();
-     double component=0.0;
-     for(i=0;i<_chifn->get_dim();i++){
-         dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-     }
-     for(i=0;i<_chifn->get_dim();i++){
-         component+=dir.get_data(i)*dir_0.get_data(i);
-     }
-     for(i=0;i<_chifn->get_dim();i++){
-         dir.subtract_val(i,component*dir_0.get_data(i));
-     }
-     dir.normalize();
-     int i_found_1,i_found_2;
-     i_found_1=bisection(i_mid,dir,target(),0.1);
-     if(_chifn->get_fn(i_mid)>target()){
-         _propagate_bisection(dex);
-         return;
-     }
-
-     for(i=0;i<_chifn->get_dim();i++){
-         dir.multiply_val(i,-1.0);
-     }
-     i_found_2=bisection(i_mid, dir, target(), 0.1);
-
-     if(i_found_1<0 || i_found_2<0){
-         _propagate_bisection(dex);
-         return;
-     }
-
-     double dd1,dd2,dd;
-     dd1=2.0*exception_value;
-     dd2=2.0*exception_value;
-     for(i=0;i<_particle_log.get_dim();i++){
-         dd=_chifn->distance(i_found_1,_particle_log.get_data(i));
-         if(dd<dd1){
-             dd1=dd;
-         }
-         dd=_chifn->distance(i_found_2,_particle_log.get_data(i));
-         if(dd<dd2){
-             dd2=dd;
-         }
-     }
-
-     if(dd1>dd2){
-         _particles.set(dex,i_found_1);
-         _origins.set(dex,i_found_2);
-     }
-     else{
-         _particles.set(dex,i_found_2);
-         _origins.set(dex,i_found_1);
-     }
-
-    _particle_log.add(i_found_1);
-    _particle_log.add(i_found_2);
-
-    if(_log!=NULL){
-        if(i_found_1>=0){
-            _log->add(_log_ricochet, i_found_1);
-        }
-
-        if(i_found_2>=0){
-            _log->add(_log_ricochet, i_found_2);
-        }
-    }
 
 }
 
@@ -935,73 +562,6 @@ void dalex::find_bases(){
             ct,errorBest,penalty,error0,pp0,chimin(),_basis_associates.get_dim());
         }
     }
-
-    array_1d<int> cand_1,cand_2;
-    cand_1.set_name("dalex_find_bases_cand_1");
-    cand_2.set_name("dalex_find_bases_cand_2");
-
-    if(changed_bases==1){
-        for(i=0;i<_chifn->get_dim();i++){
-            for(j=0;j<_chifn->get_dim();j++){
-                dir.set(j,-1.0*_basis_vectors.get_data(i,j));
-            }
-            i_pt=bisection(mindex(),_basis_vectors(i)[0],target(),0.1);
-            _particle_log.add(i_pt);
-            if(_log!=NULL && i_pt>=0){
-                _log->add(_log_compass, i_pt);
-            }
-            cand_1.add(i_pt);
-           /* if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
-                printf("WARNING at end of basis %e wanted %e\n",
-                _chifn->get_fn(i_pt),target());
-                exit(1);
-            }*/
-            i_pt=bisection(mindex(),dir,target(),0.1);
-            _particle_log.add(i_pt);
-            if(_log!=NULL && i_pt>=0){
-                _log->add(_log_compass, i_pt);
-            }
-            cand_2.add(i_pt);
-            /*if(fabs(_chifn->get_fn(i_pt)-target())>0.2 && chimin()<500.0){
-                printf("WARNING at end of basis %e wanted %e\n",
-                _chifn->get_fn(i_pt),target());
-                exit(1);
-            }*/
-        }
-    }
-
-    _basis_chimin=chimin();
-
-    double dd,dd1,dd2;
-    int ip1,ip2,k;
-    for(i=0;i<_chifn->get_dim() && changed_bases==1;i++){
-        ip1=cand_1.get_data(i);
-        ip2=cand_2.get_data(i);
-        dd1=2.0*exception_value;
-        dd2=2.0*exception_value;
-        for(j=0;j<_particle_log.get_dim();j++){
-            if(_particle_log.get_data(j)!=ip1 && _particle_log.get_data(j)!=ip2){
-                 dd=_chifn->distance(ip1,_particle_log.get_data(j));
-                 if(dd<dd1){
-                     dd1=dd;
-                 }
-                 dd=_chifn->distance(ip2,_particle_log.get_data(j));
-                 if(dd<dd2){
-                     dd2=dd;
-                 }
-            }
-        }
-
-        if(dd1>dd2){
-            _particles.set(i,ip1);
-            _origins.set(i,ip2);
-        }
-        else{
-            _particles.set(i,ip2);
-            _origins.set(i,ip1);
-        }
-    }
-
 
     printf("done finding bases\n");
 

@@ -67,7 +67,7 @@ private:
     int _simplex_mindex;
 
     mcmc _mcmc;
-    dalex _cloud,_outer_cloud;
+    dalex _cloud;
     int _init_mcmc;
     double _mcmc_basis_min;
 
