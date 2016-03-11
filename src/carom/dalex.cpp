@@ -63,7 +63,7 @@ void dalex::search(){
     }
 
     explore();
-    simplex_boundary_search();
+    tendril_search();
     _add_good_points(pts_0);
 
 }
@@ -912,8 +912,6 @@ void dalex::simplex_boundary_search(){
     int i,j;
     double xmin,xmax,xx;
 
-    assess_good_points();
-
     gp_lin interpolator;
     interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
     interpolator.set_ell_factor(1.0);
@@ -990,9 +988,6 @@ void dalex::simplex_boundary_search(){
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
     }
-
-
-    assess_good_points();
 
     double tol=0.01*(target()-chimin());
     int i_bisect;
@@ -1271,4 +1266,151 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
             grad_out.add_val(i,grad.get_data(ix)*_basis_vectors.get_data(ix,i));
         }
     }
+}
+
+
+void dalex::tendril_search(){
+
+    int pt_0=_chifn->get_pts();
+    assess_good_points();
+    _add_good_points();
+    int n_good_0=_good_points.get_dim();
+
+    array_1d<double> min,max,min_p,max_p;
+    min.set_name("dalex_tendril_min");
+    max.set_name("dalex_tendril_max");
+    min_p.set_name("dalex_tendril_min_p");
+    max_p.set_name("dalex_tendril_max_p");
+
+    double mu;
+
+    int ip,ix,i,j;
+    for(ix=0;ix<_good_points.get_dim();ix++){
+        ip=_good_points.get_data(ix);
+        for(i=0;i<_chifn->get_dim();i++){
+            if(ix==0 || _chifn->get_pt(ip,i)<min.get_data(i)){
+                min.set(i,_chifn->get_pt(ip,i));
+            }
+            if(ix==0 || _chifn->get_pt(ip,i)>max.get_data(i)){
+                max.set(i,_chifn->get_pt(ip,i));
+            }
+
+            mu=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                mu+=_chifn->get_pt(ip,j)*_basis_vectors.get_data(i,j);
+            }
+
+            if(ix==0 || mu<min_p.get_data(i)){
+                min_p.set(i,mu);
+            }
+            if(ix==0 || mu>max_p.get_data(i)){
+                max_p.set(i,mu);
+            }
+        }
+    }
+
+    assess_good_points();
+    int i_start=_good_points.get_data(_good_points.get_dim()-1);
+    simplex_boundary_search();
+    _add_good_points();
+    if(n_good_0==0 || _good_points.get_dim()==0){
+        return;
+    }
+    if(_good_points.get_dim()==n_good_0){
+        return;
+    }
+
+    int i_particle,i_origin;
+
+
+    array_1d<double> gradient,dir,norm;
+    gradient.set_name("dalex_tendril_gradient");
+    dir.set_name("dalex_tendril_dir");
+    norm.set_name("dalex_tendril_norm");
+
+    for(i=0;i<_chifn->get_dim();i++){
+        norm.set(i,max_p.get_data(i)-min_p.get_data(i));
+    }
+
+    int go_on=1;
+    double gnorm,component;
+
+    i_particle=_good_points.get_data(_good_points.get_dim()-1);
+    for(i=_good_points.get_dim()-1;_good_points.get_data(i)!=i_start;i--){
+        i_origin=_good_points.get_data(i);
+    }
+
+    if(i_origin==i_start){
+        printf("WHOOPS! incorrectly chose i_origin\n");
+        exit(1);
+    }
+
+    printf("starting with %d %d %e\n",i_particle,i_origin,_chifn->distance(i_particle,i_origin));
+
+    while(go_on==1){
+
+        if(i_origin==i_particle){
+            return;
+        }
+
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
+        }
+        get_gradient(i_origin, norm, gradient);
+        gnorm=gradient.normalize();
+        if(gnorm<1.0e-20){
+            return;
+        }
+        component=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            component+=dir.get_data(i)*gradient.get_data(i);
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.subtract_val(i,2.0*component*gradient.get_data(i));
+        }
+
+        i=bisection(i_particle, dir, target(), 0.1);
+        i=_good_points.get_dim();
+        _add_good_points();
+        if(_good_points.get_dim()!=i){
+            printf("WARNING that should not have added anything\n");
+            exit(1);
+        }
+        i_origin=i_particle;
+        i_particle=_good_points.get_data(_good_points.get_dim()-1);
+
+        if(_log!=NULL){
+            _log->add(_log_ricochet,i_particle);
+        }
+
+
+        go_on=0;
+        for(i=0;i<_chifn->get_dim();i++){
+            if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
+                min.set(i,_chifn->get_pt(i_particle,i));
+                go_on=1;
+            }
+
+            if(_chifn->get_pt(i_particle,i)>max.get_data(i)){
+                max.set(i,_chifn->get_pt(i_particle,i));
+                go_on=1;
+            }
+
+            mu=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                mu+=_chifn->get_pt(i_particle,j)*_basis_vectors.get_data(i,j);
+            }
+
+            if(mu<min_p.get_data(i)){
+                min_p.set(i,mu);
+                go_on=1;
+            }
+
+            if(mu>max_p.get_data(i)){
+                max_p.set(i,mu);
+                go_on=1;
+            }
+        }
+    }
+
 }

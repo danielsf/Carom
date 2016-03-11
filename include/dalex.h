@@ -64,9 +64,13 @@ class dalex{
 
         void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
             _chifn->evaluate(pt,mu_out,i_out);
-            if(mu_out[0]<target()){
+            if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
                 _good_points.add(i_out[0]);
             }
+        }
+
+        void _add_good_points(){
+            _add_good_points(_last_checked_good);
         }
 
         void _add_good_points(int i_start){
@@ -80,7 +84,7 @@ class dalex{
             _last_checked_good=_chifn->get_pts();
         }
 
-        void add_good_points(){
+        void add_external_good_points(){
             safety_check("add_good_points");
             int i,j;
             array_1d<double> trial;
@@ -95,7 +99,7 @@ class dalex{
                     }
 
                     evaluate(trial,&mu,&i_found);
-                    if(mu<target()){
+                    if(mu<target() && _good_points.contains(i)==0){
                         _good_points.add(i);
                     }
                 }
@@ -165,6 +169,7 @@ class dalex{
 
         //////code related to tendrils
         void get_gradient(int,array_1d<double>&,array_1d<double>&);
+        void tendril_search();
 
 };
 
