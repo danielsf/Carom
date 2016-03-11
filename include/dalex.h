@@ -43,6 +43,7 @@ class dalex{
 
         void search();
         void simplex_search();
+        void simplex_search(int);
         void simplex_boundary_search();
         void simplex_boundary_search(int);
         void explore();
