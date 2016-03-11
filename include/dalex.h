@@ -179,10 +179,16 @@ class dalex{
         void assess_charges(){
             int i;
             for(i=0;i<_charges.get_dim();i++){
-                if(_chifn->get_fn(_charges.get_data(i))<target()){
+                if(_chifn->get_fn(_charges.get_data(i))>target()){
                     _charges.remove(i);
                     i--;
                 }
+            }
+        }
+
+        void add_charge(int ii){
+            if(_charges.contains(ii)==0){
+                _charges.add(ii);
             }
         }
 
