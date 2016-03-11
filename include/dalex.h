@@ -162,6 +162,10 @@ class dalex{
         double _explorer_temp,_explorer_step;
         int _last_checked_good;
 
+
+        //////code related to tendrils
+        void get_gradient(int,array_1d<double>&,array_1d<double>&);
+
 };
 
 #endif
