@@ -1323,17 +1323,11 @@ void dalex::tendril_search(){
     int i_particle,i_origin;
 
 
-    array_1d<double> gradient,dir,norm;
-    gradient.set_name("dalex_tendril_gradient");
+    array_1d<double> dir,old_dir;
     dir.set_name("dalex_tendril_dir");
-    norm.set_name("dalex_tendril_norm");
-
-    for(i=0;i<_chifn->get_dim();i++){
-        norm.set(i,max_p.get_data(i)-min_p.get_data(i));
-    }
 
     int go_on=1;
-    double gnorm,component;
+    double dot;
 
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
     for(i=_good_points.get_dim()-1;_good_points.get_data(i)!=i_start;i--){
@@ -1353,21 +1347,27 @@ void dalex::tendril_search(){
             return;
         }
 
+        dot=1.0;
         for(i=0;i<_chifn->get_dim();i++){
-            dir.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
+            old_dir.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
         }
-        get_gradient(i_origin, norm, gradient);
-        gnorm=gradient.normalize();
-        if(gnorm<1.0e-20){
-            return;
+        old_dir.normalize();
+
+        while(dot>0.0 || dot<-0.5){
+
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+            dir.normalize();
+
+            dot=0.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                dot+=dir.get_data(i)*old_dir.get_data(i);
+            }
+
         }
-        component=0.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            component+=dir.get_data(i)*gradient.get_data(i);
-        }
-        for(i=0;i<_chifn->get_dim();i++){
-            dir.subtract_val(i,2.0*component*gradient.get_data(i));
-        }
+
+        printf("dot %e\n",dot);
 
         i=bisection(i_particle, dir, target(), 0.1);
         i=_good_points.get_dim();
