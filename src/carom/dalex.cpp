@@ -905,8 +905,14 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 }
 
 void dalex::simplex_boundary_search(){
-    printf("\ndoing dalex.simplex_boundary_search()\n");
+    simplex_boundary_search(-1);
+}
+
+void dalex::simplex_boundary_search(int specified){
+    printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
+    assess_good_points();
+    _add_good_points();
 
     int i_node,i_pt;
     int i,j;
@@ -949,14 +955,19 @@ void dalex::simplex_boundary_search(){
     int i_min=-1;
     double mu_min;
 
-    array_1d<int> chosen_exp;
+    array_1d<int> chosen_seed;
+
+    if(specified>=0){
+        seed.add_row(_chifn->get_pt(specified)[0]);
+        chosen_seed.add(specified);
+    }
 
     while(seed.get_rows()<_chifn->get_dim()+1){
         i=_chifn->random_int()%_explorers.get_dim();
-        if(chosen_exp.contains(i)==0){
+        if(chosen_seed.contains(_explorers.get_data(i))==0){
             printf("    explorer is %d\n",_explorers.get_data(i));
             seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
-            chosen_exp.add(i);
+            chosen_seed.add(_explorers.get_data(i));
         }
     }
 
@@ -1309,8 +1320,6 @@ void dalex::tendril_search(){
         }
     }
 
-    assess_good_points();
-    int i_start=_good_points.get_data(_good_points.get_dim()-1);
     simplex_boundary_search();
     _add_good_points();
     if(n_good_0==0 || _good_points.get_dim()==0){
@@ -1320,69 +1329,17 @@ void dalex::tendril_search(){
         return;
     }
 
-    int i_particle,i_origin;
-
-
-    array_1d<double> dir,old_dir;
-    dir.set_name("dalex_tendril_dir");
-
+    int i_particle;
     int go_on=1;
-    double dot;
 
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
-    for(i=_good_points.get_dim()-1;_good_points.get_data(i)!=i_start;i--){
-        i_origin=_good_points.get_data(i);
-    }
-
-    if(i_origin==i_start){
-        printf("WHOOPS! incorrectly chose i_origin\n");
-        exit(1);
-    }
-
-    printf("starting with %d %d %e\n",i_particle,i_origin,_chifn->distance(i_particle,i_origin));
 
     while(go_on==1){
 
-        if(i_origin==i_particle){
-            return;
-        }
+        simplex_boundary_search(i_particle);
 
-        dot=1.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            old_dir.set(i,_chifn->get_pt(i_particle,i)-_chifn->get_pt(i_origin,i));
-        }
-        old_dir.normalize();
-
-        while(dot>0.0 || dot<-0.5){
-
-            for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-            }
-            dir.normalize();
-
-            dot=0.0;
-            for(i=0;i<_chifn->get_dim();i++){
-                dot+=dir.get_data(i)*old_dir.get_data(i);
-            }
-
-        }
-
-        printf("dot %e\n",dot);
-
-        i=bisection(i_particle, dir, target(), 0.1);
-        i=_good_points.get_dim();
         _add_good_points();
-        if(_good_points.get_dim()!=i){
-            printf("WARNING that should not have added anything\n");
-            exit(1);
-        }
-        i_origin=i_particle;
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
-
-        if(_log!=NULL){
-            _log->add(_log_ricochet,i_particle);
-        }
-
 
         go_on=0;
         for(i=0;i<_chifn->get_dim();i++){

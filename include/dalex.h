@@ -44,6 +44,7 @@ class dalex{
         void search();
         void simplex_search();
         void simplex_boundary_search();
+        void simplex_boundary_search(int);
         void explore();
 
         int bisection(int, int, double, double);
