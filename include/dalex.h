@@ -25,6 +25,8 @@ class dalex{
             _last_checked_good=0;
             _log=NULL;
 
+            _charges.set_name("dalex_charges");
+
             _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
             _basis_mm.set_name("dalex_basis_mm");
@@ -172,6 +174,17 @@ class dalex{
         //////code related to tendrils
         void get_gradient(int,array_1d<double>&,array_1d<double>&);
         void tendril_search();
+        array_1d<int> _charges;
+
+        void assess_charges(){
+            int i;
+            for(i=0;i<_charges.get_dim();i++){
+                if(_chifn->get_fn(_charges.get_data(i))<target()){
+                    _charges.remove(i);
+                    i--;
+                }
+            }
+        }
 
 };
 
