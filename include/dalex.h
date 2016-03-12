@@ -187,7 +187,7 @@ class dalex{
         }
 
         void add_charge(int ii){
-            if(_charges.contains(ii)==0){
+            if(_charges.contains(ii)==0 && _chifn->get_fn(ii)<target()){
                 _charges.add(ii);
             }
         }
