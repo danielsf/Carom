@@ -66,33 +66,39 @@ class dalex{
 
     private:
 
+       void add_good_point(int ii){
+           if(_chifn->get_fn(ii)<target() && _good_points.contains(ii)==0){
+               _good_points.add(ii);
+           }
+       }
+
         void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
             _chifn->evaluate(pt,mu_out,i_out);
             if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
-                _good_points.add(i_out[0]);
+                add_good_point(i_out[0]);
             }
         }
 
-        void _add_good_points(){
-            _add_good_points(_last_checked_good);
+        void __update_good_points(){
+            _update_good_points(_last_checked_good);
         }
 
-        void _add_good_points(int i_start){
-            safety_check("_add_good_points");
+        void _update_good_points(int i_start){
+            safety_check("_update_good_points");
             int i;
             for(i=i_start;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target() && _good_points.contains(i)==0){
-                    _good_points.add(i);
+                    add_good_point(i);
                 }
             }
             _last_checked_good=_chifn->get_pts();
         }
 
-        void add_external_good_points(){
-            safety_check("add_good_points");
+        void update_good_points_external(){
+            safety_check("update_good_points_external");
             int i,j;
             array_1d<double> trial;
-            trial.set_name("dalex_add_good_trial");
+            trial.set_name("dalex_update_good_external_trial");
             double mu;
             int i_found;
             for(i=_last_checked_good;i<_chifn->get_pts();i++){
@@ -104,7 +110,7 @@ class dalex{
 
                     evaluate(trial,&mu,&i_found);
                     if(mu<target() && _good_points.contains(i)==0){
-                        _good_points.add(i);
+                        add_good_point(i);
                     }
                 }
             }

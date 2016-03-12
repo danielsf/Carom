@@ -52,7 +52,7 @@ void dalex::search(){
     int i;
     int pts_0=_chifn->get_pts();
     assess_good_points();
-    _add_good_points(_last_checked_good);
+    _update_good_points(_last_checked_good);
 
     if(mindex()!=_simplex_mindex){
         simplex_search();
@@ -64,7 +64,7 @@ void dalex::search(){
 
     explore();
     tendril_search();
-    _add_good_points(pts_0);
+    _update_good_points(pts_0);
 
 }
 
@@ -137,7 +137,7 @@ void dalex::simplex_search(int specified){
 
     printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
-    _add_good_points(pt_0);
+    _update_good_points(pt_0);
 }
 
 
@@ -926,7 +926,7 @@ void dalex::simplex_boundary_search(int specified){
     int pt_start=_chifn->get_pts();
     assess_good_points();
     assess_charges();
-    _add_good_points();
+    _update_good_points();
 
     int i_node,i_pt;
     int i,j;
@@ -1040,7 +1040,7 @@ void dalex::simplex_boundary_search(int specified){
 
     printf("    min is %e target %e\n",chimin(),target());
 
-    _add_good_points(pt_start);
+    _update_good_points(pt_start);
 
 }
 
@@ -1259,7 +1259,7 @@ void dalex::explore(){
     double(max_acc)/double(n_steps),
     _explorer_temp,_explorer_step,mu_min,mu_max);
 
-    _add_good_points(pt_0);
+    _update_good_points(pt_0);
 }
 
 void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &grad_out){
@@ -1303,7 +1303,7 @@ void dalex::tendril_search(){
 
     int pt_0=_chifn->get_pts();
     assess_good_points();
-    _add_good_points();
+    _update_good_points();
     int n_good_0=_good_points.get_dim();
 
     array_1d<double> min,max,min_p,max_p;
@@ -1340,7 +1340,7 @@ void dalex::tendril_search(){
     }
 
     simplex_boundary_search();
-    _add_good_points();
+    _update_good_points();
     if(n_good_0==0 || _good_points.get_dim()==0){
         return;
     }
@@ -1359,7 +1359,7 @@ void dalex::tendril_search(){
 
         simplex_boundary_search(i_particle);
 
-        _add_good_points();
+        _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         add_charge(i_particle);
 
