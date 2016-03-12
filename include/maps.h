@@ -36,7 +36,6 @@ public:
 
     void search(int);
     void explore();
-    void simplex_boundary_search();
     void simplex_min_search();
     void mcmc_search();
     void write_pts();
