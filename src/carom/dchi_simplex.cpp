@@ -161,9 +161,11 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
     _chifn=cc;
 
     int i;
+    array_1d<int> associate_dexes;
     for(i=0;i<aa.get_dim();i++){
-        _associates.add(aa.get_data(i));
+        associate_dexes.set(i,i);
     }
+    sort_and_check(aa,_associates,associate_dexes);
 
     array_1d<double> norm;
     for(i=0;i<_chifn->get_dim();i++){
@@ -198,11 +200,13 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
 
 }
 
-double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
+double dchi_interior_simplex::associate_distance(array_1d<double> &pt){
     if(_associates.get_dim()==0){
         return 0.0;
     }
-    double dd_min=2.0*exception_value;
+    double dd_sum=0.0;
+
+    double denom=double(_associates.get_dim()+1);
 
     double dd;
     int i,j;
@@ -211,12 +215,12 @@ double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
         for(j=0;j<_chifn->get_dim();j++){
             dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm,2);
         }
-        if(dd<dd_min){
-            dd_min=dd;
-        }
+
+        dd=sqrt(dd);
+        dd_sum+=dd*double(i+1)/denom;
     }
 
-    return sqrt(dd_min);
+    return dd_sum;
 }
 
 
@@ -238,7 +242,7 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
     double delta=_chifn->target()-_chifn->chimin();
 
-    double distance=nn_distance(pt);
+    double distance=associate_distance(pt);
 
     double exp_term;
     if(mu<_chifn->target()){

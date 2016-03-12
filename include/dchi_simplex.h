@@ -47,7 +47,7 @@ class dchi_interior_simplex : public function_wrapper{
         ~dchi_interior_simplex(){};
         virtual double operator()(array_1d<double>&);
         virtual int get_called();
-        double nn_distance(array_1d<double>&);
+        double associate_distance(array_1d<double>&);
 
     private:
         array_1d<int> _associates;
