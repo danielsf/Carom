@@ -418,6 +418,7 @@ void dalex::find_bases(){
         }
         dir.normalize();
         i_pt=bisection(mindex(),dir,0.5*(target()+chimin()),0.1);
+        add_charge(i_pt);
 
         /*if(fabs(_chifn->get_fn(i_pt)-0.5*(target()+chimin()))>1.0 && chimin()<500.0){
             printf("WARNING failed to get associate within tol %e %e-- %e %e\n",
@@ -429,6 +430,7 @@ void dalex::find_bases(){
         if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
             _basis_associates.add(i_pt);
             i_pt=bisection(mindex(),dir,0.25*chimin()+0.75*target(),0.1);
+            add_charge(i_pt);
             if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
                 _basis_associates.add(i_pt);
 
@@ -923,6 +925,7 @@ void dalex::simplex_boundary_search(int specified){
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
     assess_good_points();
+    assess_charges();
     _add_good_points();
 
     int i_node,i_pt;
@@ -936,7 +939,8 @@ void dalex::simplex_boundary_search(int specified){
     //dchi_boundary_simplex_gp dchifn(_chifn,&interpolator,_good_points);
     //dchi_boundary_simplex dchifn(_chifn,_good_points);
     //dchi_interior_simplex dchifn(_chifn,_good_points);
-    dchi_interior_simplex dchifn(_chifn,_good_points);
+    printf("charges is %d\n",_charges.get_dim());
+    dchi_interior_simplex dchifn(_chifn,_charges);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -1293,6 +1297,8 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
 
 void dalex::tendril_search(){
 
+    add_charge(_chifn->mindex());
+
     int pt_0=_chifn->get_pts();
     assess_good_points();
     _add_good_points();
@@ -1344,13 +1350,16 @@ void dalex::tendril_search(){
     int go_on=1;
 
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
+    add_charge(i_particle);
 
     while(go_on==1){
+        add_charge(_chifn->mindex());
 
         simplex_boundary_search(i_particle);
 
         _add_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        add_charge(i_particle);
 
         go_on=0;
         for(i=0;i<_chifn->get_dim();i++){
