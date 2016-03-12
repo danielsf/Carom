@@ -936,9 +936,6 @@ void dalex::simplex_boundary_search(int specified){
     interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
     interpolator.set_ell_factor(1.0);
 
-    //dchi_boundary_simplex_gp dchifn(_chifn,&interpolator,_good_points);
-    //dchi_boundary_simplex dchifn(_chifn,_good_points);
-    //dchi_interior_simplex dchifn(_chifn,_good_points);
     printf("charges is %d\n",_charges.get_dim());
     dchi_interior_simplex dchifn(_chifn,_charges);
 
