@@ -974,16 +974,6 @@ void dalex::simplex_boundary_search(int specified){
         chosen_seed.add(specified);
     }
 
-    if(_charges.get_dim()>_chifn->get_dim()/2){
-        while(seed.get_rows()<_chifn->get_dim()/2){
-            i=_chifn->random_int()%_charges.get_dim();
-            if(chosen_seed.contains(_charges.get_data(i))==0){
-                seed.add_row(_chifn->get_pt(_charges.get_data(i))[0]);
-                chosen_seed.add(_charges.get_data(i));
-            }
-        }
-    }
-
     while(seed.get_rows()<_chifn->get_dim()+1){
         i=_chifn->random_int()%_explorers.get_dim();
         if(chosen_seed.contains(_explorers.get_data(i))==0){
