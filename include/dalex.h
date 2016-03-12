@@ -79,7 +79,7 @@ class dalex{
             }
         }
 
-        void __update_good_points(){
+        void _update_good_points(){
             _update_good_points(_last_checked_good);
         }
 
