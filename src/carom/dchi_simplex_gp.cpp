@@ -16,18 +16,18 @@ double dchi_boundary_simplex_gp::operator()(array_1d<double> &pt){
 
     mu=_interpolator[0](pt);
     if(_called>0 && _called-_last_real_call>50){
-        mu=_chisq[0](pt);
+        mu=_chifn[0](pt);
         _last_real_call=_called;
     }
 
     double dmu;
 
-    dmu=fabs(_chisq->target()-mu);
+    dmu=fabs(_chifn->target()-mu);
 
-    double delta=_chisq->target()-_chisq->chimin();
+    double delta=_chifn->target()-_chifn->chimin();
 
     double exp_term;
-    if(_chisq->target()<mu){
+    if(_chifn->target()<mu){
         exp_term=exp(-0.1*fabs(dmu)/delta);
     }
     else{
