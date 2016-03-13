@@ -51,7 +51,7 @@ class dchi_interior_simplex : public function_wrapper{
 
     private:
         array_1d<int> _associates;
-        double _norm;
+        array_1d<double> _norm;
         chisq_wrapper *_chifn;
         int _called;
 };

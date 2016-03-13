@@ -165,9 +165,8 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
         _associates.add(aa.get_data(i));
     }
 
-    array_1d<double> norm;
     for(i=0;i<_chifn->get_dim();i++){
-        norm.set(i,_chifn->get_characteristic_length(i));
+        _norm.set(i,_chifn->get_characteristic_length(i));
     }
     array_1d<double> min,max;
     int j;
@@ -184,15 +183,9 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
 
     if(min.get_dim()>0){
         for(i=0;i<_chifn->get_dim();i++){
-            if(max.get_data(i)-min.get_data(i)<norm.get_data(i)){
-                norm.set(i,max.get_data(i)-min.get_data(i));
+            if(max.get_data(i)-min.get_data(i)<_norm.get_data(i)){
+                _norm.set(i,max.get_data(i)-min.get_data(i));
             }
-        }
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        if(i==0 || norm.get_data(i)<_norm){
-            _norm=norm.get_data(i);
         }
     }
 
@@ -209,7 +202,7 @@ double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
-            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm,2);
+            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm.get_data(j),2);
         }
         if(dd<dd_min){
             dd_min=dd;
