@@ -1332,6 +1332,16 @@ void dalex::tendril_search(){
     int i_particle;
     int go_on=1;
 
+    double volume_0,p_volume_0;
+    volume_0=1.0;
+    p_volume_0=1.0;
+    for(i=0;i<_chifn->get_dim();i++){
+        volume_0*=(max.get_data(i)-min.get_data(i));
+        p_volume_0*=(max_p.get_data(i)-min_p.get_data(i));
+    }
+
+    double volume,p_volume;
+
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
     add_charge(i_particle);
 
@@ -1348,12 +1358,10 @@ void dalex::tendril_search(){
         for(i=0;i<_chifn->get_dim();i++){
             if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
                 min.set(i,_chifn->get_pt(i_particle,i));
-                go_on=1;
             }
 
             if(_chifn->get_pt(i_particle,i)>max.get_data(i)){
                 max.set(i,_chifn->get_pt(i_particle,i));
-                go_on=1;
             }
 
             mu=0.0;
@@ -1363,13 +1371,24 @@ void dalex::tendril_search(){
 
             if(mu<min_p.get_data(i)){
                 min_p.set(i,mu);
-                go_on=1;
             }
 
             if(mu>max_p.get_data(i)){
                 max_p.set(i,mu);
-                go_on=1;
             }
+        }
+
+        volume=1.0;
+        p_volume=1.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            volume*=(max.get_data(i)-min.get_data(i));
+            p_volume*=(max_p.get_data(i)-min_p.get_data(i));
+        }
+
+        if(volume>volume_0*1.1 || p_volume>p_volume_0*1.1){
+             go_on=1;
+             volume_0=volume;
+             p_volume_0=p_volume;
         }
     }
 
