@@ -932,10 +932,6 @@ void dalex::simplex_boundary_search(int specified){
     int i,j;
     double xmin,xmax,xx;
 
-    gp_lin interpolator;
-    interpolator.set_kd_fn(_chifn->get_tree(), _chifn->get_fn_arr());
-    interpolator.set_ell_factor(1.0);
-
     printf("charges is %d\n",_charges.get_dim());
     dchi_interior_simplex dchifn(_chifn,_good_points);
 
@@ -997,11 +993,7 @@ void dalex::simplex_boundary_search(int specified){
 
     ffmin.find_minimum(seed,minpt);
 
-    double interp_val=interpolator(minpt);
-
     evaluate(minpt, &mu, &i_min);
-
-    printf("    interp %e actual %e -- %e\n",interp_val,interpolator(minpt),mu);
 
     if(i_min<0){
         i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
@@ -1026,7 +1018,6 @@ void dalex::simplex_boundary_search(int specified){
     _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
 
     printf("    adjusted %e\n",dchifn(_chifn->get_pt(i_min)[0]));
-    printf("    interpolated %e\n",interpolator(_chifn->get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",chimin(),target());
 
