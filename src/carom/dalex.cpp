@@ -965,9 +965,24 @@ void dalex::simplex_boundary_search(int specified){
 
     array_1d<int> chosen_seed;
 
+    double rr;
+
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified)[0]);
         chosen_seed.add(specified);
+        rr=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            rr+=power(_chifn->get_pt(specified,i)-_chifn->get_pt(_chifn->mindex(),i),2);
+        }
+        rr=sqrt(rr);
+        if(rr>1.0e-20){
+            for(i=0;i<_chifn->get_dim();i++){
+                for(j=0;j<_chifn->get_dim();j++){
+                    trial.set(j,_chifn->get_pt(specified,j)+0.1*rr*_basis_vectors.get_data(i,j));
+                }
+                seed.add_row(trial);
+            }
+        }
     }
 
     array_1d<double> exp_dist,exp_dist_sorted;
@@ -1357,6 +1372,8 @@ void dalex::tendril_search(){
         p_volume_0*=(max_p.get_data(i)-min_p.get_data(i));
     }
 
+    printf("    volume %e %e\n",volume_0,p_volume_0);
+
     double volume,p_volume;
 
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
@@ -1407,6 +1424,8 @@ void dalex::tendril_search(){
              volume_0=volume;
              p_volume_0=p_volume;
         }
+        printf("    volume %e %e\n",volume_0,p_volume_0);
+
     }
 
 }
