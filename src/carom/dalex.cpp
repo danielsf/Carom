@@ -1320,15 +1320,6 @@ void dalex::tendril_search(){
         }
     }
 
-    simplex_boundary_search();
-    _update_good_points();
-    if(n_good_0==0 || _good_points.get_dim()==0){
-        return;
-    }
-    if(_good_points.get_dim()==n_good_0){
-        return;
-    }
-
     int i_particle;
     int go_on=1;
 
@@ -1342,13 +1333,17 @@ void dalex::tendril_search(){
 
     double volume,p_volume;
 
-    i_particle=_good_points.get_data(_good_points.get_dim()-1);
-    add_charge(i_particle);
+    i_particle=-1;
 
     while(go_on==1){
         add_charge(_chifn->mindex());
 
-        simplex_boundary_search(i_particle);
+        if(i_particle<0){
+            simplex_boundary_search();
+        }
+        else{
+            simplex_boundary_search(i_particle);
+        }
 
         _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
