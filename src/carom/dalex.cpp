@@ -1148,7 +1148,8 @@ void dalex::explore(){
 
     assess_good_points();
 
-    dchi_multimodal_simplex dchifn(_chifn, _good_points);
+    dchi_interior_simplex dchifn(_chifn, _good_points);
+    dchifn.set_envelope(10.0*(_chifn->target()-_chifn->chimin()));
 
     double rr;
 
