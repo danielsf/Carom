@@ -159,6 +159,7 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
     _called=0;
 
     _chifn=cc;
+    _envelope=1.0;
 
     int i;
     for(i=0;i<aa.get_dim();i++){
@@ -245,7 +246,7 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
         exp_term=1.0;
     }
     else{
-        exp_term=exp(_chifn->target()-mu);
+        exp_term=exp((_chifn->target()-mu)/_envelope);
     }
 
     return mu-2.0*distance*delta*exp_term;

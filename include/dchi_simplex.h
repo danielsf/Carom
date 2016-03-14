@@ -48,12 +48,16 @@ class dchi_interior_simplex : public function_wrapper{
         virtual double operator()(array_1d<double>&);
         virtual int get_called();
         double nn_distance(array_1d<double>&);
+        void set_envelope(double dd){
+            _envelope=dd;
+        }
 
     private:
         array_1d<int> _associates;
         double _norm;
         chisq_wrapper *_chifn;
         int _called;
+        double _envelope;
 };
 
 #endif
