@@ -970,6 +970,22 @@ void dalex::simplex_boundary_search(int specified){
         chosen_seed.add(specified);
     }
 
+    array_1d<double> exp_dist,exp_dist_sorted;
+    array_1d<int> exp_dist_dex;
+    for(i=0;i<_explorers.get_dim();i++){
+        exp_dist.set(i,dchifn.nn_distance(_chifn->get_pt(_explorers.get_data(i))[0]));
+        exp_dist_dex.set(i,_explorers.get_data(i));
+    }
+
+    sort_and_check(exp_dist, exp_dist_sorted, exp_dist_dex);
+
+    for(i=exp_dist_dex.get_dim()-1;i>=0 && seed.get_rows()<_chifn->get_dim()+1;i--){
+        if(chosen_seed.contains(exp_dist_dex.get_data(i))==0){
+            seed.add_row(_chifn->get_pt(exp_dist_dex.get_data(i))[0]);
+            chosen_seed.add(exp_dist_dex.get_data(i));
+        }
+    }
+
     while(seed.get_rows()<_chifn->get_dim()+1){
         i=_chifn->random_int()%_explorers.get_dim();
         if(chosen_seed.contains(_explorers.get_data(i))==0){
