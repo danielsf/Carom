@@ -1377,14 +1377,10 @@ void dalex::tendril_search(){
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
     add_charge(i_particle);
 
-    kd_tree kd_copy;
-
-    gp_lin interpolator;
-    interpolator.set_ell_factor(1.0);
-
     array_1d<double> norm;
 
     while(go_on==1){
+
         add_charge(_chifn->mindex());
 
         for(i=0;i<_chifn->get_dim();i++){
