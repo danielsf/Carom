@@ -46,12 +46,12 @@ class gp_lin : public function_wrapper{
         }
 
         void set_kd_fn(kd_tree *kk, array_1d<double> *ff){
-            if(_kd!=NULL && _built_here==1){
+            if(_kd!=NULL){
                 printf("WARNING cannot set _kd; not null\n");
                 exit(1);
             }
 
-            if(_fn!=NULL && _built_here==1){
+            if(_fn!=NULL){
                 printf("WARNING cannot set _fn; not null\n");
                 exit(1);
             }
