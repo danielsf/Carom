@@ -1050,11 +1050,26 @@ void dalex::explore(){
 
     assess_good_points();
 
+    int i,j,k;
+    array_1d<double> dir;
+    dir.set_name("dalex_exploration_dir");
+
+    while(_explorers.get_dim()==0 && _good_points.get_dim()<2*_chifn->get_dim()){
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+            dir.normalize();
+            k=bisection(mindex(),dir,target(),0.1);
+        }
+        assess_good_points();
+    }
+
     array_1d<double> norm,min,max;
     norm.set_name("dalex_explore_norm");
     min.set_name("dalex_explore_min");
     max.set_name("dalex_explore_max");
-    int i,j,k;
+
     double mu;
     for(i=0;i<_explorers.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
@@ -1155,8 +1170,7 @@ void dalex::explore(){
     double rr;
 
     int ip;
-    array_1d<double> dir;
-    dir.set_name("dalex_explore_dir");
+    dir.reset();
 
     int accept_it;
     array_1d<int> acceptance;
