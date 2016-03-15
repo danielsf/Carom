@@ -1110,9 +1110,9 @@ void dalex::explore(){
                 trial.set(i,0.0);
             }
             for(i=0;i<_chifn->get_dim();i++){
-                rando=3.0*_chifn->random_double();
+                rando=1.5*_chifn->random_double();
                 for(j=0;j<_chifn->get_dim();j++){
-                    trial.add_val(j,norm.get_data(i)*(min.get_data(i)+rando*(max.get_data(i)+min.get_data(i)))*_basis_vectors.get_data(i,j));
+                    trial.add_val(j,norm.get_data(i)*(0.5*(min.get_data(i)+max.get_data(i))+rando*(max.get_data(i)-min.get_data(i)))*_basis_vectors.get_data(i,j));
                 }
             }
             evaluate(trial,&mu,&i_found);
