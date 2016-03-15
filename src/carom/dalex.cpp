@@ -975,7 +975,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
         if(norm.get_dim()==_chifn->get_dim()){
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,_chifn->get_pt(specified,j)+0.5*norm.get_data(i)*_basis_vectors.get_data(i,j));
+                    trial.set(j,_chifn->get_pt(specified,j)+0.1*norm.get_data(i)*_basis_vectors.get_data(i,j));
                 }
                 seed.add_row(trial);
             }
