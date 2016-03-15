@@ -1401,11 +1401,44 @@ void dalex::tendril_search(){
 
     add_charge(_chifn->mindex());
 
+    int i,j;
     int pt_0=_chifn->get_pts();
     assess_good_points();
     _update_good_points();
     int n_good_0=_good_points.get_dim();
 
+    simplex_gp_search();
+    _update_good_points();
+    if(n_good_0==0 || _good_points.get_dim()==0){
+        return;
+    }
+    if(_good_points.get_dim()==n_good_0){
+        return;
+    }
+
+    int i_particle;
+    int go_on=1;
+
+    i_particle=_good_points.get_data(_good_points.get_dim()-1);
+    add_charge(i_particle);
+
+    array_1d<double> norm;
+
+    array_1d<int> specified;
+
+    if(_charges.get_dim()>_chifn->get_dim()/2){
+        specified.reset();
+        while(specified.get_dim()<_chifn->get_dim()/2){
+            i=_chifn->random_int()%_charges.get_dim();
+            if(specified.contains(_charges.get_data(i))==0){
+                specified.add(_charges.get_data(i));
+            }
+        }
+        simplex_search(specified);
+    }
+
+
+    double volume,p_volume;
     array_1d<double> min,max,min_p,max_p;
     min.set_name("dalex_tendril_min");
     max.set_name("dalex_tendril_max");
@@ -1414,7 +1447,8 @@ void dalex::tendril_search(){
 
     double mu;
 
-    int ip,ix,i,j;
+    assess_good_points();
+    int ip,ix;
     for(ix=0;ix<_good_points.get_dim();ix++){
         ip=_good_points.get_data(ix);
         for(i=0;i<_chifn->get_dim();i++){
@@ -1439,18 +1473,6 @@ void dalex::tendril_search(){
         }
     }
 
-    simplex_boundary_search();
-    _update_good_points();
-    if(n_good_0==0 || _good_points.get_dim()==0){
-        return;
-    }
-    if(_good_points.get_dim()==n_good_0){
-        return;
-    }
-
-    int i_particle;
-    int go_on=1;
-
     double volume_0,p_volume_0;
     volume_0=1.0;
     p_volume_0=1.0;
@@ -1461,12 +1483,6 @@ void dalex::tendril_search(){
 
     printf("    volume %e %e\n",volume_0,p_volume_0);
 
-    double volume,p_volume;
-
-    i_particle=_good_points.get_data(_good_points.get_dim()-1);
-    add_charge(i_particle);
-
-    array_1d<double> norm;
 
     while(go_on==1){
 
