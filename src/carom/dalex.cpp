@@ -55,6 +55,7 @@ void dalex::search(){
     _update_good_points(_last_checked_good);
 
     if(mindex()!=_simplex_mindex){
+        find_bases();
         explore();
         simplex_search();
         if(chimin()<_basis_chimin-(target()-chimin())){
