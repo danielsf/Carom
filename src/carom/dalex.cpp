@@ -1036,16 +1036,6 @@ void dalex::simplex_boundary_search(int specified){
         _log->add(_log_dchi_simplex,i_min);
     }
 
-    double tol=0.01*(target()-chimin());
-    int i_bisect;
-    if(_chifn->get_fn(i_min)-target()>tol){
-        i_bisect=bisection(_chifn->mindex(),i_min,target(),tol);
-        printf("    got i_bisect %d\n",i_bisect);
-        if(i_bisect>=0 && _log!=NULL){
-            _log->add(_log_dchi_simplex,i_bisect);
-        }
-    }
-
     printf("    actually found %e -- %e %e\n",
     _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
 
