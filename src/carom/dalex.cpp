@@ -936,12 +936,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     double xmin,xmax,xx;
 
     printf("charges is %d\n",_charges.get_dim());
-    kd_tree kd_copy(_chifn->get_tree()[0]);
-    gp_lin interpolator;
-    interpolator.set_ell_factor(1.0);
-    interpolator.set_kd_fn(&kd_copy, _chifn->get_fn_arr());
     dchi_interior_simplex dchifn(_chifn,_good_points);
-    dchifn.set_interpolator(&interpolator);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);

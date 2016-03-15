@@ -157,7 +157,7 @@ double dchi_multimodal_simplex::operator()(array_1d<double> &pt){
 dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &aa){
 
     _called=0;
-    _interpolator=NULL;
+
     _chifn=cc;
     _envelope=1.0;
 
@@ -227,21 +227,27 @@ int dchi_interior_simplex::get_called(){
 
 double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
-    if(_interpolator==NULL){
-        printf("WARNING cannot call dchi_interior operator; _interpolator is NULL\n");
-        exit(1);
-    }
-
     _called++;
 
     double mu;
     int i_found;
     _chifn->evaluate(pt,&mu,&i_found);
 
-    if(mu>_chifn->target()){
+    if(_associates.get_dim()==0){
         return mu;
     }
 
-    double predicted=_interpolator[0](pt);
-    return mu-predicted;
+    double delta=_chifn->target()-_chifn->chimin();
+
+    double distance=nn_distance(pt);
+
+    double exp_term;
+    if(mu<_chifn->target()){
+        exp_term=1.0;
+    }
+    else{
+        exp_term=exp((_chifn->target()-mu)/_envelope);
+    }
+
+    return mu-2.0*distance*delta*exp_term;
 }
