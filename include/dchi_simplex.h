@@ -2,6 +2,7 @@
 #define DCHI_SIMPLEX_H
 
 #include "chisq_wrapper.h"
+#include "gp_lin.h"
 
 class dchi_simplex_base : public function_wrapper{
 
@@ -52,10 +53,15 @@ class dchi_interior_simplex : public function_wrapper{
             _envelope=dd;
         }
 
+        void set_interpolator(gp_lin *gg){
+            _interpolator=gg;
+        }
+
     private:
         array_1d<int> _associates;
         double _norm;
         chisq_wrapper *_chifn;
+        gp_lin *_interpolator;
         int _called;
         double _envelope;
 };
