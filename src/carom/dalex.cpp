@@ -54,11 +54,15 @@ void dalex::search(){
     assess_good_points();
     _update_good_points(_last_checked_good);
 
-    if(chimin()<_basis_chimin-(target()-chimin())){
-        _explorers.reset();
+    if(mindex()!=_simplex_mindex){
         find_bases();
+        explore();
+        simplex_search();
+        if(chimin()<_basis_chimin-(target()-chimin())){
+            _explorers.reset();
+            find_bases();
+        }
     }
-
 
     explore();
     tendril_search();
@@ -1353,9 +1357,7 @@ void dalex::tendril_search(){
         }
     }
 
-    assess_good_points();
-    n_good_0=_good_points.get_dim();
-    simplex_search();
+    simplex_boundary_search();
     _update_good_points();
     if(n_good_0==0 || _good_points.get_dim()==0){
         return;
