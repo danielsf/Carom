@@ -1364,12 +1364,21 @@ void dalex::tendril_search(){
 
     printf("    volume %e %e\n",volume_0,p_volume_0);
 
-    double volume,p_volume;
+    double volume,p_volume,mu_predicted;
 
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
     add_charge(i_particle);
 
+    kd_tree kd_copy;
+
+    gp_lin interpolator;
+    interpolator.set_ell_factor(1.0);
+
     while(go_on==1){
+
+        kd_copy.copy(_chifn->get_tree()[0]);
+        interpolator.set_kd_fn(&kd_copy, _chifn->get_fn_arr());
+
         add_charge(_chifn->mindex());
 
         simplex_boundary_search(i_particle);
@@ -1379,6 +1388,12 @@ void dalex::tendril_search(){
         add_charge(i_particle);
 
         go_on=0;
+
+        mu_predicted=interpolator(_chifn->get_pt(i_particle)[0]);
+        if(mu_predicted>2.0*target()-chimin()){
+            go_on=1;
+        }
+
         for(i=0;i<_chifn->get_dim();i++){
             if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
                 min.set(i,_chifn->get_pt(i_particle,i));
@@ -1415,6 +1430,7 @@ void dalex::tendril_search(){
              p_volume_0=p_volume;
         }
         printf("    volume %e %e\n",volume_0,p_volume_0);
+        printf("    mu_predicted %e actual %e\n",mu_predicted,_chifn->get_fn(i_particle));
 
     }
 
