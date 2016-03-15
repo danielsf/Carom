@@ -72,11 +72,17 @@ void dalex::search(){
 
 
 void dalex::simplex_search(){
-    simplex_search(-1);
+    array_1d<int> empty;
+    simplex_search(empty);
 }
 
+void dalex::simplex_search(int ii){
+    array_1d<int> specified;
+    specified.add(ii);
+    simplex_search(specified);
+}
 
-void dalex::simplex_search(int specified){
+void dalex::simplex_search(array_1d<int> &specified){
     if(_explorers.get_dim()==0){
         return;
     }
@@ -117,9 +123,11 @@ void dalex::simplex_search(int specified){
 
     array_1d<int> chosen_seed;
 
-    if(specified>=0){
-        seed.add_row(_chifn->get_pt(specified)[0]);
-        chosen_seed.add(specified);
+    for(i=0;i<specified.get_dim();i++){
+        if(chosen_seed.contains(specified.get_data(i))==0){
+            seed.add_row(_chifn->get_pt(specified.get_data(i))[0]);
+            chosen_seed.add(specified.get_data(i));
+        }
     }
 
     while(seed.get_rows()<_chifn->get_dim()+1){
