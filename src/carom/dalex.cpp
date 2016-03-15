@@ -919,10 +919,11 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 }
 
 void dalex::simplex_boundary_search(){
-    simplex_boundary_search(-1);
+    array_1d<double> empty;
+    simplex_boundary_search(-1, empty);
 }
 
-void dalex::simplex_boundary_search(int specified){
+void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
     assess_good_points();
@@ -966,20 +967,14 @@ void dalex::simplex_boundary_search(int specified){
 
     array_1d<int> chosen_seed;
 
-    double rr;
-
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified)[0]);
         chosen_seed.add(specified);
-        rr=0.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            rr+=power(_chifn->get_pt(specified,i)-_chifn->get_pt(_chifn->mindex(),i),2);
-        }
-        rr=sqrt(rr);
-        if(rr>1.0e-20){
+
+        if(norm.get_dim()==_chifn->get_dim()){
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,_chifn->get_pt(specified,j)+0.1*rr*_basis_vectors.get_data(i,j));
+                    trial.set(j,_chifn->get_pt(specified,j)+0.1*norm.get_data(i)*_basis_vectors.get_data(i,j));
                 }
                 seed.add_row(trial);
             }
@@ -1374,6 +1369,8 @@ void dalex::tendril_search(){
     gp_lin interpolator;
     interpolator.set_ell_factor(1.0);
 
+    array_1d<double> norm;
+
     while(go_on==1){
 
         kd_copy.copy(_chifn->get_tree()[0]);
@@ -1381,7 +1378,11 @@ void dalex::tendril_search(){
 
         add_charge(_chifn->mindex());
 
-        simplex_boundary_search(i_particle);
+        for(i=0;i<_chifn->get_dim();i++){
+            norm.set(i,max_p.get_data(i)-min_p.get_data(i));
+        }
+
+        simplex_boundary_search(i_particle, norm);
 
         _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
