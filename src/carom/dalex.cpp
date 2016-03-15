@@ -419,6 +419,7 @@ void dalex::find_bases(){
         }
         dir.normalize();
         i_pt=bisection(mindex(),dir,0.5*(target()+chimin()),0.1);
+        add_charge(i_pt);
 
         /*if(fabs(_chifn->get_fn(i_pt)-0.5*(target()+chimin()))>1.0 && chimin()<500.0){
             printf("WARNING failed to get associate within tol %e %e-- %e %e\n",
@@ -430,6 +431,7 @@ void dalex::find_bases(){
         if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
             _basis_associates.add(i_pt);
             i_pt=bisection(mindex(),dir,0.25*chimin()+0.75*target(),0.1);
+            add_charge(i_pt);
             if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
                 _basis_associates.add(i_pt);
 
@@ -1300,6 +1302,8 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
 
 void dalex::tendril_search(){
 
+    add_charge(_chifn->mindex());
+
     int pt_0=_chifn->get_pts();
     assess_good_points();
     _update_good_points();
@@ -1365,47 +1369,16 @@ void dalex::tendril_search(){
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
     add_charge(i_particle);
 
-    double dd,dd_min,dd_sum,dd_denom,dd_term,dd_denom_term;
-
-    dd_sum=0.0;
-    dd_denom=0.0;
-    for(i=0;i<_charges.get_dim();i++){
-        for(j=i+1;j<_charges.get_dim();j++){
-            dd_sum+=_chifn->distance(_charges.get_data(i),_charges.get_data(j));
-            dd_denom+=1.0;
-        }
-    }
-
     while(go_on==1){
-        go_on=0;
+        add_charge(_chifn->mindex());
 
         simplex_boundary_search(i_particle);
 
         _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
-
-        dd_term=0.0;
-        dd_denom_term=0.0;
-        for(i=0;i<_charges.get_dim();i++){
-            dd=_chifn->distance(i_particle, _charges.get_data(i));
-            dd_term+=dd;
-            dd_denom_term+=1.0;
-            if(i==0 || dd<dd_min){
-                dd_min=dd;
-            }
-        }
-
-        if(dd_min>dd_sum/dd_denom){
-            printf("    distance %e mean %e contains %d\n",
-            dd_min,dd_sum/dd_denom,_charges.contains(i_particle));
-            go_on=1;
-        }
-
-        dd_sum+=dd_term;
-        dd_denom+=dd_denom_term;
-
         add_charge(i_particle);
 
+        go_on=0;
         for(i=0;i<_chifn->get_dim();i++){
             if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
                 min.set(i,_chifn->get_pt(i_particle,i));
