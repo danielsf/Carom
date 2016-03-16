@@ -148,6 +148,11 @@ void dalex::simplex_search(array_1d<int> &specified){
     printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
     _update_good_points(pt_0);
+
+    if(_basis_chimin-chimin()>target()-chimin()){
+        find_bases();
+    }
+
 }
 
 
