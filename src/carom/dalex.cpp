@@ -7,6 +7,7 @@ void dalex::build(chisq_wrapper *cc){
     int i,j;
     _basis_vectors.set_cols(_chifn->get_dim());
     for(i=0;i<_chifn->get_dim();i++){
+        _basis_norm.set(i,_chifn->get_characteristic_length(i));
         for(j=0;j<_chifn->get_dim();j++){
             if(i==j){
                 _basis_vectors.set(i,j,1.0);
@@ -588,6 +589,37 @@ void dalex::find_bases(){
             error1=errorBest;
             printf("    ct %d error %.2e pp %.1e from %.2e %.1e min %.3e pts %d\n",
             ct,errorBest,penalty,error0,pp0,chimin(),_basis_associates.get_dim());
+        }
+    }
+
+    int ix,i1,i2;
+    double compass_target;
+    if(changed_bases==1){
+        for(ix=0;ix<_chifn->get_dim();ix++){
+            compass_target=target();
+            i1=-1;
+            i2=-1;
+            while(i1==i2){
+                for(i=0;i<_chifn->get_dim();i++){
+                     dir.set(i,_basis_vectors.get_data(ix,i));
+                }
+                i1=bisection(mindex(),dir,compass_target,0.1);
+                for(i=0;i<_chifn->get_dim();i++){
+                    dir.set(i,-1.0*_basis_vectors.get_data(ix,i));
+                }
+                i2=bisection(mindex(),dir,compass_target,0.1);
+                if(i1==i2){
+                    compass_target+=0.5*(target()-chimin());
+                }
+                else{
+                    mu=0.0;
+                    for(i=0;i<_chifn->get_dim();i++){
+                        mu+=power(_chifn->get_pt(i1,i)-_chifn->get_pt(i2,i),2);
+                    }
+                    mu=0.5*sqrt(mu);
+                    _basis_norm.set(ix,mu);
+                }
+            }
         }
     }
 
@@ -1435,8 +1467,6 @@ void dalex::tendril_search(){
 
     add_charge(i_particle);
 
-    array_1d<double> norm;
-
     array_1d<int> specified;
 
     if(_charges.get_dim()>_chifn->get_dim()/2){
@@ -1503,11 +1533,7 @@ void dalex::tendril_search(){
 
         add_charge(_chifn->mindex());
 
-        for(i=0;i<_chifn->get_dim();i++){
-            norm.set(i,max_p.get_data(i)-min_p.get_data(i));
-        }
-
-        simplex_boundary_search(i_particle, norm);
+        simplex_boundary_search(i_particle, _basis_norm);
 
         _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);

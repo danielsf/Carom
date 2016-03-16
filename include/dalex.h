@@ -31,7 +31,7 @@ class dalex{
             _basis_associates.set_name("dalex_basis_associates");
             _basis_mm.set_name("dalex_basis_mm");
             _basis_vv.set_name("dalex_basis_vv");
-            _basis_lengths.set_name("dalex_basis_lengths");
+            _basis_norm.set_name("dalex_basis_norm");
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
@@ -161,7 +161,7 @@ class dalex{
         ////////code related to finding basis vectors
         array_1d<int> _basis_associates;
         array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
-        array_1d<double> _basis_lengths;
+        array_1d<double> _basis_norm;
         array_2d<double> _basis_vectors,_basis_ddsq;
         double _basis_chimin;
 
