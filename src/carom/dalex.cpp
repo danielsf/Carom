@@ -1417,14 +1417,14 @@ void dalex::tendril_search(){
     if(n_good_0==0 || _good_points.get_dim()==0){
         return;
     }
-    if(_good_points.get_dim()==n_good_0){
-        return;
-    }
 
     int i_particle;
     int go_on=1;
 
     i_particle=_good_points.get_data(_good_points.get_dim()-1);
+    if(_good_points.get_dim()==n_good_0){
+        i_particle=mindex();
+    }
     add_charge(i_particle);
 
     array_1d<double> norm;
