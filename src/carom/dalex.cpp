@@ -1052,11 +1052,6 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
 
     evaluate(minpt, &mu, &i_min);
 
-    if(i_min<0){
-        i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
-        printf("    set i_min to %d\n",i_min);
-    }
-
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
     }
@@ -1146,11 +1141,6 @@ void dalex::simplex_gp_search(){
     ffmin.find_minimum(seed,minpt);
 
     evaluate(minpt, &mu, &i_min);
-
-    if(i_min<0){
-        i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
-        printf("    set i_min to %d\n",i_min);
-    }
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
