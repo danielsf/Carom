@@ -1,198 +1,67 @@
 #include "jellyBean.h"
 
-jellyBean::~jellyBean(){}
-
-jellyBean::jellyBean(int id, double ww, double rr) : chisquared(id){
-    //ww is a width in radians
-    //rr is the radius of curvature
-    make_bases(22,0);
-
-    int ix,iy;
-
-    for(ix=0;ix<_dim;ix++){
-        for(iy=0;iy<_dim;iy++){
-            if(ix==iy){
-                _bases.set(ix,iy,1.0);
-            }
-            else{
-                _bases.set(ix,iy,0.0);
-            }
-        }
-    }
-
-    _time_spent=0.0;
-    _called=0;
-
-    //these are in basis coordinates
-    _curvature_center.set_name("jellyBean_curvature_center");
-    _radial_direction.set_name("jellyBean_radial_direction");
-
-    for(ix=0;ix<_dim;ix++){
-        _centers.set(0,ix,-10.0+20.0*_dice->doub());
-        if(ix>0){
-            _widths.set(0,ix,_dice->doub()*0.5+0.1);
-        }
-    }
-
-    _widths.set(0,0,ww*rr);
-
-
-
-    double theta=_dice->doub()*2.0*pi;
-    double dx,dy;
-
-    _curvature_radius=rr;
-
-    dx=_curvature_radius*cos(theta);
-    dy=_curvature_radius*sin(theta);
-
-    array_1d<double> projected_center;
-    projected_center.set_name("jellyBean_constructor_projected_center");
-
-    for(ix=0;ix<_dim;ix++){
-        projected_center.set(ix,project_to_basis(ix,_centers(0)[0]));
-    }
-
-    for(ix=0;ix<_dim;ix++){
-        _curvature_center.set(ix,projected_center.get_data(ix));
-    }
-
-    _curvature_center.add_val(0,dx);
-    _curvature_center.add_val(1,dy);
-
-    _radial_direction.set_dim(_dim);
-    _radial_direction.zero();
-    _radial_direction.set(0,-1.0*dx);
-    _radial_direction.set(1,-1.0*dy);
-
-    _radial_direction.normalize();
-
-}
-
-void jellyBean::get_curvature_center(array_1d<double> &out){
-    int ix;
-    for(ix=0;ix<_dim;ix++){
-        out.set(ix,project_to_basis(ix,_curvature_center));
-    }
-}
-
-double jellyBean::operator()(array_1d<double> &pt){
-    double before=double(time(NULL));
-    array_1d<double> projected_point;
-
-    projected_point.set_name("jellyBean_operator_projected_point");
-
-    int ix;
-    for(ix=0;ix<_dim;ix++){
-        projected_point.set(ix, project_to_basis(ix,pt));
-    }
-
-    double chisq=0.0;
-    for(ix=2;ix<_dim;ix++){
-        chisq+=power((_centers.get_data(0,ix)-projected_point.get_data(ix))/_widths.get_data(0,ix),2);
-    }
-
-    if(isnan(chisq)){
-        printf("chisq is nan after simple dims\n");
-        exit(1);
-    }
-
-    double rr;
-    array_1d<double> dir;
-    dir.set_name("jellyBean_operator_dir");
-    dir.set_dim(_dim);
-    dir.zero();
-    dir.set(0,projected_point.get_data(0)-_curvature_center.get_data(0));
-    dir.set(1,projected_point.get_data(1)-_curvature_center.get_data(1));
-    rr=dir.normalize();
-
-    chisq+=power((rr-_curvature_radius)/_widths.get_data(0,1),2);
-
-    //printf("chisq is %e after rr\n",chisq);
-
-    if(isnan(chisq)){
-        printf("chisq is nan after radial %e\n",rr);
-        exit(1);
-    }
-
-    double dot=0.0;
-    for(ix=0;ix<_dim;ix++){
-        dot+=dir.get_data(ix)*_radial_direction.get_data(ix);
-    }
-
-    double theta=acos(dot);
-
-    if(isnan(theta) && dot>0.0){
-        theta=0.0;
-    }
-    else if(isnan(theta) && dot<0.0){
-        theta=pi;
-    }
-
-    chisq+=power(theta*_curvature_radius,2)/_widths.get_data(0,0);
-
-    //printf("chisq is %e after angle\n",chisq);
-
-    _called++;
-    _time_spent+=double(time(NULL))-before;
-
-    return chisq;
-
-}
-
 ////////////////////////////////jellyBeanData
 
-chiSquaredData::chiSquaredData(int dd, int cc, int nData, double sigma) : chisquared(dd, cc){
+chiSquaredData::chiSquaredData(int dd, int cc, double ww, int nData, double sigma) : chisquared(dd, cc, ww){
     printf("_dim %d\n",_dim);
+
+    if(_dim<4){
+        printf("WARNING must have at least 4 params in chisquaredData\n");
+        exit(1);
+    }
+
+    if(_dim%4!=0){
+        printf("WARNING dimensionality must be multiple of four\n");
+        exit(1);
+    }
 
     _x_values.set_name("jellyBeanData_x");
     _y_values.set_name("jellyBeanData_y");
     _sigma.set_name("jellyBeanData_sigma");
-    _mean_parameters.set_name("jellyBeanData_mean_parameters");
-    _aux_params.set_name("jellyBeanData_aux_parameters");
+    _wave_phase.set_name("jellyBeanData_phase");
+    _wave_lambda.set_name("jellyBeanData_lambda");
+    _wave_amp.set_name("jellBeanData_amp");
+    _env_d_center.set_name("jellyBeanData_env_d_center");
+    _env_width.set_name("jellyBeanData_env_width");
     _param_buffer.set_name("jellyBeanData_param_buffer");
 
-    make_bases(22,0);
-
-    int ii,jj,goon,i;
-    double nn,normerr,ortherr,theta;
+    Ran local_dice(nData+dd+cc);
 
     _ndata=nData;
     _sig=sigma;
+    _xmax=3.0;
+    _dx=0.03;
 
-    int ix,ic;
+    int ix;
+    double ll;
+    double ll_min,ll_max;
+    ll_min=log(0.05*_xmax);
+    ll_max=log(0.6*_xmax);
 
-    for(ic=0;ic<_ncenters;ic++){
-        for(ix=0;ix<_dim;ix++){
-            _widths.set(ic,ix,fabs(normal_deviate(_dice,0.1,0.5))+0.2);
-        }
+    double last_center;
+    double d_center;
+    double d_c;
+    d_center=_xmax/double(_dim/4);
+    last_center=0.0;
+    for(ix=0;ix<_dim;ix+=4){
+        _wave_phase.add(local_dice.doub()*_xmax);
+
+        ll=local_dice.doub()*(ll_max-ll_min)+ll_min;
+        _wave_lambda.add(exp(ll));
+
+        _wave_amp.add(local_dice.doub()*5.0);
+
+        d_c=local_dice.doub()*d_center;
+        _env_d_center.add(d_c);
+
+        _env_width.add((local_dice.doub()*0.5+0.05)*_xmax);
     }
 
-    for(ix=0;ix<3;ix++){
-        _mean_parameters.set(ix,1.0);
-    }
-
-    int aux_ct;
-    double norm;
-    aux_ct=0;
-    for(;ix<_dim;ix++){
-        _mean_parameters.set(ix,_dice->doub()*4.0-2.0);
-
-        norm=exp(log(10.0)*(aux_ct/2));
-
-        _aux_params.set(aux_ct,_dice->doub()*norm);
-        aux_ct++;
-        _aux_params.set(aux_ct,_dice->doub()*20.0+26.0);
-        aux_ct++;
-
-
-    }
-    //printf("aux_ct %d %e %e\n",aux_ct,_mean_parameters.get_data(3),_mean_parameters.get_data(4));
-    for(ix=0;ix<aux_ct;ix++){
-        printf("aux %e\n",_aux_params.get_data(ix));
-    }
 }
 
+void chiSquaredData::set_width(int ic, int id, double dd){
+    _widths.set(ic, id, dd);
+}
 
 void chiSquaredData::write_data(){
     FILE *output;
@@ -216,13 +85,10 @@ void chiSquaredData::print_mins(){
         printf("center %d val %e\n",ic,this[0](trial));
         convert_params(trial,params,ic);
         for(ix=0;ix<_dim;ix++){
-            printf("    %e -- width %e -- mean %e \n",
-            params.get_data(ix),_widths.get_data(0,ix),_mean_parameters.get_data(ix));
+            printf("    %e %e -- width %e\n",
+            _centers.get_data(ic,ix),
+            params.get_data(ix),_widths.get_data(0,ix));
         }
-    }
-    printf("x_vals %d\n",_x_values.get_dim());
-    for(ix=0;ix<_aux_params.get_dim();ix++){
-        printf("    aux %d %e\n",ix,_aux_params.get_data(ix));
     }
 
     printf("\nbases\n");
@@ -230,6 +96,16 @@ void chiSquaredData::print_mins(){
         for(ic=0;ic<_dim;ic++){
             printf("%.3e ",_bases.get_data(ic,ix));
         }
+        printf("\n");
+    }
+
+    printf("\nparams\n");
+    for(ix=0;ix<_dim/4;ix++){
+        printf("amp %e\n",_wave_amp.get_data(ix));
+        printf("phase %e\n",_wave_phase.get_data(ix));
+        printf("lambda %e\n",_wave_lambda.get_data(ix));
+        printf("env_d_x %e\n",_env_d_center.get_data(ix));
+        printf("env_width %e\n",_env_width.get_data(ix));
         printf("\n");
     }
 
@@ -241,13 +117,20 @@ void chiSquaredData::initialize_data(){
     params.set_name("jellyBeanData_initiailize_params");
     int ix,ic;
 
-    for(ix=0;ix<_dim;ix++)params.set(ix,0.0);
+    for(ix=0;ix<_dim;ix++){
+        if(ix%4==2){
+            params.set(ix,1.0);
+        }
+        else{
+            params.set(ix,0.0);
+        }
+    }
 
     array_1d<double> samples;
     samples.set_name("jellyBeanData_initialize_samples");
 
     double xx,yy,mean,var;
-    for(ix=0, xx=0.0;xx<3.0;xx+=0.03, ix++){
+    for(ix=0, xx=0.0;xx<_xmax;xx+=_dx, ix++){
         mean=data_function(params,xx);
         for(ic=0;ic<_ndata;ic++){
             samples.set(ic,normal_deviate(_dice,mean,_sig));
@@ -269,6 +152,7 @@ void chiSquaredData::initialize_data(){
     }
 
     write_data();
+    print_mins();
 
 }
 
@@ -281,20 +165,26 @@ double chiSquaredData::data_function(array_1d<double> &params, double xx){
 
     double ans=0.0;
 
-    ans=(_mean_parameters.get_data(0)+params.get_data(0))*xx*xx;
-    ans+=(_mean_parameters.get_data(1)+params.get_data(1))*xx;
-    ans+=_mean_parameters.get_data(2)+params.get_data(2);
+    double envelope;
+    double env_x;
+    double wave;
+    double amp;
+    double lambda;
+    double phase;
+    double last_center=0.0;
+    double center;
+    int ix,i_param;
+    for(ix=0,i_param=0;ix<_dim;ix+=4,i_param++){
+        center=last_center+fabs(params.get_data(ix))+_env_d_center.get_data(i_param);
+        env_x=(xx-center)/(params.get_data(ix+1)+_env_width.get_data(i_param));
 
-    double mu,amp;
-    int ix=3,i1,i2;
-    i1=0;
-    i2=1;
-    for(;ix<_dim;ix++){
-        amp=_mean_parameters.get_data(ix)+params.get_data(ix);
-        mu=amp*sin(_aux_params.get_data(i2)*(xx-_aux_params.get_data(i1)));
-        ans+=mu;
-        i1+=2;
-        i2+=2;
+        envelope=0.1+exp(-0.5*power(env_x,2));
+        last_center=center;
+
+        amp=params.get_data(ix+2)+_wave_amp.get_data(i_param);
+        lambda=params.get_data(ix+3)*0.5*_xmax+_wave_lambda.get_data(i_param);
+        wave=sin(2.0*pi*(xx-_wave_phase.get_data(i_param))/lambda);
+        ans+=envelope*amp*wave;
     }
 
     return ans;
@@ -329,11 +219,7 @@ double chiSquaredData::operator()(array_1d<double> &pt){
     _time_spent+=double(time(NULL))-before;
 
     if(isnan(chisq_min)){
-        printf("chisq is nan\n");
-        for(ix=0;ix<_param_buffer.get_dim();ix++){
-            printf("%e\n",_param_buffer.get_data(ix));
-        }
-        exit(1);
+        chisq_min=2.0*exception_value;
     }
 
     if(_with_logging==1){
@@ -344,150 +230,164 @@ double chiSquaredData::operator()(array_1d<double> &pt){
 }
 
 
-jellyBeanData::jellyBeanData(int dd, int cc, int nData, double sigma, double ww, double radial, double rr) :
-chiSquaredData(dd, cc, nData, sigma){
+jellyBeanData::jellyBeanData(int dd, int cc, double wc, int nData, double sigma) :
+chiSquaredData(dd, cc, wc, nData, sigma){
 
-    /*
-    dim
-    ncenters
-    nData points
-    spread of data points
-    angular width
-    radial width (fraction)
-    curvature radius
-    */
+    _parabola_centers.set_name("parabola_centers");
+    _parabola_centers.set_cols(2);
+    _parabola_x.set_name("parabola_x");
+    _parabola_x.set_cols(2);
+    _parabola_y.set_name("parabola_y");
+    _parabola_y.set_cols(2);
 
-    _curvature_centers.set_name("jellyBeanData_curvature_center");
-    _radial_directions.set_name("jellyBeanData_radial_directions");
-    _radii.set_name("jellyBeanData_radii");
-    _dir.set_name("jellyBeanData_global_dir");
-    _planar_dir.set_name("jellyBeanData_planar_dir");
-
-    _curvature_centers.set_dim(_ncenters,_dim);
-    _radial_directions.set_dim(_ncenters,_dim);
-    _planar_dir.set_dim(_dim);
-
-    array_1d<double> dir,trial;
-    dir.set_name("jellyBeanData_constructor_dir");
-    trial.set_name("jellyBeanData_constructor_trial");
-
-    double curvature_radius=rr;
-
-    double mu,dot_check;
-    int ix,iy,ic;
+    int ic,ix,iy;
+    array_1d<double> trial;
+    trial.set_name("jellyBean_data_constructor_trial");
     for(ic=0;ic<_ncenters;ic++){
-        for(ix=0;ix<_dim;ix++){
-            mu=-4.0+_dice->doub()*8.0;
-            _centers.set(ic,ix,mu);
-            _curvature_centers.set(ic,ix,mu);
+        for(ix=0;ix<2;ix++){
+            _parabola_centers.set(ic,ix,-20.0+_dice->doub()*40.0);
         }
-
-        dir.set_dim(_dim);
-        dir.zero();
 
         for(ix=0;ix<2;ix++){
-            mu=normal_deviate(_dice,0.0,1.0);
-            for(iy=0;iy<_dim;iy++){
-                dir.add_val(iy,_bases.get_data(ix,iy));
-            }
+            trial.set(ix,normal_deviate(_dice,0.0,1.0));
         }
+        trial.normalize();
+        _parabola_x.set(ic,0,trial.get_data(0));
+        _parabola_x.set(ic,1,trial.get_data(1));
+        _parabola_y.set(ic,0,trial.get_data(1));
+        _parabola_y.set(ic,1,-1.0*trial.get_data(0));
 
-        dir.normalize();
-
+        // in projected coordinates
         for(ix=0;ix<_dim;ix++){
-            _curvature_centers.add_val(ic,ix,curvature_radius*dir.get_data(ix));
+            _centers.set(ic,ix,-20.0+_dice->doub()*40.0);
         }
-
-        for(ix=0;ix<_dim;ix++){
-            _radial_directions.set(ic,ix,_centers.get_data(ic,ix)-_curvature_centers.get_data(ic,ix));
-        }
-
-        _radii.set(ic,_radial_directions(ic)->normalize());
-
-        _widths.set(ic,0,ww);
-
-        _widths.set(ic,1,radial*curvature_radius);
-
-
-        for(ix=2;ix<_dim;ix++){
-            dot_check=0.0;
-            for(iy=0;iy<_dim;iy++){
-                dot_check+=_radial_directions.get_data(ic,iy)*_bases.get_data(ix,iy);
-            }
-            if(fabs(dot_check)>0.001){
-                printf("WARNING dot_check %d %e\n",ix,dot_check);
-                exit(1);
-            }
-        }
-
 
     }
 
+    _parabola_curvature=4.0;
+
+    /*int i,j;
+    for(i=0;i<_dim;i++){
+        for(j=0;j<_dim;j++){
+            if(i==j){
+                _bases.set(i,j,1.0);
+            }
+            else{
+                _bases.set(i,j,0.0);
+            }
+        }
+    }
+
+    _parabola_x.set(0,0,1.0);
+    _parabola_x.set(0,1,0.0);
+    _parabola_y.set(0,0,0.0);
+    _parabola_y.set(0,1,1.0);*/
 
 }
 
 
-void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &out, int ic){
 
-    int ix,iy;
-    double mu;
+    array_1d<double> pt;
+    pt.set_name("convert_params_pt");
+    project_to_basis(pt_in,pt);
 
-    for(ix=0;ix<_dim;ix++){
-        _dir.set(ix,pt.get_data(ix)-_curvature_centers.get_data(ic,ix));
-    }
+    double x_is,y_is;
+    x_is=(pt.get_data(0)-_parabola_centers.get_data(ic,0))*_parabola_x.get_data(ic,0)
+         +(pt.get_data(1)-_parabola_centers.get_data(ic,1))*_parabola_x.get_data(ic,1);
 
-    for(ix=0;ix<_dim;ix++)_planar_dir.set(ix,0.0);
-    for(ix=0;ix<2;ix++){
-        mu=project_to_basis(ix,_dir);
-        for(iy=0;iy<_dim;iy++){
-            _planar_dir.add_val(iy,mu*_bases.get_data(ix,iy));
-        }
-    }
+    y_is=(pt.get_data(0)-_parabola_centers.get_data(ic,0))*_parabola_y.get_data(ic,0)
+         +(pt.get_data(1)-_parabola_centers.get_data(ic,1))*_parabola_y.get_data(ic,1);
 
-    double planar_radius=_planar_dir.normalize();
+    double rr=sqrt(x_is*x_is+y_is*y_is);
 
-    double cos_theta=0.0,sin_theta;
-    for(ix=0;ix<_dim;ix++){
-        cos_theta+=_planar_dir.get_data(ix)*_radial_directions.get_data(ic,ix);
-    }
+    double cos_theta,sin_theta;
+    cos_theta=x_is/rr;
+    sin_theta=y_is/rr;
 
     if(fabs(cos_theta)>1.0){
         if(fabs(cos_theta)>1.001){
             printf("WARNING somehow cos_theta>1.0 -- %e\n",cos_theta);
             exit(1);
         }
-        sin_theta=0.0;
+    }
+
+    if(fabs(sin_theta)>1.0){
+        if(fabs(sin_theta)>1.001){
+            printf("WARNING somehow sin_theta>1.0 -- %e\n",sin_theta);
+            exit(1);
+        }
+    }
+
+    double r_shldbe;
+
+    if(fabs(cos_theta)<1.0e-5 && sin_theta>0.0){
+        r_shldbe=1.0e10/_parabola_curvature;
+    }
+    else if(fabs(cos_theta)<1.0e-10 && sin_theta<0.0){
+        r_shldbe=0.25/_parabola_curvature;
     }
     else{
-        sin_theta=sqrt(1.0-cos_theta*cos_theta);
+        r_shldbe=(1.0+sin_theta)/(2.0*_parabola_curvature*cos_theta*cos_theta);
     }
 
-    double x_shldbe,y_shldbe,rsq_shldbe,r_shldbe;
-    rsq_shldbe=power(_radii.get_data(ic),2)/(cos_theta*cos_theta+sin_theta*sin_theta*16.0);
-    r_shldbe=sqrt(rsq_shldbe);
+    double d_radius;
+    d_radius=fabs(rr-r_shldbe);
 
-    x_shldbe=r_shldbe*cos_theta;
-    y_shldbe=r_shldbe*sin_theta;
+    double y_distance;
+    y_distance=(y_is+0.25/_parabola_curvature)/_widths.get_data(ic,0);
+    out.set(0,y_distance);
 
-    double x_is,y_is,d_radius;
-    x_is=planar_radius*cos_theta;
-    y_is=planar_radius*sin_theta;
-    d_radius=sqrt(power(x_is-x_shldbe,2)+power(y_is-y_shldbe,2));
+    double x_shldbe,dx;
+    if(y_distance<0.0){
+        out.set(1,d_radius/_widths.get_data(ic,1));
+    }
+    else{
+        x_shldbe=sqrt((y_is+0.25/_parabola_curvature)/_parabola_curvature);
+        if(fabs(x_is+x_shldbe)<fabs(x_is-x_shldbe)){
+            dx=fabs(x_is+x_shldbe);
+        }
+        else{
+            dx=fabs(x_is-x_shldbe);
+        }
 
-
-    out.set(0,(1.0-cos_theta)/_widths.get_data(ic,0));
-    out.set(1,d_radius/_widths.get_data(ic,1));
-
-    for(ix=0;ix<_dim;ix++){
-        _dir.set(ix,pt.get_data(ix)-_centers.get_data(ic,ix));
+        out.set(1,dx/_widths.get_data(ic,1));
     }
 
+    if(out.get_data(1)<0.0){
+        printf("WARNING out 1 %e\n",out.get_data(1));
+        exit(1);
+    }
+
+    int ix;
     for(ix=2;ix<_dim;ix++){
-        out.set(ix,project_to_basis(ix,_dir)/_widths.get_data(ic,ix));
+        if(ix%4==2){
+            out.set(ix,exp((pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
+        }
+        else  if(ix%4==3){
+            if(pt.get_data(ix)>_centers.get_data(ic,ix)){
+                out.set(ix,log(1.0+(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
+            }
+            else{
+                out.set(ix,0.3*(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+            }
+        }
+        else{
+            out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+        }
     }
 
+    double xx;
     for(ix=0;ix<_dim;ix++){
-        out.multiply_val(ix,0.01);
+        if(ix%4!=2){
+            out.multiply_val(ix,0.01);
+        }
+        else{
+            xx=out.get_data(ix);
+            if(xx>0.1){
+                out.set(ix,1.0+0.1*(xx-1.0));
+            }
+        }
     }
 
 
@@ -496,7 +396,7 @@ void jellyBeanData::convert_params(array_1d<double> &pt, array_1d<double> &out, 
 //////////////////////ellipse classes////////////
 
 ellipseData::ellipseData(int dd, int cc, int nData, double sigma) :
-chiSquaredData(dd, cc, nData, sigma){
+chiSquaredData(dd, cc, 1.0, nData, sigma){
 
     _dir.set_name("ellipseData_dir");
     _projected.set_name("ellipseData_projected");

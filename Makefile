@@ -90,11 +90,6 @@ likelihoods/wmap_likelihood_function.cpp include/wmap_likelihood_function.h
 object/aps_extractor.o: src/analysis/aps_extractor.cpp include/aps_extractor.h object/kd.o object/goto_tools.o
 	$(gg) -c -o object/aps_extractor.o src/analysis/aps_extractor.cpp
 
-s_curve_analysis: src/analysis/s_curve_analyzer.cpp object/chisq.o object/aps_extractor.o
-	$(gg) -o bin/s_curve_analysis src/analysis/s_curve_analyzer.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o object/chisq.o \
-	$(LIBRARIES)
-
 analysis: src/analysis/generic_analyzer.cpp object/aps_extractor.o
 	$(gg) -o bin/analysis src/analysis/generic_analyzer.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/aps_extractor.o \
@@ -130,26 +125,95 @@ include/controls/control_integrator.h object/simplex.o object/kd.o
 	$(gg) -c -o object/control_integrator.o src/controls/control_integrator.cpp
 
 jellyBean_control: object/control_integrator.o src/controls/jellyBean_control.cpp \
-object/jellyBean.o
+object/jellyBean.o include/exampleLikelihoods.h
 	$(gg) -o bin/jellyBean_control src/controls/jellyBean_control.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/wrappers.o \
 	object/chisq.o object/jellyBean.o object/control_integrator.o \
 	object/simplex.o \
 	$(LIBRARIES)
 
-s_curve_test: src/examples/s_curve_coverage.cpp object/carom.o
-	$(gg) -o bin/s_curve_test src/examples/s_curve_coverage.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/node.o object/carom.o \
-	$(LIBRARIES)
-
 jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o \
-object/jellyBean.o
+object/jellyBean.o include/exampleLikelihoods.h
 	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/dchi_simplex.o object/node.o object/carom.o object/jellyBean.o \
+	$(LIBRARIES)
+
+object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
+object/wrappers.o
+	$(gg) -c -o object/gp.o src/utils/gp.cpp
+
+
+object/gp_lin.o: src/utils/gp_lin.cpp include/gp_lin.h object/kd.o object/eigen_wrapper.o \
+object/wrappers.o
+	$(gg) -c -o object/gp_lin.o src/utils/gp_lin.cpp
+
+object/dchi_simplex_gp.o: include/dchi_simplex_gp.h src/carom/dchi_simplex_gp.cpp object/gp_lin.o
+	$(gg) -c -o object/dchi_simplex_gp.o src/carom/dchi_simplex_gp.cpp
+
+test_gp: src/tests/test_gp.cpp object/gp.o object/jellyBean.o \
+include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
+	$(gg) -o bin/test_gp src/tests/test_gp.cpp object/goto_tools.o \
+	object/containers.o \
+	object/wrappers.o object/eigen_wrapper.o object/kd.o object/gp.o \
+	object/chisq_wrapper.o object/chisq.o object/jellyBean.o \
+        object/gp_lin.o \
+	$(LIBRARIES)
+
+object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
+object/goto_tools.o object/chisq_wrapper.o object/simplex.o
+	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
+
+object/maps.o: src/carom/maps.cpp include/maps.h \
+object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
+object/mcmc.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o
+	$(gg) -c -o object/maps.o src/carom/maps.cpp
+
+test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
+	$(gg) -o bin/test_sa src/tests/test_simulated_annealing.cpp \
+	object/containers.o object/goto_tools.o object/chisq.o \
+	object/jellyBean.o object/wrappers.o
+
+test_fill: src/tests/test_filling_function.cpp object/jellyBean.o \
+object/simplex.o
+	$(gg) -o bin/test_fill src/tests/test_filling_function.cpp \
+	object/containers.o object/goto_tools.o object/chisq.o \
+	object/jellyBean.o object/wrappers.o object/simplex.o
+
+test_tunnel: src/tests/test_tunneling_function.cpp object/jellyBean.o \
+object/simplex.o object/chisq_wrapper.o
+	$(gg) -o bin/test_tunnel src/tests/test_tunneling_function.cpp \
+	object/containers.o object/goto_tools.o object/chisq.o \
+	object/jellyBean.o object/wrappers.o object/simplex.o \
+	object/kd.o object/chisq_wrapper.o
+
+
+
+jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
+object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o \
+object/dchi_simplex_gp.o
+	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
+        object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
+	$(LIBRARIES)
+
+d24_test: src/examples/test_d24_chisq.cpp object/jellyBean.o \
+include/exampleLikelihoods.h
+	$(gg) -o bin/d24_test src/examples/test_d24_chisq.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/jellyBean.o \
+	$(LIBRARIES)
+
+d4_test: src/examples/test_d4.cpp object/jellyBean.o \
+include/exampleLikelihoods.h
+	$(gg) -o bin/d4_test src/examples/test_d4.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/jellyBean.o \
 	$(LIBRARIES)
 
 
@@ -175,7 +239,8 @@ jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp objec
 	$(LIBRARIES)
 
 jellyBeanMCMC: src/examples/jellyBean_mcmc_example.cpp object/mcmc.o \
-object/wmap_likelihood_function.o object/jellyBean.o
+object/wmap_likelihood_function.o object/jellyBean.o \
+include/exampleLikelihoods.h
 	$(gg) -o bin/jellyBeanMCMC src/examples/jellyBean_mcmc_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
@@ -183,11 +248,11 @@ object/wmap_likelihood_function.o object/jellyBean.o
 	$(LIBRARIES)
 
 ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
-object/wmap_likelihood_function.o
+object/wmap_likelihood_function.o object/jellyBean.o
 	$(gg) -o bin/ellipseMCMC src/examples/ellipse_mcmc_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
-	object/chain.o object/kde.o object/mcmc.o \
+	object/chain.o object/kde.o object/mcmc.o object/jellyBean.o \
 	$(LIBRARIES)
 
 wmap7: src/examples/wmap7_example.cpp object/carom.o \
@@ -259,8 +324,6 @@ all:
 	make test_containers
 	make test_kd
 	make test_eigen
-	make s_curve_analysis
-	make s_curve_test
 
 clean:
 	rm object/*.o bin/*

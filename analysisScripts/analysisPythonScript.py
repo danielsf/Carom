@@ -164,9 +164,10 @@ def doTimeSeriesAnalysis(dim, ix_list, iy_list,
 
         plt.figure(figsize=(30,30))
         for ict, ct in enumerate(ct_list):
+            _target = target
             all_pts = useful_data[:ct]
-            good_pts, chisq, target, chi_min = get_scatter(useful_data[:ct], ix, iy,
-                                                           delta_chisq=delta_chisq, target=target)
+            good_pts, chisq, _target, chi_min = get_scatter(useful_data[:ct], ix, iy,
+                                                            delta_chisq=delta_chisq, target=_target)
 
             plt.subplot(plot_rows, 3, ict+1)
             if not scatter_control:
@@ -188,7 +189,7 @@ def doTimeSeriesAnalysis(dim, ix_list, iy_list,
             plt.xticks(xticks, xformat, fontsize=15)
             plt.yticks(yticks, yformat, fontsize=15)
 
-            title = 'min $\chi^2 =$ %.2f\ntarget $\chi^2 =$ %.2f\npoints %d' % (chi_min, target, ct)
+            title = 'min $\chi^2 =$ %.2f\ntarget $\chi^2 =$ %.2f\npoints %d' % (chi_min, _target, ct)
 
             plt.text(xmax-7.0*dx, ymax-2.5*dy, title, fontsize=25)
 

@@ -11,11 +11,14 @@ class mcmc{
 public:
 
     ~mcmc();
-    mcmc(int, int, chisquared*);
+    mcmc();
+    mcmc(int, int, function_wrapper*);
+    void initialize(int, int, function_wrapper*);
     void set_burnin(int);
     void set_name_root(char*);
     void set_min(int,double);
     void set_max(int,double);
+    void guess_bases(array_1d<double>&,double,int);
     void guess_bases(double,int);
     double acceptance_rate();
     double update_bases();
@@ -29,7 +32,7 @@ public:
 private:
 
     arrayOfChains _chains;
-    chisquared *_chisq;
+    function_wrapper *_chisq;
     Ran *_dice;
 
     double _factor,_time_started;
@@ -40,11 +43,14 @@ private:
     char _name_root[letters];
 
     int _burn_in;
+    int _final_ct,_last_updated,_last_updated_factor;
+    int _last_wrote,_last_dumped,_update_ct;
 
     void initialize();
     void validate_bases();
-    void find_fisher_eigen(array_2d<double>&, array_1d<double>&, double*);
-    void find_fisher_matrix(array_2d<double>&, array_1d<double>&, double*);
+    void find_fisher_eigen(array_1d<double>&, array_2d<double>&);
+    double find_minimum_point(array_1d<double>&);
+    void find_fisher_matrix(array_1d<double>&, array_2d<double>&);
     void mcmc_bisection(double, array_1d<double>&, double, array_1d<double>&, array_1d<double>&);
 
 };

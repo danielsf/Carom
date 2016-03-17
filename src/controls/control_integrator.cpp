@@ -4,6 +4,12 @@ control_integrator::control_integrator(function_wrapper &chisq,
                      array_1d<double> &min, array_1d<double> &max,
                      array_1d<double> &dx, char *name_root){
 
+    _iter_p = NULL;
+
+    _min.set_name("control_min");
+    _max.set_name("control_max");
+    _dx.set_name("control_dx");
+
     _chisq=&chisq;
     int i;
     for(i=0;i<min.get_dim();i++){
@@ -16,22 +22,52 @@ control_integrator::control_integrator(function_wrapper &chisq,
         _name_root[i]=name_root[i];
     }
     _name_root[i]=0;
-
-    _chi_lim_freq=124.4;
     _chi_min=2.0*exception_value;
-
-    chisquared_distribution distro;
-    _delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),0.95);
-
-    printf("_delta_chi_bayes: %e\n",_delta_chi_bayes);
 
 }
 
-void control_integrator::set_chi_lim_freq(double dd){
-    _chi_lim_freq=dd;
+double control_integrator::get_min(int ii){
+    return _min.get_data(ii);
+}
+
+double control_integrator::get_max(int ii){
+    return _max.get_data(ii);
+}
+
+void control_integrator::run_analysis(double cc){
+    array_1d<double> cc_arr;
+    cc_arr.add(cc);
+    run_analysis(cc_arr);
 }
 
 void control_integrator::run_analysis(){
+    run_analysis(0.95);
+}
+
+void control_integrator::_initialize_iterate(){
+    if(_iter_p!=NULL){
+        delete _iter_p;
+    }
+
+    _iter_p=new default_iteration_parameters();
+    _iter_p->initialize(_min, _max, _dx);
+}
+
+
+void control_integrator::run_analysis(array_1d<double> &cc){
+
+    chisquared_distribution distro;
+
+    double max_confidence_limit, max_chi_lim_freq;
+    int ic;
+    for(ic=0;ic<cc.get_dim();ic++){
+        if(ic==0 || cc.get_data(ic)>max_confidence_limit){
+            max_confidence_limit=cc.get_data(ic);
+        }
+    }
+
+    max_chi_lim_freq=distro.confidence_limit(100.0,max_confidence_limit);
+
 
     printf("nameroot %s\n",_name_root);
 
@@ -40,6 +76,7 @@ void control_integrator::run_analysis(){
     array_1d<double> chi_vals,good_min,good_max;
     array_2d<int> coordinates;
 
+    pt.set_name("pt");
     good_min.set_name("good_min");
     good_max.set_name("good_max");
     chi_vals.set_name("chi_vals");
@@ -57,44 +94,35 @@ void control_integrator::run_analysis(){
         good_max.set(ix,-2.0*exception_value);
     }
 
-    double d_threshold=20.0;
+    double d_threshold=50.0;
     double mu;
     double start=double(time(NULL));
-
-
 
     int ct=0;
 
     double foundMin=exception_value;
-    long int total_pts=1;
-    array_1d<int> grid_ct;
-    grid_ct.set_name("grid_ct");
 
-    for(ix=0;ix<_min.get_dim();ix++){
-        iy=int((_max.get_data(ix)-_min.get_data(ix))/_dx.get_data(ix));
-        grid_ct.set(ix,iy);
-        total_pts*=iy;
-    }
-    printf("total_pts %ld\n",total_pts);
 
     FILE *output;
 
     output=fopen("output/scratch/control_scatter.sav","w");
 
-    long int ipt;
+    int keep_going=1;
+
+    _initialize_iterate();
+
     array_1d<int> idx;
-    idx.set_name("idx");
-    for(ipt=0;ipt<total_pts;ipt++){
-        expand_grid(ipt,grid_ct,idx);
-        for(ix=0;ix<_min.get_dim();ix++){
-            pt.set(ix,_min.get_data(ix)+idx.get_data(ix)*_dx.get_data(ix));
-        }
+    idx.set_name("control_idx");
+
+    while(keep_going==1){
+
+        keep_going=_iter_p->get_pt(pt,idx);
 
         mu=_chisq[0](pt);
 
         if(mu<foundMin)foundMin=mu;
 
-        if(mu<_chi_lim_freq+d_threshold){
+        if(mu<max_chi_lim_freq+d_threshold){
             for(ix=0;ix<_min.get_dim();ix++){
                 if(pt.get_data(ix)<good_min.get_data(ix)){
                     good_min.set(ix,pt.get_data(ix));
@@ -107,6 +135,12 @@ void control_integrator::run_analysis(){
             chi_vals.add(mu);
         }
 
+        if(_iter_p->get_current_ct()%1000000==0 && _iter_p->get_current_ct()>0){
+            printf("ct %ld good %d in %e %e -- %e\n",
+            _iter_p->get_current_ct(),chi_vals.get_dim(),double(time(NULL))-start,
+            (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin);
+        }
+
         if(mu<119.8){
             for(ix=0;ix<_min.get_dim();ix++){
                 fprintf(output,"%e ",pt.get_data(ix));
@@ -115,16 +149,10 @@ void control_integrator::run_analysis(){
         }
 
 
-        if(ipt%1000000==0 && ipt>0){
-            printf("ct %ld good %d in %e %e -- %e\n",
-            ipt,chi_vals.get_dim(),double(time(NULL))-start,
-            (double(time(NULL))-start)/double(ipt),foundMin);
-        }
-
     }
 
     fclose(output);
-    printf("foundMin %e\n",foundMin);
+    printf("foundMin %e in %ld\n",foundMin,_iter_p->get_current_ct());
 
     start=double(time(NULL));
     array_1d<double> chi_sorted,likelihood_sorted;
@@ -156,15 +184,16 @@ void control_integrator::run_analysis(){
 
     char name[letters];
 
-    for(ix=0;ix<_min.get_dim();ix++){
-        for(iy=ix+1;iy<_min.get_dim();iy++){
-            sprintf(name,"%s_%d_%d",_name_root,ix,iy);
-            write_output(ix,iy,chi_sorted,likelihood_sorted,dexes,coordinates,total,
-                         _chi_lim_freq,name);
+    for(ic=0;ic<cc.get_dim();ic++){
+        for(ix=0;ix<_min.get_dim();ix++){
+            for(iy=ix+1;iy<_min.get_dim();iy++){
+                sprintf(name,"%s_%.2f_%d_%d",_name_root,cc.get_data(ic),ix,iy);
+                write_output(ix,iy,chi_sorted,likelihood_sorted,dexes,coordinates,total,
+                             cc.get_data(ic),name);
 
+            }
         }
     }
-
 }
 
 int control_integrator::get_dex(double value, double min, double dx, int max){
@@ -196,12 +225,16 @@ void control_integrator::write_output(int xdex, int ydex,
                     array_1d<double> &likelihood_sorted,
                     array_1d<int> &dexes, array_2d<int> &coordinates,
                     double totalLikelihood,
-                    double chiLimFullD,
+                    double confidence_limit,
                     char *outname_root){
 
 
+    chisquared_distribution distro;
 
-    double delta_chi_2d=6.0;
+    double delta_chi_bayes=distro.confidence_limit(double(_min.get_dim()),confidence_limit);
+    double chi_lim_freq=distro.confidence_limit(100.0,confidence_limit);
+
+    double delta_chi_2d=distro.confidence_limit(2.0,confidence_limit);
 
     printf("minchi %e\n",chi_vals_sorted.get_data(0));
     array_2d<double> frequentistFullD,frequentist2D,frequentist2Deff,bayesianFullD,bayesian2D;
@@ -270,8 +303,6 @@ void control_integrator::write_output(int xdex, int ydex,
 
     double min_chi2_eff=-2.0*log(max_likelihood);
 
-
-
     //////assemble the raw frequentist grids
     array_1d<double> trial,found_min,found_max;
     trial.set_name("trial");
@@ -288,7 +319,7 @@ void control_integrator::write_output(int xdex, int ydex,
         for(iy=0;iy<yct;iy++){
             trial.set(1,_min.get_data(ydex)+iy*_dx.get_data(ydex));
 
-            if(minChi2Grid.get_data(ix,iy)+_chi_min<=chiLimFullD){
+            if(minChi2Grid.get_data(ix,iy)+_chi_min<=chi_lim_freq){
                 frequentistFullD.add_row(trial);
 
                 for(i=0;i<2;i++){
@@ -298,7 +329,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
             }
 
-            if(minChi2Grid.get_data(ix,iy)<=_delta_chi_bayes){
+            if(minChi2Grid.get_data(ix,iy)<=delta_chi_bayes){
                 frequentistFullDrelative.add_row(trial);
             }
 
@@ -336,7 +367,7 @@ void control_integrator::write_output(int xdex, int ydex,
     sort_and_check(marginalized_likelihood_line,sorted,sorted_dexes);
     double sum=0.0;
     row=0;
-    for(i=sorted.get_dim()-1;i>=0 && sum<0.95*totalLikelihood;i--){
+    for(i=sorted.get_dim()-1;i>=0 && sum<confidence_limit*totalLikelihood;i--){
         sum+=sorted.get_data(i);
 
         ix=marginalized_likelihood_dexes.get_data(sorted_dexes.get_data(i),0);
@@ -360,7 +391,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
     sum=0.0;
     row=0;
-    for(i=0;i<chi_vals_sorted.get_dim() && sum<0.95*totalLikelihood;i++){
+    for(i=0;i<chi_vals_sorted.get_dim() && sum<confidence_limit*totalLikelihood;i++){
         sum+=likelihood_sorted.get_data(i);
         true_dex=dexes.get_data(i);
 
@@ -401,11 +432,32 @@ void control_integrator::write_output(int xdex, int ydex,
 
     ///write outputs
     FILE *output;
-
     char outname[2*letters];
+
+    //heat map
+    sprintf(outname,"%s_heatmap.txt",outname_root);
+    output=fopen(outname,"w");
+    fprintf(output,"#x y min_chi^2 marginalized_likelihood\n");
+    for(ix=0;ix<minChi2Grid.get_rows();ix++){
+        for(iy=0;iy<minChi2Grid.get_cols();iy++){
+            if(marginalized_likelihood.get_data(ix,iy)>1.0e-10*max_likelihood ||
+               minChi2Grid.get_data(ix,iy)<2.0*exception_value){
+
+                fprintf(output,"%e %e %e %e\n",
+                        _min.get_data(xdex)+ix*_dx.get_data(xdex),
+                        _min.get_data(ydex)+iy*_dx.get_data(ydex),
+                        minChi2Grid.get_data(ix,iy),
+                        marginalized_likelihood.get_data(ix,iy));
+           }
+        }
+    }
+    fclose(output);
+
+
     array_2d<double> boundary;
     boundary.set_name("output_boundary");
 
+    //points wwith chisq < a priori chi^2_lim
     convert_to_boundary(frequentistFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_frequentistFullD.txt",outname_root);
@@ -414,14 +466,17 @@ void control_integrator::write_output(int xdex, int ydex,
         printf("WARNING could not open frequentistFullD\n");
         exit(1);
     }
+    fprintf(output,"#chi^2 <= %e\n",chi_lim_freq);
     for(ix=0;ix<boundary.get_rows();ix++){
         fprintf(output,"%e %e\n",
         boundary.get_data(ix,0),boundary.get_data(ix,1));
     }
     fclose(output);
 
+    //points with chisq < chisq_min + delta_chisq(dof)
     sprintf(outname,"%s_frequentistFullDrelative_scatter.txt",outname_root);
     output=fopen(outname,"w");
+    fprintf(output,"#chi^2-_chimin <= %e; chimin %e\n",delta_chi_bayes,_chi_min);
     for(ix=0;ix<frequentistFullDrelative.get_rows();ix++){
         fprintf(output,"%e %e\n",frequentistFullDrelative.get_data(ix,0),frequentistFullDrelative.get_data(ix,1));
     }
@@ -431,6 +486,7 @@ void control_integrator::write_output(int xdex, int ydex,
 
     sprintf(outname,"%s_frequentistFullDrelative.txt",outname_root);
     output=fopen(outname,"w");
+    fprintf(output,"#chi^2-_chimin <= %e; %e\n",delta_chi_bayes,_chi_min);
     if(output==NULL){
         printf("WARNING could not open freqFullDrel\n");
         exit(1);
@@ -441,6 +497,7 @@ void control_integrator::write_output(int xdex, int ydex,
     }
     fclose(output);
 
+    //point with chisq < chisq_min + 6
     convert_to_boundary(frequentist2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_frequentist2D.txt",outname_root);
@@ -449,12 +506,15 @@ void control_integrator::write_output(int xdex, int ydex,
         printf("WARNING could not open freq2d\n");
         exit(1);
     }
+    fprintf(output,"#chi^2 <= chimin+ %e; _chi_min %e\n",delta_chi_2d, _chi_min);
+
     for(ix=0;ix<boundary.get_rows();ix++){
         fprintf(output,"%e %e\n",
         boundary.get_data(ix,0),boundary.get_data(ix,1));
     }
     fclose(output);
 
+    //points wiht -2 ln(marginalized_likelihood) < -2.0*ln(max_marginalized_likelihood) + 6
     convert_to_boundary(frequentist2Deff,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_frequentist2Deff.txt",outname_root);
@@ -463,6 +523,7 @@ void control_integrator::write_output(int xdex, int ydex,
         printf("WARNING coudl not open freq2deff\n");
         exit(1);
     }
+    fprintf(output,"#-2 ln(marginalized likelihood) - min_chi2_eff<=%e ; %e\n",delta_chi_2d,min_chi2_eff);
     for(ix=0;ix<boundary.get_rows();ix++){
         fprintf(output,"%e %e\n",
         boundary.get_data(ix,0),boundary.get_data(ix,1));
@@ -470,6 +531,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
 
 
+    //sum of marginalized likelihood < _confidence_limit * total
     convert_to_boundary(bayesian2D,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_bayesian2D.txt",outname_root);
@@ -485,6 +547,7 @@ void control_integrator::write_output(int xdex, int ydex,
     fclose(output);
 
 
+    //sum of individual likelihood in full D space < _confidence_limit * total
     convert_to_boundary(bayesianFullD,_dx.get_data(xdex),_dx.get_data(ydex),boundary);
 
     sprintf(outname,"%s_bayesianFullD.txt",outname_root);
@@ -504,6 +567,9 @@ void control_integrator::write_output(int xdex, int ydex,
     printf("min found max found\n");
     printf("%e %e %e %e\n",_min.get_data(xdex),found_min.get_data(0),_max.get_data(xdex),found_max.get_data(0));
     printf("%e %e %e %e\n",_min.get_data(ydex),found_min.get_data(1),_max.get_data(ydex),found_max.get_data(1));
+    printf("confidence limit %e\n",confidence_limit);
+    printf("delta_chi_bayes %e\n",delta_chi_bayes);
+    printf("chi_lim_freq %e\n",chi_lim_freq);
 
 }
 

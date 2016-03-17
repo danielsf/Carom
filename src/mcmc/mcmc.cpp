@@ -12,6 +12,10 @@ then use another interval of that (sub_divided) to set _factor
 #include "mcmc/mcmc.h"
 
 mcmc::~mcmc(){
+   int iChain;
+   for(iChain=0;iChain<_chains.get_n_chains();iChain++){
+       _chains(iChain)->write_chain(1);
+   }
    if(_dice!=NULL){
        delete _dice;
    }
@@ -36,13 +40,17 @@ void mcmc::initialize(){
     _factor=2.38;
     _time_started=double(time(NULL));
 
-    sprintf(_name_root,"chain");
+    _final_ct=0;
+    _last_updated=0;
+    _last_updated_factor=0;
+    _last_wrote=0;
+    _last_dumped=0;
+    _update_ct=0;
 
+    sprintf(_name_root,"chain");
 }
 
-mcmc::mcmc(int nchains, int seed, chisquared *fn){
-    initialize();
-
+void mcmc::initialize(int nchains, int seed, function_wrapper *fn){
     if(seed<0){
         _dice=new Ran(int(time(NULL)));
     }
@@ -54,11 +62,24 @@ mcmc::mcmc(int nchains, int seed, chisquared *fn){
     _chains.initialize(nchains,_chisq->get_dim(),_dice);
 
     _bases.set_cols(_chisq->get_dim());
+    write_timing(1);
+}
 
+mcmc::mcmc(){
+    initialize();
+}
+
+mcmc::mcmc(int nchains, int seed, function_wrapper *fn){
+    initialize();
+    initialize(nchains, seed, fn);
 }
 
 void mcmc::write_timing(char *msg){
-   char name[2*letters];
+    if(_chisq==NULL){
+        printf("mcmc cannot write timing; _chisq is NULL\n");
+        exit(1);
+    }
+    char name[2*letters];
     sprintf(name,"%s_timing.txt",_name_root);
 
     FILE *output;
@@ -70,6 +91,10 @@ void mcmc::write_timing(char *msg){
 }
 
 void mcmc::write_timing(int overwrite){
+    if(_chisq==NULL){
+        printf("mcmc cannot write timing; _chisq is NULL\n");
+        exit(1);
+    }
     char name[2*letters];
     sprintf(name,"%s_timing.txt",_name_root);
 
@@ -110,7 +135,7 @@ void mcmc::set_name_root(char *word){
         _name_root[i]=word[i];
     }
     _name_root[i]=0;
-
+    write_timing(1);
 }
 
 double mcmc::acceptance_rate(){
@@ -133,6 +158,10 @@ double mcmc::acceptance_rate(){
 }
 
 double mcmc::update_bases(){
+    if(_chisq==NULL){
+        printf("mcmc cannot update bases; _chisq is NULL\n");
+        exit(1);
+    }
     array_2d<double> covar;
     covar.set_name("mcmc_update_bases_covar");
 
@@ -190,8 +219,11 @@ double mcmc::update_bases(){
 }
 
 void mcmc::sample(int nSamples){
-
-    write_timing(1);
+    if(_chisq==NULL){
+        printf("mcmc cannot sample; _chisq is NULL\n");
+        exit(1);
+    }
+    write_timing(0);
 
     int i,j;
     if(_bases.get_rows()==0){
@@ -214,10 +246,9 @@ void mcmc::sample(int nSamples){
     trial.set_name("mcmc_sample_trial");
     dir.set_name("mcmc_sample_dir");
 
-    int iChain,ix,iy,thinby,total_points,update_ct;
-    int final_ct,burn_ct,total_ct,last_wrote,last_assessed;
-    int last_updated,last_updated_factor,something_changed;
-    int last_dumped;
+    int iChain,ix,iy,thinby,total_points;
+    int last_assessed;
+    int something_changed;
 
     double sqrtD=sqrt(_chisq->get_dim());
     double mu,acceptance,norm;
@@ -229,16 +260,8 @@ void mcmc::sample(int nSamples){
         _chains(iChain)->set_chain_label(iChain);
     }
 
-    final_ct=0;
-    burn_ct=0;
-    total_ct=0;
-    last_updated=0;
-    last_updated_factor=0;
-    last_wrote=0;
-    last_dumped=0;
-    update_ct=0;
-
-    while(final_ct<nSamples){
+    int local_ct=0;
+    while(local_ct<nSamples){
         for(iChain=0;iChain<_chains.get_n_chains();iChain++){
             mu=2.0*exception_value;
             while(mu>exception_value){
@@ -266,27 +289,28 @@ void mcmc::sample(int nSamples){
             _chains(iChain)->add_point(trial,mu);
 
         }
-        total_ct++;
 
         something_changed=0;
-        final_ct++;
+        _final_ct++;
+        local_ct++;
 
-        if(final_ct<_burn_in){
-            if(final_ct>=last_updated+500){
+        if(_final_ct<_burn_in){
+            if(_final_ct>=_last_updated+500){
+                printf("acceptance rate %e factor %e\n",acceptance_rate(),_factor);
 
                 mu=update_bases();
                 sprintf(message,"updating bases -- dotMax %e;",mu);
                 write_timing(message);
-                last_updated=final_ct;
-                last_updated_factor=final_ct;
-                last_dumped=final_ct;
-                last_wrote=final_ct;
+                _last_updated=_final_ct;
+                _last_updated_factor=_final_ct;
+                _last_dumped=_final_ct;
+                _last_wrote=_final_ct;
                 write_timing(0);
                 for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                     _chains(iChain)->write_chain(1);
                 }
             }
-            else if(final_ct>=last_updated_factor+100){
+            else if(_final_ct>=_last_updated_factor+100){
                 acceptance=acceptance_rate();
                 if(fabs(1.0/acceptance-3.0)>1.0){
                     if(acceptance<0.3333333){
@@ -296,24 +320,25 @@ void mcmc::sample(int nSamples){
                         _factor*=1.2;
                     }
                 }
-                last_updated_factor=final_ct;
+                _last_updated_factor=_final_ct;
 
             }
         }
-        else if(final_ct>last_wrote+1000){
-            if(final_ct>last_dumped+5000){
+        else if(_final_ct>_last_wrote+1000){
+            if(_final_ct>_last_dumped+5000){
                 ix=1;
-                last_dumped=final_ct;
+                _last_dumped=_final_ct;
             }
             else{
                 ix=0;
             }
 
+            printf("acceptance rate %e factor %e\n",acceptance_rate(),_factor);
             write_timing(0);
             for(iChain=0;iChain<_chains.get_n_chains();iChain++){
                 _chains(iChain)->write_chain(ix);
             }
-            last_wrote=final_ct;
+            _last_wrote=_final_ct;
         }
 
         /*if(something_changed==1){
@@ -327,43 +352,40 @@ void mcmc::sample(int nSamples){
         }*/
    }
 
-    printf("done %d %d -- %d\n",final_ct,nSamples,_chisq->get_called());
+    printf("done %d %d -- %d\n",_final_ct,nSamples,_chisq->get_called());
+    printf("acceptance rate %e factor %e\n",acceptance_rate(),_factor);
 
-   for(iChain=0;iChain<_chains.get_n_chains();iChain++){
-       _chains(iChain)->write_chain(1);
-   }
 
 }
 
 
-void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerOut, double *minOut){
-
-    array_1d<double> trial,norm;
-    trial.set_name("node_findCovar_trial");
-    norm.set_name("node_findCovar_norm");
-
+double mcmc::find_minimum_point(array_1d<double> &centerOut){
+    if(_chisq==NULL){
+        printf("mcmc cannot find minimum point; _chisq is NULL\n");
+        exit(1);
+    }
     array_1d<double> center;
     array_2d<double> seed;
     double fcenter;
     center.set_name("mcmc_find_fisher_center");
-    seed.set_name("mcmc_find_fisher_seed");
+    seed.set_name("mcmc_find_min_seed");
 
     int i,j;
     array_1d<double> min,max;
     seed.set_cols(_chisq->get_dim());
 
-    min.set_name("mcmc_find_fisher_min");
-    max.set_name("mcmc_find_fisher_max");
+    min.set_name("mcmc_find_min_min");
+    max.set_name("mcmc_find_min_max");
 
     for(i=0;i<_chisq->get_dim();i++){
-        if(_chisq->get_min(i)<exception_value){
+        if(_chisq->get_min(i)<exception_value && _chisq->get_min(i)>-1.0*exception_value){
             min.set(i,_chisq->get_min(i));
         }
         else{
             min.set(i,_guess_min.get_data(i));
         }
 
-        if(_chisq->get_max(i)>-1.0*exception_value){
+        if(_chisq->get_max(i)>-1.0*exception_value && _chisq->get_max(i)<1.0*exception_value){
             max.set(i,_chisq->get_max(i));
         }
         else{
@@ -382,13 +404,54 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
     f_min.use_gradient();
     f_min.find_minimum(seed, center);
     fcenter=f_min.get_minimum();
-    minOut[0]=fcenter;
     for(i=0;i<_chisq->get_dim();i++){
         centerOut.set(i,center.get_data(i));
     }
+    return fcenter;
+}
 
 
-    double sgn;
+void mcmc::find_fisher_matrix(array_1d<double> &center_in, array_2d<double> &covar){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot find fisher matrix; _chisq is NULL\n");
+        exit(1);
+    }
+
+    int i,j;
+    double sgn,fcenter;
+    array_1d<double> trial,norm;
+    trial.set_name("node_findCovar_trial");
+    norm.set_name("node_findCovar_norm");
+
+    array_1d<double> min,max;
+    min.set_name("mcmc_findCovar_min");
+    max.set_name("mcmc_findCovar_max");
+
+    for(i=0;i<_chisq->get_dim();i++){
+        if(_chisq->get_min(i)<exception_value){
+            min.set(i,_chisq->get_min(i));
+        }
+        else{
+            min.set(i,_guess_min.get_data(i));
+        }
+
+        if(_chisq->get_max(i)>-1.0*exception_value){
+            max.set(i,_chisq->get_max(i));
+        }
+        else{
+            max.set(i,_guess_max.get_data(i));
+        }
+
+    }
+
+    fcenter=_chisq[0](center_in);
+    array_1d<double> center;
+    center.set_name("mcmc_find_fisher_center");
+    for(i=0;i<_chisq->get_dim();i++){
+        center.set(i,center_in.get_data(i));
+    }
+
     array_1d<double> temp_dir,temp_pt;
     temp_dir.set_name("mcmc_find_fisher_temp_dir");
     temp_pt.set_name("mcmc_find_fisher_temp_pt");
@@ -670,7 +733,12 @@ void mcmc::find_fisher_matrix(array_2d<double> &covar, array_1d<double> &centerO
 }
 
 
-void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOut, double *minVal){
+void mcmc::find_fisher_eigen(array_1d<double> &center_in, array_2d<double> &bases){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot find fisher eigen; _chisq is NULL\n");
+        exit(1);
+    }
 
     array_2d<double> covar;
     covar.set_name("mcmc_guess_bases_covar");
@@ -678,7 +746,7 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOu
     int ix,iy;
     double covarmax=-1.0;
 
-    find_fisher_matrix(covar,centerOut,minVal);
+    find_fisher_matrix(center_in,covar);
 
     for(ix=0;ix<_chisq->get_dim();ix++){
         for(iy=ix;iy<_chisq->get_dim();iy++){
@@ -723,6 +791,11 @@ void mcmc::find_fisher_eigen(array_2d<double> &bases, array_1d<double> &centerOu
 }
 
 void mcmc::mcmc_bisection(double deltachi, array_1d<double> &lowball_in, double flow, array_1d<double> &dir, array_1d<double> &found){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot call bisection; _chisq is NULL\n");
+        exit(1);
+    }
 
     double target=flow+deltachi;
 
@@ -789,20 +862,35 @@ void mcmc::mcmc_bisection(double deltachi, array_1d<double> &lowball_in, double 
 }
 
 void mcmc::guess_bases(double deltaChi, int seedPoints){
+    if(_chisq==NULL){
+        printf("mcmc cannot guess bases; _chisq is NULL\n");
+        exit(1);
+    }
+    double minVal;
+    array_1d<double> center;
+    center.set_name("mcmc_guess_bases_center");
+    minVal=find_minimum_point(center);
+    printf("found minVal %e\n",minVal);
+    guess_bases(center,deltaChi,seedPoints);
+}
+
+void mcmc::guess_bases(array_1d<double> &center, double deltaChi, int seedPoints){
+
+    if(_chisq==NULL){
+        printf("mcmc cannot guess bases; _chisq is NULL\n");
+        exit(1);
+    }
 
     array_2d<double> temp_bases;
     temp_bases.set_name("mcmc_guess_bases_temp_bases");
     temp_bases.set_cols(_chisq->get_dim());
 
+    double minVal=_chisq[0](center);
+
     int i,j;
-    array_1d<double> center;
-    double minVal;
-
-    center.set_name("mcmc_guess_bases_center");
-
 
     try{
-        find_fisher_eigen(temp_bases,center,&minVal);
+        find_fisher_eigen(center,temp_bases);
         for(i=0;i<_chisq->get_dim();i++){
             for(j=0;j<_chisq->get_dim();j++){
                 _bases.set(i,j,temp_bases.get_data(i,j));
@@ -820,6 +908,8 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
 
     int ix;
     double sgn,dd,d;
+    double min_sigma=2.0*exception_value;
+    double max_sigma=-2.0*exception_value;
     for(ix=0;ix<_chisq->get_dim();ix++){
         dd=0.0;
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
@@ -835,16 +925,33 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
             dd+=sqrt(d);
 
         }
-        _sigma.set(ix,dd);
+
+        if(fabs(dd)>1.0e-10){
+            _sigma.set(ix,dd);
+        }
+        else{
+            _sigma.set(ix,1.0);
+        }
+
+        if(dd<min_sigma){
+            min_sigma=dd;
+        }
+        if(dd>max_sigma){
+            max_sigma=dd;
+        }
     }
 
-    printf("finished guessing bases; %d\n",_chisq->get_called());
-    for(i=0;i<_chisq->get_dim();i++){
+    printf("finished guessing bases; %d; %e < sigma < %e\n",
+    _chisq->get_called(),min_sigma,max_sigma);
+
+    validate_bases();
+
+    /*for(i=0;i<_chisq->get_dim();i++){
         printf("%.3e -- ",_sigma.get_data(i));
         for(j=0;j<_chisq->get_dim();j++)printf("%.3e ",_bases.get_data(i,j));
         printf("\n");
     }
-    printf("\n");
+    printf("\n");*/
 
     int k;
     double mu,norm;
@@ -876,10 +983,14 @@ void mcmc::guess_bases(double deltaChi, int seedPoints){
 
         }
     }
-
+    printf("leaving guess routine\n");
 }
 
 void mcmc::validate_bases(){
+    if(_chisq==NULL){
+        printf("mcmc cannot validate bases; _chisq is NULL\n");
+        exit(1);
+    }
     array_1d<double> temp;
     temp.set_name("mcmc_validate_bases");
 

@@ -183,9 +183,10 @@ void carom::write_pts(){
         output=fopen(_timingname,"a");
     }
 
-    fprintf(output,"%d min %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- ",
+    fprintf(output,"%d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d %d %d -- ",
         _chifn.get_pts(),
         _chifn.chimin(),
+        _chifn.target(),
         double(time(NULL))-_time_started,
         (double(time(NULL))-_time_started)/double(_chifn.get_pts()),
         _chifn.get_time_spent(),
@@ -193,7 +194,7 @@ void carom::write_pts(){
         (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()),
         _calls_to_simplex,_nodes.get_dim(),_unique_nodes);
     for(i=0;i<_nodes.get_dim();i++){
-        fprintf(output,"%.4e %.4e %d %d -- %.4e %.4e %.4e %.4e -- convergence %d swarm expand %d",
+        fprintf(output,"%.4e %.4e %d %d -- %.4e %.4e %.4e %.4e %.4e -- convergence %d swarm expand %d",
         _nodes(i)->projected_volume(),
         _nodes(i)->volume(),
         _nodes(i)->get_n_particles(),
@@ -202,6 +203,7 @@ void carom::write_pts(){
         _nodes(i)->get_mcmc_growth(),
         _nodes(i)->get_swarm_growth(),
         _nodes(i)->get_simplex_growth(),
+        _nodes(i)->get_compass_growth(),
         _nodes(i)->get_convergence_ct(),
         _nodes(i)->get_swarm_expand());
 
@@ -348,6 +350,10 @@ void carom::simplex_search(){
     double ftrial;
     trial.set_name("carom_simplex_search_trial");
     seed_dex.set_name("carom_simplex_search_seed_dex");
+
+    if(_calls_to_simplex==1){
+        seed.add_row(_chifn.get_pt(_chifn.mindex())[0]);
+    }
 
     while(seed.get_rows()<_chifn.get_dim()+1){
         for(i=0;i<_chifn.get_dim();i++){

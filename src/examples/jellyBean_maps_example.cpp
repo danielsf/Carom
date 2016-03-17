@@ -3,7 +3,7 @@
 #include <time.h>
 #include "jellyBean.h"
 #include "exampleLikelihoods.h"
-#include "carom.h"
+#include "maps.h"
 
 int main(int iargc, char *argv[]){
 
@@ -13,6 +13,7 @@ int main(int iargc, char *argv[]){
 int chisq_dex=0;
 
 int i,j;
+int init=1000;
 int seed=99;
 int dim=4;
 int nsamples=-1;
@@ -35,8 +36,12 @@ for(i=1;i<iargc;i++){
             case 'h':
                 printf("s = seed\nc = delta_chi\na = abs target\nn = nsamples\n");
                 printf("d = dim\no = outputname\nt = timingname\n");
-                printf("p = confidence limit\n");
+                printf("p = confidence limit\ni= n_init\n");
                 exit(1);
+                break;
+            case 'i':
+                i++;
+                init=atoi(argv[i]);
                 break;
             case 'x':
                 i++;
@@ -139,7 +144,7 @@ chisq->print_mins();
 //the '11.0' is the \Delta\chi^2 corresponding to a 95% confidence limit
 //on a 5-dimensional parameter space
 
-carom carom_test;
+maps carom_test;
 if(delta_chisq>0.0 && abs_target>0.0){
     printf("WARNING cannot set delta chisq and target\n");
     exit(1);
@@ -176,6 +181,13 @@ for(i=0;i<chisq->get_dim();i++){
     max.set(i,40.0);
 }
 
+min.set(1,0.0);
+max.set(1,80.0);
+min.set(2,-15.0);
+max.set(2,65.0);
+min.set(3,0.0);
+max.set(3,80.0);
+
 /*min.set(0,-10.0);
 max.set(0,10.0);
 min.set(1,-40.0);
@@ -193,7 +205,7 @@ carom_test.set_max(max);
 //initialize aps with 1000 random samples
 printf("time to initialize\n");
 chisq->reset_timer();
-carom_test.initialize(1000);
+carom_test.initialize(init);
 int active_nodes=1;
 printf("ready to search\n");
 carom_test.search(nsamples);

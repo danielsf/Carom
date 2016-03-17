@@ -105,6 +105,23 @@ void chisq_wrapper::set_characteristic_length(int dex, double xx){
     _characteristic_length.set(dex,xx);
 }
 
+double chisq_wrapper::get_characteristic_length(int dex){
+    if(dex<0 || dex>=_characteristic_length.get_dim() ||
+       _characteristic_length.get_data(dex)<0.0){
+
+           if(_chifn->get_max(dex)-_chifn->get_min(dex)<exception_value){
+               return _chifn->get_max(dex)-_chifn->get_min(dex);
+           }
+           else{
+               return 1.0;
+           }
+
+   }
+
+   return _characteristic_length.get_data(dex);
+
+}
+
 void chisq_wrapper::set_deltachi(double xx){
     if(_adaptive_target!=1){
         printf("WARNING chisq_wrapper trying to set detlachi, but not an adaptive target\n");
@@ -175,14 +192,8 @@ void chisq_wrapper::initialize(int npts){
     temp_max.set_name("chisq_wrapper_initialize_temp_max");
     temp_min.set_name("chisq_wrapper_initialize_temp_min");
     for(i=0;i<_chifn->get_dim();i++){
-        if(_characteristic_length.get_dim()>i && _characteristic_length.get_data(i)>0.0){
-            temp_min.set(i,0.0);
-            temp_max.set(i,_characteristic_length.get_data(i));
-        }
-        else{
-            temp_min.set(i,_range_min.get_data(i));
-            temp_max.set(i,_range_max.get_data(i));
-        }
+        temp_min.set(i,0.0);
+        temp_max.set(i,get_characteristic_length(i));
     }
 
     _kptr=new kd_tree(data,temp_min,temp_max);
@@ -240,6 +251,10 @@ double chisq_wrapper::target(){
 
 double chisq_wrapper::chimin(){
     return _chimin;
+}
+
+int chisq_wrapper::mindex(){
+    return _mindex;
 }
 
 double chisq_wrapper::get_deltachi(){
@@ -342,7 +357,7 @@ void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
 
     if(mu<_chimin){
         _chimin=mu;
-        _mindex=_kptr->get_pts();
+        _mindex=_kptr->get_pts()-1;
         if(_adaptive_target==1){
             _target=_chimin+_deltachi;
         }
@@ -441,6 +456,11 @@ Ran* chisq_wrapper::get_dice(){
 kd_tree* chisq_wrapper::get_tree(){
     is_it_safe("get_tree");
     return _kptr;
+}
+
+array_1d<double>* chisq_wrapper::get_fn_arr(){
+    is_it_safe("get_fn_arr");
+    return &_fn;
 }
 
 double chisq_wrapper::get_min(int dex){

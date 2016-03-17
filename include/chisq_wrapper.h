@@ -26,6 +26,7 @@ public:
     void set_seed(int);
     void set_deltachi(double);
     void set_characteristic_length(int, double);
+    double get_characteristic_length(int);
     void set_min(array_1d<double>&);
     void set_max(array_1d<double>&);
     void set_ddmin(double);
@@ -34,11 +35,12 @@ public:
 
     double target();
     double chimin();
+    int mindex();
     double get_deltachi();
     int get_pts();
-    int get_dim();
+    virtual int get_dim();
     virtual int get_called();
-    double get_time_spent();
+    virtual double get_time_spent();
 
     double random_double();
     int random_int();
@@ -60,8 +62,8 @@ public:
 
     void get_min(array_1d<double>&);
     void get_max(array_1d<double>&);
-    double get_min(int);
-    double get_max(int);
+    virtual double get_min(int);
+    virtual double get_max(int);
 
     void find_gradient(array_1d<double>&,array_1d<double>&);
 
@@ -73,6 +75,7 @@ public:
     int get_seed();
 
     kd_tree* get_tree();
+    array_1d<double>* get_fn_arr();
 
 private:
     double _chimin,_deltachi,_target,_ddmin;
