@@ -1482,28 +1482,18 @@ void dalex::tendril_search(){
 
     assess_good_points();
     int ip,ix;
-    for(ix=0;ix<_good_points.get_dim();ix++){
-        ip=_good_points.get_data(ix);
-        for(i=0;i<_chifn->get_dim();i++){
-            if(ix==0 || _chifn->get_pt(ip,i)<min.get_data(i)){
-                min.set(i,_chifn->get_pt(ip,i));
-            }
-            if(ix==0 || _chifn->get_pt(ip,i)>max.get_data(i)){
-                max.set(i,_chifn->get_pt(ip,i));
-            }
+    ip=mindex();
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,_chifn->get_pt(ip,i));
+        max.set(i,_chifn->get_pt(ip,i));
 
-            mu=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                mu+=_chifn->get_pt(ip,j)*_basis_vectors.get_data(i,j);
-            }
-
-            if(ix==0 || mu<min_p.get_data(i)){
-                min_p.set(i,mu);
-            }
-            if(ix==0 || mu>max_p.get_data(i)){
-                max_p.set(i,mu);
-            }
+        mu=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            mu+=_chifn->get_pt(ip,j)*_basis_vectors.get_data(i,j);
         }
+
+        min_p.set(i,mu);
+        max_p.set(i,mu);
     }
 
     double volume_0,p_volume_0;
