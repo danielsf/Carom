@@ -1516,17 +1516,48 @@ void dalex::tendril_search(){
 
     printf("    volume %e %e\n",volume_0,p_volume_0);
 
-    array_1d<double> dir1,dir2;
+    array_1d<double> dir1,dir2,burst_dir;
     dir1.set_name("dalex_simplex_boundary_dir1");
     dir2.set_name("dalex_simplex_boundary_dir2");
+    burst_dir.set_name("dalex_simplex_boundary_burst_dir");
+
+    double dd_p,dd_p_max;
+    int i_origin;
+    int i_burst;
+    int i_test;
+    int i_center;
+    double sgn;
+
     while(go_on==1 || path.get_dim()<3){
 
         add_charge(_chifn->mindex());
 
+        i_origin=i_particle;
         simplex_boundary_search(i_particle, _basis_norm);
 
         _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        i_center=i_particle;
+
+        dd_p_max=distance(i_origin,i_particle);
+        for(i_burst=0;i_burst<_chifn->get_dim();i_burst++){
+            for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+                for(i=0;i<_chifn->get_dim();i++){
+                    burst_dir.set(i,sgn*_basis_vectors.get_data(i_burst,i));
+                }
+                i_test=bisection(i_center,burst_dir,target(),0.1);
+                if(i_test>=0 && _log!=NULL){
+                    _log->add(_log_compass, i_test);
+                }
+                dd_p=distance(i_test,i_origin);
+                if(dd_p>dd_p_max){
+                    dd_p=dd_p_max;
+                    i_particle=i_test;
+                }
+            }
+        }
+
+
         path.add(i_particle);
         add_charge(i_particle);
 
