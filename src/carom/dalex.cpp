@@ -1143,7 +1143,7 @@ void dalex::simplex_gp_search(){
     evaluate(minpt, &mu, &i_min);
 
     if(_log!=NULL){
-        _log->add(_log_dchi_simplex,i_min);
+        _log->add(_log_ricochet,i_min);
     }
 
     printf("    actually found %e -- %e %e\n",
