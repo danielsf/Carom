@@ -68,6 +68,20 @@ class dalex{
 
     private:
 
+       double distance(int i1, int i2){
+           int i,j;
+           double component,dd;
+           dd=0.0;
+           for(i=0;i<_chifn->get_dim();i++){
+               component=0.0;
+               for(j=0;j<_chifn->get_dim();j++){
+                   component+=(_chifn->get_pt(i1,j)-_chifn->get_pt(i2,j))*_basis_vectors.get_data(i,j);
+               }
+               dd+=power(component/_basis_norm.get_data(i),2);
+           }
+           return sqrt(dd);
+       }
+
        void add_good_point(int ii){
            if(_chifn->get_fn(ii)<target() && _good_points.contains(ii)==0){
                _good_points.add(ii);
