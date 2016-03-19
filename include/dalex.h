@@ -216,34 +216,4 @@ class dalex{
 
 };
 
-
-class satellites{
-
-    public:
-        satellites(int ii, chisq_wrapper *cc, asymm_array_2d<int> *ll){
-            _chifn=cc;
-            _center=ii;
-            _log=ll;
-            _orbiters.set_name("satellites_orbiters");
-        }
-
-        void set_center(int ii){
-            _center=ii;
-        }
-
-        void search();
-        int bisect(array_1d<double>&, array_1d<double>&, double, double);
-        int bisect(int,array_1d<double>&, double, double);
-        int bisect(int,int,double,double);
-
-    private:
-        chisq_wrapper *_chifn;
-        int _center;
-
-        array_1d<int> _orbiters;
-        asymm_array_2d<int> *_log;
-
-};
-
-
 #endif
