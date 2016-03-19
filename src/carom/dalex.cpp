@@ -1511,14 +1511,31 @@ void dalex::tendril_search(){
     dir2.set_name("dalex_simplex_boundary_dir2");
     trial_center.set_name("dalex_simplex_boundary_trial_center");
 
+    int i_origin,i_burst;
+    double mu_min;
+    satellites orbiters(i_particle, _chifn, _log);
+
     while(go_on==1 || path.get_dim()<3){
 
         add_charge(_chifn->mindex());
 
+        i_origin=i_particle;
         simplex_boundary_search(i_particle, _basis_norm);
-
         _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        if(i_origin!=i_particle){
+            for(i=0;i<_chifn->get_dim();i++){
+                trial_center.set(i,0.5*(_chifn->get_pt(i_origin,i)+_chifn->get_pt(i_particle,i)));
+            }
+            evaluate(trial_center,&mu_min,&i_burst);
+            if(mu_min<target()){
+                printf("    orbiting around %e %e %e\n",
+                _chifn->get_fn(i_burst),_chifn->get_fn(i_origin),_chifn->get_fn(i_particle));
+                orbiters.set_center(i_burst);
+                orbiters.search();
+                _last_checked_good=_chifn->get_pts();
+            }
+        }
 
         path.add(i_particle);
         add_charge(i_particle);
@@ -1582,6 +1599,145 @@ void dalex::tendril_search(){
         }
         printf("    volume %e %e\n",volume_0,p_volume_0);
 
+    }
+
+}
+
+
+int satellites::bisect(array_1d<double> &lowball_in, array_1d<double> &highball_in, double target, double tol){
+
+    array_1d<double> trial,lowball,highball;
+    int i_found;
+    double mu;
+    _chifn->evaluate(lowball_in, &mu, &i_found);
+    if(mu>target){
+        printf("WARNING in satellites bisect; flow %e target %e\n",mu,target);
+        exit(1);
+    }
+
+    int i;
+    _chifn->evaluate(highball_in, &mu, &i);
+    if(mu<target){
+        printf("WARNING in satellites bisect; fhigh %e target %e\n",mu,target);
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        lowball.set(i,lowball_in.get_data(i));
+        highball.set(i,highball_in.get_data(i));
+    }
+
+    int ct;
+    for(ct=0;ct<20 && target-_chifn->get_fn(i_found)>tol;ct++){
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,0.5*(lowball.get_data(i)+highball.get_data(i)));
+        }
+        _chifn->evaluate(trial,&mu,&i);
+        if(mu<target){
+             i_found=i;
+             for(i=0;i<_chifn->get_dim();i++){
+                 lowball.set(i,trial.get_data(i));
+             }
+        }
+        else{
+            for(i=0;i<_chifn->get_dim();i++){
+                 highball.set(i,trial.get_data(i));
+            }
+        }
+    }
+
+    return i_found;
+}
+
+
+int satellites::bisect(int i_origin, array_1d<double> &dir, double target, double tol){
+    array_1d<double> highball;
+    double rr;
+    int i;
+    for(i=0;i<_chifn->get_dim();i++){
+        highball.set(i,_chifn->get_pt(i_origin,i));
+    }
+    rr=1.0;
+    double mu=-1.0;
+    while(mu<target){
+        for(i=0;i<_chifn->get_dim();i++){
+            highball.add_val(i,rr*dir.get_data(i));
+        }
+        _chifn->evaluate(highball,&mu,&i);
+        rr*=2.0;
+    }
+    return bisect(_chifn->get_pt(i_origin)[0], highball, target, tol);
+}
+
+
+int satellites::bisect(int i1, int i2, double target, double tol){
+    return bisect(_chifn->get_pt(i1)[0], _chifn->get_pt(i2)[0], target, tol);
+}
+
+
+void satellites::search(){
+    _orbiters.reset_preserving_room();
+    array_1d<double> dir;
+    array_2d<double> bases;
+    double component;
+    int i,j;
+    while(bases.get_rows()<_chifn->get_dim()){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        for(i=0;i<bases.get_rows();i++){
+            component=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                component+=dir.get_data(j)*bases.get_data(i,j);
+            }
+            for(j=0;j<_chifn->get_dim();j++){
+                dir.subtract_val(j,component*bases.get_data(i,j));
+            }
+        }
+        component=dir.normalize();
+        if(component>1.0e-20){
+            bases.add_row(dir);
+        }
+    }
+
+    printf("    center is %d %e %e\n",
+    _center,_chifn->get_pt(_center,6),_chifn->get_pt(_center,9));
+    double local_target=_chifn->target();
+
+    for(i=0;i<bases.get_rows();i++){
+        j=bisect(_center,bases(i)[0],local_target,0.1);
+        _orbiters.add(j);
+        _log->add(_log_compass, j);
+    }
+
+
+    int n_steps=10;
+    int i_step,i_pt;
+    double rr;
+    array_1d<double> new_dir;
+    for(i_step=0;i_step<n_steps;i_step++){
+        for(i_pt=0;i_pt<_orbiters.get_dim();i_pt++){
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.set(i,_chifn->get_pt(_orbiters.get_data(i_pt),i)-_chifn->get_pt(_center,i));
+            }
+            rr=dir.normalize();
+            for(i=0;i<_chifn->get_dim();i++){
+                new_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+            component=0.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                component+=dir.get_data(i)*new_dir.get_data(i);
+            }
+            for(i=0;i<_chifn->get_dim();i++){
+                new_dir.subtract_val(i,component*dir.get_data(i));
+            }
+            new_dir.normalize();
+            for(i=0;i<_chifn->get_dim();i++){
+                new_dir.add_val(i,9.0*dir.get_data(i));
+            }
+            i=bisect(_center,new_dir,local_target,0.1);
+            _log->add(_log_compass,i);
+            _orbiters.set(i_pt, i);
+        }
     }
 
 }
