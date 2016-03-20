@@ -1434,7 +1434,12 @@ void dalex::tendril_search(){
     _update_good_points();
     int n_good_0=_good_points.get_dim();
 
-    simplex_gp_search();
+    array_1d<double> random_dir;
+    for(i=0;i<_chifn->get_dim();i++){
+        random_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+    }
+    i=bisection(mindex(),random_dir,target(),0.1);
+
     _update_good_points();
     if(n_good_0==0 || _good_points.get_dim()==0){
         return;
