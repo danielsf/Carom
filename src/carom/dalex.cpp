@@ -970,6 +970,7 @@ void dalex::simplex_boundary_search(){
 }
 
 void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
+    safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
     assess_good_points();
