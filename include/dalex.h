@@ -82,16 +82,17 @@ class dalex{
            return sqrt(dd);
        }
 
-       void add_good_point(int ii){
+       void add_good_point(int ii, int aa){
            if(_chifn->get_fn(ii)<target() && _good_points.contains(ii)==0){
                _good_points.add(ii);
+               _good_point_origins.add(aa);
            }
        }
 
         void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
             _chifn->evaluate(pt,mu_out,i_out);
             if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
-                add_good_point(i_out[0]);
+                add_good_point(i_out[0], -1);
             }
         }
 
@@ -104,7 +105,7 @@ class dalex{
             int i;
             for(i=i_start;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target() && _good_points.contains(i)==0){
-                    add_good_point(i);
+                    add_good_point(i, -1);
                 }
             }
             _last_checked_good=_chifn->get_pts();
@@ -126,7 +127,7 @@ class dalex{
 
                     evaluate(trial,&mu,&i_found);
                     if(mu<target() && _good_points.contains(i)==0){
-                        add_good_point(i);
+                        add_good_point(i, -1);
                     }
                 }
             }
@@ -139,6 +140,7 @@ class dalex{
             for(i=0;i<_good_points.get_dim();i++){
                 if(_chifn->get_fn(_good_points.get_data(i))>target()){
                     _good_points.remove(i);
+                    _good_point_origins.remove(i);
                     i--;
                 }
             }
@@ -159,6 +161,13 @@ class dalex{
                 printf("ERROR: dalex called %s but _chifn is NULL\n", word);
                 exit(1);
             }
+
+            if(_good_points.get_dim()!=_good_point_origins.get_dim()){
+                printf("ERROR: good points %d good point origins %d\n",
+                _good_points.get_dim(),_good_point_origins.get_dim());
+                exit(1);
+            }
+
         }
 
         double target(){
@@ -171,6 +180,7 @@ class dalex{
         double _target_factor;
         int _simplex_mindex;
         array_1d<int> _good_points;
+        array_1d<int> _good_point_origins;
 
         ////////code related to finding basis vectors
         array_1d<int> _basis_associates;
