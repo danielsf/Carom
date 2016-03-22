@@ -53,7 +53,7 @@ void dalex::search(){
     int i;
     int pts_0=_chifn->get_pts();
     assess_good_points();
-    _update_good_points(_last_checked_good);
+    _update_good_points(_last_checked_good,-1,-1);
 
     if(mindex()!=_simplex_mindex){
         find_bases();
@@ -67,7 +67,7 @@ void dalex::search(){
 
     explore();
     tendril_search();
-    _update_good_points(pts_0);
+    _update_good_points(pts_0,-1,-1);
 
 }
 
@@ -148,7 +148,19 @@ void dalex::simplex_search(array_1d<int> &specified){
 
     printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
-    _update_good_points(pt_0);
+
+    array_1d<double> min_pt;
+    ffmin.get_minpt(min_pt);
+    double mu;
+    int i_found;
+    evaluate(min_pt, &mu, &i_found);
+
+    if(mu<target()){
+        _update_good_points(pt_0, i_found, -1);
+    }
+    else{
+        _update_good_points(pt_0);
+    }
 
     if(_basis_chimin-chimin()>target()-chimin()){
         find_bases();
@@ -975,7 +987,6 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     int pt_start=_chifn->get_pts();
     assess_good_points();
     assess_charges();
-    _update_good_points();
 
     int i_node,i_pt;
     int i,j;
@@ -1063,8 +1074,6 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     printf("    adjusted %e\n",dchifn(_chifn->get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",chimin(),target());
-
-    _update_good_points(pt_start);
 
 }
 
@@ -1517,14 +1526,18 @@ void dalex::tendril_search(){
     dir2.set_name("dalex_simplex_boundary_dir2");
     trial_center.set_name("dalex_simplex_boundary_trial_center");
 
+    int i_origin,ct_last;
+
     while(go_on==1 || path.get_dim()<3){
 
         add_charge(_chifn->mindex());
 
+        i_origin=i_particle;
+        ct_last=_chifn->get_pts();
         simplex_boundary_search(i_particle, _basis_norm);
 
-        _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        _update_good_points(ct_last, i_origin, i_particle);
 
         path.add(i_particle);
         add_charge(i_particle);

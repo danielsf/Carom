@@ -97,15 +97,41 @@ class dalex{
         }
 
         void _update_good_points(){
-            _update_good_points(_last_checked_good);
+            _update_good_points(_last_checked_good, -1, -1);
         }
 
-        void _update_good_points(int i_start){
+        void _update_good_points(int ii){
+            _update_good_points(ii, -1, -1);
+        }
+
+        void _update_good_points(int i_start, int io1, int io2){
             safety_check("_update_good_points");
+
             int i;
+            double dd1,dd2;
+            int origin_dex;
             for(i=i_start;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target() && _good_points.contains(i)==0){
-                    add_good_point(i, -1);
+                    if(io1<0 && io2>=0){
+                        origin_dex=io2;
+                    }
+                    else if(io2<0 && io1>=0){
+                         origin_dex=io1;
+                    }
+                    else if(io1>=0 && io2>=0){
+                        dd1=distance(i,io1);
+                        dd2=distance(i,io2);
+                        if(dd1<dd2){
+                            origin_dex=io1;
+                        }
+                        else{
+                            origin_dex=io2;
+                        }
+                    }
+                    else{
+                        origin_dex=-1;
+                    }
+                    add_good_point(i, origin_dex);
                 }
             }
             _last_checked_good=_chifn->get_pts();
@@ -138,7 +164,8 @@ class dalex{
         void assess_good_points(){
             int i;
             for(i=0;i<_good_points.get_dim();i++){
-                if(_chifn->get_fn(_good_points.get_data(i))>target()){
+                if(_chifn->get_fn(_good_points.get_data(i))>target() && \
+                   _good_point_origins.contains(i)==0){
                     _good_points.remove(i);
                     _good_point_origins.remove(i);
                     i--;
