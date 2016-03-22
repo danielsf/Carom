@@ -285,6 +285,36 @@ class dalex{
             return 1;
         }
 
+
+        void create_mask(int i_pt, array_1d<int> &mask){
+            mask.reset_preserving_room();
+
+            array_1d<int> considered,is_associate;
+            considered.set_name("dalex_create_mask_considered");
+            is_associate.set_name("dalex_create_mask_is_associate");
+            int i,j,i_origin;
+            for(i=0;i<_good_points.get_dim();i++){
+                i_origin=_good_point_origins.get_data(i);
+                if(i_origin<0){
+                    mask.set(i,1);
+                }
+                else if(considered.contains(i_origin)==1){
+                    for(j=0;considered.get_data(j)!=i_origin;j++);
+                    if(considered.get_data(j)!=i_origin){
+                        printf("WARNING you did the indexing wrong in create_mask\n");
+                        exit(1);
+                    }
+                    mask.set(i,is_associate.get_data(j));
+                }
+                else{
+                    j=check_association(i_pt, i_origin);
+                    considered.add(i_origin);
+                    is_associate.add(j);
+                    mask.set(i,j);
+                }
+            }
+        }
+
 };
 
 #endif
