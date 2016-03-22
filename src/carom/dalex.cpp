@@ -1629,8 +1629,8 @@ void dalex::assess_good_point_origins(){
 
            considered.add(_good_point_origins.get_data(i));
 
-           if(_good_points.contains(_good_point_origins.get_data(i))==0 && \
-               need_replacing.contains(_good_point_origins.get_data(i))==0){
+           if(need_replacing.contains(_good_point_origins.get_data(i))==0 && \
+              _good_points.contains(_good_point_origins.get_data(i))==0){
 
                need_replacing.add(_good_point_origins.get_data(i));
            }
