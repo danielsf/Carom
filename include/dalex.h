@@ -164,14 +164,16 @@ class dalex{
         void assess_good_points(){
             int i;
             for(i=0;i<_good_points.get_dim();i++){
-                if(_chifn->get_fn(_good_points.get_data(i))>target() && \
-                   _good_point_origins.contains(i)==0){
+                if(_chifn->get_fn(_good_points.get_data(i))>target()){
                     _good_points.remove(i);
                     _good_point_origins.remove(i);
                     i--;
                 }
             }
+            assess_good_point_origins();
         }
+
+        void assess_good_point_origins();
 
         double chimin(){
             safety_check("chimin");

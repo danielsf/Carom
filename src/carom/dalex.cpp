@@ -1613,3 +1613,53 @@ void dalex::tendril_search(){
     }
 
 }
+
+void dalex::assess_good_point_origins(){
+    safety_check("assess_good_points_0");
+
+
+    array_1d<int> need_replacing,considered;
+    need_replacing.set_name("dalex_assess_origins_need_replacing");
+    considered.set_name("dalex_assess_origins_considered");
+
+    int i;
+    for(i=0;i<_good_point_origins.get_dim();i++){
+        if(_good_point_origins.get_data(i)>=0 && \
+           considered.contains(_good_point_origins.get_data(i))==0){
+
+           considered.add(_good_point_origins.get_data(i));
+
+           if(_good_points.contains(_good_point_origins.get_data(i))==0 && \
+               need_replacing.contains(_good_point_origins.get_data(i))==0){
+
+               need_replacing.add(_good_point_origins.get_data(i));
+           }
+
+        }
+    }
+
+    array_1d<int> gp_dexes,gp_vals,gp_val_sorted;
+    gp_dexes.set_name("dalex_assess_origins_gp_dexes");
+    gp_vals.set_name("dalex_assess_origins_gp_vals");
+    gp_val_sorted.set_name("dalex_assess_origins_gp_val_sorted");
+    int target_origin,j,replacement;
+    for(i=0;i<need_replacing.get_dim();i++){
+        gp_dexes.reset_preserving_room();
+        gp_vals.reset_preserving_room();
+        gp_val_sorted.reset_preserving_room();
+        target_origin=need_replacing.get_data(i);
+        for(j=0;j<_good_point_origins.get_dim();j++){
+            if(_good_point_origins.get_data(j)==target_origin){
+                gp_dexes.add(j);
+                gp_vals.add(_good_points.get_data(j));
+            }
+        }
+        sort_and_check(gp_vals, gp_val_sorted, gp_dexes);
+        replacement=gp_val_sorted.get_data(gp_dexes.get_dim()/2);
+        for(j=0;j<gp_dexes.get_dim();j++){
+            _good_point_origins.set(gp_dexes.get_data(j), replacement);
+        }
+    }
+
+    safety_check("assess_good_points_1");
+}
