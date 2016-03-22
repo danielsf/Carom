@@ -52,8 +52,22 @@ class dchi_interior_simplex : public function_wrapper{
             _envelope=dd;
         }
 
+        void set_mask(array_1d<int> &mm){
+            int i;
+            if(mm.get_dim()!=_associates.get_dim()){
+                printf("WARNING trying to set %d masks for %d associates\n",
+                mm.get_dim(),_associates.get_dim());
+                printf("in dchi_interior_simplex\n");
+                exit(1);
+            }
+            for(i=0;i<mm.get_dim();i++){
+                _mask.set(i,mm.get_data(i));
+            }
+        }
+
     private:
         array_1d<int> _associates;
+        array_1d<int> _mask;
         double _norm;
         chisq_wrapper *_chifn;
         int _called;

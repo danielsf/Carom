@@ -158,10 +158,13 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
 
     _called=0;
 
+    _mask.set_name("dchi_interior_mask");
+
     _chifn=cc;
     _envelope=1.0;
 
     int i;
+
     for(i=0;i<aa.get_dim();i++){
         _associates.add(aa.get_data(i));
     }
@@ -208,12 +211,14 @@ double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
     double dd;
     int i,j;
     for(i=0;i<_associates.get_dim();i++){
-        dd=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm,2);
-        }
-        if(dd<dd_min){
-            dd_min=dd;
+        if(_mask.get_dim()==0 || _mask.get_data(i)==1){
+            dd=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_norm,2);
+            }
+            if(dd<dd_min){
+                dd_min=dd;
+            }
         }
     }
 

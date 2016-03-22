@@ -292,8 +292,9 @@ class dalex{
             array_1d<int> considered,is_associate;
             considered.set_name("dalex_create_mask_considered");
             is_associate.set_name("dalex_create_mask_is_associate");
-            int i,j,i_origin;
-            for(i=0;i<_good_points.get_dim();i++){
+            int i,j,i_origin,n_0;
+            n_0=_good_points.get_dim();
+            for(i=0;i<n_0;i++){
                 i_origin=_good_point_origins.get_data(i);
                 if(i_origin<0){
                     mask.set(i,1);

@@ -1032,11 +1032,14 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     int i_min=-1;
     double mu_min;
 
-    array_1d<int> chosen_seed;
+    array_1d<int> chosen_seed,mask;
+    mask.set_name("dalex_simple_boundary_mask");
 
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified)[0]);
         chosen_seed.add(specified);
+        create_mask(specified,mask);
+        dchifn.set_mask(mask);
 
         if(norm.get_dim()==_chifn->get_dim()){
             for(i=0;i<_chifn->get_dim();i++){
