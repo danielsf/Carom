@@ -992,7 +992,16 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     int i,j;
     double xmin,xmax,xx;
 
-    printf("charges is %d\n",_charges.get_dim());
+    int n_origins=0;
+    for(i=0;i<_good_point_origins.get_dim();i++){
+        if(_good_point_origins.get_data(i)>=0){
+             n_origins++;
+        }
+    }
+
+    printf("charges is %d -- origins %d good %d\n",
+    _charges.get_dim(),n_origins,_good_points.get_dim());
+
     dchi_interior_simplex dchifn(_chifn,_good_points);
 
     simplex_minimizer ffmin;
