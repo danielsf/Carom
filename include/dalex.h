@@ -90,9 +90,13 @@ class dalex{
        }
 
         void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
+            evaluate(pt, mu_out, i_out, -1);
+        }
+
+        void evaluate(array_1d<double> &pt, double *mu_out, int *i_out, int i_origin){
             _chifn->evaluate(pt,mu_out,i_out);
             if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
-                add_good_point(i_out[0], -1);
+                add_good_point(i_out[0], i_origin);
             }
         }
 
@@ -251,6 +255,34 @@ class dalex{
             if(_charges.contains(ii)==0 && _chifn->get_fn(ii)<target()){
                 _charges.add(ii);
             }
+        }
+
+
+        int check_association(int i1, int i2){
+            array_1d<double> trial;
+            trial.set_name("dalex_check_association_trial");
+            double wgt,mu;
+            int i,i_found,i_origin;
+            for(wgt=0.25;wgt<0.77;wgt+=0.25){
+
+                if(wgt<0.5){
+                    i_origin=i1;
+                }
+                else{
+                    i_origin=i2;
+                }
+
+                for(i=0;i<_chifn->get_dim();i++){
+                    trial.set(i,wgt*_chifn->get_pt(i1,i)+(1.0-wgt)*_chifn->get_pt(i2,i));
+                }
+
+                evaluate(trial,&mu,&i_found,i_origin);
+
+                if(mu>target()){
+                    return 0;
+                }
+            }
+            return 1;
         }
 
 };
