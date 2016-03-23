@@ -63,6 +63,28 @@ class dchi_interior_simplex : public function_wrapper{
             for(i=0;i<mm.get_dim();i++){
                 _mask.set(i,mm.get_data(i));
             }
+
+            array_1d<double> max,min;
+            int j;
+            for(i=0;i<_associates.get_dim();i++){
+                if(_mask.get_data(i)==1){
+                    for(j=0;j<_chifn->get_dim();j++){
+                        if(j>=max.get_dim() || _chifn->get_pt(_associates.get_data(i),j)>max.get_data(j)){
+                            max.set(j,_chifn->get_pt(_associates.get_data(i),j));
+                        }
+                        if(j>=min.get_dim() || _chifn->get_pt(_associates.get_data(i),j)<min.get_data(j)){
+                            min.set(j,_chifn->get_pt(_associates.get_data(i),j));
+                        }
+                    }
+                }
+            }
+
+            for(i=0;i<_chifn->get_dim();i++){
+                if(max.get_data(i)-min.get_data(i)>1.0e-20 && max.get_data(i)-min.get_data(i)<_norm){
+                    _norm=max.get_data(i)-min.get_data(i);
+                }
+            }
+
         }
 
     private:
