@@ -100,26 +100,8 @@ void dalex::simplex_search(array_1d<int> &specified){
     int pt_0=_chifn->get_pts();
 
     for(i=0;i<_chifn->get_dim();i++){
-        min.set(i,2.0*exception_value);
-        max.set(i,-2.0*exception_value);
-    }
-
-    for(i=0;i<_good_points.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            if(_chifn->get_pt(_good_points.get_data(i),j)<min.get_data(j)){
-                min.set(j,_chifn->get_pt(_good_points.get_data(i),j));
-            }
-            if(_chifn->get_pt(_good_points.get_data(i),j)>max.get_data(j)){
-                max.set(j,_chifn->get_pt(_good_points.get_data(i),j));
-            }
-        }
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        if(max.get_data(i)-min.get_data(i)<1.0e-20){
-            min.set(i,0.0);
-            max.set(i,_chifn->get_characteristic_length(i));
-        }
+        min.set(i,0.0);
+        max.set(i,_chifn->get_characteristic_length(i));
     }
 
     array_1d<int> chosen_seed;
@@ -1013,7 +995,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
 
     for(i=0;i<_chifn->get_dim();i++){
         min.set(i,0.0);
-        max.set(i,get_norm(i));
+        max.set(i,_chifn->get_characteristic_length(i));
     }
 
     ffmin.set_minmax(min,max);
