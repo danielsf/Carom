@@ -1450,10 +1450,6 @@ void dalex::tendril_search(){
     }
 
     int i_particle;
-    int go_on=1;
-
-    array_1d<int> path;
-    path.set_name("dalex_simplex_boundary_path");
 
     if(_good_points.get_dim()==n_good_0){
         i_particle=mindex();
@@ -1461,8 +1457,6 @@ void dalex::tendril_search(){
     else{
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
     }
-
-    path.add(i_particle);
 
     add_charge(i_particle);
 
@@ -1522,7 +1516,9 @@ void dalex::tendril_search(){
 
     int i_origin,ct_last;
 
-    while(go_on==1 || path.get_dim()<3){
+    int strikes=0;
+
+    while(strikes<3){
 
         add_charge(_chifn->mindex());
 
@@ -1533,30 +1529,7 @@ void dalex::tendril_search(){
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         _update_good_points(ct_last, i_origin, i_particle);
 
-        path.add(i_particle);
         add_charge(i_particle);
-
-        go_on=0;
-
-        if(path.get_dim()>2){
-            if(path.get_data(path.get_dim()-1)!=path.get_data(path.get_dim()-2)){
-                for(i=0;i<_chifn->get_dim();i++){
-                    dir1.set(i,_chifn->get_pt(path.get_data(path.get_dim()-1),i)-
-                               _chifn->get_pt(path.get_data(path.get_dim()-2),i));
-                    dir2.set(i,_chifn->get_pt(path.get_data(path.get_dim()-2),i)-
-                               _chifn->get_pt(path.get_data(path.get_dim()-3),i));
-                }
-                dir1.normalize();
-                dir2.normalize();
-                mu=0.0;
-                for(i=0;i<_chifn->get_dim();i++){
-                    mu+=dir1.get_data(i)*dir2.get_data(i);
-                }
-                if(mu>0.0){
-                    go_on=1;
-                }
-            }
-        }
 
         for(i=0;i<_chifn->get_dim();i++){
             if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
@@ -1588,10 +1561,13 @@ void dalex::tendril_search(){
             p_volume*=(max_p.get_data(i)-min_p.get_data(i));
         }
 
-        if(volume>volume_0*1.1 || p_volume>p_volume_0*1.1){
-             go_on=1;
-             volume_0=volume;
-             p_volume_0=p_volume;
+        if(volume<volume_0*1.1 && p_volume<p_volume_0*1.1){
+             strikes++;
+        }
+        else{
+            strikes=0;
+            volume_0=volume;
+            p_volume_0=p_volume;
         }
         printf("    volume %e %e\n",volume_0,p_volume_0);
 
