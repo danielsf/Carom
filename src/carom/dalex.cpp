@@ -617,6 +617,7 @@ void dalex::find_bases(){
         }
     }
 
+    _basis_chimin=chimin();
     printf("done finding bases\n");
 
 
