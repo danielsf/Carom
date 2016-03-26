@@ -538,7 +538,7 @@ void maps::mcmc_init(){
 
     double rr,re_norm;
 
-    re_norm=2.0;
+    re_norm=10.0;
 
     int ip,i,j,i_step,i_found;
 
