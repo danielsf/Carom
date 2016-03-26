@@ -546,6 +546,7 @@ void maps::mcmc_init(){
         norm.set(i,_chifn.get_characteristic_length(i));
     }
 
+    int adjusted=0;
     double mu,roll,ratio;
     int accept_it;
     int min_acc,max_acc,med_acc;
@@ -619,13 +620,24 @@ void maps::mcmc_init(){
             min_acc=accepted_sorted.get_data(0);
             max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
             if(med_acc<adjust_every/3){
-                _temp*=10.0;
+                if(adjusted%2==1){
+                    re_norm*=0.7;
+                }
+                else{
+                    _temp*=10.0;
+                }
             }
             else if(med_acc>(2*adjust_every)/3){
-                _temp*=0.5;
+                if(adjusted%2==1){
+                    re_norm*=1.5;
+                }
+                else{
+                    _temp*=0.5;
+                }
             }
 
-            printf("    acc %d %d %d temp %e\n",min_acc,med_acc,max_acc,_temp);
+            adjusted++;
+            printf("    acc %d %d %d temp %e re_norm %e\n",min_acc,med_acc,max_acc,_temp, re_norm);
         }
     }
 
