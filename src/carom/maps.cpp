@@ -516,7 +516,7 @@ void maps::explore(){
 }
 
 void maps::mcmc_init(){
-    int total_per=2000;
+    int total_per=1000;
     int adjust_every=50;
     int n_particles=2*_chifn.get_dim()+1;
 
@@ -618,13 +618,15 @@ void maps::mcmc_init(){
             min_acc=accepted_sorted.get_data(0);
             max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
             if(med_acc<adjust_every/3){
-                _temp*=10.0;
+                re_norm*=0.5;
+                //_temp*=10.0;
             }
             else if(med_acc>(2*adjust_every)/3){
-                _temp*=0.5;
+                re_norm*=3.0;
+                //_temp*=0.5;
             }
 
-            printf("    acc %d %d %d temp %e\n",min_acc,med_acc,max_acc,_temp);
+            printf("    acc %d %d %d temp %e renorm %e\n",min_acc,med_acc,max_acc,_temp,re_norm);
         }
     }
 
