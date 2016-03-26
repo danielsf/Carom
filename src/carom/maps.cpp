@@ -516,7 +516,7 @@ void maps::explore(){
 }
 
 void maps::mcmc_init(){
-    int total_per=2000;
+    int total_per=1000;
     int adjust_every=50;
     int n_particles=2*_chifn.get_dim()+1;
 
@@ -538,7 +538,7 @@ void maps::mcmc_init(){
 
     double rr,re_norm;
 
-    re_norm=1.0;
+    re_norm=2.0;
 
     int ip,i,j,i_step,i_found;
 
