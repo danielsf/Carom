@@ -538,12 +538,12 @@ void maps::mcmc_init(){
 
     double rr,re_norm;
 
-    re_norm=2.0;
+    re_norm=0.05;
 
     int ip,i,j,i_step,i_found;
 
     for(i=0;i<_chifn.get_dim();i++){
-        norm.set(i,_chifn.get_characteristic_length(i));
+        norm.set(i,_chifn.get_max(i)-_chifn.get_min(i));
     }
 
     double mu,roll,ratio;
@@ -567,7 +567,22 @@ void maps::mcmc_init(){
         particles.set(ip,i_found);
     }
 
+    array_1d<double> local_max,local_min;
+
     for(i_step=0;i_step<total_per;i_step++){
+        for(ip=0;ip<n_particles;ip++){
+            for(i=0;i<_chifn.get_dim();i++){
+                if(ip==0 || _chifn.get_pt(particles.get_data(ip),i)<local_min.get_data(i)){
+                    local_min.set(i,_chifn.get_pt(particles.get_data(ip),i));
+                }
+                if(ip==0 || _chifn.get_pt(particles.get_data(ip),i)>local_max.get_data(i)){
+                    local_max.set(i,_chifn.get_pt(particles.get_data(ip),i));
+                }
+            }
+        }
+        for(i=0;i<_chifn.get_dim();i++){
+            norm.set(i,local_max.get_data(i)-local_min.get_data(i));
+        }
         for(ip=0;ip<n_particles;ip++){
 
             rr=fabs(normal_deviate(_chifn.get_dice(),re_norm,0.1*re_norm));
