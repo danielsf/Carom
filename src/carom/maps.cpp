@@ -515,9 +515,159 @@ void maps::explore(){
 
 }
 
+void maps::mcmc_init(){
+    int total_per=2000;
+    int adjust_every=50;
+    int n_particles=2*_chifn.get_dim()+1;
+
+    array_1d<int> min_pt;
+    array_1d<int> particles;
+    array_1d<int> accepted,accepted_sorted,accepted_dex;
+    min_pt.set_name("mcmc_init_minpt");
+    particles.set_name("mcmc_init_particles");
+    accepted.set_name("mcmc_init_accepted");
+    accepted_sorted.set_name("mcmc_init_acc_sorted");
+    accepted_dex.set_name("mcmc_init_acc_dex");
+
+    double _temp=1.0;
+
+    array_1d<double> trial,dir,norm;
+    trial.set_name("mcmc_init_trial");
+    dir.set_name("mcmc_init_dir");
+    norm.set_name("mcmc_init_norm");
+
+    double rr,re_norm;
+
+    re_norm=1.0;
+
+    int ip,i,j,i_step,i_found;
+
+    for(i=0;i<_chifn.get_dim();i++){
+        norm.set(i,_chifn.get_characteristic_length(i));
+    }
+
+    double mu,roll,ratio;
+    int accept_it;
+    int min_acc,max_acc,med_acc;
+
+    for(i=0;i<n_particles;i++){
+        accepted.set(i,0);
+    }
+
+    for(i_step=0;i_step<total_per;i_step++){
+        for(ip=0;ip<n_particles;ip++){
+            if(ip>=particles.get_dim()){
+                i_found=-1;
+                while(i_found<0){
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,_chifn.get_min(i)+
+                                   _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
+                    }
+                    mu=evaluate(trial,&i_found);
+
+                }
+            }
+            else{
+                rr=fabs(normal_deviate(_chifn.get_dice(),re_norm,0.1*re_norm));
+                for(i=0;i<_chifn.get_dim();i++){
+                    dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+                }
+                dir.normalize();
+                for(i=0;i<_chifn.get_dim();i++){
+                    trial.set(i,_chifn.get_pt(particles.get_data(ip),i)+
+                                rr*norm.get_data(i)*dir.get_data(i));
+                }
+                mu=evaluate(trial,&i_found);
+
+            }
+
+            accept_it=0;
+
+            if(ip>=min_pt.get_dim() || mu<_chifn.get_fn(min_pt.get_data(ip))){
+                min_pt.set(ip,i_found);
+            }
+
+            if(ip>=particles.get_dim() || mu<_chifn.get_fn(particles.get_data(ip))){
+                accept_it=1;
+            }
+            else{
+                roll=_chifn.random_double();
+                ratio=exp(-0.5*(mu-_chifn.get_fn(particles.get_data(ip)))/_temp);
+                if(roll<ratio){
+                    accept_it=1;
+                }
+            }
+
+            if(accept_it==1){
+                particles.set(ip,i_found);
+                accepted.add_val(ip,1);
+            }
+        }
+
+        if(i_step>0 && i_step%adjust_every==0){
+            accepted_sorted.reset_preserving_room();
+            accepted_dex.reset_preserving_room();
+            for(i=0;i<n_particles;i++){
+                accepted_dex.set(i,i);
+            }
+            sort_and_check(accepted,accepted_sorted,accepted_dex);
+            for(i=0;i<n_particles;i++){
+               accepted.set(i,0);
+            }
+            med_acc=accepted_sorted.get_data(accepted_dex.get_dim()/2);
+            min_acc=accepted_sorted.get_data(0);
+            max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
+            if(med_acc<adjust_every/3){
+                _temp*=10.0;
+            }
+            else if(med_acc>(2*adjust_every)/3){
+                _temp*=0.5;
+            }
+
+            printf("    acc %d %d %d temp %e\n",min_acc,med_acc,max_acc,_temp);
+        }
+    }
+
+    for(i=0;i<n_particles;i++){
+        printf("min %e\n",_chifn.get_fn(min_pt.get_data(i)));
+    }
+    printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
+
+    array_1d<double> smin,smax;
+    for(i=0;i<_chifn.get_dim();i++){
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_minmax(smin,smax);
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+    array_1d<double> min_vals,min_val_sorted;
+    array_1d<int> min_dexes;
+    for(i=0;i<min_pt.get_dim();i++){
+        min_vals.add(_chifn.get_fn(min_pt.get_data(i)));
+        min_dexes.add(min_pt.get_data(i));
+    }
+    sort_and_check(min_vals, min_val_sorted, min_dexes);
+    array_2d<double> seed;
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        seed.add_row(_chifn.get_pt(min_dexes.get_data(i))[0]);
+    }
+    ffmin.find_minimum(seed,trial);
+
+}
+
 
 void maps::search(int limit){
     int pt_start;
+
+    double min0=_chifn.chimin();
+    printf("before init min %e\n",_chifn.chimin());
+    mcmc_init();
+    printf("min now %e -> %e\n",min0,_chifn.chimin());
+    printf("called %d\n",_chifn.get_pts());
+    exit(1);
 
     explore();
 

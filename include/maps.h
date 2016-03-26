@@ -35,6 +35,10 @@ public:
     void set_chisquared(chisquared*);
 
     void search(int);
+
+    void mcmc_init();
+
+
     void explore();
     void simplex_min_search();
     void mcmc_search();
