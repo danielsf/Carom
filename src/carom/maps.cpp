@@ -113,6 +113,10 @@ int maps::get_called(){
     return _chifn.get_called();
 }
 
+double maps::get_chimin(){
+    return _chifn.chimin();
+}
+
 void maps::set_outname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){

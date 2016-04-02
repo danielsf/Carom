@@ -46,6 +46,7 @@ public:
     void write_log();
 
     int get_called();
+    double get_chimin();
 
     void set_confidence_limit(double);
     void set_dof(int);
