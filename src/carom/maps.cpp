@@ -520,11 +520,13 @@ void maps::mcmc_init(){
     array_1d<int> min_pt;
     array_1d<int> particles;
     array_1d<int> accepted,accepted_sorted,accepted_dex;
+    array_1d<int> total_accepted;
     min_pt.set_name("mcmc_init_minpt");
     particles.set_name("mcmc_init_particles");
     accepted.set_name("mcmc_init_accepted");
     accepted_sorted.set_name("mcmc_init_acc_sorted");
     accepted_dex.set_name("mcmc_init_acc_dex");
+    total_accepted.set_name("total_accepted");
 
     double _temp=1.0;
 
@@ -550,6 +552,7 @@ void maps::mcmc_init(){
 
     for(i=0;i<n_particles;i++){
         accepted.set(i,0);
+        total_accepted.set(i,0);
     }
 
     for(ip=0;ip<n_particles;ip++){
@@ -600,6 +603,7 @@ void maps::mcmc_init(){
             if(accept_it==1){
                 particles.set(ip,i_found);
                 accepted.add_val(ip,1);
+                total_accepted.add_val(ip,1);
             }
         }
 
@@ -639,7 +643,9 @@ void maps::mcmc_init(){
     }
 
     for(i=0;i<n_particles;i++){
-        printf("min %e\n",_chifn.get_fn(min_pt.get_data(i)));
+        printf("min %e %d\n",
+        _chifn.get_fn(min_pt.get_data(i)),
+        total_accepted.get_data(i));
     }
     printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
 
