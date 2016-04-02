@@ -562,18 +562,29 @@ void maps::mcmc_init(){
         total_accepted.set(i,0);
     }
 
-    for(ip=0;ip<n_particles;ip++){
-       i_found=-1;
-        while(i_found<0){
-            for(i=0;i<_chifn.get_dim();i++){
-                trial.set(i,_chifn.get_min(i)+
-                           _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
-            }
-            mu=evaluate(trial,&i_found);
+    int n_seed=900;
+    array_1d<double> mu_seed,mu_seed_sorted;
+    array_1d<int> mu_seed_dex;
+    mu_seed.set_name("mu_seed");
+    mu_seed_sorted.set_name("mu_seed_sorted");
+    mu_seed_dex.set_name("mu_seed_dex");
+    for(ip=0;ip<n_seed;ip++){
 
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,_chifn.get_min(i)+
+                       _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
         }
-        particles.set(ip,i_found);
-        min_pt.set(ip,i_found);
+        mu=evaluate(trial,&i_found);
+        if(mu_seed_dex.contains(i_found)==0){
+            mu_seed.add(mu);
+            mu_seed_dex.add(i_found);
+        }
+
+    }
+    sort_and_check(mu_seed,mu_seed_sorted,mu_seed_dex);
+    for(ip=0;ip<n_particles;ip++){
+        particles.set(ip,mu_seed_dex.get_data(ip));
+        min_pt.set(ip,mu_seed_dex.get_data(ip));
     }
 
     for(i_step=0;i_step<total_per;i_step++){
