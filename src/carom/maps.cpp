@@ -573,6 +573,7 @@ void maps::mcmc_init(){
 
         }
         particles.set(ip,i_found);
+        min_pt.set(ip,i_found);
     }
 
     for(i_step=0;i_step<total_per;i_step++){
