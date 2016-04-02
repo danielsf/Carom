@@ -200,6 +200,16 @@ object/dchi_simplex_gp.o
         object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
 	$(LIBRARIES)
 
+test_opt: src/examples/test_opt.cpp object/maps.o \
+object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o \
+object/dchi_simplex_gp.o
+	$(gg) -o bin/test_opt src/examples/test_opt.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
+        object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
+	$(LIBRARIES)
+
 d24_test: src/examples/test_d24_chisq.cpp object/jellyBean.o \
 include/exampleLikelihoods.h
 	$(gg) -o bin/d24_test src/examples/test_d24_chisq.cpp \
