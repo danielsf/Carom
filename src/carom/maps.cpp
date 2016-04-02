@@ -514,7 +514,7 @@ void maps::explore(){
 
 void maps::mcmc_init(){
     int total_per=1000;
-    int adjust_every=50;
+    int adjust_every=100;
     int n_particles=2*_chifn.get_dim()+1;
 
     array_1d<int> min_pt;
@@ -549,6 +549,9 @@ void maps::mcmc_init(){
     double mu,roll,ratio;
     int accept_it;
     int min_acc,max_acc,med_acc;
+
+    array_1d<double> min_vals,min_val_sorted;
+    array_1d<int> min_dexes;
 
     for(i=0;i<n_particles;i++){
         accepted.set(i,0);
@@ -637,6 +640,21 @@ void maps::mcmc_init(){
                 }
             }
 
+            if(adjusted>0 && adjusted%4==0){
+                min_vals.reset();
+                min_val_sorted.reset();
+                min_dexes.reset();
+                for(i=0;i<n_particles;i++){
+                    min_vals.set(i,_chifn.get_fn(min_pt.get_data(i)));
+                    min_dexes.set(i,i);
+                }
+                sort_and_check(min_vals,min_val_sorted,min_dexes);
+                for(i=0;i<n_particles/2;i++){
+                    particles.set(min_dexes.get_data(min_dexes.get_dim()-1-i),
+                                  min_dexes.get_data(i));
+                }
+            }
+
             adjusted++;
             printf("    acc %d %d %d temp %e re_norm %e\n",min_acc,med_acc,max_acc,_temp, re_norm);
         }
@@ -659,8 +677,10 @@ void maps::mcmc_init(){
     ffmin.set_minmax(smin,smax);
     ffmin.set_dice(_chifn.get_dice());
     ffmin.use_gradient();
-    array_1d<double> min_vals,min_val_sorted;
-    array_1d<int> min_dexes;
+
+    min_vals.reset();
+    min_val_sorted.reset();
+    min_dexes.reset();
     for(i=0;i<min_pt.get_dim();i++){
         min_vals.add(_chifn.get_fn(min_pt.get_data(i)));
         min_dexes.add(min_pt.get_data(i));
