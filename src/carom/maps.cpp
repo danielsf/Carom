@@ -677,17 +677,8 @@ void maps::search(int limit){
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
-    exit(1);
-
-    explore();
 
     while(_chifn.get_pts()<limit){
-         explore();
-         assess_good_points();
-
-         if(_ct_simplex_min<_ct_dalex || _ct_simplex_min==0){
-             simplex_min_search();
-         }
 
         pt_start=_chifn.get_pts();
         _cloud.search();
