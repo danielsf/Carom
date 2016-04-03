@@ -682,7 +682,9 @@ void maps::mcmc_init(){
                 }
             }
 
-            adjusted++;
+            if(has_been_adjusted==1){
+                adjusted++;
+            }
             printf("    acc %d %d %d temp %e re_norm %e\n",min_acc,med_acc,max_acc,_temp, re_norm);
         }
     }
