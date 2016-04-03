@@ -576,6 +576,10 @@ void maps::mcmc_init(){
         min_pt.set(ip,i_found);
     }
 
+    double needed_temp;
+    array_1d<double> needed_temp_arr,needed_temp_sorted;
+    array_1d<int> needed_temp_dex;
+
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
 
@@ -599,13 +603,23 @@ void maps::mcmc_init(){
 
             if(ip>=particles.get_dim() || mu<_chifn.get_fn(particles.get_data(ip))){
                 accept_it=1;
+                needed_temp=1.0;
             }
             else{
                 roll=_chifn.random_double();
                 ratio=exp(-0.5*(mu-_chifn.get_fn(particles.get_data(ip)))/_temp);
+                needed_temp=-0.5*(mu-_chifn.get_fn(particles.get_data(ip)))/log(roll);
                 if(roll<ratio){
                     accept_it=1;
                 }
+            }
+
+            needed_temp_dex.add(needed_temp_arr.get_dim());
+            if(needed_temp<1.0){
+                needed_temp_arr.add(1.0);
+            }
+            else{
+                needed_temp_arr.add(needed_temp);
             }
 
             if(accept_it==1){
@@ -628,22 +642,20 @@ void maps::mcmc_init(){
             med_acc=accepted_sorted.get_data(accepted_dex.get_dim()/2);
             min_acc=accepted_sorted.get_data(0);
             max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
-            if(med_acc<adjust_every/3){
-                if(adjusted%2==1){
-                    re_norm*=0.7;
-                }
-                else{
-                    _temp*=10.0;
-                }
+            if(med_acc<adjust_every/5 && adjusted%2==1){
+                re_norm*=0.7;
             }
-            else if(med_acc>(2*adjust_every)/3){
-                if(adjusted%2==1){
-                    re_norm*=1.5;
-                }
-                else{
-                    _temp*=0.5;
-                }
+            else if(med_acc>adjust_every/2 && adjusted%2==1){
+                re_norm*=1.5;
             }
+            else if(med_acc>adjust_every/2 || med_acc<adjust_every/5){
+                sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
+                _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
+            }
+
+            needed_temp_arr.reset_preserving_room();
+            needed_temp_sorted.reset_preserving_room();
+            needed_temp_dex.reset_preserving_room();
 
             if(adjusted>0 && adjusted%4==0){
                 min_vals.reset();
