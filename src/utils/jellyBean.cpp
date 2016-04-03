@@ -152,7 +152,6 @@ void chiSquaredData::initialize_data(){
     }
 
     write_data();
-    print_mins();
 
 }
 
