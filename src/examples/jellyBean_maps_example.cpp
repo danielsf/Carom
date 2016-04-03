@@ -188,15 +188,6 @@ max.set(2,65.0);
 min.set(3,0.0);
 max.set(3,80.0);*/
 
-/*min.set(0,-10.0);
-max.set(0,10.0);
-min.set(1,-40.0);
-max.set(1,-20.0);
-min.set(2,-3.0);
-max.set(2,21.0);
-min.set(3,2.0);
-max.set(3,28.0);*/
-
 carom_test.set_timingname(timingname);
 carom_test.set_outname(outname);
 carom_test.set_min(min);
