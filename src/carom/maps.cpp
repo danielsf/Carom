@@ -519,7 +519,7 @@ void maps::explore(){
 void maps::mcmc_init(){
     int total_per=1000;
     int adjust_every=100;
-    int n_particles=2*_chifn.get_dim()+1;
+    int n_particles=3*_chifn.get_dim()+1;
 
     array_1d<int> min_pt;
     array_1d<int> particles;
