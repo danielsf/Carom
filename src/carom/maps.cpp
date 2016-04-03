@@ -650,7 +650,7 @@ void maps::mcmc_init(){
             }
             else if(med_acc>(2*adjust_every)/3 || med_acc<adjust_every/3){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
-                _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
+                _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/4);
             }
 
             needed_temp_arr.reset_preserving_room();
