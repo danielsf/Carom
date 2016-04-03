@@ -181,12 +181,12 @@ for(i=0;i<chisq->get_dim();i++){
     max.set(i,40.0);
 }
 
-min.set(1,0.0);
+/*min.set(1,0.0);
 max.set(1,80.0);
 min.set(2,-15.0);
 max.set(2,65.0);
 min.set(3,0.0);
-max.set(3,80.0);
+max.set(3,80.0);*/
 
 /*min.set(0,-10.0);
 max.set(0,10.0);
