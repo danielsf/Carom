@@ -637,9 +637,7 @@ void maps::mcmc_init(){
                 accepted_dex.set(i,i);
             }
             sort_and_check(accepted,accepted_sorted,accepted_dex);
-            for(i=0;i<n_particles;i++){
-               accepted.set(i,0);
-            }
+
             med_acc=accepted_sorted.get_data(accepted_dex.get_dim()/2);
             min_acc=accepted_sorted.get_data(0);
             max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
@@ -664,6 +662,9 @@ void maps::mcmc_init(){
             if(has_been_adjusted==1){
                 needed_temp_arr.reset_preserving_room();
                 needed_temp_dex.reset_preserving_room();
+               for(i=0;i<n_particles;i++){
+                   accepted.set(i,0);
+                }
             }
 
             if(adjusted>0 && adjusted%4==0){
