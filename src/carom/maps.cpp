@@ -642,13 +642,13 @@ void maps::mcmc_init(){
             med_acc=accepted_sorted.get_data(accepted_dex.get_dim()/2);
             min_acc=accepted_sorted.get_data(0);
             max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
-            if(med_acc<adjust_every/5 && adjusted%2==1){
+            if(med_acc<adjust_every/3 && adjusted%2==1){
                 re_norm*=0.7;
             }
-            else if(med_acc>adjust_every/2 && adjusted%2==1){
+            else if(med_acc>(2*adjust_every)/3 && adjusted%2==1){
                 re_norm*=1.5;
             }
-            else if(med_acc>adjust_every/2 || med_acc<adjust_every/5){
+            else if(med_acc>(2*adjust_every)/3 || med_acc<adjust_every/3){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
             }
