@@ -667,21 +667,6 @@ void maps::mcmc_init(){
                 }
             }
 
-            if(adjusted>0 && adjusted%4==0){
-                min_vals.reset();
-                min_val_sorted.reset();
-                min_dexes.reset();
-                for(i=0;i<n_particles;i++){
-                    min_vals.set(i,_chifn.get_fn(min_pt.get_data(i)));
-                    min_dexes.set(i,i);
-                }
-                sort_and_check(min_vals,min_val_sorted,min_dexes);
-                for(i=0;i<n_particles/2;i++){
-                    particles.set(min_dexes.get_data(min_dexes.get_dim()-1-i),
-                                  min_dexes.get_data(i));
-                }
-            }
-
             if(has_been_adjusted==1){
                 adjusted++;
             }
