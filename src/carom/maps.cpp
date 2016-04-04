@@ -518,8 +518,8 @@ void maps::explore(){
 
 void maps::mcmc_init(){
     int total_per=1000;
-    int adjust_every=100;
-    int n_particles=2*_chifn.get_dim()+1;
+    int adjust_every=50;
+    int n_particles=3*_chifn.get_dim()+1;
 
     array_1d<int> min_pt;
     array_1d<int> particles;
@@ -541,7 +541,7 @@ void maps::mcmc_init(){
 
     double rr,re_norm;
 
-    re_norm=10.0;
+    re_norm=1.0;
 
     int ip,i,j,i_step,i_found;
 
@@ -579,6 +579,7 @@ void maps::mcmc_init(){
     double needed_temp;
     array_1d<double> needed_temp_arr,needed_temp_sorted;
     array_1d<int> needed_temp_dex;
+    double old_temp;
     int has_been_adjusted;
 
     for(i_step=0;i_step<total_per;i_step++){
@@ -654,8 +655,11 @@ void maps::mcmc_init(){
             }
             else if(med_acc>(2*adjust_every)/3 || med_acc<adjust_every/3){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
-                _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/4);
-                has_been_adjusted=1;
+                old_temp=_temp;
+                _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
+                if(fabs(1.0-(_temp/old_temp))>0.01){
+                    has_been_adjusted=1;
+                }
             }
 
             needed_temp_sorted.reset_preserving_room();
@@ -670,7 +674,8 @@ void maps::mcmc_init(){
             if(has_been_adjusted==1){
                 adjusted++;
             }
-            printf("    acc %d %d %d temp %e re_norm %e\n",min_acc,med_acc,max_acc,_temp, re_norm);
+            printf("    acc %d %d %d temp %e re_norm %e min %e\n",
+            min_acc,med_acc,max_acc,_temp, re_norm, _chifn.chimin());
         }
     }
 
