@@ -585,7 +585,7 @@ void maps::mcmc_init(){
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
 
-            rr=fabs(normal_deviate(_chifn.get_dice(),re_norm,0.1*re_norm));
+            rr=fabs(normal_deviate(_chifn.get_dice(),re_norm,0.5*re_norm));
             for(i=0;i<_chifn.get_dim();i++){
                 dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
             }
