@@ -532,7 +532,7 @@ void maps::mcmc_init(){
     accepted_dex.set_name("mcmc_init_acc_dex");
     total_accepted.set_name("total_accepted");
 
-    double _temp=100.0;
+    double _temp=1.0;
 
     array_1d<double> trial,dir,norm;
     trial.set_name("mcmc_init_trial");
@@ -582,6 +582,7 @@ void maps::mcmc_init(){
     double old_temp;
     int has_been_adjusted;
     int step_ct=0;
+    int needs_adjustment;
 
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
@@ -647,15 +648,23 @@ void maps::mcmc_init(){
 
             has_been_adjusted=0;
 
-            if(med_acc<step_ct/3 && adjusted%2==1){
+            needs_adjustment=0;
+            if(med_acc<step_ct/3){
+                needs_adjustment=1;
+            }
+            else if(med_acc>(3*step_ct)/4){
+                needs_adjustment=-1;
+            }
+
+            if(needs_adjustment==1 && adjusted%2==1){
                 re_norm*=0.7;
                 has_been_adjusted=1;
             }
-            else if(med_acc>(2*step_ct)/3 && adjusted%2==1){
+            else if(needs_adjustment==-1 && adjusted%2==1){
                 re_norm*=1.5;
                 has_been_adjusted=1;
             }
-            else if(med_acc>(2*step_ct)/3 || med_acc<step_ct/3){
+            else if(needs_adjustment!=0){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 old_temp=_temp;
                 _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
