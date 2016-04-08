@@ -532,7 +532,7 @@ void maps::mcmc_init(){
     accepted_dex.set_name("mcmc_init_acc_dex");
     total_accepted.set_name("total_accepted");
 
-    double _temp=1.0;
+    double _temp=100.0;
 
     array_1d<double> trial,dir,norm;
     trial.set_name("mcmc_init_trial");
@@ -665,6 +665,10 @@ void maps::mcmc_init(){
             }
 
             needed_temp_sorted.reset_preserving_room();
+
+            printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
+            min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
+
             if(has_been_adjusted==1){
                 needed_temp_arr.reset_preserving_room();
                 needed_temp_dex.reset_preserving_room();
@@ -677,8 +681,6 @@ void maps::mcmc_init(){
             if(has_been_adjusted==1){
                 adjusted++;
             }
-            printf("    acc %d %d %d temp %e re_norm %e min %e\n",
-            min_acc,med_acc,max_acc,_temp, re_norm, _chifn.chimin());
         }
     }
 
