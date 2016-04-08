@@ -581,6 +581,7 @@ void maps::mcmc_init(){
     array_1d<int> needed_temp_dex;
     double old_temp;
     int has_been_adjusted;
+    int step_ct=0;
 
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
@@ -630,6 +631,7 @@ void maps::mcmc_init(){
                 total_accepted.add_val(ip,1);
             }
         }
+        step_ct++;
 
         if(i_step>0 && i_step%adjust_every==0){
             accepted_sorted.reset_preserving_room();
@@ -645,15 +647,15 @@ void maps::mcmc_init(){
 
             has_been_adjusted=0;
 
-            if(med_acc<adjust_every/3 && adjusted%2==1){
+            if(med_acc<step_ct/3 && adjusted%2==1){
                 re_norm*=0.7;
                 has_been_adjusted=1;
             }
-            else if(med_acc>(2*adjust_every)/3 && adjusted%2==1){
+            else if(med_acc>(2*step_ct)/3 && adjusted%2==1){
                 re_norm*=1.5;
                 has_been_adjusted=1;
             }
-            else if(med_acc>(2*adjust_every)/3 || med_acc<adjust_every/3){
+            else if(med_acc>(2*step_ct)/3 || med_acc<step_ct/3){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 old_temp=_temp;
                 _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
@@ -669,6 +671,7 @@ void maps::mcmc_init(){
                for(i=0;i<n_particles;i++){
                    accepted.set(i,0);
                 }
+                step_ct=0;
             }
 
             if(has_been_adjusted==1){
