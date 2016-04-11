@@ -522,10 +522,14 @@ void maps::mcmc_init(){
     int n_particles=3*_chifn.get_dim()+1;
 
     array_1d<int> abs_min_pt;
+    array_1d<int> local_min_pt;
+    array_1d<int> since_min;
     array_1d<int> particles;
     array_1d<int> accepted,accepted_sorted,accepted_dex;
     array_1d<int> total_accepted;
     abs_min_pt.set_name("mcmc_init_abs_minpt");
+    local_min_pt.set_name("mcmc_init_local_minpt");
+    since_min.set_name("mcmc_init_since_min");
     particles.set_name("mcmc_init_particles");
     accepted.set_name("mcmc_init_accepted");
     accepted_sorted.set_name("mcmc_init_acc_sorted");
@@ -574,6 +578,8 @@ void maps::mcmc_init(){
         }
         particles.set(ip,i_found);
         abs_min_pt.set(ip,i_found);
+        local_min_pt.set(ip,i_found);
+        since_min.set(ip,0);
     }
 
     double needed_temp;
@@ -603,6 +609,14 @@ void maps::mcmc_init(){
 
             if(ip>=abs_min_pt.get_dim() || mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
                 abs_min_pt.set(ip,i_found);
+            }
+
+            if(ip>=local_min_pt.get_dim() || mu<_chifn.get_fn(local_min_pt.get_data(ip))){
+                local_min_pt.set(ip,i_found);
+                since_min.set(ip,0);
+            }
+            else{
+                since_min.add_val(ip,1);
             }
 
             if(ip>=particles.get_dim() || mu<_chifn.get_fn(particles.get_data(ip))){
@@ -674,6 +688,26 @@ void maps::mcmc_init(){
             }
 
             needed_temp_sorted.reset_preserving_room();
+
+            for(ip=0;ip<particles.get_dim();ip++){
+                if(since_min.get_data(ip)>=2*adjust_every){
+                    since_min.set(ip,0);
+                    i_found=-1;
+                    while(i_found<0){
+                        for(i=0;i<_chifn.get_dim();i++){
+                            trial.set(i,_chifn.get_min(i)+
+                                      _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
+                        }
+                        mu=evaluate(trial,&i_found);
+                    }
+                    local_min_pt.set(ip,i_found);
+                    particles.set(ip,i_found);
+                    if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                        abs_min_pt.set(ip,i_found);
+                    }
+                }
+            }
+
 
             printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
             min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
