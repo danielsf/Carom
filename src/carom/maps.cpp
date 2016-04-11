@@ -521,11 +521,11 @@ void maps::mcmc_init(){
     int adjust_every=50;
     int n_particles=3*_chifn.get_dim()+1;
 
-    array_1d<int> min_pt;
+    array_1d<int> abs_min_pt;
     array_1d<int> particles;
     array_1d<int> accepted,accepted_sorted,accepted_dex;
     array_1d<int> total_accepted;
-    min_pt.set_name("mcmc_init_minpt");
+    abs_min_pt.set_name("mcmc_init_abs_minpt");
     particles.set_name("mcmc_init_particles");
     accepted.set_name("mcmc_init_accepted");
     accepted_sorted.set_name("mcmc_init_acc_sorted");
@@ -573,7 +573,7 @@ void maps::mcmc_init(){
 
         }
         particles.set(ip,i_found);
-        min_pt.set(ip,i_found);
+        abs_min_pt.set(ip,i_found);
     }
 
     double needed_temp;
@@ -601,8 +601,8 @@ void maps::mcmc_init(){
 
             accept_it=0;
 
-            if(ip>=min_pt.get_dim() || mu<_chifn.get_fn(min_pt.get_data(ip))){
-                min_pt.set(ip,i_found);
+            if(ip>=abs_min_pt.get_dim() || mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                abs_min_pt.set(ip,i_found);
             }
 
             if(ip>=particles.get_dim() || mu<_chifn.get_fn(particles.get_data(ip))){
@@ -695,7 +695,7 @@ void maps::mcmc_init(){
 
     for(i=0;i<n_particles;i++){
         printf("min %e %d\n",
-        _chifn.get_fn(min_pt.get_data(i)),
+        _chifn.get_fn(abs_min_pt.get_data(i)),
         total_accepted.get_data(i));
     }
     printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
@@ -714,9 +714,9 @@ void maps::mcmc_init(){
     min_vals.reset();
     min_val_sorted.reset();
     min_dexes.reset();
-    for(i=0;i<min_pt.get_dim();i++){
-        min_vals.add(_chifn.get_fn(min_pt.get_data(i)));
-        min_dexes.add(min_pt.get_data(i));
+    for(i=0;i<abs_min_pt.get_dim();i++){
+        min_vals.add(_chifn.get_fn(abs_min_pt.get_data(i)));
+        min_dexes.add(abs_min_pt.get_data(i));
     }
     sort_and_check(min_vals, min_val_sorted, min_dexes);
     array_2d<double> seed;
