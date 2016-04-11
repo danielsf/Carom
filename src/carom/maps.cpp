@@ -522,11 +522,13 @@ void maps::mcmc_init(){
     int n_particles=3*_chifn.get_dim()+1;
 
     array_1d<int> abs_min_pt;
+    array_1d<int> local_min_pt;
     array_1d<int> since_min;
     array_1d<int> particles;
     array_1d<int> accepted,accepted_sorted,accepted_dex;
     array_1d<int> total_accepted;
     abs_min_pt.set_name("mcmc_init_abs_minpt");
+    local_min_pt.set_name("mcmc_init_local_minpt");
     since_min.set_name("mcmc_init_since_min");
     particles.set_name("mcmc_init_particles");
     accepted.set_name("mcmc_init_accepted");
@@ -558,6 +560,17 @@ void maps::mcmc_init(){
 
     array_1d<double> min_vals,min_val_sorted;
     array_1d<int> min_dexes;
+    min_vals.set_name("min_vals");
+    min_val_sorted.set_name("min_val_sorted");
+    min_dexes.set_name("min_dexes");
+
+    array_1d<double> dd,dd_sorted;
+    array_1d<int> dd_dexes,current_particles;
+    double dd_term;
+    dd.set_name("mcmc_init_dd");
+    dd_sorted.set_name("mcmc_init_dd_sorted");
+    dd_dexes.set_name("mcmc_init_dd_dexes");
+    current_particles.set_name("mcmc_init_current_particles");
 
     for(i=0;i<n_particles;i++){
         accepted.set(i,0);
@@ -576,6 +589,7 @@ void maps::mcmc_init(){
         }
         particles.set(ip,i_found);
         abs_min_pt.set(ip,i_found);
+        local_min_pt.set(ip,i_found);
         since_min.set(ip,0);
     }
 
@@ -607,6 +621,10 @@ void maps::mcmc_init(){
 
             if(ip>=abs_min_pt.get_dim() || mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
                 abs_min_pt.set(ip,i_found);
+            }
+
+            if(ip>=local_min_pt.get_dim() || mu<_chifn.get_fn(local_min_pt.get_data(ip))){
+                local_min_pt.set(ip,i_found);
                 since_min.set(ip,0);
             }
             else{
@@ -687,6 +705,49 @@ void maps::mcmc_init(){
             printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
             min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
 
+            for(ip=0;ip<particles.get_dim();ip++){
+                current_particles.set(ip,particles.get_data(ip));
+            }
+
+            for(ip=0;ip<particles.get_dim();ip++){
+                dd.reset_preserving_room();
+                dd_sorted.reset_preserving_room();
+                dd_dexes.reset_preserving_room();
+                if(since_min.get_data(ip)>adjust_every){
+                    for(i=0;i<current_particles.get_dim();i++){
+                         if(i!=ip){
+                             dd_term=0.0;
+                             for(j=0;j<_chifn.get_dim();j++){
+                                 dd_term+=power((_chifn.get_pt(particles.get_data(ip))-_chifn.get_pt(current_particles.get_data(i)))/
+                                                norm.get_data(j),2);
+                             }
+                             dd.add(dd_term);
+                             dd_dexes.add(current_particles.get_data(i));
+
+                         }
+                    }
+
+                    sort_and_check(dd,dd_sorted,dd_dexes);
+                    j=dd_dexes.get_data(dd.get_dim()/2);
+
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,0.5*(_chifn.get_pt(particles.get_data(ip),i)
+                                         +_chifn.get_pt(j,i)));
+                    }
+
+                    mu=evaluate(trial,&i_found);
+                    if(i_found>=0){
+                        particles.set(ip,i_found);
+                        local_min_pt.set(ip,i_found);
+                        since_min.set(ip,0);
+                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                            abs_min_pt.set(ip,i_found);
+                        }
+                    }
+                }
+            }
+
+
             if(has_been_adjusted==1){
                 needed_temp_arr.reset_preserving_room();
                 needed_temp_dex.reset_preserving_room();
@@ -703,9 +764,10 @@ void maps::mcmc_init(){
     }
 
     for(i=0;i<n_particles;i++){
-        printf("min %e %d\n",
+        printf("min %e %d - %e\n",
         _chifn.get_fn(abs_min_pt.get_data(i)),
-        total_accepted.get_data(i));
+        total_accepted.get_data(i),
+        _chifn.get_fn(local_min_pt.get_data(i)));
     }
     printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
 
