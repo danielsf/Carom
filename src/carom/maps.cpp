@@ -735,29 +735,6 @@ void maps::mcmc_init(){
                 current_particles.set(ip,particles.get_data(ip));
             }
 
-            for(ip=0;ip<particles.get_dim();ip++){
-                if(since_min.get_data(ip)>adjust_every){
-
-                    for(i=0;i<_chifn.get_dim();i++){
-                        trial.set(i,2.0*geo_center.get_data(i)-
-                                    1.0*_chifn.get_pt(particles.get_data(ip),i));
-                    }
-
-                    mu=evaluate(trial,&i_found);
-                    if(i_found>=0){
-                        //has_been_adjusted=1;
-                        particles.set(ip,i_found);
-                        trails.add(ip,i_found);
-                        local_min_pt.set(ip,i_found);
-                        since_min.set(ip,0);
-                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
-                            abs_min_pt.set(ip,i_found);
-                        }
-                    }
-                }
-            }
-
-
             if(has_been_adjusted==1){
                 needed_temp_arr.reset_preserving_room();
                 needed_temp_dex.reset_preserving_room();
