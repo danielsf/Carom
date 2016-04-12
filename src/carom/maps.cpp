@@ -547,6 +547,9 @@ void maps::mcmc_init(){
 
     re_norm=2.0;
 
+    double global_min;
+    int since_global_min;
+
     int ip,i,j,i_step,i_found;
 
     for(i=0;i<_chifn.get_dim();i++){
@@ -591,7 +594,12 @@ void maps::mcmc_init(){
         abs_min_pt.set(ip,i_found);
         local_min_pt.set(ip,i_found);
         since_min.set(ip,0);
+        if(ip==0 || _chifn.get_fn(i_found)<global_min){
+            global_min=_chifn.get_fn(i_found);
+        }
     }
+
+    since_global_min=0;
 
     double needed_temp;
     array_1d<double> needed_temp_arr,needed_temp_sorted;
@@ -616,6 +624,13 @@ void maps::mcmc_init(){
             }
             mu=evaluate(trial,&i_found);
 
+            if(mu<global_min){
+                global_min=mu;
+                since_global_min=0;
+            }
+            else{
+                since_global_min++;
+            }
 
             accept_it=0;
 
@@ -660,8 +675,30 @@ void maps::mcmc_init(){
 
         }
         step_ct++;
+        has_been_adjusted=0;
 
-        if(i_step>0 && i_step%adjust_every==0){
+        if(since_global_min>=(3*adjust_every*particles.get_dim())/2){
+            for(ip=0;ip<particles.get_dim();ip++){
+                i_found=-1;
+                while(i_found<0){
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,_chifn.get_min(i)
+                                   +_chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
+                    }
+                    mu=evaluate(trial,&i_found);
+                }
+                particles.set(ip,i_found);
+                local_min_pt.set(ip,i_found);
+                since_min.set(ip,0);
+                if(ip==0 || _chifn.get_fn(i_found)<global_min){
+                    global_min=_chifn.get_fn(i_found);
+                }
+            }
+            since_global_min=0;
+            has_been_adjusted=1;
+        }
+
+        if(i_step>0 && i_step%adjust_every==0 && has_been_adjusted==0 && step_ct>adjust_every){
             accepted_sorted.reset_preserving_room();
             accepted_dex.reset_preserving_room();
             for(i=0;i<n_particles;i++){
@@ -672,8 +709,6 @@ void maps::mcmc_init(){
             med_acc=accepted_sorted.get_data(accepted_dex.get_dim()/2);
             min_acc=accepted_sorted.get_data(0);
             max_acc=accepted_sorted.get_data(accepted_dex.get_dim()-1);
-
-            has_been_adjusted=0;
 
             needs_adjustment=0;
             if(med_acc<step_ct/3){
@@ -702,8 +737,9 @@ void maps::mcmc_init(){
 
             needed_temp_sorted.reset_preserving_room();
 
-            printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
-            min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
+            printf("    acc %d %d %d out of %d temp %e re_norm %e min %e -- %e\n",
+            min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin(), global_min);
+
 
             for(ip=0;ip<particles.get_dim();ip++){
                 current_particles.set(ip,particles.get_data(ip));
@@ -732,20 +768,18 @@ void maps::mcmc_init(){
                 }
             }
 
-
-            if(has_been_adjusted==1){
-                needed_temp_arr.reset_preserving_room();
-                needed_temp_dex.reset_preserving_room();
-               for(i=0;i<n_particles;i++){
-                   accepted.set(i,0);
-                }
-                step_ct=0;
-            }
-
-            if(has_been_adjusted==1){
-                adjusted++;
-            }
         }
+
+        if(has_been_adjusted==1){
+            needed_temp_arr.reset_preserving_room();
+            needed_temp_dex.reset_preserving_room();
+           for(i=0;i<n_particles;i++){
+               accepted.set(i,0);
+            }
+            step_ct=0;
+            adjusted++;
+        }
+
     }
 
     for(i=0;i<n_particles;i++){
