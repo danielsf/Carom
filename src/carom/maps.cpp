@@ -601,6 +601,8 @@ void maps::mcmc_init(){
     int step_ct=0;
     int needs_adjustment;
 
+    array_1d<double> geo_center;
+
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
 
@@ -662,6 +664,21 @@ void maps::mcmc_init(){
         step_ct++;
 
         if(i_step>0 && i_step%adjust_every==0){
+
+            for(i=0;i<_chifn.get_dim();i++){
+                geo_center.set(i,0.0);
+            }
+
+            for(ip=0;ip<particles.get_dim();ip++){
+                for(i=0;i<_chifn.get_dim();i++){
+                    geo_center.add_val(i,_chifn.get_pt(particles.get_data(ip),i));
+                }
+            }
+
+            for(i=0;i<_chifn.get_dim();i++){
+                geo_center.divide_val(i,double(particles.get_dim()));
+            }
+
             accepted_sorted.reset_preserving_room();
             accepted_dex.reset_preserving_room();
             for(i=0;i<n_particles;i++){
@@ -711,13 +728,10 @@ void maps::mcmc_init(){
 
             for(ip=0;ip<particles.get_dim();ip++){
                 if(since_min.get_data(ip)>adjust_every){
-                    j=ip;
-                    while(j==ip){
-                        j=_chifn.random_int()%current_particles.get_dim();
-                    }
+
                     for(i=0;i<_chifn.get_dim();i++){
-                        trial.set(i,0.5*(_chifn.get_pt(particles.get_data(ip),i)
-                                         +_chifn.get_pt(current_particles.get_data(j),i)));
+                        trial.set(i,2.0*geo_center.get_data(i)-
+                                    _chifn.get_pt(particles.get_data(ip),i));
                     }
 
                     mu=evaluate(trial,&i_found);
