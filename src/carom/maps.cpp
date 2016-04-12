@@ -600,6 +600,7 @@ void maps::mcmc_init(){
     int has_been_adjusted;
     int step_ct=0;
     int needs_adjustment;
+    int min_pp,min_abs;
 
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
@@ -710,23 +711,37 @@ void maps::mcmc_init(){
             }
 
             for(ip=0;ip<particles.get_dim();ip++){
-                if(since_min.get_data(ip)>adjust_every){
-                    j=ip;
-                    while(j==ip){
-                        j=_chifn.random_int()%current_particles.get_dim();
-                    }
-                    for(i=0;i<_chifn.get_dim();i++){
-                        trial.set(i,0.5*(_chifn.get_pt(particles.get_data(ip),i)
-                                         +_chifn.get_pt(current_particles.get_data(j),i)));
-                    }
+                if(ip==0 || _chifn.get_fn(abs_min_pt.get_data(ip))<mu){
+                    mu=_chifn.get_fn(abs_min_pt.get_data(ip));
+                    min_pp=ip;
+                    min_abs=abs_min_pt.get_data(ip);
+                }
+            }
+            printf("minpp %d %e\n",min_pp,_chifn.get_fn(min_abs));
 
+            for(ip=0;ip<particles.get_dim();ip++){
+                if(ip!=min_pp && _chifn.get_fn(particles.get_data(ip))<2.0*_chifn.get_fn(min_abs)){
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,0.5*(_chifn.get_pt(particles.get_data(ip),i)+
+                                         _chifn.get_pt(min_abs,i)));
+                    }
                     mu=evaluate(trial,&i_found);
-                    if(i_found>=0){
-                        particles.set(ip,i_found);
-                        local_min_pt.set(ip,i_found);
-                        since_min.set(ip,0);
-                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
-                            abs_min_pt.set(ip,i_found);
+                    if(mu<_chifn.get_fn(particles.get_data(ip))){
+                        for(i=0;i<_chifn.get_dim();i++){
+                            trial.set(i,_chifn.get_min(i)+_chifn.random_double()*
+                                        (_chifn.get_max(i)-_chifn.get_min(i)));
+                        }
+                        mu=evaluate(trial,&i_found);
+                        if(i_found>=0){
+
+                            particles.set(ip,i_found);
+                            local_min_pt.set(ip,i_found);
+
+                            since_min.set(ip,0);
+                            if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                                abs_min_pt.set(ip,i_found);
+                            }
+                            has_been_adjusted=1;
                         }
                     }
                 }
