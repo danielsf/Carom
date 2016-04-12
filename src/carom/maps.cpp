@@ -572,6 +572,9 @@ void maps::mcmc_init(){
     dd_dexes.set_name("mcmc_init_dd_dexes");
     current_particles.set_name("mcmc_init_current_particles");
 
+    asymm_array_2d<int> trails;
+    trails.set_name("mcmc_init_trails");
+
     for(i=0;i<n_particles;i++){
         accepted.set(i,0);
         total_accepted.set(i,0);
@@ -588,6 +591,7 @@ void maps::mcmc_init(){
 
         }
         particles.set(ip,i_found);
+        trails.set(ip,0,i_found);
         abs_min_pt.set(ip,i_found);
         local_min_pt.set(ip,i_found);
         since_min.set(ip,0);
@@ -656,8 +660,12 @@ void maps::mcmc_init(){
 
             if(accept_it==1){
                 particles.set(ip,i_found);
+                trails.add(ip,i_found);
                 accepted.add_val(ip,1);
                 total_accepted.add_val(ip,1);
+            }
+            else{
+                trails.add(ip,particles.get_data(ip));
             }
 
         }
@@ -670,8 +678,9 @@ void maps::mcmc_init(){
             }
 
             for(ip=0;ip<particles.get_dim();ip++){
+                j=trails.get_data(ip,trails.get_cols(ip)/2);
                 for(i=0;i<_chifn.get_dim();i++){
-                    geo_center.add_val(i,_chifn.get_pt(particles.get_data(ip),i));
+                    geo_center.add_val(i,_chifn.get_pt(j,i));
                 }
             }
 
@@ -738,6 +747,7 @@ void maps::mcmc_init(){
                     if(i_found>=0){
                         has_been_adjusted=1;
                         particles.set(ip,i_found);
+                        trails.add(ip,i_found);
                         local_min_pt.set(ip,i_found);
                         since_min.set(ip,0);
                         if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
