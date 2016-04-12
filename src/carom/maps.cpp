@@ -545,7 +545,7 @@ void maps::mcmc_init(){
 
     double rr,re_norm;
 
-    re_norm=2.0;
+    re_norm=1.0;
 
     int ip,i,j,i_step,i_found;
 
@@ -730,8 +730,8 @@ void maps::mcmc_init(){
                 if(since_min.get_data(ip)>adjust_every){
 
                     for(i=0;i<_chifn.get_dim();i++){
-                        trial.set(i,3.0*geo_center.get_data(i)-
-                                    2.0*_chifn.get_pt(particles.get_data(ip),i));
+                        trial.set(i,2.0*geo_center.get_data(i)-
+                                    1.0*_chifn.get_pt(particles.get_data(ip),i));
                     }
 
                     mu=evaluate(trial,&i_found);
