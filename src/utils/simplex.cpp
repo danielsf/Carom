@@ -343,7 +343,9 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     _pstarstar.reset();
     _last_improved_ff.reset();
     _pts.reset();
+    _ff.reset();
     _last_improved_pts.reset();
+    _last_improved_ff.reset();
 
     int i;
     if(_origin.get_dim()==0){
