@@ -745,7 +745,7 @@ void maps::mcmc_init(){
 
                     mu=evaluate(trial,&i_found);
                     if(i_found>=0){
-                        has_been_adjusted=1;
+                        //has_been_adjusted=1;
                         particles.set(ip,i_found);
                         trails.add(ip,i_found);
                         local_min_pt.set(ip,i_found);
