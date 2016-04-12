@@ -817,13 +817,78 @@ void maps::mcmc_init(){
 
 }
 
+void maps::simplex_init(){
+
+    int i;
+    array_1d<double> smin,smax;
+    for(i=0;i<_chifn.get_dim();i++){
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_minmax(smin,smax);
+
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+
+    array_2d<double> seed;
+    array_1d<double> min_pt;
+    array_1d<int> abs_min_pt;
+    array_1d<double> trial;
+
+    int ip,j,i_found;
+    double mu;
+    for(ip=0;ip<2*_chifn.get_dim();ip++){
+        seed.reset_preserving_room();
+        for(i=0;i<_chifn.get_dim()+1;i++){
+            for(j=0;j<_chifn.get_dim();j++){
+                trial.set(j,_chifn.get_min(j)+
+                            _chifn.random_double()*
+                            (_chifn.get_max(j)-_chifn.get_min(j)));
+            }
+            seed.add_row(trial);
+        }
+
+        ffmin.find_minimum(seed, min_pt);
+        mu=evaluate(min_pt,&i_found);
+        if(i_found>=0 && abs_min_pt.contains(i_found)==0){
+            abs_min_pt.add(i_found);
+        }
+        else{
+            ip--;
+        }
+    }
+
+
+
+    array_1d<double> min_vals, min_val_sorted;
+    array_1d<int> min_dexes;
+
+    for(i=0;i<abs_min_pt.get_dim();i++){
+        min_vals.add(_chifn.get_fn(abs_min_pt.get_data(i)));
+        min_dexes.add(abs_min_pt.get_data(i));
+    }
+    sort_and_check(min_vals, min_val_sorted, min_dexes);
+
+    array_2d<double> final_seed;
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        final_seed.add_row(_chifn.get_pt(min_dexes.get_data(i))[0]);
+    }
+    ffmin.find_minimum(final_seed,trial);
+
+
+}
+
+
 
 void maps::search(int limit){
     int pt_start;
 
     double min0=_chifn.chimin();
     printf("before init min %e\n",_chifn.chimin());
-    mcmc_init();
+    simplex_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
     exit(1);

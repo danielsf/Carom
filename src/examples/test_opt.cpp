@@ -42,7 +42,7 @@ int main(int iargc, char *argv[]){
         map_test->set_min(min);
         map_test->set_max(max);
         map_test->initialize(100);
-        map_test->mcmc_init();
+        map_test->simplex_init();
         if(map_test->get_chimin()>999.0){
             overage++;
         }
