@@ -676,21 +676,6 @@ void maps::mcmc_init(){
 
         if(i_step>0 && i_step%adjust_every==0){
 
-            for(i=0;i<_chifn.get_dim();i++){
-                geo_center.set(i,0.0);
-            }
-
-            for(ip=0;ip<particles.get_dim();ip++){
-                j=trails.get_data(ip,trails.get_cols(ip)/2);
-                for(i=0;i<_chifn.get_dim();i++){
-                    geo_center.add_val(i,_chifn.get_pt(j,i));
-                }
-            }
-
-            for(i=0;i<_chifn.get_dim();i++){
-                geo_center.divide_val(i,double(particles.get_dim()));
-            }
-
             accepted_sorted.reset_preserving_room();
             accepted_dex.reset_preserving_room();
             for(i=0;i<n_particles;i++){
@@ -724,6 +709,45 @@ void maps::mcmc_init(){
             else{
                 re_norm+=0.1;
             }
+
+            for(ip=0;ip<particles.get_dim();ip++){
+                if(since_min.get_data(ip)>=adjust_every){
+
+                    for(i=0;i<_chifn.get_dim();i++){
+                        geo_center.set(i,0.0);
+                    }
+
+                    for(i=0;i<particles.get_dim();i++){
+                        if(i!=ip){
+                            for(j=0;j<_chifn.get_dim();j++){
+                                geo_center.add_val(j,_chifn.get_pt(particles.get_data(i),j));
+                            }
+                        }
+                    }
+
+                    for(i=0;i<_chifn.get_dim();i++){
+                        geo_center.divide_val(i,double(particles.get_dim()-1));
+                    }
+
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i, 2.0*geo_center.get_data(i)
+                                     -_chifn.get_pt(particles.get_data(ip),i));
+                    }
+
+                    mu=evaluate(trial,&i_found);
+                    if(i_found>=0){
+                        particles.set(ip,i_found);
+                        trails.add(ip,i_found);
+                        local_min_pt.set(ip,i_found);
+                        since_min.set(ip,0);
+                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                            abs_min_pt.set(ip,i_found);
+                        }
+                    }
+                }
+            }
+
+
 
             needed_temp_sorted.reset_preserving_room();
 
