@@ -597,7 +597,8 @@ void maps::nested_simplex_init(){
 void maps::mcmc_init(){
     int total_per=1000;
     int adjust_every=50;
-    int n_particles=3*_chifn.get_dim()+1;
+    int n_groups=3;
+    int n_particles=n_groups*(_chifn.get_dim()+1);
 
     array_1d<int> abs_min_pt;
     array_1d<int> local_min_pt;
