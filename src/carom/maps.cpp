@@ -920,9 +920,39 @@ void maps::mcmc_init(){
     }
     sort_and_check(min_vals, min_val_sorted, min_dexes);
     array_2d<double> seed;
+    array_1d<int> chosen;
     for(i=0;i<_chifn.get_dim()+1;i++){
         seed.add_row(_chifn.get_pt(min_dexes.get_data(i))[0]);
+        chosen.add(min_dexes.get_data(i));
     }
+    ffmin.find_minimum(seed,trial);
+
+    seed.reset_preserving_room();
+
+
+    min_vals.reset();
+    min_val_sorted.reset();
+    min_dexes.reset();
+    for(i=0;i<abs_min_pt.get_dim();i++){
+        if(connected.get_data(i)==0){
+            min_vals.add(_chifn.get_fn(abs_min_pt.get_data(i)));
+            min_dexes.add(abs_min_pt.get_data(i));
+        }
+    }
+    sort_and_check(min_vals, min_val_sorted, min_dexes);
+    for(i=0;i<min_dexes.get_dim() && seed.get_rows()!=_chifn.get_dim()+1;i++){
+        seed.add_row(_chifn.get_pt(min_dexes.get_data(i))[0]);
+        chosen.add(min_dexes.get_data(i));
+    }
+
+    while(seed.get_rows()!=_chifn.get_dim()+1){
+        i=_chifn.random_int()%abs_min_pt.get_dim();
+        if(chosen.contains(abs_min_pt.get_data(i))==0 && abs_min_pt.get_data(i)!=dex_min){
+            seed.add_row(_chifn.get_pt(abs_min_pt.get_data(i))[0]);
+            chosen.add(abs_min_pt.get_data(i));
+        }
+    }
+
     ffmin.find_minimum(seed,trial);
 
 }
