@@ -404,7 +404,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
         abort_max*=2;
     }
 
-    //printf("    simplex starts with %e\n",_true_min_ff);
+    printf("    simplex starts with %e\n",_true_min_ff);
     int go_on=1;
     while(go_on==1){
         if(_called_evaluate-_last_found>=abort_max){
