@@ -22,6 +22,7 @@ void simplex_minimizer::initialize(){
     _cost=NULL;
     _chisquared=NULL;
     _dice=NULL;
+    _limit=-1;
 
     _min_temp=-3.0;
 
@@ -404,7 +405,15 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
 
     printf("    simplex starts with %e\n",_true_min_ff);
-    while(_called_evaluate-_last_found<abort_max){
+    int go_on=1;
+    while(go_on==1){
+        if(_called_evaluate-_last_found>=abort_max){
+            go_on=0;
+        }
+
+        if(_limit>=0 && _called_evaluate>_limit){
+            go_on=0;
+        }
 
        if(_is_a_model==1){
            paranoia();

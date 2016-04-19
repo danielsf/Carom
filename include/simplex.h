@@ -31,6 +31,10 @@ public:
     void find_minimum(array_2d<double>&, array_1d<double>&);
     double get_minimum();
 
+    void set_limit(int ii){
+        _limit=ii;
+    }
+
 private:
 
     double evaluate(array_1d<double>&);
@@ -57,6 +61,7 @@ private:
     int _last_found,_called_evaluate,_abort_max_factor;
     int _last_cooled_off;
     int _is_a_model;
+    int _limit;
     array_1d<double> _transform, _origin,_ff,_pstar,_pstarstar,_min_pt;
     array_1d<double> _last_improved_ff;
     array_1d<double> _min,_max;
