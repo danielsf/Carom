@@ -461,6 +461,17 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        }
 
        if(j==1){
+
+           for(i=0;i<dim;i++){
+                pbar.set(i,0.0);
+                for(j=0;j<dim+1;j++){
+                    if(j!=_ih){
+                        pbar.add_val(i,_pts.get_data(j,i));
+                    }
+                }
+                pbar.divide_val(i,double(dim));
+           }
+
            for(i=0;i<dim;i++){
                _pstarstar.set(i,_beta*_pts.get_data(_ih,i)+(1.0-_beta)*pbar.get_data(i));
            }
