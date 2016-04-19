@@ -536,6 +536,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     printf("    _true_min_ff %e\n",_true_min_ff);*/
 
     printf("    actually called %d\n",_chisquared->get_called()-ibefore);
+    printf("    got min %e\n",_true_min_ff);
 
     _freeze_temp=-1;
 }
