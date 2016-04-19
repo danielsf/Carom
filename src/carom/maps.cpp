@@ -684,7 +684,7 @@ void maps::mcmc_init(){
     int step_ct=0;
     int needs_adjustment;
 
-    array_1d<double> geo_center;
+    array_1d<double> geo_center,local_min,local_max;
     int min_pt_connected;
 
     printf("starting steps with min %e\n",_chifn.chimin());
@@ -791,6 +791,21 @@ void maps::mcmc_init(){
                 re_norm+=0.1;
             }
 
+            local_min.reset_preserving_room();
+            local_max.reset_preserving_room();
+
+            for(ip=0;ip<particles.get_dim();ip++){
+                current_particles.set(ip,particles.get_data(ip));
+                for(i=0;i<_chifn.get_dim();i++){
+                    if(ip==0 || _chifn.get_pt(particles.get_data(ip),i)<local_min.get_data(i)){
+                        local_min.set(i,_chifn.get_pt(particles.get_data(ip),i));
+                    }
+                    if(ip==0 || _chifn.get_pt(particles.get_data(ip),i)>local_max.get_data(i)){
+                        local_max.set(i,_chifn.get_pt(particles.get_data(ip),i));
+                    }
+                }
+            }
+
             for(ip=0;ip<particles.get_dim();ip++){
                 if(since_min.get_data(ip)>=adjust_every){
                     min_pt_connected=0;
@@ -811,7 +826,13 @@ void maps::mcmc_init(){
                         min_pt_connected=1;
                     }
 
-                    if(min_pt_connected==1){
+                    if(min_pt_connected==0){
+                        for(i=0;i<_chifn.get_dim();i++){
+                            mu=local_max.get_data(i)-local_min.get_data(i);
+                            trial.set(i,local_min.get_data(i)+_chifn.random_double()*mu);
+                        }
+                    }
+                    else{
                         for(i=0;i<_chifn.get_dim();i++){
                             geo_center.set(i,0.0);
                         }
@@ -832,16 +853,16 @@ void maps::mcmc_init(){
                             trial.set(i, 3.0*geo_center.get_data(i)
                                          -2.0*_chifn.get_pt(particles.get_data(ip),i));
                         }
+                    }
 
-                        mu=evaluate(trial,&i_found);
-                        if(i_found>=0){
-                            particles.set(ip,i_found);
-                            trails.add(ip,i_found);
-                            local_min_pt.set(ip,i_found);
-                            since_min.set(ip,0);
-                            if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
-                                abs_min_pt.set(ip,i_found);
-                            }
+                    mu=evaluate(trial,&i_found);
+                    if(i_found>=0){
+                        particles.set(ip,i_found);
+                        trails.add(ip,i_found);
+                        local_min_pt.set(ip,i_found);
+                        since_min.set(ip,0);
+                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                            abs_min_pt.set(ip,i_found);
                         }
                     }
                 }
@@ -853,10 +874,6 @@ void maps::mcmc_init(){
 
             //printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
             //min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
-
-            for(ip=0;ip<particles.get_dim();ip++){
-                current_particles.set(ip,particles.get_data(ip));
-            }
 
             if(has_been_adjusted==1){
                 needed_temp_arr.reset_preserving_room();
