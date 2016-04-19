@@ -686,6 +686,7 @@ void maps::mcmc_init(){
 
     array_1d<double> geo_center;
 
+    printf("starting steps with min %e\n",_chifn.chimin());
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
 
@@ -852,13 +853,52 @@ void maps::mcmc_init(){
         }
     }
 
+    array_1d<int> connected;
+    double mu_min;
+    int dex_min;
+
+    for(i=0;i<abs_min_pt.get_dim();i++){
+        if(i==0 || _chifn.get_fn(abs_min_pt.get_data(i))<mu_min){
+             mu_min=_chifn.get_fn(abs_min_pt.get_data(i));
+             dex_min=abs_min_pt.get_data(i);
+        }
+    }
+
+    double min_disconnected=2.0*exception_value;
+    int n_disconnected=0;
+
+    for(i=0;i<abs_min_pt.get_dim();i++){
+        if(abs_min_pt.get_data(i)==dex_min){
+            connected.set(i,1);
+        }
+        else{
+            for(j=0;j<_chifn.get_dim();j++){
+                trial.set(j,0.5*(_chifn.get_pt(dex_min,j)+
+                            _chifn.get_pt(abs_min_pt.get_data(i),j)));
+            }
+            mu=evaluate(trial,&j);
+            if(mu<_chifn.get_fn(abs_min_pt.get_data(i))){
+                connected.set(i,1);
+            }
+            else{
+                connected.set(i,0);
+                n_disconnected++;
+                if(_chifn.get_fn(abs_min_pt.get_data(i))<min_disconnected){
+                    min_disconnected=_chifn.get_fn(abs_min_pt.get_data(i));
+                }
+            }
+        }
+    }
+
     for(i=0;i<n_particles;i++){
-        printf("min %e %d - %e\n",
+        printf("min %e %d - %e - %d\n",
         _chifn.get_fn(abs_min_pt.get_data(i)),
         total_accepted.get_data(i),
-        _chifn.get_fn(local_min_pt.get_data(i)));
+        _chifn.get_fn(local_min_pt.get_data(i)),
+        connected.get_data(i));
     }
     printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
+    printf("min disconnected %e - %d\n",min_disconnected,n_disconnected);
 
     array_1d<double> smin,smax;
     for(i=0;i<_chifn.get_dim();i++){
