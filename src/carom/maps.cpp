@@ -807,6 +807,9 @@ void maps::mcmc_init(){
                         min_pt_connected=1;
                         local_min_pt.set(ip,i);
                     }
+                    if(local_min_pt.get_data(ip)==_chifn.mindex()){
+                        min_pt_connected=1;
+                    }
 
                     if(min_pt_connected==1){
                         for(i=0;i<_chifn.get_dim();i++){
