@@ -790,7 +790,7 @@ void maps::mcmc_init(){
                 re_norm+=0.1;
             }
 
-            for(ip=0;ip<particles.get_dim();ip++){
+            /*for(ip=0;ip<particles.get_dim();ip++){
                 if(since_min.get_data(ip)>=adjust_every){
 
                     for(i=0;i<_chifn.get_dim();i++){
@@ -825,7 +825,7 @@ void maps::mcmc_init(){
                         }
                     }
                 }
-            }
+            }*/
 
 
 
