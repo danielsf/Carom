@@ -829,8 +829,8 @@ void maps::mcmc_init(){
 
             needed_temp_sorted.reset_preserving_room();
 
-            printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
-            min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
+            //printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
+            //min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn.chimin());
 
             for(ip=0;ip<particles.get_dim();ip++){
                 current_particles.set(ip,particles.get_data(ip));
