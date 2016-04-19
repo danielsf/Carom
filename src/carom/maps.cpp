@@ -826,8 +826,8 @@ void maps::mcmc_init(){
                         }
 
                         for(i=0;i<_chifn.get_dim();i++){
-                            trial.set(i, 2.0*geo_center.get_data(i)
-                                         -_chifn.get_pt(particles.get_data(ip),i));
+                            trial.set(i, 3.0*geo_center.get_data(i)
+                                         -2.0*_chifn.get_pt(particles.get_data(ip),i));
                         }
 
                         mu=evaluate(trial,&i_found);
