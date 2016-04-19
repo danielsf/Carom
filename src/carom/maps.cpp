@@ -516,6 +516,84 @@ void maps::explore(){
 
 }
 
+void maps::nested_simplex_init(){
+
+    int n_steps=10;
+    int n_internal_steps=20000;
+    int n_pts=2*_chifn.get_dim();
+
+    array_2d<double> pts;
+    array_1d<int> active;
+    array_2d<double> seed;
+    array_1d<double> norm,smin,smax;
+
+    int i;
+    for(i=0;i<_chifn.get_dim();i++){
+        norm.set(i,_chifn.get_characteristic_length(i));
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+
+    array_1d<double> trial;
+    double mu;
+    while(pts.get_rows()<n_pts){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,_chifn.get_min(i)+_chifn.random_double()*
+                       (_chifn.get_max(i)-_chifn.get_min(i)));
+        }
+        mu=evaluate(trial,&i);
+        if(mu<exception_value && i>=0){
+            pts.add_row(trial);
+        }
+    }
+
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_minmax(smin,smax);
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+    ffmin.set_limit(n_internal_steps);
+
+    int i_step;
+    int j;
+    for(i_step=0;i_step<n_steps;i_step++){
+        seed.reset_preserving_room();
+        active.reset_preserving_room();
+        while(active.get_dim()!=_chifn.get_dim()+1){
+            i=_chifn.random_int()%pts.get_rows();
+            if(active.contains(i)==0){
+                active.add(i);
+                seed.add_row(pts(i)[0]);
+            }
+        }
+        ffmin.find_minimum(seed, trial);
+        for(i=0;i<active.get_dim();i++){
+            ffmin.get_pt(i,trial);
+            for(j=0;j<_chifn.get_dim();j++){
+                pts.set(active.get_data(i),j,trial.get_data(j));
+            }
+        }
+        printf("    chimin %e\n",_chifn.chimin());
+    }
+
+    ffmin.set_limit(-1);
+    seed.reset_preserving_room();
+    array_1d<double> min_val,min_val_sorted;
+    array_1d<int> min_val_dex;
+    for(i=0;i<pts.get_rows();i++){
+        min_val_dex.add(i);
+        mu=evaluate(pts(i)[0],&j);
+        min_val.add(mu);
+    }
+    sort_and_check(min_val, min_val_sorted, min_val_dex);
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        seed.add_row(pts(min_val_dex.get_data(i))[0]);
+    }
+    ffmin.find_minimum(seed, trial);
+
+}
+
 void maps::mcmc_init(){
     int total_per=1000;
     int adjust_every=50;
