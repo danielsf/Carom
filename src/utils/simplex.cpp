@@ -784,6 +784,14 @@ void simplex_minimizer::expand(){
     if(need_thaw_called==1)_freeze_called=0;
 }
 
+
+void simplex_minimizer::get_pt(int ii, array_1d<double> &out){
+    int i;
+    for(i=0;i<_pts.get_cols();i++){
+        out.set(i,_pts.get_data(ii,i)*_transform.get_data(i)+_origin.get_data(i));
+    }
+}
+
 void simplex_minimizer::get_minpt(array_1d<double> &out){
     int i;
     for(i=0;i<_min_pt.get_dim();i++){

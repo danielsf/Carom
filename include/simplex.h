@@ -22,6 +22,7 @@ public:
     void freeze_temp();
     void unfreeze_temp();
     void get_minpt(array_1d<double>&);
+    void get_pt(int,array_1d<double>&);
     void is_a_model();
 
     /*
