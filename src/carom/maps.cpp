@@ -812,57 +812,29 @@ void maps::mcmc_init(){
 
             for(ip=0;ip<particles.get_dim();ip++){
                 if(since_min.get_data(ip)>=adjust_every){
-                    min_pt_connected=0;
-                    for(i=0;i<_chifn.get_dim();i++){
-                        trial.set(i,0.5*(_chifn.get_pt(local_min_pt.get_data(ip),i)+
-                                         _chifn.get_pt(_chifn.mindex(),i)));
-                    }
-
-                    mu=evaluate(trial, &i);
-                    if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
-                        abs_min_pt.set(ip,i);
-                    }
-                    if(mu<_chifn.get_fn(local_min_pt.get_data(ip))){
-                        min_pt_connected=1;
-                        local_min_pt.set(ip,i);
-                    }
-                    if(local_min_pt.get_data(ip)==_chifn.mindex()){
-                        min_pt_connected=1;
-                    }
-
-                    if(min_pt_connected==1){
+                    c_v.reset_preserving_room();
+                    c_v_s.reset_preserving_room();
+                    c_v_d.reset_preserving_room();
+                    for(j=0;j<100;j++){
                         for(i=0;i<_chifn.get_dim();i++){
-                            geo_center.set(i,0.0);
+                            trial.set(i,_chifn.get_min(i)+_chifn.random_double()*
+                                      (_chifn.get_max(i)-_chifn.get_min(i)));
                         }
-
-                        for(i=0;i<particles.get_dim();i++){
-                            if(i!=ip){
-                                for(j=0;j<_chifn.get_dim();j++){
-                                    geo_center.add_val(j,_chifn.get_pt(particles.get_data(i),j));
-                                }
-                            }
-                        }
-
-                        for(i=0;i<_chifn.get_dim();i++){
-                            geo_center.divide_val(i,double(particles.get_dim()-1));
-                        }
-
-                        for(i=0;i<_chifn.get_dim();i++){
-                            trial.set(i, 3.0*geo_center.get_data(i)
-                                         -2.0*_chifn.get_pt(particles.get_data(ip),i));
-                        }
-
                         mu=evaluate(trial,&i_found);
                         if(i_found>=0){
-                            particles.set(ip,i_found);
-                            trails.add(ip,i_found);
-                            local_min_pt.set(ip,i_found);
-                            since_min.set(ip,0);
-                            if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
-                                abs_min_pt.set(ip,i_found);
-                            }
+                            c_v.add(mu);
+                            c_v_d.add(i_found);
+                        }
+                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                            abs_min_pt.set(ip,i_found);
                         }
                     }
+                    sort_and_check(c_v, c_v_s, c_v_d);
+                    i_best=c_v_d.get_data(c_v_d.get_dim()/2);
+                    particles.set(ip,i_best);
+                    local_min_pt.set(ip,i_best);
+                    trails.add(ip, i_best);
+                    since_min.set(ip,0);
                 }
             }
 
