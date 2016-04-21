@@ -778,6 +778,13 @@ void maps::mcmc_init(){
                 needs_adjustment=-1;
             }
 
+            if(needs_adjustment==1){
+                re_norm*=0.7;
+            }
+            else{
+                re_norm+=0.1;
+            }
+
             if(needs_adjustment!=0){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 old_temp=_temp;
@@ -786,9 +793,6 @@ void maps::mcmc_init(){
                 if(fabs(1.0-(_temp/old_temp))>0.01){
                     has_been_adjusted=1;
                 }
-            }
-            else{
-                re_norm+=0.1;
             }
 
             for(ip=0;ip<particles.get_dim();ip++){
@@ -919,6 +923,7 @@ void maps::mcmc_init(){
     }
     printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
     printf("min disconnected %e - %d\n",min_disconnected,n_disconnected);
+    printf("re_norm %e\n",re_norm);
 
     array_1d<double> smin,smax;
     for(i=0;i<_chifn.get_dim();i++){
