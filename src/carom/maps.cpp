@@ -829,10 +829,7 @@ void maps::mcmc_init(){
                         }
                     }
 
-                    c_v.reset_preserving_room();
-                    c_v_s.reset_preserving_room();
-                    c_v_d.reset_preserving_room();
-
+                    i_best=-1;
                     for(j=0;j<100;j++){
                         for(i=0;i<_chifn.get_dim();i++){
                             trial.set(i,local_min.get_data(i)+_chifn.random_double()*
@@ -840,15 +837,15 @@ void maps::mcmc_init(){
                         }
                         mu=evaluate(trial,&i_found);
                         if(i_found>=0){
-                            c_v.add(mu);
-                            c_v_d.add(i_found);
+                            if(i_best<0 || mu<_chifn.get_fn(i_best)){
+                                i_best=i_found;
+                            }
                         }
                         if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
                             abs_min_pt.set(ip,i_found);
                         }
                     }
-                    sort_and_check(c_v, c_v_s, c_v_d);
-                    i_best=c_v_d.get_data(c_v_d.get_dim()/2);
+
                     particles.set(ip,i_best);
                     local_min_pt.set(ip,i_best);
                     trails.add(ip, i_best);
