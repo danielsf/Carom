@@ -699,7 +699,7 @@ void maps::mcmc_init(){
     int step_ct=0;
     int needs_adjustment;
 
-    array_1d<double> geo_center;
+    array_1d<double> geo_center,local_min,local_max;
     int min_pt_connected;
 
     printf("starting steps with min %e\n",_chifn.chimin());
@@ -810,15 +810,33 @@ void maps::mcmc_init(){
                 }
             }
 
+            local_min.reset_preserving_room();
+            local_max.reset_preserving_room();
+
             for(ip=0;ip<particles.get_dim();ip++){
                 if(since_min.get_data(ip)>=adjust_every){
+                    if(local_min.get_dim()==0){
+                        for(i=0;i<particles.get_dim();i++){
+                            for(j=0;j<_chifn.get_dim();j++){
+                                mu=_chifn.get_pt(trails.get_data(i,trails.get_cols(i)/2),j);
+                                if(j>=local_min.get_dim() || mu<local_min.get_data(j)){
+                                    local_min.set(j,mu);
+                                }
+                                if(j>=local_max.get_dim() || mu>local_max.get_data(j)){
+                                    local_max.set(j,mu);
+                                }
+                            }
+                        }
+                    }
+
                     c_v.reset_preserving_room();
                     c_v_s.reset_preserving_room();
                     c_v_d.reset_preserving_room();
+
                     for(j=0;j<100;j++){
                         for(i=0;i<_chifn.get_dim();i++){
-                            trial.set(i,_chifn.get_min(i)+_chifn.random_double()*
-                                      (_chifn.get_max(i)-_chifn.get_min(i)));
+                            trial.set(i,local_min.get_data(i)+_chifn.random_double()*
+                                      (local_max.get_data(i)-local_min.get_data(i)));
                         }
                         mu=evaluate(trial,&i_found);
                         if(i_found>=0){
