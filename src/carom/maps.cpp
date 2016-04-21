@@ -626,7 +626,7 @@ void maps::mcmc_init(){
 
     re_norm=1.0;
 
-    int ip,i,j,i_step,i_found;
+    int ip,i,j,k,i_step,i_found;
 
     for(i=0;i<_chifn.get_dim();i++){
         norm.set(i,_chifn.get_characteristic_length(i));
@@ -643,12 +643,7 @@ void maps::mcmc_init(){
     min_val_sorted.set_name("min_val_sorted");
     min_dexes.set_name("min_dexes");
 
-    array_1d<double> dd,dd_sorted;
-    array_1d<int> dd_dexes,current_particles;
-    double dd_term;
-    dd.set_name("mcmc_init_dd");
-    dd_sorted.set_name("mcmc_init_dd_sorted");
-    dd_dexes.set_name("mcmc_init_dd_dexes");
+    array_1d<int> current_particles;
     current_particles.set_name("mcmc_init_current_particles");
 
     asymm_array_2d<int> trails;
@@ -701,6 +696,7 @@ void maps::mcmc_init(){
 
     array_1d<double> geo_center,local_min,local_max;
     int min_pt_connected;
+    double dd_min,dd_best,dd;
 
     printf("starting steps with min %e\n",_chifn.chimin());
     for(i_step=0;i_step<total_per;i_step++){
@@ -830,20 +826,33 @@ void maps::mcmc_init(){
                     }
 
                     i_best=-1;
-                    for(j=0;j<100;j++){
+                    for(k=0;k<100 || i_best<0;k++){
                         for(i=0;i<_chifn.get_dim();i++){
                             trial.set(i,local_min.get_data(i)+_chifn.random_double()*
                                       (local_max.get_data(i)-local_min.get_data(i)));
                         }
-                        mu=evaluate(trial,&i_found);
-                        if(i_found>=0){
-                            if(i_best<0 || mu<_chifn.get_fn(i_best)){
-                                i_best=i_found;
+
+                        for(i=0;i<particles.get_dim();i++){
+                            dd=0.0;
+                            for(j=0;j<_chifn.get_dim();j++){
+                                dd+=power((trial.get_data(j)-_chifn.get_pt(abs_min_pt.get_data(i),j))/norm.get_data(j),2);
+                            }
+                            if(i==0 || dd<dd_min){
+                                 dd_min=dd;
                             }
                         }
+
+                        mu=evaluate(trial,&i_found);
+
                         if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
                             abs_min_pt.set(ip,i_found);
                         }
+
+                        if(i_best<0 || dd_min>dd_best){
+                            dd_best=dd_min;
+                            i_best=i_found;
+                        }
+
                     }
 
                     particles.set(ip,i_best);
