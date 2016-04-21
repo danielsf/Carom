@@ -659,20 +659,35 @@ void maps::mcmc_init(){
         total_accepted.set(i,0);
     }
 
+    int i_best;
+    int n_cand=100;
+
+    array_1d<double> c_v,c_v_s;
+    array_1d<int> c_v_d;
+
     for(ip=0;ip<n_particles;ip++){
-       i_found=-1;
-        while(i_found<0){
+        i_best=-1;
+        c_v.reset();
+        c_v_s.reset();
+        c_v_d.reset();
+        for(j=0;j<n_cand;j++){
             for(i=0;i<_chifn.get_dim();i++){
                 trial.set(i,_chifn.get_min(i)+
                            _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
             }
             mu=evaluate(trial,&i_found);
+            if(i_found>=0){
+                c_v.add(mu);
+                c_v_d.add(i_found);
+            }
 
         }
-        particles.set(ip,i_found);
-        trails.set(ip,0,i_found);
-        abs_min_pt.set(ip,i_found);
-        local_min_pt.set(ip,i_found);
+        sort_and_check(c_v,c_v_s,c_v_d);
+        i_best=c_v_d.get_data(c_v_d.get_dim()/2);
+        particles.set(ip,i_best);
+        trails.set(ip,0,i_best);
+        abs_min_pt.set(ip,i_best);
+        local_min_pt.set(ip,i_best);
         since_min.set(ip,0);
     }
 
