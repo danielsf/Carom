@@ -811,54 +811,66 @@ void maps::mcmc_init(){
 
             for(ip=0;ip<particles.get_dim();ip++){
                 if(since_min.get_data(ip)>=adjust_every){
-                    if(local_min.get_dim()==0){
-                        for(i=0;i<particles.get_dim();i++){
-                            for(j=0;j<_chifn.get_dim();j++){
-                                mu=_chifn.get_pt(trails.get_data(i,trails.get_cols(i)/2),j);
-                                if(j>=local_min.get_dim() || mu<local_min.get_data(j)){
-                                    local_min.set(j,mu);
-                                }
-                                if(j>=local_max.get_dim() || mu>local_max.get_data(j)){
-                                    local_max.set(j,mu);
-                                }
-                            }
-                        }
+                    min_pt_connected=0;
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,0.5*(_chifn.get_pt(_chifn.mindex(),i)+
+                                   _chifn.get_pt(local_min_pt.get_data(ip),i)));
+                    }
+                    mu=evaluate(trial,&i_found);
+                    if(mu<_chifn.get_fn(local_min_pt.get_data(ip)) || local_min_pt.get_data(ip)==_chifn.mindex()){
+                        min_pt_connected=1;
                     }
 
-                    i_best=-1;
-                    for(k=0;k<100 || i_best<0;k++){
-                        for(i=0;i<_chifn.get_dim();i++){
-                            trial.set(i,local_min.get_data(i)+_chifn.random_double()*
-                                      (local_max.get_data(i)-local_min.get_data(i)));
-                        }
-
-                        for(i=0;i<particles.get_dim();i++){
-                            dd=0.0;
-                            for(j=0;j<_chifn.get_dim();j++){
-                                dd+=power((trial.get_data(j)-_chifn.get_pt(abs_min_pt.get_data(i),j))/norm.get_data(j),2);
-                            }
-                            if(i==0 || dd<dd_min){
-                                 dd_min=dd;
+                    if(min_pt_connected==1){
+                        if(local_min.get_dim()==0){
+                            for(i=0;i<particles.get_dim();i++){
+                                for(j=0;j<_chifn.get_dim();j++){
+                                    mu=_chifn.get_pt(trails.get_data(i,trails.get_cols(i)/2),j);
+                                    if(j>=local_min.get_dim() || mu<local_min.get_data(j)){
+                                        local_min.set(j,mu);
+                                    }
+                                    if(j>=local_max.get_dim() || mu>local_max.get_data(j)){
+                                        local_max.set(j,mu);
+                                    }
+                                }
                             }
                         }
 
-                        mu=evaluate(trial,&i_found);
+                        i_best=-1;
+                        for(k=0;k<100 || i_best<0;k++){
+                            for(i=0;i<_chifn.get_dim();i++){
+                                trial.set(i,local_min.get_data(i)+_chifn.random_double()*
+                                          (local_max.get_data(i)-local_min.get_data(i)));
+                            }
 
-                        if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
-                            abs_min_pt.set(ip,i_found);
+                            for(i=0;i<particles.get_dim();i++){
+                                dd=0.0;
+                                for(j=0;j<_chifn.get_dim();j++){
+                                    dd+=power((trial.get_data(j)-_chifn.get_pt(abs_min_pt.get_data(i),j))/norm.get_data(j),2);
+                                }
+                                if(i==0 || dd<dd_min){
+                                     dd_min=dd;
+                                }
+                            }
+
+                            mu=evaluate(trial,&i_found);
+
+                            if(mu<_chifn.get_fn(abs_min_pt.get_data(ip))){
+                                abs_min_pt.set(ip,i_found);
+                            }
+
+                            if(i_best<0 || dd_min>dd_best){
+                                dd_best=dd_min;
+                                i_best=i_found;
+                            }
+
                         }
 
-                        if(i_best<0 || dd_min>dd_best){
-                            dd_best=dd_min;
-                            i_best=i_found;
-                        }
-
+                        particles.set(ip,i_best);
+                        local_min_pt.set(ip,i_best);
+                        trails.add(ip, i_best);
+                        since_min.set(ip,0);
                     }
-
-                    particles.set(ip,i_best);
-                    local_min_pt.set(ip,i_best);
-                    trails.add(ip, i_best);
-                    since_min.set(ip,0);
                 }
             }
 
