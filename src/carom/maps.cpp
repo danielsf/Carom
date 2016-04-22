@@ -698,6 +698,9 @@ void maps::mcmc_init(){
     int min_pt_connected;
     double dd_min,dd_best,dd;
 
+    int n_jumps=0;
+    int n_opt_out=0;
+
     printf("starting steps with min %e\n",_chifn.chimin());
     for(i_step=0;i_step<total_per;i_step++){
         for(ip=0;ip<n_particles;ip++){
@@ -821,7 +824,12 @@ void maps::mcmc_init(){
                         min_pt_connected=1;
                     }
 
+                    if(min_pt_connected==0){
+                        n_opt_out++;
+                    }
+
                     if(min_pt_connected==1){
+                        n_jumps++;
                         if(local_min.get_dim()==0){
                             for(i=0;i<particles.get_dim();i++){
                                 for(j=0;j<_chifn.get_dim();j++){
@@ -947,6 +955,7 @@ void maps::mcmc_init(){
     printf("called %d -- %e\n",_chifn.get_pts(),_chifn.chimin());
     printf("min disconnected %e - %d\n",min_disconnected,n_disconnected);
     printf("re_norm %e\n",re_norm);
+    printf("jumped %d vs %d\n",n_jumps,n_opt_out);
 
     array_1d<double> smin,smax;
     for(i=0;i<_chifn.get_dim();i++){
