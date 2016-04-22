@@ -859,6 +859,7 @@ void maps::mcmc_init(){
     array_1d<double> vv;
 
     int i_dim;
+    double sgn;
 
     printf("starting steps with min %e\n",_chifn.chimin());
     for(i_step=0;i_step<total_per;i_step++){
@@ -888,6 +889,14 @@ void maps::mcmc_init(){
 
             i_dim=_chifn.random_int()%_chifn.get_dim();
 
+            roll=_chifn.random_double();
+            if(roll>0.5){
+                sgn=1.0;
+            }
+            else{
+                sgn=-1.0;
+            }
+
             rr=-1.0;
             while(rr<1.0e-10){
                 rr=fabs(normal_deviate(_chifn.get_dice(),re_norm,0.5*re_norm));
@@ -895,7 +904,7 @@ void maps::mcmc_init(){
 
             for(i=0;i<_chifn.get_dim();i++){
                 trial.set(i,_chifn.get_pt(particles.get_data(ip),i)+
-                            rr*norm.get_data(i)*bases.get_data(i_dim,i));
+                            sgn*rr*norm.get_data(i)*bases.get_data(i_dim,i));
             }
             mu=evaluate(trial,&i_found);
 
