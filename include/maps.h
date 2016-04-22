@@ -39,6 +39,7 @@ public:
     void mcmc_init();
     void simplex_init();
     void nested_simplex_init();
+    void gibbs_init();
 
     void explore();
     void simplex_min_search();

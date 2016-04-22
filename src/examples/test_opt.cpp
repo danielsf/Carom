@@ -42,7 +42,7 @@ int main(int iargc, char *argv[]){
         map_test->set_min(min);
         map_test->set_max(max);
         map_test->initialize(100);
-        map_test->mcmc_init();
+        map_test->gibbs_init();
         if(map_test->get_chimin()>999.0){
             overage++;
         }
@@ -52,8 +52,9 @@ int main(int iargc, char *argv[]){
         seed_list.get_data(i_s),map_test->get_called(),map_test->get_chimin());
         fclose(output_file);
 
-        printf("\nseed %d min %e overage %d out of %d\n\n",
-        seed_list.get_data(i_s),map_test->get_chimin(),overage,i_s+1);
+        printf("\nseed %d min %e overage %d out of %d %d\n\n",
+        seed_list.get_data(i_s),map_test->get_chimin(),overage,i_s+1,
+        map_test->get_called());
         delete map_test;
         delete chisq;
     }

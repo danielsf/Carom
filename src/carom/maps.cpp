@@ -594,6 +594,160 @@ void maps::nested_simplex_init(){
 
 }
 
+void maps::gibbs_init(){
+
+    array_2d<double> bases;
+    array_1d<double> vv,trial,best_pt,center_pt;
+    array_1d<int> particles;
+    double xmin,xmax;
+
+    int n_particles=_chifn.get_dim()+1;
+
+    int i,j,k,ip,ix,is_valid,i_best,i_found;
+    int iteration;
+    double mu,ff_best,dx,xx;
+    int n_samples=100;
+    array_1d<int> grid;
+    array_1d<double> grid_mu;
+    for(ip=0;ip<n_particles;ip++){
+
+        for(i=0;i<_chifn.get_dim();i++){
+            best_pt.set(i,_chifn.get_min(i)+_chifn.random_double()*
+                        (_chifn.get_max(i)-_chifn.get_min(i)));
+            best_pt.set(i,0.0);
+        }
+        ff_best=evaluate(best_pt,&i_best);
+
+        for(iteration=0;iteration<8;iteration++){
+
+        bases.reset_preserving_room();
+        while(bases.get_rows()!=_chifn.get_dim()){
+            for(i=0;i<_chifn.get_dim();i++){
+                vv.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+            }
+            for(i=0;i<bases.get_rows();i++){
+                mu=0.0;
+                for(j=0;j<_chifn.get_dim();j++){
+                    mu+=vv.get_data(j)*bases.get_data(i,j);
+                }
+                for(j=0;j<_chifn.get_dim();j++){
+                    vv.subtract_val(j,mu*bases.get_data(i,j));
+                }
+            }
+            mu=vv.normalize();
+            if(mu>1.0e-10){
+                bases.add_row(vv);
+            }
+        }
+
+
+
+        for(ix=0;ix<_chifn.get_dim();ix++){
+
+            for(i=0;i<_chifn.get_dim();i++){
+                center_pt.set(i,best_pt.get_data(i));
+            }
+            for(i=0;i<_chifn.get_dim();i++){
+                if(i==0 || fabs(bases.get_data(ix,i))>mu){
+                    j=i;
+                    mu=fabs(bases.get_data(ix,i));
+                }
+            }
+            dx=0.1*_chifn.get_characteristic_length(j);
+            is_valid=1;
+            xmin=0.0;
+            while(is_valid==1){
+                xmin-=dx;
+                for(i=0;i<_chifn.get_dim();i++){
+                    trial.set(i,center_pt.get_data(i)+xmin*bases.get_data(ix,i));
+                }
+                for(i=0;i<_chifn.get_dim();i++){
+                    if(trial.get_data(i)<_chifn.get_min(i)){
+                        is_valid=0;
+                    }
+                    if(trial.get_data(i)>_chifn.get_max(i)){
+                        is_valid=0;
+                    }
+                }
+            }
+            is_valid=1;
+            xmax=0.0;
+            while(is_valid==1){
+                xmax+=dx;
+                for(i=0;i<_chifn.get_dim();i++){
+                    trial.set(i,center_pt.get_data(i)+xmax*bases.get_data(ix,i));
+                }
+                for(i=0;i<_chifn.get_dim();i++){
+                    if(trial.get_data(i)<_chifn.get_min(i)){
+                        is_valid=0;
+                    }
+                    if(trial.get_data(i)>_chifn.get_max(i)){
+                        is_valid=0;
+                    }
+                }
+            }
+
+            //actually evaluate something
+            n_samples=10;
+            for(j=0;j<n_samples;j++){
+                grid.reset_preserving_room();
+                grid_mu.reset_preserving_room();
+                dx=(xmax-xmin)/4.0;
+                for(k=0;k<5;k++){
+                    xx=xmin+k*dx;
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,center_pt.get_data(i)+xx*bases.get_data(ix,i));
+                    }
+                    mu=evaluate(trial,&i_found);
+                    if(mu<ff_best){
+                        i_best=i_found;
+                        ff_best=mu;
+                        for(i=0;i<_chifn.get_dim();i++){
+                            best_pt.set(i,trial.get_data(i));
+                        }
+                    }
+                    grid.set(k,i_found);
+                    grid_mu.set(k,mu);
+                }
+
+                for(k=0;k<grid.get_dim();k++){
+                    if(k==0 || grid_mu.get_data(k)<mu){
+                        mu=grid_mu.get_data(k);
+                        i=k;
+                    }
+                }
+                mu=xmin;
+                xmin=mu+(i-1)*dx;
+                xmax=mu+(i+1)*dx;
+
+            }
+
+
+        }
+        }//iteration
+        particles.add(i_best);
+
+    }
+
+
+    simplex_minimizer ffmin;
+    array_1d<double> smin,smax;
+    for(i=0;i<_chifn.get_dim();i++){
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+    ffmin.set_minmax(smin,smax);
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+    array_2d<double> seed;
+    for(i=0;i<particles.get_dim();i++){
+        seed.add_row(_chifn.get_pt(particles.get_data(i))[0]);
+    }
+    ffmin.find_minimum(seed, trial);
+}
+
+
 void maps::mcmc_init(){
     int total_per=1000;
     int adjust_every=50;
