@@ -855,9 +855,38 @@ void maps::mcmc_init(){
     int n_jumps=0;
     int n_opt_out=0;
 
+    array_2d<double> bases;
+    array_1d<double> vv;
+
+    int i_dim;
+
     printf("starting steps with min %e\n",_chifn.chimin());
     for(i_step=0;i_step<total_per;i_step++){
+        if(i_step%(4*_chifn.get_dim())==0){
+            bases.reset_preserving_room();
+            while(bases.get_rows()!=_chifn.get_dim()){
+                for(i=0;i<_chifn.get_dim();i++){
+                    vv.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+                }
+                for(i=0;i<bases.get_rows();i++){
+                    mu=0.0;
+                    for(j=0;j<_chifn.get_dim();j++){
+                        mu+=vv.get_data(j)*bases.get_data(i,j);
+                    }
+                    for(j=0;j<_chifn.get_dim();j++){
+                        vv.subtract_val(j,mu*bases.get_data(i,j));
+                    }
+               }
+               mu=vv.normalize();
+                if(mu>1.0e-10){
+                    bases.add_row(vv);
+                }
+            }
+        }
+
         for(ip=0;ip<n_particles;ip++){
+
+            i_dim=_chifn.random_int()%_chifn.get_dim();
 
             rr=-1.0;
             while(rr<1.0e-10){
@@ -865,12 +894,8 @@ void maps::mcmc_init(){
             }
 
             for(i=0;i<_chifn.get_dim();i++){
-                dir.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
-            }
-            dir.normalize();
-            for(i=0;i<_chifn.get_dim();i++){
                 trial.set(i,_chifn.get_pt(particles.get_data(ip),i)+
-                            rr*norm.get_data(i)*dir.get_data(i));
+                            rr*norm.get_data(i)*bases.get_data(i_dim,i));
             }
             mu=evaluate(trial,&i_found);
 
