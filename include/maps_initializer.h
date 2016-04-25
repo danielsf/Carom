@@ -29,9 +29,22 @@ class maps_initializer{
             }
         }
 
-        double evaluate(array_1d<double> &pt, int *i_found){
+        double evaluate(array_1d<double> &pt, int *i_found, int i_point, double *mu_true_out){
             double mu;
             _chifn->evaluate(pt, &mu, i_found);
+            mu_true_out[0]=mu;
+            if(i_point>=0 && i_found[0]>=0){
+                if(i_point>=_abs_min.get_dim() || mu_true_out[0]<_chifn->get_fn(_abs_min.get_data(i_point))){
+                    _abs_min.set(i_point,i_found[0]);
+                }
+                if(i_point>=_local_min.get_dim() || mu_true_out[0]<_chifn->get_fn(_local_min.get_data(i_point))){
+                    _local_min.set(i_point,i_found[0]);
+                    _since_min.set(i_point,0);
+                }
+                else{
+                    _since_min.add_val(i_point,1);
+                }
+            }
             return mu;
         }
 

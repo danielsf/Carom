@@ -32,7 +32,7 @@ void maps_initializer::search(){
     }
 
     int adjusted=0;
-    double mu,roll,ratio;
+    double mu,mu_true,roll,ratio;
     int accept_it;
     int min_acc,max_acc,med_acc;
 
@@ -69,7 +69,7 @@ void maps_initializer::search(){
                 trial.set(i,_chifn->get_min(i)+
                            _chifn->random_double()*(_chifn->get_max(i)-_chifn->get_min(i)));
             }
-            mu=evaluate(trial,&i_found);
+            mu=evaluate(trial,&i_found,ip,&mu_true);
             if(i_found>=0){
                 c_v.add(mu);
                 c_v_d.add(i_found);
@@ -80,9 +80,6 @@ void maps_initializer::search(){
         i_best=c_v_d.get_data(c_v_d.get_dim()/2);
         _particles.set(ip,i_best);
         trails.set(ip,0,i_best);
-        _abs_min.set(ip,i_best);
-        _local_min.set(ip,i_best);
-        _since_min.set(ip,0);
     }
 
     double needed_temp;
@@ -140,22 +137,11 @@ void maps_initializer::search(){
                 trial.set(i,_chifn->get_pt(_particles.get_data(ip),i)+
                             rr*norm.get_data(i)*bases.get_data(i_dim,i));
             }
-            mu=evaluate(trial,&i_found);
+            mu=evaluate(trial,&i_found,ip,&mu_true);
 
 
             accept_it=0;
 
-            if(ip>=_abs_min.get_dim() || mu<_chifn->get_fn(_abs_min.get_data(ip))){
-                _abs_min.set(ip,i_found);
-            }
-
-            if(ip>=_local_min.get_dim() || mu<_chifn->get_fn(_local_min.get_data(ip))){
-                _local_min.set(ip,i_found);
-                _since_min.set(ip,0);
-            }
-            else{
-                _since_min.add_val(ip,1);
-            }
 
             if(ip>=_particles.get_dim() || mu<_chifn->get_fn(_particles.get_data(ip))){
                 accept_it=1;
@@ -241,7 +227,7 @@ void maps_initializer::search(){
                         trial.set(i,0.5*(_chifn->get_pt(_chifn->mindex(),i)+
                                    _chifn->get_pt(_local_min.get_data(ip),i)));
                     }
-                    mu=evaluate(trial,&i_found);
+                    mu=evaluate(trial,&i_found,ip,&mu_true);
                     if(mu<_chifn->get_fn(_local_min.get_data(ip)) || _local_min.get_data(ip)==_chifn->mindex()){
                         min_pt_connected=1;
                     }
@@ -283,11 +269,7 @@ void maps_initializer::search(){
                                 }
                             }
 
-                            mu=evaluate(trial,&i_found);
-
-                            if(mu<_chifn->get_fn(_abs_min.get_data(ip))){
-                                _abs_min.set(ip,i_found);
-                            }
+                            mu=evaluate(trial,&i_found,ip,&mu_true);
 
                             if(i_best<0 || dd_min>dd_best){
                                 dd_best=dd_min;
@@ -353,7 +335,7 @@ void maps_initializer::search(){
                 trial.set(j,0.5*(_chifn->get_pt(dex_min,j)+
                             _chifn->get_pt(_abs_min.get_data(i),j)));
             }
-            mu=evaluate(trial,&j);
+            mu=evaluate(trial,&j,-1,&mu_true);
             if(mu<_chifn->get_fn(_abs_min.get_data(i))){
                 connected.set(i,1);
             }
