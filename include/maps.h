@@ -12,6 +12,7 @@
 #include "search_types.h"
 #include "mcmc/mcmc.h"
 #include "dalex.h"
+#include "maps_initializer.h"
 
 class maps{
 
