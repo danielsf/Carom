@@ -60,27 +60,26 @@ void maps_initializer::search(){
     array_1d<int> c_v_d;
 
     for(ip=0;ip<n_particles;ip++){
+
         i_best=-1;
-        c_v.reset();
-        c_v_s.reset();
-        c_v_d.reset();
-        for(j=0;j<n_cand;j++){
+
+        while(i_best<0){
             for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,_chifn->get_min(i)+
-                           _chifn->random_double()*(_chifn->get_max(i)-_chifn->get_min(i)));
+                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
             }
-            mu=evaluate(trial,&i_found,ip,&mu_true);
-            if(i_found>=0){
-                c_v.add(mu);
-                c_v_d.add(i_found);
+            dir.normalize();
+            for(i=0;i<_chifn->get_dim();i++){
+                 mu=_chifn->get_max(i)-_chifn->get_min(i);
+                 trial.set(i,0.5*(_chifn->get_max(i)+_chifn->get_min(i)));
+                 trial.add_val(i,0.5*mu*dir.get_data(i));
             }
+            mu=evaluate(trial,&i_best,ip,&mu_true);
 
         }
-        sort_and_check(c_v,c_v_s,c_v_d);
-        i_best=c_v_d.get_data(c_v_d.get_dim()/2);
         _particles.set(ip,i_best);
         trails.set(ip,0,i_best);
     }
+
 
     double needed_temp;
     array_1d<double> needed_temp_arr,needed_temp_sorted;
