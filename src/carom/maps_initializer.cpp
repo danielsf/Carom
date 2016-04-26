@@ -387,7 +387,7 @@ void maps_initializer::search(){
     }
     ffmin.find_minimum(seed,trial);
 
-    seed.reset_preserving_room();
+    /*seed.reset_preserving_room();
 
 
     min_vals.reset();
@@ -413,6 +413,6 @@ void maps_initializer::search(){
         }
     }
 
-    ffmin.find_minimum(seed,trial);
+    ffmin.find_minimum(seed,trial);*/
 
 }
