@@ -264,7 +264,7 @@ void maps_initializer::search(){
                         if(local_min.get_dim()==0){
                             for(i=0;i<_particles.get_dim();i++){
                                 for(j=0;j<_chifn->get_dim();j++){
-                                    mu=_chifn->get_pt(trails.get_data(i,trails.get_cols(i)/2),j);
+                                    mu=_chifn->get_pt(trails.get_data(i,trails.get_cols(i)/3),j);
                                     if(j>=local_min.get_dim() || mu<local_min.get_data(j)){
                                         local_min.set(j,mu);
                                     }
