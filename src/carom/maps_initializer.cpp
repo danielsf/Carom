@@ -99,7 +99,7 @@ void maps_initializer::search(){
     array_2d<double> bases;
     array_1d<double> vv;
 
-    int i_dim;
+    int i_dim,i_half;
     double sgn;
 
     printf("starting steps with min %e\n",_chifn->chimin());
@@ -131,8 +131,9 @@ void maps_initializer::search(){
                 local_max.set(i,-2.0*exception_value);
                 for(ip=0;ip<_particles.get_dim();ip++){
                     mu=0.0;
+                    i_half=_particles.get_data(ip);
                     for(j=0;j<_chifn->get_dim();j++){
-                       mu+=_chifn->get_pt(_particles.get_data(ip),j)*bases.get_data(i,j);
+                       mu+=_chifn->get_pt(i_half,j)*bases.get_data(i,j);
                     }
                     if(mu<local_min.get_data(i)){
                         local_min.set(i,mu);
@@ -277,8 +278,12 @@ void maps_initializer::search(){
                         i_best=-1;
                         for(k=0;k<100 || i_best<0;k++){
                             for(i=0;i<_chifn->get_dim();i++){
-                                trial.set(i,local_min.get_data(i)+_chifn->random_double()*
-                                          (local_max.get_data(i)-local_min.get_data(i)));
+                                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+                            }
+                            dir.normalize();
+                            for(i=0;i<_chifn->get_dim();i++){
+                                trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+
+                                          (local_max.get_data(i)-local_min.get_data(i))*dir.get_data(i));
                             }
 
                             for(i=0;i<_particles.get_dim();i++){
