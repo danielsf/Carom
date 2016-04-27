@@ -153,7 +153,7 @@ void maps_initializer::search(){
 
             i_dim=_chifn->random_int()%_chifn->get_dim();
 
-            rr=normal_deviate(_chifn->get_dice(),0.0,re_norm);
+            rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
 
             for(i=0;i<_chifn->get_dim();i++){
                 trial.set(i,_chifn->get_pt(_particles.get_data(ip),i)+
