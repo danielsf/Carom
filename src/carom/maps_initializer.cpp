@@ -124,27 +124,29 @@ void maps_initializer::search(){
                     bases.add_row(vv);
                 }
             }
-        }
 
-        for(i=0;i<_chifn->get_dim();i++){
-            local_min.set(i,2.0*exception_value);
-            local_max.set(i,-2.0*exception_value);
-            for(ip=0;ip<_particles.get_dim();ip++){
-                mu=0.0;
-                for(j=0;j<_chifn->get_dim();j++){
-                   mu+=_chifn->get_pt(_particles.get_data(ip),j)*bases.get_data(i,j);
-                }
-                if(mu<local_min.get_data(i)){
-                    local_min.set(i,mu);
-                }
-                if(mu>local_max.get_data(i)){
-                    local_max.set(i,mu);
+
+            for(i=0;i<_chifn->get_dim();i++){
+                local_min.set(i,2.0*exception_value);
+                local_max.set(i,-2.0*exception_value);
+                for(ip=0;ip<_particles.get_dim();ip++){
+                    mu=0.0;
+                    for(j=0;j<_chifn->get_dim();j++){
+                       mu+=_chifn->get_pt(_particles.get_data(ip),j)*bases.get_data(i,j);
+                    }
+                    if(mu<local_min.get_data(i)){
+                        local_min.set(i,mu);
+                    }
+                    if(mu>local_max.get_data(i)){
+                        local_max.set(i,mu);
+                    }
                 }
             }
-        }
 
-        for(i=0;i<_chifn->get_dim();i++){
-            norm.set(i,0.1*(local_max.get_data(i)-local_min.get_data(i)));
+            for(i=0;i<_chifn->get_dim();i++){
+                norm.set(i,0.1*(local_max.get_data(i)-local_min.get_data(i)));
+            }
+
         }
 
         for(ip=0;ip<n_particles;ip++){
@@ -282,7 +284,8 @@ void maps_initializer::search(){
                             for(i=0;i<_particles.get_dim();i++){
                                 dd=0.0;
                                 for(j=0;j<_chifn->get_dim();j++){
-                                    dd+=power((trial.get_data(j)-_chifn->get_pt(_abs_min.get_data(i),j))/norm.get_data(j),2);
+                                    dd+=power((trial.get_data(j)-_chifn->get_pt(_abs_min.get_data(i),j))/
+                                               (local_max.get_data(j)-local_min.get_data(j)),2);
                                 }
                                 if(i==0 || dd<dd_min){
                                      dd_min=dd;
