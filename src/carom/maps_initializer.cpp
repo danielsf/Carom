@@ -229,7 +229,7 @@ void maps_initializer::search(){
                 re_norm+=0.1;
             }
 
-            /*if(needs_adjustment!=0){
+            if(needs_adjustment!=0){
                 sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 old_temp=_temp;
                 _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
@@ -237,7 +237,7 @@ void maps_initializer::search(){
                 if(fabs(1.0-(_temp/old_temp))>0.01){
                     has_been_adjusted=1;
                 }
-            }*/
+            }
 
             local_min.reset_preserving_room();
             local_max.reset_preserving_room();
