@@ -131,7 +131,7 @@ void maps_initializer::search(){
                 local_max.set(i,-2.0*exception_value);
                 for(ip=0;ip<_particles.get_dim();ip++){
                     mu=0.0;
-                    i_half=_particles.get_data(ip);
+                    i_half=trails.get_data(ip,trails.get_cols(ip)/2);
                     for(j=0;j<_chifn->get_dim();j++){
                        mu+=_chifn->get_pt(i_half,j)*bases.get_data(i,j);
                     }
