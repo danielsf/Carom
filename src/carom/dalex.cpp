@@ -1184,71 +1184,10 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
 
-    seed.set_cols(_chifn->get_dim());
-    int iFound;
-    array_1d<double> trial;
-    array_1d<int> seed_dex;
-    double ftrial;
-    trial.set_name("dalex_simplex_search_trial");
-    seed_dex.set_name("dalex_simplex_search_seed_dex");
+    tendril_seed(&dchifn, specified, norm, seed);
+
     int i_min=-1;
     double mu_min;
-
-    array_1d<int> chosen_seed;
-
-    int i_origin;
-    double sgn;
-    array_1d<double> prev_dir;
-    prev_dir.set_name("dalex_simplex_boundary_prev_dir");
-
-    if(specified>=0){
-        i_origin=-1;
-        for(i=0;i<_good_points.get_dim() && _good_points.get_data(i)!=specified;i++);
-        if(i<_good_points.get_dim()){
-            if(_good_points.get_data(i)!=specified){
-                printf("WARNING failed to find good point in boundary search\n");
-                exit(1);
-            }
-            i_origin=_good_point_origins.get_data(i);
-            if(i_origin>=0){
-                for(i=0;i<_chifn->get_dim();i++){
-                    prev_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
-                }
-                prev_dir.normalize();
-            }
-        }
-        seed.add_row(_chifn->get_pt(specified)[0]);
-        chosen_seed.add(specified);
-
-        if(norm.get_dim()==_chifn->get_dim()){
-            for(i=0;i<_chifn->get_dim();i++){
-                sgn=1.0;
-                if(prev_dir.get_dim()>0){
-                    xx=0.0;
-                    for(j=0;j<_chifn->get_dim();j++){
-                        xx+=prev_dir.get_data(j)*_basis_vectors.get_data(i,j);
-                    }
-                    if(xx<0.0){
-                        sgn=-1.0;
-                    }
-                }
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,_chifn->get_pt(specified,j)+0.1*sgn*norm.get_data(i)*_basis_vectors.get_data(i,j));
-                }
-                seed.add_row(trial);
-            }
-        }
-    }
-
-    while(seed.get_rows()<_chifn->get_dim()+1){
-        i=_chifn->random_int()%_explorers.get_dim();
-        if(chosen_seed.contains(_explorers.get_data(i))==0){
-            printf("    explorer is %d\n",_explorers.get_data(i));
-            seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
-            chosen_seed.add(_explorers.get_data(i));
-        }
-    }
-
     double mu,start_min;
     for(i=0;i<seed.get_rows();i++){
         mu=dchifn(seed(i)[0]);
