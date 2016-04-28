@@ -979,6 +979,8 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
 
     int i,j,i_dim,i_step,ip;
     double mu;
+    int accepted=0;
+    int rejected=0;
     while(walkers.get_rows()<n_walkers){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
@@ -1025,10 +1027,14 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
             }
 
             if(accept_it==1){
+                accepted++;
                 for(i=0;i<_chifn->get_dim();i++){
                     walkers.set(ip,i,trial.get_data(i));
                 }
                 f_walkers.set(ip,mu);
+            }
+            else{
+                rejected++;
             }
         }
     }
@@ -1046,6 +1052,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
         seed.add_row(walkers(f_dex.get_data(i))[0]);
     }
 
+    printf("    accepted %d rejected %d\n",accepted,rejected);
 }
 
 
