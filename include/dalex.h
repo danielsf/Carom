@@ -17,6 +17,7 @@ class dalex{
         dalex(){
             _chifn=NULL;
             _good_points.set_name("dalex_good_points");
+            _end_points.set_name("dalex_end_points");
             _explorers.set_name("dalex_explorers");
             _explorer_temp=1.0;
             _explorer_step=1.0;
@@ -240,6 +241,7 @@ class dalex{
         void get_gradient(int,array_1d<double>&,array_1d<double>&);
         void tendril_search();
         array_1d<int> _charges;
+        array_1d<int> _end_points;
 
         void assess_charges(){
             int i;

@@ -985,7 +985,89 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     printf("charges is %d -- origins %d good %d\n",
     _charges.get_dim(),n_origins,_good_points.get_dim());
 
-    dchi_interior_simplex dchifn(_chifn,_good_points);
+    array_1d<int> mask;
+    mask.set_name("dalex_simple_boundary_mask");
+
+    int n_good_0=_good_points.get_dim();
+    if(specified>=0){
+        create_mask(specified,mask);
+    }
+    else{
+        for(i=0;i<n_good_0;i++){
+            mask.set(i,1);
+        }
+    }
+
+    if(mask.get_dim()!=n_good_0){
+        printf("WARNING mask dim %d expected %d\n",mask.get_dim(),n_good_0);
+        exit(1);
+    }
+
+    array_1d<int> associates;
+    associates.set_name("dalex_simplex_boundary_associates");
+
+    // all good points without an origin added to associates
+    for(i=0;i<mask.get_dim();i++){
+        if(_good_point_origins.get_data(i)<0 && mask.get_data(i)==1){
+            associates.add(_good_points.get_data(i));
+        }
+    }
+
+    // all _end_points added to associates
+    for(i=0;i<n_good_0;i++){
+        if(_end_points.contains(_good_points.get_data(i)) && mask.get_data(i)==1){
+            if(associates.contains(_good_points.get_data(i))==0){
+                associates.add(_good_points.get_data(i));
+            }
+        }
+    }
+
+    // all good points between the last two end points added to associates
+    int i_start;
+    if(_end_points.get_dim()>0){
+        if(_end_points.get_dim()>=2){
+            i_start=_end_points.get_data(_end_points.get_dim()-2);
+        }
+        else{
+            i_start=_end_points.get_data(_end_points.get_dim()-1);
+        }
+        for(i=0;i<n_good_0;i++){
+            if(mask.get_data(i)==1){
+                if(associates.contains(_good_points.get_data(i))==0){
+                    if(_good_points.get_data(i)>i_start){
+                        associates.add(_good_points.get_data(i));
+                    }
+                }
+            }
+        }
+    }
+
+    // n_max_associates of the remaining possible associates added to associates
+    int n_max_associates=2000;
+    int n_remaining=0;
+    for(i=0;i<n_good_0;i++){
+        if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
+            n_remaining++;
+        }
+    }
+
+    int n_thin=n_remaining/n_max_associates-1;
+    int use_associate=0;
+    for(i=0;i<n_good_0;i++){
+        if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
+            if(use_associate>=n_thin){
+                associates.add(_good_points.get_data(i));
+                use_associate=0;
+            }
+            else{
+                use_associate++;
+            }
+        }
+    }
+
+    printf("    associates %d\n",associates.get_dim());
+
+    dchi_interior_simplex dchifn(_chifn,associates);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -1015,8 +1097,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     int i_min=-1;
     double mu_min;
 
-    array_1d<int> chosen_seed,mask;
-    mask.set_name("dalex_simple_boundary_mask");
+    array_1d<int> chosen_seed;
 
     int i_origin;
     double sgn;
@@ -1041,8 +1122,6 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
         }
         seed.add_row(_chifn->get_pt(specified)[0]);
         chosen_seed.add(specified);
-        create_mask(specified,mask);
-        dchifn.set_mask(mask);
 
         if(norm.get_dim()==_chifn->get_dim()){
             for(i=0;i<_chifn->get_dim();i++){
@@ -1487,6 +1566,7 @@ void dalex::tendril_search(){
     }
     else{
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        _end_points.add(i_particle);
     }
 
     add_charge(i_particle);
@@ -1558,6 +1638,7 @@ void dalex::tendril_search(){
         simplex_boundary_search(i_particle, _basis_norm);
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        _end_points.add(i_particle);
         _update_good_points(ct_last, i_origin, i_particle);
 
         add_charge(i_particle);
