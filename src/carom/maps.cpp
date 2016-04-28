@@ -113,6 +113,10 @@ int maps::get_called(){
     return _chifn.get_called();
 }
 
+double maps::get_chimin(){
+    return _chifn.chimin();
+}
+
 void maps::set_outname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
@@ -133,9 +137,6 @@ void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
     _cloud.set_log(&_log);
-    //_outer_cloud.set_target_factor(1.33);
-    //_outer_cloud.build(&_chifn);
-    //_outer_cloud.set_log(&_log);
     _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
@@ -515,23 +516,323 @@ void maps::explore(){
 
 }
 
+void maps::nested_simplex_init(){
+
+    int n_steps=10;
+    int n_internal_steps=20000;
+    int n_pts=2*_chifn.get_dim();
+
+    array_2d<double> pts;
+    array_1d<int> active;
+    array_2d<double> seed;
+    array_1d<double> norm,smin,smax;
+
+    int i;
+    for(i=0;i<_chifn.get_dim();i++){
+        norm.set(i,_chifn.get_characteristic_length(i));
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+
+    array_1d<double> trial;
+    double mu;
+    while(pts.get_rows()<n_pts){
+        for(i=0;i<_chifn.get_dim();i++){
+            trial.set(i,_chifn.get_min(i)+_chifn.random_double()*
+                       (_chifn.get_max(i)-_chifn.get_min(i)));
+        }
+        mu=evaluate(trial,&i);
+        if(mu<exception_value && i>=0){
+            pts.add_row(trial);
+        }
+    }
+
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_minmax(smin,smax);
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+    ffmin.set_limit(n_internal_steps);
+
+    int i_step;
+    int j;
+    for(i_step=0;i_step<n_steps;i_step++){
+        seed.reset_preserving_room();
+        active.reset_preserving_room();
+        while(active.get_dim()!=_chifn.get_dim()+1){
+            i=_chifn.random_int()%pts.get_rows();
+            if(active.contains(i)==0){
+                active.add(i);
+                seed.add_row(pts(i)[0]);
+            }
+        }
+        ffmin.find_minimum(seed, trial);
+        for(i=0;i<active.get_dim();i++){
+            ffmin.get_pt(i,trial);
+            for(j=0;j<_chifn.get_dim();j++){
+                pts.set(active.get_data(i),j,trial.get_data(j));
+            }
+        }
+        printf("    chimin %e\n",_chifn.chimin());
+    }
+
+    ffmin.set_limit(-1);
+    seed.reset_preserving_room();
+    array_1d<double> min_val,min_val_sorted;
+    array_1d<int> min_val_dex;
+    for(i=0;i<pts.get_rows();i++){
+        min_val_dex.add(i);
+        mu=evaluate(pts(i)[0],&j);
+        min_val.add(mu);
+    }
+    sort_and_check(min_val, min_val_sorted, min_val_dex);
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        seed.add_row(pts(min_val_dex.get_data(i))[0]);
+    }
+    ffmin.find_minimum(seed, trial);
+
+}
+
+void maps::gibbs_init(){
+
+    array_2d<double> bases;
+    array_1d<double> vv,trial,best_pt,center_pt;
+    array_1d<int> particles;
+    double xmin,xmax;
+
+    int n_particles=_chifn.get_dim()+1;
+
+    int i,j,k,ip,ix,is_valid,i_best,i_found;
+    int iteration;
+    double mu,ff_best,dx,xx;
+    int n_samples=100;
+    array_1d<int> grid;
+    array_1d<double> grid_mu;
+    for(ip=0;ip<n_particles;ip++){
+
+        for(i=0;i<_chifn.get_dim();i++){
+            best_pt.set(i,_chifn.get_min(i)+_chifn.random_double()*
+                        (_chifn.get_max(i)-_chifn.get_min(i)));
+            best_pt.set(i,0.0);
+        }
+        ff_best=evaluate(best_pt,&i_best);
+
+        for(iteration=0;iteration<8;iteration++){
+
+        bases.reset_preserving_room();
+        while(bases.get_rows()!=_chifn.get_dim()){
+            for(i=0;i<_chifn.get_dim();i++){
+                vv.set(i,normal_deviate(_chifn.get_dice(),0.0,1.0));
+            }
+            for(i=0;i<bases.get_rows();i++){
+                mu=0.0;
+                for(j=0;j<_chifn.get_dim();j++){
+                    mu+=vv.get_data(j)*bases.get_data(i,j);
+                }
+                for(j=0;j<_chifn.get_dim();j++){
+                    vv.subtract_val(j,mu*bases.get_data(i,j));
+                }
+            }
+            mu=vv.normalize();
+            if(mu>1.0e-10){
+                bases.add_row(vv);
+            }
+        }
+
+
+
+        for(ix=0;ix<_chifn.get_dim();ix++){
+
+            for(i=0;i<_chifn.get_dim();i++){
+                center_pt.set(i,best_pt.get_data(i));
+            }
+            for(i=0;i<_chifn.get_dim();i++){
+                if(i==0 || fabs(bases.get_data(ix,i))>mu){
+                    j=i;
+                    mu=fabs(bases.get_data(ix,i));
+                }
+            }
+            dx=0.1*_chifn.get_characteristic_length(j);
+            is_valid=1;
+            xmin=0.0;
+            while(is_valid==1){
+                xmin-=dx;
+                for(i=0;i<_chifn.get_dim();i++){
+                    trial.set(i,center_pt.get_data(i)+xmin*bases.get_data(ix,i));
+                }
+                for(i=0;i<_chifn.get_dim();i++){
+                    if(trial.get_data(i)<_chifn.get_min(i)){
+                        is_valid=0;
+                    }
+                    if(trial.get_data(i)>_chifn.get_max(i)){
+                        is_valid=0;
+                    }
+                }
+            }
+            is_valid=1;
+            xmax=0.0;
+            while(is_valid==1){
+                xmax+=dx;
+                for(i=0;i<_chifn.get_dim();i++){
+                    trial.set(i,center_pt.get_data(i)+xmax*bases.get_data(ix,i));
+                }
+                for(i=0;i<_chifn.get_dim();i++){
+                    if(trial.get_data(i)<_chifn.get_min(i)){
+                        is_valid=0;
+                    }
+                    if(trial.get_data(i)>_chifn.get_max(i)){
+                        is_valid=0;
+                    }
+                }
+            }
+
+            //actually evaluate something
+            n_samples=10;
+            for(j=0;j<n_samples;j++){
+                grid.reset_preserving_room();
+                grid_mu.reset_preserving_room();
+                dx=(xmax-xmin)/4.0;
+                for(k=0;k<5;k++){
+                    xx=xmin+k*dx;
+                    for(i=0;i<_chifn.get_dim();i++){
+                        trial.set(i,center_pt.get_data(i)+xx*bases.get_data(ix,i));
+                    }
+                    mu=evaluate(trial,&i_found);
+                    if(mu<ff_best){
+                        i_best=i_found;
+                        ff_best=mu;
+                        for(i=0;i<_chifn.get_dim();i++){
+                            best_pt.set(i,trial.get_data(i));
+                        }
+                    }
+                    grid.set(k,i_found);
+                    grid_mu.set(k,mu);
+                }
+
+                for(k=0;k<grid.get_dim();k++){
+                    if(k==0 || grid_mu.get_data(k)<mu){
+                        mu=grid_mu.get_data(k);
+                        i=k;
+                    }
+                }
+                mu=xmin;
+                xmin=mu+(i-1)*dx;
+                xmax=mu+(i+1)*dx;
+
+            }
+
+
+        }
+        }//iteration
+        particles.add(i_best);
+
+    }
+
+
+    simplex_minimizer ffmin;
+    array_1d<double> smin,smax;
+    for(i=0;i<_chifn.get_dim();i++){
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+    ffmin.set_minmax(smin,smax);
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+    array_2d<double> seed;
+    for(i=0;i<particles.get_dim();i++){
+        seed.add_row(_chifn.get_pt(particles.get_data(i))[0]);
+    }
+    ffmin.find_minimum(seed, trial);
+}
+
+
+void maps::mcmc_init(){
+    maps_initializer initializer;
+    initializer.set_chifn(&_chifn);
+    initializer.search();
+}
+
+void maps::simplex_init(){
+
+    int i;
+    array_1d<double> smin,smax;
+    for(i=0;i<_chifn.get_dim();i++){
+        smin.set(i,0.0);
+        smax.set(i,_chifn.get_characteristic_length(i));
+    }
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&_chifn);
+    ffmin.set_minmax(smin,smax);
+
+    ffmin.set_dice(_chifn.get_dice());
+    ffmin.use_gradient();
+
+    array_2d<double> seed;
+    array_1d<double> min_pt;
+    array_1d<int> abs_min_pt;
+    array_1d<double> trial;
+
+    int ip,j,i_found;
+    double mu;
+    for(ip=0;ip<2*_chifn.get_dim();ip++){
+        seed.reset_preserving_room();
+        for(i=0;i<_chifn.get_dim()+1;i++){
+            for(j=0;j<_chifn.get_dim();j++){
+                trial.set(j,_chifn.get_min(j)+
+                            _chifn.random_double()*
+                            (_chifn.get_max(j)-_chifn.get_min(j)));
+            }
+            seed.add_row(trial);
+        }
+
+        ffmin.find_minimum(seed, min_pt);
+        mu=evaluate(min_pt,&i_found);
+        if(i_found>=0 && abs_min_pt.contains(i_found)==0){
+            abs_min_pt.add(i_found);
+        }
+        else{
+            ip--;
+        }
+    }
+
+
+
+    array_1d<double> min_vals, min_val_sorted;
+    array_1d<int> min_dexes;
+
+    for(i=0;i<abs_min_pt.get_dim();i++){
+        min_vals.add(_chifn.get_fn(abs_min_pt.get_data(i)));
+        min_dexes.add(abs_min_pt.get_data(i));
+    }
+    sort_and_check(min_vals, min_val_sorted, min_dexes);
+
+    array_2d<double> final_seed;
+    for(i=0;i<_chifn.get_dim()+1;i++){
+        final_seed.add_row(_chifn.get_pt(min_dexes.get_data(i))[0]);
+    }
+    ffmin.find_minimum(final_seed,trial);
+
+
+}
+
+
 
 void maps::search(int limit){
     int pt_start;
 
-    explore();
+    double min0=_chifn.chimin();
+    printf("before init min %e\n",_chifn.chimin());
+    mcmc_init();
+    printf("min now %e -> %e\n",min0,_chifn.chimin());
+    printf("called %d\n",_chifn.get_pts());
 
     while(_chifn.get_pts()<limit){
-         explore();
-         assess_good_points();
-
-         if(_ct_simplex_min<_ct_dalex || _ct_simplex_min==0){
-             simplex_min_search();
-         }
 
         pt_start=_chifn.get_pts();
         _cloud.search();
-        //_outer_cloud.search();
         _ct_dalex+=_chifn.get_pts()-pt_start;
 
         if(_chifn.get_pts()-_last_written>_write_every){

@@ -53,7 +53,7 @@ void dalex::search(){
     int i;
     int pts_0=_chifn->get_pts();
     assess_good_points();
-    _update_good_points(_last_checked_good);
+    _update_good_points(_last_checked_good,-1,-1);
 
     if(mindex()!=_simplex_mindex){
         find_bases();
@@ -67,7 +67,7 @@ void dalex::search(){
 
     explore();
     tendril_search();
-    _update_good_points(pts_0);
+    _update_good_points(pts_0,-1,-1);
 
 }
 
@@ -100,26 +100,8 @@ void dalex::simplex_search(array_1d<int> &specified){
     int pt_0=_chifn->get_pts();
 
     for(i=0;i<_chifn->get_dim();i++){
-        min.set(i,2.0*exception_value);
-        max.set(i,-2.0*exception_value);
-    }
-
-    for(i=0;i<_good_points.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            if(_chifn->get_pt(_good_points.get_data(i),j)<min.get_data(j)){
-                min.set(j,_chifn->get_pt(_good_points.get_data(i),j));
-            }
-            if(_chifn->get_pt(_good_points.get_data(i),j)>max.get_data(j)){
-                max.set(j,_chifn->get_pt(_good_points.get_data(i),j));
-            }
-        }
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        if(max.get_data(i)-min.get_data(i)<1.0e-20){
-            min.set(i,0.0);
-            max.set(i,_chifn->get_characteristic_length(i));
-        }
+        min.set(i,0.0);
+        max.set(i,_chifn->get_characteristic_length(i));
     }
 
     array_1d<int> chosen_seed;
@@ -148,7 +130,19 @@ void dalex::simplex_search(array_1d<int> &specified){
 
     printf("    after dalex_simplex chimin %e\n",chimin());
     _simplex_mindex=mindex();
-    _update_good_points(pt_0);
+
+    array_1d<double> min_pt;
+    ffmin.get_minpt(min_pt);
+    double mu;
+    int i_found;
+    evaluate(min_pt, &mu, &i_found);
+
+    if(mu<target()){
+        _update_good_points(pt_0, i_found, -1);
+    }
+    else{
+        _update_good_points(pt_0);
+    }
 
     if(_basis_chimin-chimin()>target()-chimin()){
         find_bases();
@@ -623,6 +617,7 @@ void dalex::find_bases(){
         }
     }
 
+    _basis_chimin=chimin();
     printf("done finding bases\n");
 
 
@@ -970,17 +965,26 @@ void dalex::simplex_boundary_search(){
 }
 
 void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
+    safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
     assess_good_points();
     assess_charges();
-    _update_good_points();
 
     int i_node,i_pt;
     int i,j;
     double xmin,xmax,xx;
 
-    printf("charges is %d\n",_charges.get_dim());
+    int n_origins=0;
+    for(i=0;i<_good_point_origins.get_dim();i++){
+        if(_good_point_origins.get_data(i)>=0){
+             n_origins++;
+        }
+    }
+
+    printf("charges is %d -- origins %d good %d\n",
+    _charges.get_dim(),n_origins,_good_points.get_dim());
+
     dchi_interior_simplex dchifn(_chifn,_good_points);
 
     simplex_minimizer ffmin;
@@ -992,7 +996,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
 
     for(i=0;i<_chifn->get_dim();i++){
         min.set(i,0.0);
-        max.set(i,get_norm(i));
+        max.set(i,_chifn->get_characteristic_length(i));
     }
 
     ffmin.set_minmax(min,max);
@@ -1011,11 +1015,14 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     int i_min=-1;
     double mu_min;
 
-    array_1d<int> chosen_seed;
+    array_1d<int> chosen_seed,mask;
+    mask.set_name("dalex_simple_boundary_mask");
 
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified)[0]);
         chosen_seed.add(specified);
+        create_mask(specified,mask);
+        dchifn.set_mask(mask);
 
         if(norm.get_dim()==_chifn->get_dim()){
             for(i=0;i<_chifn->get_dim();i++){
@@ -1052,11 +1059,6 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
 
     evaluate(minpt, &mu, &i_min);
 
-    if(i_min<0){
-        i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
-        printf("    set i_min to %d\n",i_min);
-    }
-
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
     }
@@ -1067,8 +1069,6 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     printf("    adjusted %e\n",dchifn(_chifn->get_pt(i_min)[0]));
 
     printf("    min is %e target %e\n",chimin(),target());
-
-    _update_good_points(pt_start);
 
 }
 
@@ -1147,13 +1147,8 @@ void dalex::simplex_gp_search(){
 
     evaluate(minpt, &mu, &i_min);
 
-    if(i_min<0){
-        i_min=bisection(_chifn->get_pt(_chifn->mindex())[0],minpt,target(),0.1);
-        printf("    set i_min to %d\n",i_min);
-    }
-
     if(_log!=NULL){
-        _log->add(_log_dchi_simplex,i_min);
+        _log->add(_log_ricochet,i_min);
     }
 
     printf("    actually found %e -- %e %e\n",
@@ -1444,17 +1439,18 @@ void dalex::tendril_search(){
     _update_good_points();
     int n_good_0=_good_points.get_dim();
 
-    simplex_gp_search();
+    array_1d<double> random_dir;
+    for(i=0;i<_chifn->get_dim();i++){
+        random_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+    }
+    i=bisection(mindex(),random_dir,target(),0.1);
+
     _update_good_points();
     if(n_good_0==0 || _good_points.get_dim()==0){
         return;
     }
 
     int i_particle;
-    int go_on=1;
-
-    array_1d<int> path;
-    path.set_name("dalex_simplex_boundary_path");
 
     if(_good_points.get_dim()==n_good_0){
         i_particle=mindex();
@@ -1462,8 +1458,6 @@ void dalex::tendril_search(){
     else{
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
     }
-
-    path.add(i_particle);
 
     add_charge(i_particle);
 
@@ -1492,28 +1486,18 @@ void dalex::tendril_search(){
 
     assess_good_points();
     int ip,ix;
-    for(ix=0;ix<_good_points.get_dim();ix++){
-        ip=_good_points.get_data(ix);
-        for(i=0;i<_chifn->get_dim();i++){
-            if(ix==0 || _chifn->get_pt(ip,i)<min.get_data(i)){
-                min.set(i,_chifn->get_pt(ip,i));
-            }
-            if(ix==0 || _chifn->get_pt(ip,i)>max.get_data(i)){
-                max.set(i,_chifn->get_pt(ip,i));
-            }
+    ip=mindex();
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,_chifn->get_pt(ip,i));
+        max.set(i,_chifn->get_pt(ip,i));
 
-            mu=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                mu+=_chifn->get_pt(ip,j)*_basis_vectors.get_data(i,j);
-            }
-
-            if(ix==0 || mu<min_p.get_data(i)){
-                min_p.set(i,mu);
-            }
-            if(ix==0 || mu>max_p.get_data(i)){
-                max_p.set(i,mu);
-            }
+        mu=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            mu+=_chifn->get_pt(ip,j)*_basis_vectors.get_data(i,j);
         }
+
+        min_p.set(i,mu);
+        max_p.set(i,mu);
     }
 
     double volume_0,p_volume_0;
@@ -1526,41 +1510,27 @@ void dalex::tendril_search(){
 
     printf("    volume %e %e\n",volume_0,p_volume_0);
 
-    array_1d<double> dir1,dir2;
+    array_1d<double> dir1,dir2,trial_center;
     dir1.set_name("dalex_simplex_boundary_dir1");
     dir2.set_name("dalex_simplex_boundary_dir2");
-    while(go_on==1 || path.get_dim()<3){
+    trial_center.set_name("dalex_simplex_boundary_trial_center");
+
+    int i_origin,ct_last;
+
+    int strikes=0;
+
+    while(strikes<3){
 
         add_charge(_chifn->mindex());
 
+        i_origin=i_particle;
+        ct_last=_chifn->get_pts();
         simplex_boundary_search(i_particle, _basis_norm);
 
-        _update_good_points();
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
-        path.add(i_particle);
+        _update_good_points(ct_last, i_origin, i_particle);
+
         add_charge(i_particle);
-
-        go_on=0;
-
-        if(path.get_dim()>2){
-            if(path.get_data(path.get_dim()-1)!=path.get_data(path.get_dim()-2)){
-                for(i=0;i<_chifn->get_dim();i++){
-                    dir1.set(i,_chifn->get_pt(path.get_data(path.get_dim()-1),i)-
-                               _chifn->get_pt(path.get_data(path.get_dim()-2),i));
-                    dir2.set(i,_chifn->get_pt(path.get_data(path.get_dim()-2),i)-
-                               _chifn->get_pt(path.get_data(path.get_dim()-3),i));
-                }
-                dir1.normalize();
-                dir2.normalize();
-                mu=0.0;
-                for(i=0;i<_chifn->get_dim();i++){
-                    mu+=dir1.get_data(i)*dir2.get_data(i);
-                }
-                if(mu>0.0){
-                    go_on=1;
-                }
-            }
-        }
 
         for(i=0;i<_chifn->get_dim();i++){
             if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
@@ -1592,13 +1562,66 @@ void dalex::tendril_search(){
             p_volume*=(max_p.get_data(i)-min_p.get_data(i));
         }
 
-        if(volume>volume_0*1.1 || p_volume>p_volume_0*1.1){
-             go_on=1;
-             volume_0=volume;
-             p_volume_0=p_volume;
+        if(volume<volume_0*1.1 && p_volume<p_volume_0*1.1){
+             strikes++;
+        }
+        else{
+            strikes=0;
+            volume_0=volume;
+            p_volume_0=p_volume;
         }
         printf("    volume %e %e\n",volume_0,p_volume_0);
 
     }
 
+}
+
+void dalex::assess_good_point_origins(){
+    safety_check("assess_good_points_0");
+
+
+    array_1d<int> need_replacing,considered;
+    need_replacing.set_name("dalex_assess_origins_need_replacing");
+    considered.set_name("dalex_assess_origins_considered");
+
+    int i;
+    for(i=0;i<_good_point_origins.get_dim();i++){
+        if(_good_point_origins.get_data(i)>=0 && \
+           considered.contains(_good_point_origins.get_data(i))==0){
+
+           considered.add(_good_point_origins.get_data(i));
+
+           if(need_replacing.contains(_good_point_origins.get_data(i))==0 && \
+              _good_points.contains(_good_point_origins.get_data(i))==0){
+
+               need_replacing.add(_good_point_origins.get_data(i));
+           }
+
+        }
+    }
+
+    array_1d<int> gp_dexes,gp_vals,gp_val_sorted;
+    gp_dexes.set_name("dalex_assess_origins_gp_dexes");
+    gp_vals.set_name("dalex_assess_origins_gp_vals");
+    gp_val_sorted.set_name("dalex_assess_origins_gp_val_sorted");
+    int target_origin,j,replacement;
+    for(i=0;i<need_replacing.get_dim();i++){
+        gp_dexes.reset_preserving_room();
+        gp_vals.reset_preserving_room();
+        gp_val_sorted.reset_preserving_room();
+        target_origin=need_replacing.get_data(i);
+        for(j=0;j<_good_point_origins.get_dim();j++){
+            if(_good_point_origins.get_data(j)==target_origin){
+                gp_dexes.add(j);
+                gp_vals.add(_good_points.get_data(j));
+            }
+        }
+        sort_and_check(gp_vals, gp_val_sorted, gp_dexes);
+        replacement=gp_val_sorted.get_data(gp_dexes.get_dim()/2);
+        for(j=0;j<gp_dexes.get_dim();j++){
+            _good_point_origins.set(gp_dexes.get_data(j), replacement);
+        }
+    }
+
+    safety_check("assess_good_points_1");
 }

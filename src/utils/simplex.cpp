@@ -22,6 +22,7 @@ void simplex_minimizer::initialize(){
     _cost=NULL;
     _chisquared=NULL;
     _dice=NULL;
+    _limit=-1;
 
     _min_temp=-3.0;
 
@@ -343,7 +344,9 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     _pstarstar.reset();
     _last_improved_ff.reset();
     _pts.reset();
+    _ff.reset();
     _last_improved_pts.reset();
+    _last_improved_ff.reset();
 
     int i;
     if(_origin.get_dim()==0){
@@ -402,7 +405,15 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
 
     printf("    simplex starts with %e\n",_true_min_ff);
-    while(_called_evaluate-_last_found<abort_max){
+    int go_on=1;
+    while(go_on==1){
+        if(_called_evaluate-_last_found>=abort_max){
+            go_on=0;
+        }
+
+        if(_limit>=0 && _called_evaluate>_limit){
+            go_on=0;
+        }
 
        if(_is_a_model==1){
            paranoia();
@@ -459,6 +470,17 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
        }
 
        if(j==1){
+
+           for(i=0;i<dim;i++){
+                pbar.set(i,0.0);
+                for(j=0;j<dim+1;j++){
+                    if(j!=_ih){
+                        pbar.add_val(i,_pts.get_data(j,i));
+                    }
+                }
+                pbar.divide_val(i,double(dim));
+           }
+
            for(i=0;i<dim;i++){
                _pstarstar.set(i,_beta*_pts.get_data(_ih,i)+(1.0-_beta)*pbar.get_data(i));
            }
@@ -508,10 +530,13 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     for(i=0;i<dim;i++){
         min_pt.set(i,_min_pt.get_data(i));
     }
-    printf("    leaving simplex %d %d %d %d\n",_called_evaluate,_last_found,_last_called_gradient,abort_max);
+    /*printf("    leaving simplex %d %d %d %d\n",_called_evaluate,_last_found,_last_called_gradient,abort_max);
     printf("    temp %e\n",_temp);
     printf("    actually called %d\n",_chisquared->get_called()-ibefore);
-    printf("    _true_min_ff %e\n",_true_min_ff);
+    printf("    _true_min_ff %e\n",_true_min_ff);*/
+
+    printf("    actually called %d\n",_chisquared->get_called()-ibefore);
+    printf("    got min %e\n",_true_min_ff);
 
     _freeze_temp=-1;
 }
@@ -760,6 +785,14 @@ void simplex_minimizer::expand(){
     find_il();
     if(need_thaw_temp==1)_freeze_temp=0;
     if(need_thaw_called==1)_freeze_called=0;
+}
+
+
+void simplex_minimizer::get_pt(int ii, array_1d<double> &out){
+    int i;
+    for(i=0;i<_pts.get_cols();i++){
+        out.set(i,_pts.get_data(ii,i)*_transform.get_data(i)+_origin.get_data(i));
+    }
 }
 
 void simplex_minimizer::get_minpt(array_1d<double> &out){

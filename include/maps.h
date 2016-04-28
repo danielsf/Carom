@@ -12,6 +12,7 @@
 #include "search_types.h"
 #include "mcmc/mcmc.h"
 #include "dalex.h"
+#include "maps_initializer.h"
 
 class maps{
 
@@ -35,6 +36,12 @@ public:
     void set_chisquared(chisquared*);
 
     void search(int);
+
+    void mcmc_init();
+    void simplex_init();
+    void nested_simplex_init();
+    void gibbs_init();
+
     void explore();
     void simplex_min_search();
     void mcmc_search();
@@ -42,6 +49,7 @@ public:
     void write_log();
 
     int get_called();
+    double get_chimin();
 
     void set_confidence_limit(double);
     void set_dof(int);

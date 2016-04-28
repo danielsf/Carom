@@ -68,29 +68,74 @@ class dalex{
 
     private:
 
-       void add_good_point(int ii){
+       double distance(int i1, int i2){
+           int i,j;
+           double component,dd;
+           dd=0.0;
+           for(i=0;i<_chifn->get_dim();i++){
+               component=0.0;
+               for(j=0;j<_chifn->get_dim();j++){
+                   component+=(_chifn->get_pt(i1,j)-_chifn->get_pt(i2,j))*_basis_vectors.get_data(i,j);
+               }
+               dd+=power(component/_basis_norm.get_data(i),2);
+           }
+           return sqrt(dd);
+       }
+
+       void add_good_point(int ii, int aa){
            if(_chifn->get_fn(ii)<target() && _good_points.contains(ii)==0){
                _good_points.add(ii);
+               _good_point_origins.add(aa);
            }
        }
 
         void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
+            evaluate(pt, mu_out, i_out, -1);
+        }
+
+        void evaluate(array_1d<double> &pt, double *mu_out, int *i_out, int i_origin){
             _chifn->evaluate(pt,mu_out,i_out);
             if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
-                add_good_point(i_out[0]);
+                add_good_point(i_out[0], i_origin);
             }
         }
 
         void _update_good_points(){
-            _update_good_points(_last_checked_good);
+            _update_good_points(_last_checked_good, -1, -1);
         }
 
-        void _update_good_points(int i_start){
+        void _update_good_points(int ii){
+            _update_good_points(ii, -1, -1);
+        }
+
+        void _update_good_points(int i_start, int io1, int io2){
             safety_check("_update_good_points");
+
             int i;
+            double dd1,dd2;
+            int origin_dex;
             for(i=i_start;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target() && _good_points.contains(i)==0){
-                    add_good_point(i);
+                    if(io1<0 && io2>=0){
+                        origin_dex=io2;
+                    }
+                    else if(io2<0 && io1>=0){
+                         origin_dex=io1;
+                    }
+                    else if(io1>=0 && io2>=0){
+                        dd1=distance(i,io1);
+                        dd2=distance(i,io2);
+                        if(dd1<dd2){
+                            origin_dex=io1;
+                        }
+                        else{
+                            origin_dex=io2;
+                        }
+                    }
+                    else{
+                        origin_dex=-1;
+                    }
+                    add_good_point(i, origin_dex);
                 }
             }
             _last_checked_good=_chifn->get_pts();
@@ -112,7 +157,7 @@ class dalex{
 
                     evaluate(trial,&mu,&i_found);
                     if(mu<target() && _good_points.contains(i)==0){
-                        add_good_point(i);
+                        add_good_point(i, -1);
                     }
                 }
             }
@@ -125,10 +170,14 @@ class dalex{
             for(i=0;i<_good_points.get_dim();i++){
                 if(_chifn->get_fn(_good_points.get_data(i))>target()){
                     _good_points.remove(i);
+                    _good_point_origins.remove(i);
                     i--;
                 }
             }
+            assess_good_point_origins();
         }
+
+        void assess_good_point_origins();
 
         double chimin(){
             safety_check("chimin");
@@ -145,6 +194,13 @@ class dalex{
                 printf("ERROR: dalex called %s but _chifn is NULL\n", word);
                 exit(1);
             }
+
+            if(_good_points.get_dim()!=_good_point_origins.get_dim()){
+                printf("ERROR: good points %d good point origins %d\n",
+                _good_points.get_dim(),_good_point_origins.get_dim());
+                exit(1);
+            }
+
         }
 
         double target(){
@@ -157,6 +213,7 @@ class dalex{
         double _target_factor;
         int _simplex_mindex;
         array_1d<int> _good_points;
+        array_1d<int> _good_point_origins;
 
         ////////code related to finding basis vectors
         array_1d<int> _basis_associates;
@@ -197,6 +254,65 @@ class dalex{
         void add_charge(int ii){
             if(_charges.contains(ii)==0 && _chifn->get_fn(ii)<target()){
                 _charges.add(ii);
+            }
+        }
+
+
+        int check_association(int i1, int i2){
+            array_1d<double> trial;
+            trial.set_name("dalex_check_association_trial");
+            double wgt,mu;
+            int i,i_found,i_origin;
+            for(wgt=0.25;wgt<0.77;wgt+=0.25){
+
+                if(wgt<0.5){
+                    i_origin=i1;
+                }
+                else{
+                    i_origin=i2;
+                }
+
+                for(i=0;i<_chifn->get_dim();i++){
+                    trial.set(i,wgt*_chifn->get_pt(i1,i)+(1.0-wgt)*_chifn->get_pt(i2,i));
+                }
+
+                evaluate(trial,&mu,&i_found,i_origin);
+
+                if(mu>target()){
+                    return 0;
+                }
+            }
+            return 1;
+        }
+
+
+        void create_mask(int i_pt, array_1d<int> &mask){
+            mask.reset_preserving_room();
+
+            array_1d<int> considered,is_associate;
+            considered.set_name("dalex_create_mask_considered");
+            is_associate.set_name("dalex_create_mask_is_associate");
+            int i,j,i_origin,n_0;
+            n_0=_good_points.get_dim();
+            for(i=0;i<n_0;i++){
+                i_origin=_good_point_origins.get_data(i);
+                if(i_origin<0){
+                    mask.set(i,1);
+                }
+                else if(considered.contains(i_origin)==1){
+                    for(j=0;considered.get_data(j)!=i_origin;j++);
+                    if(considered.get_data(j)!=i_origin){
+                        printf("WARNING you did the indexing wrong in create_mask\n");
+                        exit(1);
+                    }
+                    mask.set(i,is_associate.get_data(j));
+                }
+                else{
+                    j=check_association(i_pt, i_origin);
+                    considered.add(i_origin);
+                    is_associate.add(j);
+                    mask.set(i,j);
+                }
             }
         }
 
