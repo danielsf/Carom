@@ -283,7 +283,7 @@ void maps_initializer::search(){
                             dir.normalize();
                             for(i=0;i<_chifn->get_dim();i++){
                                 trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+
-                                          (local_max.get_data(i)-local_min.get_data(i))*dir.get_data(i));
+                                          0.5*(_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
                             }
 
                             for(i=0;i<_particles.get_dim();i++){
