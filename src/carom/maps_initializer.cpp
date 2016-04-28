@@ -290,7 +290,7 @@ void maps_initializer::search(){
                                 dd=0.0;
                                 for(j=0;j<_chifn->get_dim();j++){
                                     dd+=power((trial.get_data(j)-_chifn->get_pt(_abs_min.get_data(i),j))/
-                                               (local_max.get_data(j)-local_min.get_data(j)),2);
+                                               (_chifn->get_max(j)-_chifn->get_min(j)),2);
                                 }
                                 if(i==0 || dd<dd_min){
                                      dd_min=dd;
