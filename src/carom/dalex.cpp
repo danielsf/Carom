@@ -964,7 +964,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
 
 
     int n_walkers=2*(_chifn->get_dim()+1);
-    int n_steps=10*_chifn->get_dim();
+    int n_steps=5*_chifn->get_dim();
 
     array_2d<double> walkers;
     array_1d<double> f_walkers;
@@ -1009,7 +1009,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
             rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
 
             for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,walkers.get_data(ip,i)+rr*rr_norm*norm.get_data(i)*_basis_vectors.get_data(i_dim,i));
+                trial.set(i,walkers.get_data(ip,i)+rr*norm.get_data(i_dim)*_basis_vectors.get_data(i_dim,i));
             }
 
             mu=dchi[0](trial);
