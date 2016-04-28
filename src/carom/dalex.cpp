@@ -1139,8 +1139,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
         }
     }
 
-    // n_max_associates of the remaining possible associates added to associates
-    int n_max_associates=2000;
+    // keep every 5th of the remaining possible associates added to associates
     int n_remaining=0;
     for(i=0;i<n_good_0;i++){
         if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
@@ -1148,7 +1147,14 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
         }
     }
 
-    int n_thin=n_remaining/n_max_associates-1;
+    int n_thin;
+    if(n_remaining+associates.get_dim()<20000){
+        n_thin=0;
+    }
+    else{
+        n_thin=5;
+    }
+
     int use_associate=0;
     for(i=0;i<n_good_0;i++){
         if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
