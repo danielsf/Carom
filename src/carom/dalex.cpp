@@ -1018,7 +1018,27 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     array_1d<int> chosen_seed,mask;
     mask.set_name("dalex_simple_boundary_mask");
 
+    int i_origin;
+    double sgn;
+    array_1d<double> prev_dir;
+    prev_dir.set_name("dalex_simplex_boundary_prev_dir");
+
     if(specified>=0){
+        i_origin=-1;
+        for(i=0;i<_good_points.get_dim() && _good_points.get_data(i)!=specified;i++);
+        if(i<_good_points.get_dim()){
+            if(_good_points.get_data(i)!=specified){
+                printf("WARNING failed to find good point in boundary search\n");
+                exit(1);
+            }
+            i_origin=_good_point_origins.get_data(i);
+            if(i_origin>=0){
+                for(i=0;i<_chifn->get_dim();i++){
+                    prev_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
+                }
+                prev_dir.normalize();
+            }
+        }
         seed.add_row(_chifn->get_pt(specified)[0]);
         chosen_seed.add(specified);
         create_mask(specified,mask);
@@ -1026,8 +1046,18 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
 
         if(norm.get_dim()==_chifn->get_dim()){
             for(i=0;i<_chifn->get_dim();i++){
+                sgn=1.0;
+                if(prev_dir.get_dim()>0){
+                    xx=0.0;
+                    for(j=0;j<_chifn->get_dim();j++){
+                        xx+=prev_dir.get_data(j)*_basis_vectors.get_data(i,j);
+                    }
+                    if(xx<0.0){
+                        sgn=-1.0;
+                    }
+                }
                 for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,_chifn->get_pt(specified,j)+0.1*norm.get_data(i)*_basis_vectors.get_data(i,j));
+                    trial.set(j,_chifn->get_pt(specified,j)+0.1*sgn*norm.get_data(i)*_basis_vectors.get_data(i,j));
                 }
                 seed.add_row(trial);
             }
