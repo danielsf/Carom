@@ -828,7 +828,6 @@ void maps::search(int limit){
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
-    exit(1);
 
     while(_chifn.get_pts()<limit){
 
