@@ -959,6 +959,96 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
+
+void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &norm, array_2d<double> &seed){
+
+
+    int n_walkers=2*(_chifn->get_dim()+1);
+    int n_steps=10*_chifn->get_dim();
+
+    array_2d<double> walkers;
+    array_1d<double> f_walkers;
+    walkers.set_name("seed_walkers");
+    f_walkers.set_name("seed_f_walkers");
+
+    double rr_norm=0.1;
+
+    array_1d<double> dir,trial;
+    dir.set_name("seed_dir");
+    trial.set_name("seed_trial");
+
+    int i,j,i_dim,i_step,ip;
+    double mu;
+    while(walkers.get_rows()<n_walkers){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(i_start,i));
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.add_val(j,rr_norm*dir.get_data(i)*norm.get_data(i)*_basis_vectors.get_data(i,j));
+            }
+        }
+        mu=dchi[0](trial);
+        walkers.add_row(trial);
+        f_walkers.add(mu);
+    }
+
+    double roll,rr,ratio;
+    int accept_it;
+    for(i_step=0;i_step<n_steps;i_step++){
+        for(ip=0;ip<n_walkers;ip++){
+
+            i_dim=_chifn->random_int()%_chifn->get_dim();
+
+            rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
+
+            for(i=0;i<_chifn->get_dim();i++){
+                trial.set(i,walkers.get_data(ip,i)+rr*rr_norm*norm.get_data(i)*_basis_vectors.get_data(i_dim,i));
+            }
+
+            mu=dchi[0](trial);
+
+            accept_it=0;
+            if(mu<f_walkers.get_data(ip)){
+                accept_it=1;
+            }
+            else{
+                roll=_chifn->random_double();
+                ratio=exp(-0.5*(mu-f_walkers.get_data(ip)));
+                if(roll<ratio){
+                    accept_it=1;
+                }
+            }
+
+            if(accept_it==1){
+                for(i=0;i<_chifn->get_dim();i++){
+                    walkers.set(ip,i,trial.get_data(i));
+                }
+                f_walkers.set(ip,mu);
+            }
+        }
+    }
+
+    array_1d<double> f_sorted;
+    array_1d<int> f_dex;
+    f_sorted.set_name("seed_f_sorted");
+    f_dex.set_name("seed_f_dex");
+
+    for(i=0;i<n_walkers;i++){
+        f_dex.set(i,i);
+    }
+    sort_and_check(f_walkers, f_sorted, f_dex);
+    for(i=0;i<_chifn->get_dim()+1;i++){
+        seed.add_row(walkers(f_dex.get_data(i))[0]);
+    }
+
+}
+
+
 void dalex::simplex_boundary_search(){
     array_1d<double> empty;
     simplex_boundary_search(-1, empty);
