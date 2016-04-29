@@ -1012,6 +1012,15 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     local_max.set_name("seed_local_max");
     for(i_step=0;i_step<n_steps;i_step++){
         if(i_step>0 && i_step%(n_steps/4)==0){
+            if(accepted>rejected){
+                rr_norm+=0.1;
+            }
+            else if(rejected>accepted){
+                rr_norm-=0.05;
+                if(rr_norm<0.0){
+                    rr_norm=0.1;
+                }
+            }
             for(i=0;i<_chifn->get_dim();i++){
                 local_min.set(i,2.0*exception_value);
                 local_max.set(i,-2.0*exception_value);
@@ -1092,6 +1101,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     }
 
     printf("    accepted %d rejected %d\n",accepted,rejected);
+    printf("    rr_norm %e\n",rr_norm);
 }
 
 
