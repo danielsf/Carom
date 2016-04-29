@@ -1742,6 +1742,10 @@ void dalex::tendril_search(){
     double mu;
     int i_particle=mindex();
 
+    if(_log!=NULL){
+        _log->add(_log_dchi_simplex,i_particle);
+    }
+
     _update_good_points();
 
     array_1d<int> specified;
