@@ -1623,34 +1623,81 @@ void dalex::tendril_search(){
 
     add_charge(_chifn->mindex());
 
-    int i,j;
+    int i,j,k;
     int pt_0=_chifn->get_pts();
     assess_good_points();
     _update_good_points();
     int n_good_0=_good_points.get_dim();
 
-    array_1d<double> random_dir;
+    array_1d<double> dir,trial;
+    array_1d<double> c_min,c_max;
+    double mu;
     for(i=0;i<_chifn->get_dim();i++){
-        random_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        c_min.set(i,2.0*exception_value);
+        c_max.set(i,-2.0*exception_value);
     }
-    i=bisection(mindex(),random_dir,target(),0.1);
+
+    for(i=0;i<_end_points.get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            mu=0.0;
+            for(k=0;k<_chifn->get_dim();k++){
+                mu+=_chifn->get_pt(_end_points.get_data(i),k)*_basis_vectors.get_data(j,k);
+            }
+            if(mu<c_min.get_data(j)){
+                c_min.set(j,mu);
+            }
+            if(mu>c_max.get_data(j)){
+                c_max.set(j,mu);
+            }
+        }
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        if(c_min.get_data(i)>exception_value || c_max.get_data(i)<-1.0*exception_value ||
+           c_max.get_data(i)-c_min.get_data(i)<1.0e-10){
+
+            c_min.set(i,0.0);
+            c_max.set(i,_basis_norm.get_data(i));
+
+        }
+    }
+
+    int n_cand=100;
+    int i_cand;
+    int i_found;
+    int i_particle=-1;
+    double dd,dd_best,dd_local_min;
+    dd_best=-1.0;
+    for(i_cand=0;i_cand<n_cand || i_particle<0;i_cand++){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(0.0,i));
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.add_val(j,0.5*dir.get_data(i)*(c_max.get_data(i)-c_min.get_data(i))*_basis_vectors.get_data(i,j));
+            }
+        }
+        i_found=bisection(mindex(),trial,target(),0.1);
+        if(i_found>=0){
+            dd_local_min=distance(i_found,mindex());
+            for(i=0;i<_end_points.get_dim();i++){
+                dd=distance(i_found,_end_points.get_data(i));
+                if(dd<dd_local_min){
+                    dd_local_min=dd;
+                }
+            }
+            if(dd_local_min>dd_best){
+                i_particle=i_found;
+                dd_best=dd_local_min;
+            }
+        }
+    }
 
     _update_good_points();
-    if(n_good_0==0 || _good_points.get_dim()==0){
-        return;
-    }
-
-    int i_particle;
-
-    if(_good_points.get_dim()==n_good_0){
-        i_particle=mindex();
-    }
-    else{
-        i_particle=_good_points.get_data(_good_points.get_dim()-1);
-        _end_points.add(i_particle);
-    }
-
-    add_charge(i_particle);
 
     array_1d<int> specified;
 
@@ -1672,8 +1719,6 @@ void dalex::tendril_search(){
     max.set_name("dalex_tendril_max");
     min_p.set_name("dalex_tendril_min_p");
     max_p.set_name("dalex_tendril_max_p");
-
-    double mu;
 
     assess_good_points();
     int ip,ix;
