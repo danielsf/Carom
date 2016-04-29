@@ -968,9 +968,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     int n_walkers=2*(_chifn->get_dim()+1);
     int n_steps=10*_chifn->get_dim();
 
-    array_2d<double> walkers;
     array_1d<double> f_walkers,norm;
-    walkers.set_name("seed_walkers");
     f_walkers.set_name("seed_f_walkers");
     norm.set_name("seed_norm");
 
@@ -982,16 +980,29 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
     int i,j,i_dim,i_step,ip;
     double mu;
-    int accepted=0;
-    int rejected=0;
-    int total_accepted=0;
-    int total_rejected=0;
+
+    array_1d<double> drag;
+    drag.set_name("seed_drat");
+    if(_tendril_origin>=0){
+        for(i=0;i<_chifn->get_dim();i++){
+            drag.set(i,_chifn->get_pt(i_start,i)-_chifn->get_pt(_tendril_origin,i));
+        }
+        for(i=0;i<_tendril_walkers.get_rows();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                _tendril_walkers.add_val(i,j,drag.get_data(j));
+            }
+            mu=dchi[0](_tendril_walkers(i)[0]);
+            f_walkers.set(i,mu);
+        }
+    }
+    _tendril_origin=i_start;
+
 
     for(i=0;i<_chifn->get_dim();i++){
         norm.set(i,rr_norm*_basis_norm.get_data(i));
     }
 
-    while(walkers.get_rows()<n_walkers){
+    while(_tendril_walkers.get_rows()<n_walkers){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
@@ -1005,16 +1016,22 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
             }
         }
         mu=dchi[0](trial);
-        walkers.add_row(trial);
+        _tendril_walkers.add_row(trial);
         f_walkers.add(mu);
     }
+
+    int accepted=0;
+    int rejected=0;
+    int total_accepted=0;
+    int total_rejected=0;
 
     double roll,rr,ratio;
     int accept_it;
     array_1d<double> local_min,local_max;
     local_min.set_name("seed_local_min");
     local_max.set_name("seed_local_max");
-    for(i_step=0;i_step<n_steps;i_step++){
+    double min_f=2.0*exception_value;
+    for(i_step=0;i_step<n_steps || min_f>target();i_step++){
         if(i_step%(2*_chifn->get_dim())==0){
 
             if(accepted>rejected){
@@ -1062,7 +1079,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
                     mu=0.0;
 
                     for(j=0;j<_chifn->get_dim();j++){
-                        mu+=walkers.get_data(ip,j)*bases.get_data(i,j);
+                        mu+=_tendril_walkers.get_data(ip,j)*bases.get_data(i,j);
                     }
 
                     if(mu<local_min.get_data(i)){
@@ -1088,7 +1105,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
             rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
 
             for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,walkers.get_data(ip,i)+rr*norm.get_data(i_dim)*bases.get_data(i_dim,i));
+                trial.set(i,_tendril_walkers.get_data(ip,i)+rr*norm.get_data(i_dim)*bases.get_data(i_dim,i));
             }
 
             mu=dchi[0](trial);
@@ -1109,13 +1126,20 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
                 accepted++;
                 total_accepted++;
                 for(i=0;i<_chifn->get_dim();i++){
-                    walkers.set(ip,i,trial.get_data(i));
+                    _tendril_walkers.set(ip,i,trial.get_data(i));
                 }
                 f_walkers.set(ip,mu);
             }
             else{
                 rejected++;
                 total_rejected++;
+            }
+        }
+
+        min_f=2.0*exception_value;
+        for(i=0;i<f_walkers.get_dim();i++){
+            if(f_walkers.get_data(i)<min_f){
+                min_f=f_walkers.get_data(i);
             }
         }
     }
@@ -1130,7 +1154,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     }
     sort_and_check(f_walkers, f_sorted, f_dex);
     for(i=0;i<_chifn->get_dim()+1;i++){
-        seed.add_row(walkers(f_dex.get_data(i))[0]);
+        seed.add_row(_tendril_walkers(f_dex.get_data(i))[0]);
     }
 
     printf("    accepted %d rejected %d\n",total_accepted,total_rejected);
@@ -1663,6 +1687,9 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
 
 
 void dalex::tendril_search(){
+
+    _tendril_origin=-1;
+    _tendril_walkers.reset_preserving_room();
 
     add_charge(_chifn->mindex());
 
