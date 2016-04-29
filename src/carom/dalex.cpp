@@ -966,7 +966,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     bases.set_name("seed_bases");
 
     int n_walkers=2*(_chifn->get_dim()+1);
-    int n_steps=5*_chifn->get_dim();
+    int n_steps=10*_chifn->get_dim();
 
     array_2d<double> walkers;
     array_1d<double> f_walkers,norm;
@@ -1015,7 +1015,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     local_min.set_name("seed_local_min");
     local_max.set_name("seed_local_max");
     for(i_step=0;i_step<n_steps;i_step++){
-        if(i_step%(n_steps/4)==0){
+        if(i_step%(2*_chifn->get_dim())==0){
 
             if(accepted>rejected){
                 rr_norm+=0.1;
