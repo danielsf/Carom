@@ -960,16 +960,17 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 }
 
 
-void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &norm, array_2d<double> &seed){
+void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &seed){
 
 
     int n_walkers=2*(_chifn->get_dim()+1);
     int n_steps=5*_chifn->get_dim();
 
     array_2d<double> walkers;
-    array_1d<double> f_walkers;
+    array_1d<double> f_walkers,norm;
     walkers.set_name("seed_walkers");
     f_walkers.set_name("seed_f_walkers");
+    norm.set_name("seed_norm");
 
     double rr_norm=0.1;
 
@@ -981,6 +982,11 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
     double mu;
     int accepted=0;
     int rejected=0;
+
+    for(i=0;i<_chifn->get_dim();i++){
+        norm.set(i,rr_norm*_basis_norm.get_data(i));
+    }
+
     while(walkers.get_rows()<n_walkers){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
@@ -991,7 +997,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
         }
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.add_val(j,rr_norm*dir.get_data(i)*norm.get_data(i)*_basis_vectors.get_data(i,j));
+                trial.add_val(j,dir.get_data(i)*norm.get_data(i)*_basis_vectors.get_data(i,j));
             }
         }
         mu=dchi[0](trial);
@@ -1001,7 +1007,40 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_1d<double> &
 
     double roll,rr,ratio;
     int accept_it;
+    array_1d<double> local_min,local_max;
+    local_min.set_name("seed_local_min");
+    local_max.set_name("seed_local_max");
     for(i_step=0;i_step<n_steps;i_step++){
+        if(i_step>0 && i_step%(n_steps/4)==0){
+            for(i=0;i<_chifn->get_dim();i++){
+                local_min.set(i,2.0*exception_value);
+                local_max.set(i,-2.0*exception_value);
+            }
+
+            for(ip=0;ip<n_walkers;ip++){
+                for(i=0;i<_chifn->get_dim();i++){
+                    mu=0.0;
+
+                    for(j=0;j<_chifn->get_dim();j++){
+                        mu+=walkers.get_data(ip,j)*_basis_vectors.get_data(i,j);
+                    }
+
+                    if(mu<local_min.get_data(i)){
+                        local_min.set(i,mu);
+                    }
+
+                    if(mu>local_max.get_data(i)){
+                        local_max.set(i,mu);
+                    }
+                }
+            }
+
+            for(i=0;i<_chifn->get_dim();i++){
+                norm.set(i,rr_norm*(local_max.get_data(i)-local_min.get_data(i)));
+            }
+        }
+
+
         for(ip=0;ip<n_walkers;ip++){
 
             i_dim=_chifn->random_int()%_chifn->get_dim();
@@ -1190,7 +1229,7 @@ void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
 
-    tendril_seed(&dchifn, specified, norm, seed);
+    tendril_seed(&dchifn, specified, seed);
 
     int i_min=-1;
     double mu_min;
