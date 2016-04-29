@@ -1629,7 +1629,7 @@ void dalex::tendril_search(){
     _update_good_points();
     int n_good_0=_good_points.get_dim();
 
-    array_1d<double> dir,trial;
+    /*array_1d<double> dir,trial;
     array_1d<double> c_min,c_max;
     double mu;
     for(i=0;i<_chifn->get_dim();i++){
@@ -1695,7 +1695,9 @@ void dalex::tendril_search(){
                 dd_best=dd_local_min;
             }
         }
-    }
+    }*/
+    double mu;
+    int i_particle=mindex();
 
     _update_good_points();
 
