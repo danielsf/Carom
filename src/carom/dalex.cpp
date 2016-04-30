@@ -1688,9 +1688,6 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
 
 void dalex::tendril_search(){
 
-    _tendril_origin=-1;
-    _tendril_walkers.reset_preserving_room();
-
     add_charge(_chifn->mindex());
 
     int i,j,k;
