@@ -998,26 +998,18 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     _tendril_origin=i_start;
 
 
-    for(i=0;i<_chifn->get_dim();i++){
-        norm.set(i,rr_norm*_basis_norm.get_data(i));
-    }
+    int i_found;
 
     while(_tendril_walkers.get_rows()<n_walkers){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
-        dir.normalize();
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,_chifn->get_pt(i_start,i));
+        i_found=bisection(i_start,dir,target(),0.1);
+        if(i_found!=i_start && i_found>=0){
+            mu=dchi[0](_chifn->get_pt(i_found)[0]);
+            _tendril_walkers.add_row(_chifn->get_pt(i_found)[0]);
+            f_walkers.add(mu);
         }
-        for(i=0;i<_chifn->get_dim();i++){
-            for(j=0;j<_chifn->get_dim();j++){
-                trial.add_val(j,dir.get_data(i)*norm.get_data(i)*_basis_vectors.get_data(i,j));
-            }
-        }
-        mu=dchi[0](trial);
-        _tendril_walkers.add_row(trial);
-        f_walkers.add(mu);
     }
 
     int accepted=0;
