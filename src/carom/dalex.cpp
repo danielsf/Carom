@@ -1766,6 +1766,23 @@ void dalex::tendril_search(){
     double mu;
     int i_particle=mindex();
 
+    array_1d<double> dir;
+    dir.set_name("tendril_search_dir");
+    if(_tendril_origin>=0){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,0.0);
+        }
+        for(i=0;i<_end_points.get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                dir.add_val(j,_chifn->get_pt(mindex(),j)-_chifn->get_pt(_end_points.get_data(i),j));
+            }
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.divide_val(i,double(_end_points.get_dim()));
+        }
+        i_particle=bisection(mindex(),dir,target(),0.1);
+    }
+
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_particle);
     }
