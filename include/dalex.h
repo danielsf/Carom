@@ -52,7 +52,7 @@ class dalex{
         void simplex_search(array_1d<int>&);
         void simplex_gp_search();
         void simplex_boundary_search();
-        void simplex_boundary_search(int,array_1d<double>&);
+        void simplex_boundary_search(int);
         void explore();
 
         int bisection(int, int, double, double);

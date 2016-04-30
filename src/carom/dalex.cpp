@@ -1163,11 +1163,10 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
 
 void dalex::simplex_boundary_search(){
-    array_1d<double> empty;
-    simplex_boundary_search(-1, empty);
+    simplex_boundary_search(-1);
 }
 
-void dalex::simplex_boundary_search(int specified, array_1d<double> &norm){
+void dalex::simplex_boundary_search(int specified){
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
@@ -1846,7 +1845,7 @@ void dalex::tendril_search(){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        simplex_boundary_search(i_particle, _basis_norm);
+        simplex_boundary_search(i_particle);
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         _end_points.add(i_particle);
