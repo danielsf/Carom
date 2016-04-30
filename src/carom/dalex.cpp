@@ -1025,6 +1025,16 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     int total_accepted=0;
     int total_rejected=0;
 
+    array_2d<double> walker_min;
+    walker_min.set_name("seed_walker_min");
+    array_1d<double> walker_f_min;
+    walker_f_min.set_name("seed_walker_f_min");
+    for(i=0;i<n_walkers;i++){
+        walker_min.add_row(_tendril_walkers(i)[0]);
+        walker_f_min.add(f_walkers.get_data(i));
+    }
+
+
     double roll,rr,ratio;
     int accept_it;
     array_1d<double> local_min,local_max;
@@ -1110,6 +1120,11 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
             mu=dchi[0](trial);
 
+            if(mu<walker_f_min.get_data(ip)){
+                walker_min.set_row(ip,trial);
+                walker_f_min.set(ip,mu);
+            }
+
             accept_it=0;
             if(mu<f_walkers.get_data(ip)){
                 accept_it=1;
@@ -1152,9 +1167,9 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     for(i=0;i<n_walkers;i++){
         f_dex.set(i,i);
     }
-    sort_and_check(f_walkers, f_sorted, f_dex);
+    sort_and_check(walker_f_min, f_sorted, f_dex);
     for(i=0;i<_chifn->get_dim()+1;i++){
-        seed.add_row(_tendril_walkers(f_dex.get_data(i))[0]);
+        seed.add_row(walker_min(f_dex.get_data(i))[0]);
     }
 
     printf("    accepted %d rejected %d\n",total_accepted,total_rejected);
