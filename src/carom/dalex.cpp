@@ -999,12 +999,20 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
 
     int i_found;
+    double local_target;
+
+    local_target=_chifn->get_fn(i_start)+0.1*(target()-chimin());
+    if(local_target<target()){
+        local_target=target();
+    }
+
 
     while(_tendril_walkers.get_rows()<n_walkers){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
-        i_found=bisection(i_start,dir,target(),0.1);
+        i_found=bisection(i_start,dir,local_target,0.1);
+
         if(i_found!=i_start && i_found>=0){
             mu=dchi[0](_chifn->get_pt(i_found)[0]);
             _tendril_walkers.add_row(_chifn->get_pt(i_found)[0]);
