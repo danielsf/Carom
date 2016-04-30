@@ -1766,19 +1766,31 @@ void dalex::tendril_search(){
     double mu;
     int i_particle=mindex();
 
-    array_1d<double> dir;
+    array_1d<double> avg_dir,dir;
+    avg_dir.set_name("tendril_search_avg_dir");
     dir.set_name("tendril_search_dir");
     if(_tendril_origin>=0){
         for(i=0;i<_chifn->get_dim();i++){
-            dir.set(i,0.0);
+            avg_dir.set(i,0.0);
         }
         for(i=0;i<_end_points.get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                dir.add_val(j,_chifn->get_pt(mindex(),j)-_chifn->get_pt(_end_points.get_data(i),j));
+                avg_dir.add_val(j,_chifn->get_pt(mindex(),j)-_chifn->get_pt(_end_points.get_data(i),j));
             }
         }
         for(i=0;i<_chifn->get_dim();i++){
-            dir.divide_val(i,double(_end_points.get_dim()));
+            avg_dir.divide_val(i,double(_end_points.get_dim()));
+        }
+        avg_dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        mu=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+             mu+=dir.get_data(i)*avg_dir.get_data(i);
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.subtract_val(i,mu*avg_dir.get_data(i));
         }
         i_particle=bisection(mindex(),dir,target(),0.1);
     }
