@@ -254,5 +254,13 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
         exp_term=exp((_chifn->target()-mu)/_envelope);
     }
 
-    return mu-1.0*distance*delta*exp_term;
+    double damping;
+    if(mu<_chifn->target()){
+        damping=0.0;
+    }
+    else{
+        damping=1.0-exp((_chifn->target()-mu)/_envelope);
+    }
+
+    return damping*mu-1.0*distance*delta*exp_term;
 }
