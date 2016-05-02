@@ -989,7 +989,10 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
         }
         for(i=0;i<_tendril_walkers.get_rows();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                _tendril_walkers.add_val(i,j,drag.get_data(j));
+                trial.set(j,_tendril_walkers.get_data(i,j)+drag.get_data(j));
+            }
+            for(j=0;j<_chifn->get_dim();j++){
+                _tendril_walkers.set(i,j,0.5*(_chifn->get_pt(i_start,j)+trial.get_data(j)));
             }
             mu=dchi[0](_tendril_walkers(i)[0]);
             f_walkers.set(i,mu);
