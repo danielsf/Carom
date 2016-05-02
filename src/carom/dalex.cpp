@@ -965,7 +965,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
     array_2d<double> bases;
     bases.set_name("seed_bases");
 
-    int n_walkers=2*(_chifn->get_dim()+1);
+    int n_walkers=2*(_chifn->get_dim());
     int n_steps=10*_chifn->get_dim();
 
     array_1d<double> f_walkers,norm;
@@ -1171,7 +1171,8 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
         f_dex.set(i,i);
     }
     sort_and_check(walker_f_min, f_sorted, f_dex);
-    for(i=0;i<_chifn->get_dim()+1;i++){
+    seed.add_row(_chifn->get_pt(i_start)[0]);
+    for(i=0;i<_chifn->get_dim();i++){
         seed.add_row(walker_min(f_dex.get_data(i))[0]);
     }
 
