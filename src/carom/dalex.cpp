@@ -971,7 +971,12 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
         grad.multiply_val(i,-1.0);
     }
     double local_target;
-    local_target=_chifn->get_fn(i_start)+0.01*(target()-chimin());
+    if(_chifn->get_fn(i_start)>target()-0.1*(target()-chimin())){
+        local_target=_chifn->get_fn(i_start)+0.01*(target()-chimin());
+    }
+    else{
+        local_target=target();
+    }
 
     i_grad=bisection(i_start, grad, local_target, 0.1);
 
