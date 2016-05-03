@@ -962,6 +962,39 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &seed){
 
+    array_1d<double> grad;
+    grad.set_name("seed_grad");
+    int i_grad;
+    get_gradient(i_start, _basis_norm, grad);
+    int i,j;
+    for(i=0;i<_chifn->get_dim();i++){
+        grad.multiply_val(i,-1.0);
+    }
+    double local_target;
+    local_target=_chifn->get_fn(i_start)+0.01*(target()-chimin());
+
+    i_grad=bisection(i_start, grad, local_target, 0.1);
+
+    array_1d<double> trial;
+    trial.set_name("seed_trial");
+
+    if(i_grad==i_start){
+        printf("    WARNING igrad was istart\n");
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        trial.set(i,0.5*(_chifn->get_pt(i_start,i)+_chifn->get_pt(i_grad,i)));
+    }
+    double mu;
+    evaluate(trial,&mu,&i);
+    printf("    starting from %e was %e, %e\n",
+    mu,_chifn->get_fn(i_start),_chifn->get_fn(i_grad));
+    printf("    %d %d %d -- %e %e\n",i_start,i_grad,i,distance(i_start,i),
+    distance(i_grad,i));
+    if(i>=0){
+        i_start=i;
+    }
+
     array_2d<double> bases;
     bases.set_name("seed_bases");
 
@@ -974,12 +1007,10 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
     double rr_norm=0.1;
 
-    array_1d<double> dir,trial;
+    array_1d<double> dir;
     dir.set_name("seed_dir");
-    trial.set_name("seed_trial");
 
-    int i,j,i_dim,i_step,ip;
-    double mu;
+    int i_dim,i_step,ip;
 
     array_1d<double> drag;
     drag.set_name("seed_drat");
@@ -1002,7 +1033,6 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
 
     int i_found;
-    double local_target;
 
     local_target=_chifn->get_fn(i_start)+0.1*(target()-chimin());
     if(local_target<target()){
@@ -1683,7 +1713,7 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
     int ix;
     double dx,y1,y2;
     for(ix=0;ix<_chifn->get_dim();ix++){
-        dx=0.01*norm.get_data(ix);
+        dx=0.001*norm.get_data(ix);
         for(i=0;i<_chifn->get_dim();i++){
             trial.set(i,_chifn->get_pt(origin,i)-dx*_basis_vectors.get_data(ix,i));
         }
