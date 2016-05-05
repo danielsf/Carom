@@ -1918,7 +1918,7 @@ void dalex::tendril_search(){
 
     while(strikes<3){
 
-        if(iteration>=2){
+        if(iteration>=3){
             use_median=1;
         }
         iteration++;
