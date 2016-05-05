@@ -1344,6 +1344,7 @@ void dalex::simplex_boundary_search(int specified, int use_median){
                 }
             }
         }
+        printf("    now mindex %d\n",mindex());
     }
 
     printf("    associates %d mask contains zero %d associates contain mindex %d\n",
