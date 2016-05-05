@@ -1403,6 +1403,11 @@ void dalex::simplex_boundary_search(int specified, int use_median){
     dchifn(_chifn->get_pt(i_min)[0]),_chifn->get_fn(i_min));
 
     printf("    min is %e target %e\n",chimin(),target());
+    if(_chifn->get_dim()>9){
+       printf("    minpt at %e %e\n",
+       _chifn->get_pt(mindex(),6),
+       _chifn->get_pt(mindex(),9));
+    }
 
 }
 
