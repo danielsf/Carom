@@ -261,6 +261,7 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
     double exp_term;
     if(mu<_chifn->target()){
         exp_term=1.0;
+        mu=_chifn->target();
     }
     else{
         exp_term=exp((_chifn->target()-mu)/_envelope);
