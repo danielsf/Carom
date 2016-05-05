@@ -267,5 +267,5 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
         exp_term=exp((_chifn->target()-mu)/_envelope);
     }
 
-    return mu-1.0*distance*delta*exp_term;
+    return mu-1.0*delta*distance*distance*exp_term;
 }
