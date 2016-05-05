@@ -87,12 +87,18 @@ class dchi_interior_simplex : public function_wrapper{
 
         }
 
+        void use_median(){
+            _just_median=1;
+        }
+
     private:
         array_1d<int> _associates;
         array_1d<int> _mask;
+        array_1d<double> _median_associate;
         double _norm;
         chisq_wrapper *_chifn;
         int _called;
+        int _just_median;
         double _envelope;
 };
 

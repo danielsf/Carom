@@ -159,7 +159,9 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
     _called=0;
 
     _mask.set_name("dchi_interior_mask");
+    _median_associate.set_name("dchi_interior_median");
 
+    _just_median=0;
     _chifn=cc;
     _envelope=1.0;
 
@@ -195,6 +197,7 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
     }
 
     for(i=0;i<_chifn->get_dim();i++){
+        _median_associate.set(i,0.5*(max.get_data(i)+min.get_data(i)));
         if(i==0 || norm.get_data(i)<_norm){
             _norm=norm.get_data(i);
         }
@@ -203,13 +206,22 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
 }
 
 double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
+    double dd;
+    int i,j;
+
+    if(_just_median==1){
+        dd=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            dd+=power((pt.get_data(i)-_median_associate.get_data(i))/_norm,2);
+        }
+        return sqrt(dd);
+    }
+
     if(_associates.get_dim()==0){
         return 0.0;
     }
     double dd_min=2.0*exception_value;
 
-    double dd;
-    int i,j;
     for(i=0;i<_associates.get_dim();i++){
         if(_mask.get_dim()==0 || _mask.get_data(i)==1){
             dd=0.0;
