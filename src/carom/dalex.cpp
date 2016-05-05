@@ -1276,7 +1276,8 @@ void dalex::simplex_boundary_search(int specified, int use_median){
     else{
 
         // make sure mindex is an associate
-        if(check_association(mindex(), specified)==0){
+        printf("    at start mindex %d\n",mindex());
+        if(check_association(mindex(), specified)==1){
             associates.add(mindex());
         }
 
