@@ -1274,6 +1274,12 @@ void dalex::simplex_boundary_search(int specified, int use_median){
         }
     }
     else{
+
+        // make sure mindex is an associate
+        if(check_association(mindex(), specified)==0){
+            associates.add(mindex());
+        }
+
         // all good points without an origin added to associates
         for(i=0;i<mask.get_dim();i++){
             if(_good_point_origins.get_data(i)<0 && mask.get_data(i)==1){
