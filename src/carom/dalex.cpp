@@ -1217,10 +1217,10 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
 
 void dalex::simplex_boundary_search(){
-    simplex_boundary_search(-1);
+    simplex_boundary_search(-1,0);
 }
 
-void dalex::simplex_boundary_search(int specified){
+void dalex::simplex_boundary_search(int specified, int use_median){
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
@@ -1261,75 +1261,88 @@ void dalex::simplex_boundary_search(int specified){
 
     array_1d<int> associates;
     associates.set_name("dalex_simplex_boundary_associates");
+    int i_start;
+    int n_remaining=0;
+    int n_thin;
+    int use_associate=0;
 
-    // all good points without an origin added to associates
-    for(i=0;i<mask.get_dim();i++){
-        if(_good_point_origins.get_data(i)<0 && mask.get_data(i)==1){
-            associates.add(_good_points.get_data(i));
-        }
-    }
-
-    // all _end_points added to associates
-    for(i=0;i<n_good_0;i++){
-        if(_end_points.contains(_good_points.get_data(i)) && mask.get_data(i)==1){
-            if(associates.contains(_good_points.get_data(i))==0){
+    if(use_median==1){
+        for(i=0;i<mask.get_dim();i++){
+            if(mask.get_data(i)==1){
                 associates.add(_good_points.get_data(i));
             }
         }
     }
+    else{
+        // all good points without an origin added to associates
+        for(i=0;i<mask.get_dim();i++){
+            if(_good_point_origins.get_data(i)<0 && mask.get_data(i)==1){
+                associates.add(_good_points.get_data(i));
+            }
+        }
 
-    // all good points between the last two end points added to associates
-    int i_start;
-    if(_end_points.get_dim()>0){
-        if(_end_points.get_dim()>=2){
-            i_start=_end_points.get_data(_end_points.get_dim()-2);
+        // all _end_points added to associates
+        for(i=0;i<n_good_0;i++){
+            if(_end_points.contains(_good_points.get_data(i)) && mask.get_data(i)==1){
+                if(associates.contains(_good_points.get_data(i))==0){
+                    associates.add(_good_points.get_data(i));
+                }
+            }
+        }
+
+        // all good points between the last two end points added to associates
+        if(_end_points.get_dim()>0){
+            if(_end_points.get_dim()>=2){
+                i_start=_end_points.get_data(_end_points.get_dim()-2);
+            }
+            else{
+                i_start=_end_points.get_data(_end_points.get_dim()-1);
+            }
+            for(i=0;i<n_good_0;i++){
+                if(mask.get_data(i)==1){
+                    if(associates.contains(_good_points.get_data(i))==0){
+                        if(_good_points.get_data(i)>i_start){
+                            associates.add(_good_points.get_data(i));
+                        }
+                    }
+                }
+            }
+        }
+
+        // keep every 5th of the remaining possible associates added to associates
+        for(i=0;i<n_good_0;i++){
+            if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
+                n_remaining++;
+            }
+        }
+
+        if(n_remaining+associates.get_dim()<20000){
+            n_thin=0;
         }
         else{
-            i_start=_end_points.get_data(_end_points.get_dim()-1);
+            n_thin=5;
         }
+
         for(i=0;i<n_good_0;i++){
-            if(mask.get_data(i)==1){
-                if(associates.contains(_good_points.get_data(i))==0){
-                    if(_good_points.get_data(i)>i_start){
-                        associates.add(_good_points.get_data(i));
-                    }
+            if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
+                if(use_associate>=n_thin){
+                    associates.add(_good_points.get_data(i));
+                    use_associate=0;
+                }
+                else{
+                    use_associate++;
                 }
             }
         }
     }
 
-    // keep every 5th of the remaining possible associates added to associates
-    int n_remaining=0;
-    for(i=0;i<n_good_0;i++){
-        if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
-            n_remaining++;
-        }
-    }
-
-    int n_thin;
-    if(n_remaining+associates.get_dim()<20000){
-        n_thin=0;
-    }
-    else{
-        n_thin=5;
-    }
-
-    int use_associate=0;
-    for(i=0;i<n_good_0;i++){
-        if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
-            if(use_associate>=n_thin){
-                associates.add(_good_points.get_data(i));
-                use_associate=0;
-            }
-            else{
-                use_associate++;
-            }
-        }
-    }
-
-    printf("    associates %d\n",associates.get_dim());
+    printf("    associates %d mask contains zero %d\n",associates.get_dim(),mask.contains(0));
 
     dchi_interior_simplex dchifn(_chifn,associates);
+
+    if(use_median==1){
+        dchifn.use_median();
+    }
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -1892,14 +1905,21 @@ void dalex::tendril_search(){
     int i_origin,ct_last;
 
     int strikes=0;
+    int iteration=0;
+    int use_median=0;
 
     while(strikes<3){
+
+        if(iteration>=2){
+            use_median=1;
+        }
+        iteration++;
 
         add_charge(_chifn->mindex());
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        simplex_boundary_search(i_particle);
+        simplex_boundary_search(i_particle, use_median);
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         _end_points.add(i_particle);
