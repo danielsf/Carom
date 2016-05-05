@@ -43,7 +43,7 @@ class dchi_multimodal_simplex : public dchi_simplex_base{
 
 class dchi_interior_simplex : public function_wrapper{
     public:
-        dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
+        dchi_interior_simplex(chisq_wrapper*, array_1d<int>&, array_2d<double>&);
         ~dchi_interior_simplex(){};
         virtual double operator()(array_1d<double>&);
         virtual int get_called();
@@ -80,8 +80,8 @@ class dchi_interior_simplex : public function_wrapper{
             }
 
             for(i=0;i<_chifn->get_dim();i++){
-                if(max.get_data(i)-min.get_data(i)>1.0e-20 && max.get_data(i)-min.get_data(i)<_norm){
-                    _norm=max.get_data(i)-min.get_data(i);
+                if(max.get_data(i)-min.get_data(i)>1.0e-20 && max.get_data(i)-min.get_data(i)<_scalar_norm){
+                    _scalar_norm=max.get_data(i)-min.get_data(i);
                 }
             }
 
@@ -91,15 +91,26 @@ class dchi_interior_simplex : public function_wrapper{
             _just_median=1;
         }
 
+
+        void calibrate_model();
+        double apply_model(array_1d<double>&);
+
+
     private:
         array_1d<int> _associates;
         array_1d<int> _mask;
         array_1d<double> _median_associate;
-        double _norm;
+        double _scalar_norm;
         chisq_wrapper *_chifn;
         int _called;
         int _just_median;
         double _envelope;
+
+
+        array_2d<double> _bases;
+        array_1d<double> _norm;
+        double _alpha;
+
 };
 
 #endif

@@ -1350,7 +1350,7 @@ void dalex::simplex_boundary_search(int specified, int use_median){
     printf("    associates %d mask contains zero %d associates contain mindex %d\n",
     associates.get_dim(),mask.contains(0),associates.contains(mindex()));
 
-    dchi_interior_simplex dchifn(_chifn,associates);
+    dchi_interior_simplex dchifn(_chifn,associates,_basis_vectors);
 
     if(use_median==1){
         dchifn.use_median();
