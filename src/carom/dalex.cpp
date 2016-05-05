@@ -1394,10 +1394,13 @@ void dalex::simplex_boundary_search(int specified, int use_median){
         _log->add(_log_dchi_simplex,i_min);
     }
 
-    printf("    actually found %e -- %e %e\n",
-    _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
+    if(_chifn->get_dim()>9){
+        printf("    actually found %e -- %e %e\n",
+        _chifn->get_fn(i_min),_chifn->get_pt(i_min,6), _chifn->get_pt(i_min,9));
+    }
 
-    printf("    adjusted %e\n",dchifn(_chifn->get_pt(i_min)[0]));
+    printf("    adjusted %e from %e\n",
+    dchifn(_chifn->get_pt(i_min)[0]),_chifn->get_fn(i_min));
 
     printf("    min is %e target %e\n",chimin(),target());
 
@@ -1926,6 +1929,7 @@ void dalex::tendril_search(){
         }
         iteration++;
 
+        printf("    strikes %d use_median %d\n",strikes,use_median);
         add_charge(_chifn->mindex());
 
         i_origin=i_particle;
