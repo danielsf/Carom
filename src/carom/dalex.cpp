@@ -1843,6 +1843,13 @@ void dalex::tendril_search(){
 
     while(strikes<3){
 
+        if(strikes>0){
+            use_median=1;
+        }
+        else{
+            use_median=0;
+        }
+
         iteration++;
 
         printf("    strikes %d use_median %d\n",strikes,use_median);
