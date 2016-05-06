@@ -1125,11 +1125,11 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 }
 
 
-void dalex::simplex_boundary_search(){
-    simplex_boundary_search(-1,0);
+int dalex::simplex_boundary_search(){
+    return simplex_boundary_search(-1,0);
 }
 
-void dalex::simplex_boundary_search(int specified, int use_median){
+int dalex::simplex_boundary_search(int specified, int use_median){
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
@@ -1256,6 +1256,55 @@ void dalex::simplex_boundary_search(int specified, int use_median){
         printf("    now mindex %d\n",mindex());
     }
 
+    double v0,pv0;
+    array_1d<double> pvmin,pvmax,vmin,vmax;
+    vmin.set_name("dalex_bou_vmin");
+    vmax.set_name("dalex_bou_vmax");
+    pvmin.set_name("dalex_bou_pvmin");
+    pvmax.set_name("dalex_bou_pvmax");
+
+    v0=-1.0;
+    pv0=-1.0;
+
+    int k;
+    double mu;
+    for(i=0;i<associates.get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            mu=_chifn->get_pt(associates.get_data(i),j);
+
+            if(i==0 || mu<vmin.get_data(j)){
+                vmin.set(j,mu);
+            }
+
+            if(i==0 || mu>vmax.get_data(j)){
+                vmax.set(j,mu);
+            }
+
+            mu=0.0;
+            for(k=0;k<_chifn->get_dim();k++){
+                mu+=_chifn->get_pt(associates.get_data(i),k)*_basis_vectors.get_data(j,k);
+            }
+
+            if(i==0 || mu<pvmin.get_data(j)){
+                pvmin.set(j,mu);
+            }
+
+            if(i==0 || mu>pvmax.get_data(j)){
+                pvmax.set(j,mu);
+            }
+        }
+
+    }
+
+    if(pvmin.get_dim()==_chifn->get_dim()){
+        v0=1.0;
+        pv0=1.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            v0*=(vmax.get_data(i)-vmin.get_data(i));
+            pv0*=(pvmax.get_data(i)-pvmin.get_data(i));
+        }
+    }
+
     printf("    associates %d mask contains zero %d associates contain mindex %d\n",
     associates.get_dim(),mask.contains(0),associates.contains(mindex()));
 
@@ -1295,7 +1344,7 @@ void dalex::simplex_boundary_search(int specified, int use_median){
 
     int i_min=-1;
     double mu_min;
-    double mu,start_min;
+    double start_min;
     for(i=0;i<seed.get_rows();i++){
         mu=dchifn(seed(i)[0]);
         if(i==0 || mu<start_min){
@@ -1335,6 +1384,44 @@ void dalex::simplex_boundary_search(int specified, int use_median){
        _chifn->get_pt(mindex(),6),
        _chifn->get_pt(mindex(),9));
     }
+
+    double v1,pv1;
+    if(v0<0.0){
+        return 0;
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        mu=_chifn->get_pt(i_min,i);
+        if(mu<vmin.get_data(i)){
+            vmin.set(i,mu);
+        }
+        if(mu>vmax.get_data(i)){
+            vmax.set(i,mu);
+        }
+        mu=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            mu+=_chifn->get_pt(i_min,j)*_basis_vectors.get_data(i,j);
+        }
+        if(mu<pvmin.get_data(i)){
+            pvmin.set(i,mu);
+        }
+        if(mu>pvmax.get_data(i)){
+            pvmax.set(i,mu);
+        }
+    }
+
+    v1=1.0;
+    pv1=1.0;
+    for(i=0;i<_chifn->get_dim();i++){
+        v1*=(vmax.get_data(i)-vmin.get_data(i));
+        pv1*=(pvmax.get_data(i)-pvmin.get_data(i));
+    }
+
+    if(v1>1.1*v0 || pv1>1.1*pv0){
+        return 0;
+    }
+
+    return 1;
 
 }
 
@@ -1846,6 +1933,7 @@ void dalex::tendril_search(){
     int strikes=0;
     int iteration=0;
     int use_median=0;
+    int is_a_strike;
 
     while(strikes<3){
 
@@ -1863,7 +1951,14 @@ void dalex::tendril_search(){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        simplex_boundary_search(i_particle, use_median);
+        is_a_strike=simplex_boundary_search(i_particle, use_median);
+
+        if(is_a_strike==1){
+            strikes++;
+        }
+        else{
+            strikes=0;
+        }
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         _end_points.add(i_particle);
@@ -1900,11 +1995,7 @@ void dalex::tendril_search(){
             p_volume*=(max_p.get_data(i)-min_p.get_data(i));
         }
 
-        if(volume<volume_0*1.1 && p_volume<p_volume_0*1.1){
-             strikes++;
-        }
-        else{
-            strikes=0;
+        if(volume>volume_0*1.1 && p_volume>p_volume_0*1.1){
             volume_0=volume;
             p_volume_0=p_volume;
         }
