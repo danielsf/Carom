@@ -1008,7 +1008,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
         }
     }
 
-    for(i_step=0;min_f>=0.0;i_step++){
+    for(i_step=0;min_f>=0.0 && i_step<6*_chifn->get_dim();i_step++){
         if(i_step%(2*_chifn->get_dim())==0){
 
             if(accepted>rejected){
@@ -1120,6 +1120,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
 
     seed.add_row(_chifn->get_pt(i_start)[0]);
     printf("    accepted %d rejected %d\n",total_accepted,total_rejected);
+    printf("    i_step %d\n",i_step);
     printf("    rr_norm %e\n",rr_norm);
 }
 
