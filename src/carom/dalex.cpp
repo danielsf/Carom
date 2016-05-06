@@ -1309,7 +1309,13 @@ void dalex::simplex_boundary_search(int specified, int use_median){
 
     ffmin.find_minimum(seed,minpt);
 
-    evaluate(minpt, &mu, &i_min);
+    for(i=specified;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            i_min=i;
+        }
+    }
+
+    _update_good_points(specified, specified, i_min);
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
@@ -1861,7 +1867,6 @@ void dalex::tendril_search(){
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         _end_points.add(i_particle);
-        _update_good_points(ct_last, i_origin, i_particle);
 
         add_charge(i_particle);
 
