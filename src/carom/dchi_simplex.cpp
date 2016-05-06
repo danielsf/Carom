@@ -344,17 +344,13 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
     double distance=nn_distance(pt);
 
-    double mu_out;
-
     double exp_term;
     if(mu<_chifn->target()){
         exp_term=1.0;
-        mu_out=mu-mu_model;
     }
     else{
         exp_term=exp((_chifn->target()-mu)/_envelope);
-        mu_out=mu;
     }
 
-    return mu_out-1.0*delta*distance*distance*exp_term;
+    return mu-exp_term*mu_model-1.0*delta*distance*distance*exp_term;
 }
