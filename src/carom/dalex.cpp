@@ -1008,7 +1008,7 @@ void dalex::tendril_seed(function_wrapper *dchi, int i_start, array_2d<double> &
         }
     }
 
-    for(i_step=0;min_f>target();i_step++){
+    while(min_f>=0.0){
         if(i_step%(2*_chifn->get_dim())==0){
 
             if(accepted>rejected){
