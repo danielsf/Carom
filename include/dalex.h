@@ -19,12 +19,10 @@ class dalex{
             _good_points.set_name("dalex_good_points");
             _end_points.set_name("dalex_end_points");
             _explorers.set_name("dalex_explorers");
-            _tendril_walkers.set_name("dalex_tendril_walkers");
             _explorer_temp=1.0;
             _explorer_step=1.0;
             _target_factor=1.0;
             _simplex_mindex=-1;
-            _tendril_origin=-1;
             _last_checked_good=0;
             _log=NULL;
 
@@ -245,8 +243,6 @@ class dalex{
         void tendril_seed(function_wrapper*, int, array_2d<double>&);
         array_1d<int> _charges;
         array_1d<int> _end_points;
-        array_2d<double> _tendril_walkers;
-        int _tendril_origin;
 
         void assess_charges(){
             int i;
