@@ -1282,15 +1282,15 @@ void dalex::simplex_boundary_search(int specified, int use_median){
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
 
-    //tendril_seed(&dchifn, specified, seed);
-    array_1d<double> epsilon;
+    tendril_seed(&dchifn, specified, seed);
+    /*array_1d<double> epsilon;
     seed.add_row(_chifn->get_pt(specified)[0]);
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             epsilon.set(j,seed.get_data(0,j)+_basis_vectors.get_data(i,j)*_basis_norm.get_data(i)*0.01);
         }
         seed.add_row(epsilon);
-    }
+    }*/
 
     int i_min=-1;
     double mu_min;
