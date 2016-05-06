@@ -1385,6 +1385,8 @@ int dalex::simplex_boundary_search(int specified, int use_median){
        _chifn->get_pt(mindex(),9));
     }
 
+    printf("    v0 %e pv0 %e\n",v0,pv0);
+
     double v1,pv1;
     if(v0<0.0){
         return 0;
@@ -1416,6 +1418,8 @@ int dalex::simplex_boundary_search(int specified, int use_median){
         v1*=(vmax.get_data(i)-vmin.get_data(i));
         pv1*=(pvmax.get_data(i)-pvmin.get_data(i));
     }
+
+    printf("    v1 %e pv1 %e\n",v1,pv1);
 
     if(v1>1.1*v0 || pv1>1.1*pv0){
         return 0;
