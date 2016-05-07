@@ -586,33 +586,29 @@ void dalex::find_bases(){
         }
     }
 
-    int ix,i1,i2;
-    double compass_target;
+    int k;
+    array_1d<double> min,max;
+    min.set_name("find_bases_min");
+    max.set_name("find_bases_max");
     if(changed_bases==1){
-        for(ix=0;ix<_chifn->get_dim();ix++){
-            compass_target=target();
-            i1=-1;
-            i2=-1;
-            while(i1==i2){
-                for(i=0;i<_chifn->get_dim();i++){
-                     dir.set(i,_basis_vectors.get_data(ix,i));
+        for(i=0;i<_good_points.get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                mu=0.0;
+                for(k=0;k<_chifn->get_dim();k++){
+                    mu+=_chifn->get_pt(_good_points.get_data(i),k)*_basis_vectors.get_data(j,k);
                 }
-                i1=bisection(mindex(),dir,compass_target,0.1);
-                for(i=0;i<_chifn->get_dim();i++){
-                    dir.set(i,-1.0*_basis_vectors.get_data(ix,i));
+                if(i==0 || mu<min.get_data(j)){
+                    min.set(j,mu);
                 }
-                i2=bisection(mindex(),dir,compass_target,0.1);
-                if(i1==i2){
-                    compass_target+=0.5*(target()-chimin());
+                if(i==0 || mu>max.get_data(j)){
+                    max.set(j,mu);
                 }
-                else{
-                    mu=0.0;
-                    for(i=0;i<_chifn->get_dim();i++){
-                        mu+=power(_chifn->get_pt(i1,i)-_chifn->get_pt(i2,i),2);
-                    }
-                    mu=0.5*sqrt(mu);
-                    _basis_norm.set(ix,mu);
-                }
+            }
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            _basis_norm.set(i,max.get_data(i)-min.get_data(i));
+            if(_basis_norm.get_data(i)<1.0e-20){
+                _basis_norm.set(i,1.0);
             }
         }
     }
