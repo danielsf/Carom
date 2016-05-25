@@ -115,6 +115,8 @@ void explorers::initialize_particles(){
 
 void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
+    set_bases();
+
     if(_particles.get_rows()!=_n_particles){
         initialize_particles();
     }
@@ -166,7 +168,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
     int scalar_acceptance=0;
 
     for(i_step=0;i_step<n_steps;i_step++){
-        if(i_step%(_chifn->get_dim())==0){
+        if(i_step>0 && i_step%(_chifn->get_dim())==0){
             set_bases();
         }
 
