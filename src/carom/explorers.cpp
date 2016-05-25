@@ -182,6 +182,9 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
                 ratio=exp(-0.5*(mu-mu_arr.get_data(ip))/_temp);
                 roll=_chifn->random_double();
                 needed_temp=-0.5*(mu-mu_arr.get_data(ip))/log(roll);
+                if(needed_temp<1.0){
+                    needed_temp=1.0;
+                }
                 if(roll<ratio){
                     accept_it=1;
                 }
