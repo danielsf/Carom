@@ -206,6 +206,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
         _attempted++;
 
         if(_attempted>0 && _attempted%(2*_chifn->get_dim())==0){
+            acceptance_rate_dex.reset_preserving_room();
             for(i=0;i<_accepted.get_dim();i++){
                 acceptance_rate.set(i,double(_accepted.get_data(i))/double(_attempted));
                 acceptance_rate_dex.set(i,i);
