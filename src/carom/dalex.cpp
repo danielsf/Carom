@@ -56,16 +56,21 @@ void dalex::search(){
     int pts_0=_chifn->get_pts();
     assess_good_points();
 
+    int has_explored=0;
+
     if(mindex()!=_simplex_mindex){
         find_bases();
         explore();
         simplex_search();
+        has_explored=1;
         if(chimin()<_basis_chimin-(target()-chimin())){
             find_bases();
         }
     }
 
-    explore();
+    if(has_explored==0){
+        explore();
+    }
     tendril_search();
     _update_good_points(pts_0,-1,-1);
 

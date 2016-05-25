@@ -127,12 +127,9 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     if(_particles.get_rows()!=_n_particles){
         initialize_particles();
-        set_bases();
     }
-    else{
-        set_bases();
-        bump_particles();
-    }
+
+    set_bases();
 
     dchi_interior_simplex dchifn(_chifn, _associates, model_bases);
 
@@ -150,13 +147,25 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
     array_1d<double> trial;
     trial.set_name("exp_sample_trial");
 
-    for(ip=0;ip<_n_particles;ip++){
-        mu=dchifn(_particles(ip)[0]);
-        if(ip==0 || mu<_mu_min){
-            _mindex=ip;
-            _mu_min=mu;
+    int acceptable=0;
+
+    while(acceptable==0){
+        for(ip=0;ip<_n_particles;ip++){
+            mu=dchifn(_particles(ip)[0]);
+            if(ip==0 || mu<_mu_min){
+                _mindex=ip;
+                _mu_min=mu;
+            }
+            mu_arr.set(ip,mu);
         }
-        mu_arr.set(ip,mu);
+
+        if(_mu_min>2.0*_chifn->target()){
+            acceptable=1;
+        }
+        else{
+            set_bases();
+            bump_particles();
+        }
     }
 
     double needed_temp;
