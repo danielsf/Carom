@@ -1562,15 +1562,13 @@ void dalex::tendril_search(){
         }
     }*/
     double mu;
+    array_1d<double> trial;
+    trial.set_name("tendirl_search_trial");
     int i_particle=mindex();
 
-    array_1d<double> dir;
-    dir.set_name("tendril_search_dir");
+    _explorers.get_min_pt(trial);
+    _chifn->evaluate(trial,&mu,&i_particle);
 
-    for(i=0;i<_chifn->get_dim();i++){
-        dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-    }
-    i_particle=bisection(mindex(),dir,target(),0.1);
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_particle);
