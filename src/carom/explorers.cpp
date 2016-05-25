@@ -27,9 +27,8 @@ void explorers::set_bases(){
         }
     }
 
-    array_1d<double> min,max;
-    min.set_name("exp_set_base_min");
-    max.set_name("exp_set_base_max");
+    _min.reset_preserving_room();
+    _max.reset_preserving_room();
 
     int k;
     for(i=0;i<_particles.get_rows();i++){
@@ -38,17 +37,17 @@ void explorers::set_bases(){
             for(k=0;k<_chifn->get_dim();k++){
                 component+=_particles.get_data(i,k)*_bases.get_data(j,k);
             }
-            if(j>=min.get_dim() || component<min.get_data(j)){
-                min.set(j,component);
+            if(j>=_min.get_dim() || component<_min.get_data(j)){
+                _min.set(j,component);
             }
-            if(j>=max.get_dim() || component>max.get_data(j)){
-                max.set(j,component);
+            if(j>=_max.get_dim() || component>_max.get_data(j)){
+                _max.set(j,component);
             }
         }
     }
 
     for(i=0;i<_chifn->get_dim();i++){
-        _norm.set(i,0.1*(max.get_data(i)-min.get_data(i)));
+        _norm.set(i,0.1*(_max.get_data(i)-_min.get_data(i)));
     }
 
 }

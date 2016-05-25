@@ -19,6 +19,8 @@ class explorers{
             _particles.set_name("explorers_particles");
             _bases.set_name("explorers_bases");
             _norm.set_name("explorers_norm");
+            _min.set_name("explorers_min");
+            _max.set_name("explorers_max");
             _req_temp.set_name("explorers_req_temp");
             _accepted.set_name("explorers_accepted");
         }
@@ -65,7 +67,7 @@ class explorers{
         chisq_wrapper *_chifn;
         array_1d<int> _associates;
         array_2d<double> _bases;
-        array_1d<double> _norm;
+        array_1d<double> _norm,_min,_max;
         array_1d<double> _req_temp;
         int _mindex;
         double _mu_min;
