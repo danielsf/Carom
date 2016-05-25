@@ -148,6 +148,8 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     printf("    starting sampling with %e\n",_mu_min);
 
+    int scalar_acceptance=0;
+
     for(i_step=0;i_step<n_steps;i_step++){
         if(i_step%(_chifn->get_dim())==0){
             set_bases();
@@ -178,6 +180,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
             _req_temp.add(needed_temp);
 
             if(accept_it==1){
+                scalar_acceptance++;
                 _accepted.add_val(ip,1);
                 mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
@@ -219,4 +222,6 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     printf("    sampling min %e\n",_mu_min);
     printf("    temp %e\n",_temp);
+    printf("    accepted %d steps %d\n",scalar_acceptance,
+    _n_particles*n_steps);
 }
