@@ -114,7 +114,7 @@ void explorers::bump_particles(){
         }
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.add_val(j,2.0*(_max.get_data(i)-_min.get_data(i))
+                trial.add_val(j,1.0*(_max.get_data(i)-_min.get_data(i))
                                *dir.get_data(i)*_bases.get_data(i,j));
             }
         }
