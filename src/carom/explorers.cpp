@@ -71,43 +71,33 @@ void explorers::set_bases(){
 void explorers::initialize_particles(){
 
     _particles.reset();
-    _attempted=0;
-    _accepted.reset();
-    _req_temp.reset();
 
-    array_1d<double> min,max;
-    min.set_name("exp_init_min");
-    max.set_name("exp_init_max");
-
-    int i,j;
-    double xx;
-    for(i=0;i<_associates.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            xx=_chifn->get_pt(_associates.get_data(i),j);
-            if(i==0 || xx<min.get_data(j)){
-                min.set(j,xx);
-            }
-            if(i==0 || xx>max.get_data(j)){
-                max.set(j,xx);
-            }
-        }
-    }
-
-    array_1d<double> trial;
+    array_1d<double> dir,trial;
+    dir.set_name("exp_init_dir");
     trial.set_name("exp_init_trial");
+    int i,j;
+
+    double mu;
     int i_found;
-    double span,mu;
 
     while(_particles.get_rows()<_n_particles){
         for(i=0;i<_chifn->get_dim();i++){
-            span=max.get_data(i)-min.get_data(i);
-            trial.set(i,(2.0*_chifn->random_double()-0.5)*span+min.get_data(i));
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(_chifn->mindex(),i));
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.add_val(j,10.0*_norm.get_data(i)*dir.get_data(i)*_bases.get_data(i,j));
+            }
         }
         _chifn->evaluate(trial,&mu,&i_found);
         if(i_found>=0){
             _particles.add_row(trial);
-            _accepted.add(0);
         }
+
     }
 
 }
@@ -117,9 +107,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     set_bases();
 
-    if(_particles.get_rows()!=_n_particles){
-        initialize_particles();
-    }
+    initialize_particles();
 
     dchi_interior_simplex dchifn(_chifn, _associates, model_bases);
 
@@ -136,6 +124,11 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
     double rr,roll,ratio;
     array_1d<double> trial;
     trial.set_name("exp_sample_trial");
+
+    if(_accepted.get_dim()!=_n_particles){
+       _accepted.set_dim(_n_particles);
+       _accepted.zero();
+    }
 
     for(ip=0;ip<_n_particles;ip++){
         mu=dchifn(_particles(ip)[0]);
