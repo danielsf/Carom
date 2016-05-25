@@ -97,12 +97,41 @@ void explorers::initialize_particles(){
 }
 
 
-void explorers::sample(int n_steps, array_2d<double> &model_bases){
+void explorers::bump_particles(){
+    array_1d<double> dir, trial;
+    dir.set_name("exp_bump_dir");
+    trial.set_name("exp_bump_trial");
+    _particles.reset_preserving_room();
 
-    set_bases();
+    int i,j;
+    while(_particles.get_rows()<_n_particles){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(_chifn->mindex(),i));
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.add_val(j,2.0*(_max.get_data(i)-_min.get_data(i))
+                               *dir.get_data(i)*_bases.get_data(i,j));
+            }
+        }
+        _particles.add_row(trial);
+    }
+}
+
+
+void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     if(_particles.get_rows()!=_n_particles){
         initialize_particles();
+        set_bases();
+    }
+    else{
+        set_bases();
+        bump_particles();
     }
 
     dchi_interior_simplex dchifn(_chifn, _associates, model_bases);

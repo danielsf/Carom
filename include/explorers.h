@@ -61,6 +61,7 @@ class explorers{
 
         void set_bases();
         void initialize_particles();
+        void bump_particles();
         void sample(int, array_2d<double>&);
 
     private:
