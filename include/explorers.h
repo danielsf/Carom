@@ -31,7 +31,7 @@ class explorers{
             _chifn=cc;
         }
 
-        void set_associates(array_1d<int> aa){
+        void set_associates(array_1d<int> &aa){
             int i;
             _associates.reset_preserving_room();
             for(i=0;i<aa.get_dim();i++){
