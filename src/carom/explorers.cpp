@@ -47,21 +47,6 @@ void explorers::set_bases(){
         }
     }
 
-    for(i=0;i<_associates.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            component=0.0;
-            for(k=0;k<_chifn->get_dim();k++){
-                component+=_chifn->get_pt(_associates.get_data(i),k)*_bases.get_data(j,k);
-            }
-            if(j>=min.get_dim() || component<min.get_data(j)){
-                min.set(j,component);
-            }
-            if(j>=max.get_dim() || component>max.get_data(j)){
-                max.set(j,component);
-            }
-        }
-    }
-
     for(i=0;i<_chifn->get_dim();i++){
         _norm.set(i,0.1*(max.get_data(i)-min.get_data(i)));
     }
