@@ -9,6 +9,7 @@
 #include "search_types.h"
 #include "gp_lin.h"
 #include "dchi_simplex_gp.h"
+#include "explorers.h"
 
 class dalex{
 

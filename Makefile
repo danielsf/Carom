@@ -161,8 +161,12 @@ include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
         object/gp_lin.o \
 	$(LIBRARIES)
 
+object/explorers.o: src/carom/explorers.cpp include/explorers.h \
+object/chisq_wrapper.o object/dchi_simplex.o
+	$(gg) -c -o object/explorers.o src/carom/explorers.cpp
+
 object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
-object/goto_tools.o object/chisq_wrapper.o object/simplex.o
+object/goto_tools.o object/chisq_wrapper.o object/simplex.o object/explorers.o
 	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
 
 object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializer.h \
@@ -203,7 +207,7 @@ object/dchi_simplex_gp.o
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
         object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
-	object/maps_initializer.o \
+	object/maps_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
 test_opt: src/examples/test_opt.cpp object/maps.o \
