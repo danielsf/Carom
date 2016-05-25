@@ -4,6 +4,8 @@ void dalex::build(chisq_wrapper *cc){
 
     _chifn=cc;
 
+    _explorers.set_chifn(_chifn);
+
     int i,j;
     _basis_vectors.set_cols(_chifn->get_dim());
     for(i=0;i<_chifn->get_dim();i++){
@@ -53,14 +55,12 @@ void dalex::search(){
     int i;
     int pts_0=_chifn->get_pts();
     assess_good_points();
-    _update_good_points(_last_checked_good,-1,-1);
 
     if(mindex()!=_simplex_mindex){
         find_bases();
         explore();
         simplex_search();
         if(chimin()<_basis_chimin-(target()-chimin())){
-            _explorers.reset();
             find_bases();
         }
     }
@@ -84,9 +84,7 @@ void dalex::simplex_search(int ii){
 }
 
 void dalex::simplex_search(array_1d<int> &specified){
-    if(_explorers.get_dim()==0){
-        return;
-    }
+
     printf("\n    doing dalex_simplex %e -- %e %e\n",chimin(),target(),_target_factor);
     safety_check("simplex_search");
     array_1d<double> min,max;
@@ -107,17 +105,15 @@ void dalex::simplex_search(array_1d<int> &specified){
     array_1d<int> chosen_seed;
 
     for(i=0;i<specified.get_dim();i++){
-        if(chosen_seed.contains(specified.get_data(i))==0){
-            seed.add_row(_chifn->get_pt(specified.get_data(i))[0]);
-            chosen_seed.add(specified.get_data(i));
-        }
+        seed.add_row(_chifn->get_pt(specified.get_data(i))[0]);
     }
 
     while(seed.get_rows()<_chifn->get_dim()+1){
-        i=_chifn->random_int()%_explorers.get_dim();
-        if(chosen_seed.contains(_explorers.get_data(i))==0){
-            seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
-            chosen_seed.add(_explorers.get_data(i));
+        i=_chifn->random_int()%_explorers.get_n_particles();
+        if(chosen_seed.contains(i)==0){
+            _explorers.get_pt(i,trial);
+            seed.add_row(trial);
+            chosen_seed.add(i);
         }
     }
 
@@ -1426,323 +1422,29 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 }
 
 
-void dalex::simplex_gp_search(){
-    printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
-    int pt_start=_chifn->get_pts();
-    assess_good_points();
-    assess_charges();
-    _update_good_points();
-
-    int i_node,i_pt;
-    int i,j;
-    double xmin,xmax,xx;
-
-    kd_tree kd_copy(_chifn->get_tree()[0]);
-    gp_lin interpolator;
-    interpolator.set_ell_factor(1.0);
-    interpolator.set_kd_fn(&kd_copy, _chifn->get_fn_arr());
-
-    printf("charges is %d\n",_charges.get_dim());
-    dchi_boundary_simplex_gp dchifn(_chifn, &interpolator);
-
-    simplex_minimizer ffmin;
-    ffmin.set_chisquared(&dchifn);
-    ffmin.set_dice(_chifn->get_dice());
-    array_1d<double> min,max;
-    min.set_name("dalex_simplex_search_min");
-    max.set_name("dalex_simplex_search_min");
-
-    for(i=0;i<_chifn->get_dim();i++){
-        min.set(i,0.0);
-        max.set(i,get_norm(i));
-    }
-
-    ffmin.set_minmax(min,max);
-    ffmin.use_gradient();
-
-    array_2d<double> seed;
-    seed.set_name("dalex_simplex_search_seed");
-
-    seed.set_cols(_chifn->get_dim());
-    int iFound;
-    array_1d<double> trial;
-    array_1d<int> seed_dex;
-    double ftrial;
-    trial.set_name("dalex_simplex_search_trial");
-    seed_dex.set_name("dalex_simplex_search_seed_dex");
-    int i_min=-1;
-    double mu_min;
-
-    array_1d<int> chosen_seed;
-
-    while(seed.get_rows()<_chifn->get_dim()+1){
-        i=_chifn->random_int()%_explorers.get_dim();
-        if(chosen_seed.contains(_explorers.get_data(i))==0){
-            printf("    explorer is %d\n",_explorers.get_data(i));
-            seed.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
-            chosen_seed.add(_explorers.get_data(i));
-        }
-    }
-
-    double mu,start_min;
-    for(i=0;i<seed.get_rows();i++){
-        mu=dchifn(seed(i)[0]);
-        if(i==0 || mu<start_min){
-            start_min=mu;
-        }
-    }
-    printf("    starting from %e\n",start_min);
-
-    array_1d<double> minpt;
-    minpt.set_name("dalex_simplex_search_minpt");
-
-    ffmin.find_minimum(seed,minpt);
-
-    evaluate(minpt, &mu, &i_min);
-
-    if(_log!=NULL){
-        _log->add(_log_ricochet,i_min);
-    }
-
-    printf("    actually found %e -- %e %e\n",
-    _chifn->get_fn(i_min),_chifn->get_pt(i_min,0), _chifn->get_pt(i_min,1));
-
-    printf("    adjusted %e\n",dchifn(_chifn->get_pt(i_min)[0]));
-
-    printf("    min is %e target %e\n",chimin(),target());
-
-    _update_good_points(pt_start);
-
-}
-
-
 void dalex::explore(){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
 
-    assess_good_points();
-
-    int i,j,k;
-    array_1d<double> dir;
-    dir.set_name("dalex_exploration_dir");
-
-    while(_explorers.get_dim()==0 && _good_points.get_dim()<2*_chifn->get_dim()){
-        for(i=0;i<_chifn->get_dim();i++){
-            for(j=0;j<_chifn->get_dim();j++){
-                dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
-            }
-            dir.normalize();
-            k=bisection(mindex(),dir,target(),0.1);
-        }
-        assess_good_points();
+    _explorers.set_n_particles(2*_chifn->get_dim());
+    array_1d<int> associates;
+    associates.set_name("dalex_explore_associates");
+    int skip;
+    if(_good_points.get_dim()<5000){
+        skip=-1;
     }
-
-    array_1d<double> norm,min,max;
-    norm.set_name("dalex_explore_norm");
-    min.set_name("dalex_explore_min");
-    max.set_name("dalex_explore_max");
-
-    double mu;
-    for(i=0;i<_explorers.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            mu=0.0;
-            for(k=0;k<_chifn->get_dim();k++){
-                mu+=_chifn->get_pt(_explorers.get_data(i),k)*_basis_vectors.get_data(j,k);
-            }
-            if(i==0 || mu<min.get_data(j)){
-                min.set(j,mu);
-            }
-            if(i==0 || mu>max.get_data(j)){
-                max.set(j,mu);
-            }
-        }
-
+    else{
+        skip=5;
     }
-
+    int i;
     for(i=0;i<_good_points.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            mu=0.0;
-            for(k=0;k<_chifn->get_dim();k++){
-                mu+=_chifn->get_pt(_good_points.get_data(i),k)*_basis_vectors.get_data(j,k);
-            }
-            if(i==0 || mu<min.get_data(j)){
-                min.set(j,mu);
-            }
-            if(i==0 || mu>max.get_data(j)){
-                max.set(j,mu);
-            }
+        if(skip<0 || i%skip==0){
+            associates.add(_good_points.get_data(i));
         }
     }
 
-    for(i=0;i<_chifn->get_dim();i++){
-        if(max.get_data(i)-min.get_data(i)>1.0e-20){
-            norm.set(i,max.get_data(i)-min.get_data(i));
-        }
-        else{
-            norm.set(i,_chifn->get_characteristic_length(i));
-            min.set(i,_chifn->get_min(i));
-            max.set(i,_chifn->get_max(i));
-        }
-    }
-
-    printf("got norm -- goodpoints %d min %e targ %e\n",_good_points.get_dim(),chimin(),target());
-
-    array_1d<double> trial;
-    trial.set_name("dalex_explore_trial");
-    int i_found;
-    int ct=0;
-    double rando;
-    while(_explorers.get_dim()<2*_chifn->get_dim()){
-        if(_good_points.get_dim()<_chifn->get_dim()+1){
-            for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,0.0);
-            }
-            for(i=0;i<_chifn->get_dim();i++){
-                rando=1.5*_chifn->random_double();
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial.add_val(j,norm.get_data(i)*(0.5*(min.get_data(i)+max.get_data(i))+rando*(max.get_data(i)-min.get_data(i)))*_basis_vectors.get_data(i,j));
-                }
-            }
-            evaluate(trial,&mu,&i_found);
-
-            if(i_found!=_chifn->mindex() && _explorers.contains(i_found)==0 && i_found>=0){
-                _explorers.add(i_found);
-            }
-            printf("    ct %d i_found %d mu %e mindex %d\n",
-            ct,i_found,mu,_chifn->mindex());
-            ct++;
-        }
-        else{
-            i=_chifn->random_int()%_good_points.get_dim();
-            if(_explorers.contains(_good_points.get_data(i))==0){
-                _explorers.add(_good_points.get_data(i));
-            }
-        }
-    }
-
-    printf("past initialization\n");
-
-    double roll,ratio;
-    int i_step,n_steps;
-
-    n_steps=20;
-
-    array_2d<double> pts;
-    pts.set_name("dalex_explore_pts");
-    for(i=0;i<_explorers.get_dim();i++){
-        pts.add_row(_chifn->get_pt(_explorers.get_data(i))[0]);
-    }
-
-    printf("set points\n");
-
-    assess_good_points();
-
-    dchi_multimodal_simplex dchifn(_chifn, _good_points);
-
-    double rr;
-
-    int ip;
-    dir.reset();
-
-    int accept_it;
-    array_1d<int> acceptance;
-    array_1d<double> ff_val;
-    acceptance.set_name("dalex_explore_acceptance");
-    ff_val.set_name("dalex_explore_ff_val");
-    for(i=0;i<_explorers.get_dim();i++){
-        acceptance.set(i,0);
-        ff_val.set(i,dchifn(pts(i)[0]));
-    }
-
-    printf("taking steps\n");
-
-    for(i_step=0;i_step<n_steps;i_step++){
-        for(ip=0;ip<_explorers.get_dim();ip++){
-            for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-            }
-            dir.normalize();
-            rr=fabs(normal_deviate(_chifn->get_dice(),0.1,0.05));
-            for(i=0;i<_chifn->get_dim();i++){
-                dir.multiply_val(i,rr*norm.get_data(i));
-            }
-
-            for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,pts.get_data(ip,i));
-            }
-            for(i=0;i<_chifn->get_dim();i++){
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial.add_val(j,dir.get_data(i)*_basis_vectors.get_data(i,j));
-                }
-            }
-            mu=dchifn(trial);
-
-            accept_it=0;
-            if(mu<ff_val.get_data(ip)){
-                 accept_it=1;
-            }
-            else{
-                roll=_chifn->random_double();
-                ratio=exp((ff_val.get_data(ip)-mu)/_explorer_temp);
-                if(roll<ratio){
-                   accept_it=1;
-                }
-            }
-
-            if(accept_it==1){
-                acceptance.add_val(ip,1);
-                ff_val.set(ip,mu);
-                for(i=0;i<_chifn->get_dim();i++){
-                    pts.set(ip,i,trial.get_data(i));
-                }
-            }
-        }
-    }
-
-    printf("done with steps\n");
-
-    double mu_min,mu_max;
-
-    for(i=0;i<_explorers.get_dim();i++){
-        evaluate(pts(i)[0],&mu,&ip);
-        if(i==0 || mu<mu_min){
-            mu_min=mu;
-        }
-        if(i==0 || mu>mu_max){
-            mu_max=mu;
-        }
-        if(ip<0){
-            j=ip;
-            ip=bisection(_chifn->get_pt(_chifn->mindex())[0],pts(i)[0],target()+(target()-chimin()),0.1);
-        }
-        _explorers.set(i,ip);
-        if(_log!=NULL){
-            _log->add(_log_mcmc,ip);
-        }
-    }
-
-    int min_acc,max_acc;
-    for(i=0;i<acceptance.get_dim();i++){
-        if(i==0 || acceptance.get_data(i)<min_acc){
-            min_acc=acceptance.get_data(i);
-        }
-        if(i==0 || acceptance.get_data(i)>max_acc){
-            max_acc=acceptance.get_data(i);
-        }
-    }
-
-    printf("temp was %e\n",_explorer_temp);
-    if(min_acc<n_steps/3){
-        _explorer_temp*=10.0;
-    }
-    else if(max_acc>(3*n_steps)/4){
-        _explorer_temp*=0.2;
-    }
-
-    printf("done exploring %e %e %e %e\nmin %e max %e\n",
-    double(min_acc)/double(n_steps),
-    double(max_acc)/double(n_steps),
-    _explorer_temp,_explorer_step,mu_min,mu_max);
+    _explorers.set_associates(associates);
+    _explorers.sample(2*_chifn->get_dim(), _basis_vectors);
 
     _update_good_points(pt_0);
 }

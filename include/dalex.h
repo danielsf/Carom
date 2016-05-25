@@ -19,12 +19,9 @@ class dalex{
             _chifn=NULL;
             _good_points.set_name("dalex_good_points");
             _end_points.set_name("dalex_end_points");
-            _explorers.set_name("dalex_explorers");
-            _explorer_temp=1.0;
-            _explorer_step=1.0;
             _target_factor=1.0;
-            _simplex_mindex=-1;
             _last_checked_good=0;
+            _simplex_mindex=-1;
             _log=NULL;
 
             _charges.set_name("dalex_charges");
@@ -49,7 +46,6 @@ class dalex{
         void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
-        void simplex_gp_search();
         int simplex_boundary_search();
         int simplex_boundary_search(int, int);
         void explore();
@@ -233,10 +229,8 @@ class dalex{
 
 
         ///////code related to explorers
-        array_1d<int> _explorers;
-        double _explorer_temp,_explorer_step;
+        explorers _explorers;
         int _last_checked_good;
-
 
         //////code related to tendrils
         void get_gradient(int,array_1d<double>&,array_1d<double>&);

@@ -56,6 +56,9 @@ void explorers::set_bases(){
 void explorers::initialize_particles(){
 
     _particles.reset();
+    _attempted=0;
+    _accepted.reset();
+    _req_temp.reset();
 
     array_1d<double> min,max;
     min.set_name("exp_init_min");
@@ -88,6 +91,7 @@ void explorers::initialize_particles(){
         _chifn->evaluate(trial,&mu,&i_found);
         if(i_found>=0){
             _particles.add_row(trial);
+            _accepted.add(0);
         }
     }
 
@@ -96,7 +100,7 @@ void explorers::initialize_particles(){
 
 void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
-    if(_particles.get_rows()==0){
+    if(_particles.get_rows()!=_n_particles){
         initialize_particles();
     }
 

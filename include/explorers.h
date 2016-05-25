@@ -46,6 +46,17 @@ class explorers{
             }
         }
 
+        int get_n_particles(){
+            return _n_particles;
+        }
+
+        void get_pt(int dex, array_1d<double> &pp){
+            int i;
+            for(i=0;i<_chifn->get_dim();i++){
+                pp.set(i,_particles.get_data(dex,i));
+            }
+        }
+
         void set_bases();
         void initialize_particles();
         void sample(int, array_2d<double>&);
