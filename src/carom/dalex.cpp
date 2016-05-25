@@ -1446,6 +1446,12 @@ void dalex::explore(){
     _explorers.set_associates(associates);
     _explorers.sample(2*_chifn->get_dim(), _basis_vectors);
 
+    if(_log!=NULL){
+         for(i=pt_0;i<_chifn->get_pts();i++){
+             _log->add(_log_mcmc, i);
+         }
+    }
+
     _update_good_points(pt_0);
 }
 

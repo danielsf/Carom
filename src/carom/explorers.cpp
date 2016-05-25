@@ -146,6 +146,8 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     double med_acc;
 
+    printf("    starting sampling with %e\n",_mu_min);
+
     for(i_step=0;i_step<n_steps;i_step++){
         if(i_step%(_chifn->get_dim())==0){
             set_bases();
@@ -215,4 +217,6 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     }
 
+    printf("    sampling min %e\n",_mu_min);
+    printf("    temp %e\n",_temp);
 }
