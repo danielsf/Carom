@@ -162,6 +162,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
 
     for(i_step=0;i_step<n_steps;i_step++){
         if(i_step>0 && i_step%(_chifn->get_dim())==0){
+            printf("i_step %d mu_min %e\n",i_step,_mu_min);
             set_bases();
         }
 
