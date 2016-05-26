@@ -1594,14 +1594,6 @@ void dalex::tendril_search(){
         }
     }*/
 
-    simplex_boundary_search();
-    _update_good_points();
-
-    int i_particle=_good_points.get_data(_good_points.get_dim()-1);
-
-    if(_log!=NULL){
-        _log->add(_log_dchi_simplex,i_particle);
-    }
 
     double mu;
     int i_found;
@@ -1618,6 +1610,14 @@ void dalex::tendril_search(){
     }
     simplex_search(specified);
 
+    simplex_boundary_search();
+    _update_good_points();
+
+    int i_particle=_good_points.get_data(_good_points.get_dim()-1);
+
+    if(_log!=NULL){
+        _log->add(_log_dchi_simplex,i_particle);
+    }
 
     double volume,p_volume;
     array_1d<double> min,max,min_p,max_p;
