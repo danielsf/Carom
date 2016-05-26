@@ -289,6 +289,32 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
         }
         _attempted++;
 
+        if(_attempted>0 && _attempted%(2*_chifn->get_dim())==0){
+            acceptance_rate_dex.reset_preserving_room();
+            acceptance_rate_sorted.reset_preserving_room();
+            for(i=0;i<_accepted.get_dim();i++){
+                acceptance_rate.set(i,double(_accepted.get_data(i))/double(_attempted));
+                acceptance_rate_dex.set(i,i);
+            }
+            sort_and_check(acceptance_rate, acceptance_rate_sorted, acceptance_rate_dex);
+            med_acc=acceptance_rate_sorted.get_data(acceptance_rate_dex.get_dim()/2);
+            if(med_acc>0.75 || med_acc<0.3333){
+                old_temp=_temp;
+                req_temp_sorted.reset_preserving_room();
+                req_temp_dex.reset_preserving_room();
+                for(i=0;i<_req_temp.get_dim();i++){
+                    req_temp_dex.set(i,i);
+                }
+                sort_and_check(_req_temp, req_temp_sorted, req_temp_dex);
+                _temp=req_temp_sorted.get_data(req_temp_dex.get_dim()/2);
+                if(fabs(1.0-old_temp/_temp)>0.01){
+                    _req_temp.reset();
+                    _accepted.zero();
+                    _attempted=0;
+                }
+            }
+        }
+
     }
 
     printf("    sampling min %e\n",_mu_min);
