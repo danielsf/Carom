@@ -1603,18 +1603,20 @@ void dalex::tendril_search(){
         _log->add(_log_dchi_simplex,i_particle);
     }
 
+    double mu;
+    int i_found;
     array_1d<int> specified;
-
-    if(_charges.get_dim()>_chifn->get_dim()/2){
-        specified.reset();
-        while(specified.get_dim()<_chifn->get_dim()/2){
-            i=_chifn->random_int()%_charges.get_dim();
-            if(specified.contains(_charges.get_data(i))==0){
-                specified.add(_charges.get_data(i));
-            }
+    array_1d<double> trial;
+    specified.add(mindex());
+    for(j=0;j<_chifn->get_dim();j++){
+        mu=2.0*(_chifn->random_double()-0.5);
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(mindex(),i)+mu*_basis_vectors.get_data(j,i)*_basis_norm.get_data(j));
         }
-        simplex_search(specified);
+        _chifn->evaluate(trial,&mu,&i_found);
+        specified.add(i_found);
     }
+    simplex_search(specified);
 
 
     double volume,p_volume;
@@ -1626,7 +1628,6 @@ void dalex::tendril_search(){
 
     assess_good_points();
     int ip,ix;
-    double mu;
     ip=mindex();
     for(i=0;i<_chifn->get_dim();i++){
         min.set(i,_chifn->get_pt(ip,i));
