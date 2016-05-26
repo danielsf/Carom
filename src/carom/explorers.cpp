@@ -1,5 +1,24 @@
 #include "explorers.h"
 
+void explorers::get_seed(array_2d<double> &seed){
+
+    array_1d<int> mu_dex;
+    mu_dex.set_name("exp_seed_mu_dex");
+    array_1d<double> mu_sorted;
+    mu_sorted.set_name("exp_mu_sorted");
+
+    int i;
+    for(i=0;i<_mu_arr.get_dim();i++){
+        mu_dex.set(i,i);
+    }
+    sort_and_check(_mu_arr,mu_sorted,mu_dex);
+
+    for(i=0;i<_chifn->get_dim()+1;i++){
+        seed.add_row(_particles(mu_dex.get_data(i))[0]);
+    }
+
+}
+
 void explorers::set_bases(){
 
     array_1d<double> vv;
@@ -136,9 +155,6 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
     _mindex=-1;
 
     double mu;
-    array_1d<double> mu_arr;
-    mu_arr.set_name("exp_sample_mu_arr");
-
     int i_step;
     int i_dim,ip;
     int i;
@@ -156,7 +172,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
                 _mindex=ip;
                 _mu_min=mu;
             }
-            mu_arr.set(ip,mu);
+            _mu_arr.set(ip,mu);
         }
 
         if(_mu_min>2.0*_chifn->target()){
@@ -204,14 +220,14 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
             }
             accept_it=0;
             mu=dchifn(trial);
-            if(mu<mu_arr.get_data(ip)){
+            if(mu<_mu_arr.get_data(ip)){
                 accept_it=1;
                 needed_temp=1.0;
             }
             else{
-                ratio=exp(-0.5*(mu-mu_arr.get_data(ip))/_temp);
+                ratio=exp(-0.5*(mu-_mu_arr.get_data(ip))/_temp);
                 roll=_chifn->random_double();
-                needed_temp=-0.5*(mu-mu_arr.get_data(ip))/log(roll);
+                needed_temp=-0.5*(mu-_mu_arr.get_data(ip))/log(roll);
                 if(needed_temp<1.0){
                     needed_temp=1.0;
                 }
@@ -225,7 +241,7 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
             if(accept_it==1){
                 scalar_acceptance++;
                 _accepted.add_val(ip,1);
-                mu_arr.set(ip,mu);
+                _mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
                     _particles.set(ip,i,trial.get_data(i));
                 }

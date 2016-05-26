@@ -1127,6 +1127,7 @@ int dalex::simplex_boundary_search(){
 }
 
 int dalex::simplex_boundary_search(int specified, int use_median){
+
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
@@ -1183,7 +1184,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
         // make sure mindex is an associate
         printf("    at start mindex %d\n",mindex());
-        if(check_association(mindex(), specified)==1){
+        if(specified<0 || check_association(mindex(), specified)==1){
             associates.add(mindex());
         }
 
@@ -1329,7 +1330,12 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
 
-    tendril_seed(&dchifn, specified, seed);
+    if(specified>=0){
+        tendril_seed(&dchifn, specified, seed);
+    }
+    else{
+        _explorers.get_seed(seed);
+    }
     /*array_1d<double> epsilon;
     seed.add_row(_chifn->get_pt(specified)[0]);
     for(i=0;i<_chifn->get_dim();i++){
@@ -1356,12 +1362,27 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     ffmin.find_minimum(seed,minpt);
 
     for(i=specified;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
+        if(i>=0 && _chifn->get_fn(i)<target()){
             i_min=i;
         }
     }
 
-    _update_good_points(specified, specified, i_min);
+    int i_good_start;
+
+    if(specified>=0){
+        _update_good_points(specified, specified, i_min);
+    }
+    else{
+        i_good_start=-1;
+        for(i=pt_start;i_good_start<0 && i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                i_good_start=i;
+            }
+        }
+        if(i_start>=0){
+            _update_good_points(i_good_start, i_good_start, i_min);
+        }
+    }
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
@@ -1572,20 +1593,15 @@ void dalex::tendril_search(){
             }
         }
     }*/
-    double mu;
-    array_1d<double> trial;
-    trial.set_name("tendirl_search_trial");
-    int i_particle=mindex();
 
-    _explorers.get_min_pt(trial);
-    _chifn->evaluate(trial,&mu,&i_particle);
+    simplex_boundary_search();
+    _update_good_points();
 
+    int i_particle=_good_points.get_data(_good_points.get_dim()-1);
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_particle);
     }
-
-    _update_good_points();
 
     array_1d<int> specified;
 
@@ -1610,6 +1626,7 @@ void dalex::tendril_search(){
 
     assess_good_points();
     int ip,ix;
+    double mu;
     ip=mindex();
     for(i=0;i<_chifn->get_dim();i++){
         min.set(i,_chifn->get_pt(ip,i));

@@ -23,6 +23,7 @@ class explorers{
             _max.set_name("explorers_max");
             _req_temp.set_name("explorers_req_temp");
             _accepted.set_name("explorers_accepted");
+            _mu_arr.set_name("explorers_mu_arr");
         }
 
         void set_n_particles(int ii){
@@ -59,6 +60,8 @@ class explorers{
             }
         }
 
+        void get_seed(array_2d<double>&);
+
         void set_bases();
         void initialize_particles();
         void bump_particles();
@@ -69,6 +72,7 @@ class explorers{
         array_1d<int> _associates;
         array_2d<double> _bases;
         array_1d<double> _norm,_min,_max;
+        array_1d<double> _mu_arr;
         array_1d<double> _req_temp;
         int _mindex;
         double _mu_min;
