@@ -117,71 +117,25 @@ void explorers::initialize_particles(){
 
 
 void explorers::bump_particles(){
-    array_1d<double> trial;
+    array_1d<double> dir, trial;
+    dir.set_name("exp_bump_dir");
     trial.set_name("exp_bump_trial");
-    array_1d<int> anchors;
-    anchors.set_name("exp_bump_anchors");
     _particles.reset_preserving_room();
 
-    int i,j,k,i_best,ip,ia;
-    double mu;
-
-    array_1d<double> local_norm,local_max,local_min;
-    for(i=0;i<_associates.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            mu=_chifn->get_pt(_associates.get_data(i),j);
-            if(i==0 || mu<local_min.get_data(j)){
-                local_min.set(j,mu);
-            }
-            if(i==0 || mu>local_max.get_data(j)){
-                local_max.set(j,mu);
-            }
+    int i,j;
+    while(_particles.get_rows()<_n_particles){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        local_norm.set(i,local_max.get_data(i)-local_min.get_data(i));
-    }
-
-    if(_associates.get_dim()<_n_particles+1){
-        printf("WARNING cannot bump; only %d associates\n",
-        _associates.get_dim());
-        exit(1);
-    }
-
-    double dd,ddmin,ddmax;
-    anchors.add(_chifn->mindex());
-    while(anchors.get_dim()<_n_particles+1){
-        ddmax=-1.0;
-        for(i=0;i<_associates.get_dim();i++){
-            ip=_associates.get_data(i);
-            if(anchors.contains(ip)==0){
-                ddmin=2.0*exception_value;
-                for(j=0;j<anchors.get_dim();j++){
-                    ia=anchors.get_data(j);
-                    dd=0.0;
-                    for(k=0;k<_chifn->get_dim();k++){
-                        dd+=power((_chifn->get_pt(ia,k)-_chifn->get_pt(ip,k))
-                        /local_norm.get_data(k),2);
-                    }
-
-                    if(dd<ddmin){
-                        ddmin=dd;
-                    }
-                }
-                if(ddmin>ddmax){
-                    i_best=ip;
-                    ddmax=ddmin;
-                }
-            }
+        dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,_chifn->get_pt(_chifn->mindex(),i));
         }
-        anchors.add(i_best);
-    }
-
-    for(i=0;i<_n_particles;i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,0.5*(_chifn->get_pt(anchors.get_data(0),j)+
-                             _chifn->get_pt(anchors.get_data(i+1),j)));
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.add_val(j,1.0*(_max.get_data(i)-_min.get_data(i))
+                               *dir.get_data(i)*_bases.get_data(i,j));
+            }
         }
         _particles.add_row(trial);
     }
