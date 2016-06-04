@@ -63,6 +63,8 @@ class explorers{
         void get_seed(array_2d<double>&);
 
         void set_bases();
+        void _random_set_bases();
+        void _principal_set_bases();
         void initialize_particles();
         void bump_particles();
         void sample(int, array_2d<double>&);
