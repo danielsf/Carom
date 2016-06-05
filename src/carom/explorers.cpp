@@ -296,10 +296,6 @@ void explorers::sample(int n_steps, array_2d<double> &model_bases){
     int scalar_acceptance=0;
 
     for(i_step=0;i_step<n_steps;i_step++){
-        if(i_step>0 && i_step%(_chifn->get_dim())==0){
-            printf("i_step %d mu_min %e\n",i_step,_mu_min);
-            set_bases();
-        }
 
         for(ip=0;ip<_n_particles;ip++){
             i_dim=_chifn->random_int()%_chifn->get_dim();
