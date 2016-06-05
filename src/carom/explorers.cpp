@@ -150,11 +150,12 @@ void explorers::_principal_set_bases(){
 
     _min.reset_preserving_room();
     _max.reset_preserving_room();
-    for(ip=0;ip<_n_particles;ip++){
+    for(ip=0;ip<_associates.get_dim();ip++){
+        ia=_associates.get_data(ip);
         for(i=0;i<_chifn->get_dim();i++){
             component=0.0;
             for(j=0;j<_chifn->get_dim();j++){
-                component+=_particles.get_data(ip,j)*_bases.get_data(i,j);
+                component+=_chifn->get_pt(ia,j)*_bases.get_data(i,j);
             }
             if(i>=_min.get_dim() || component<_min.get_data(i)){
                 _min.set(i,component);
