@@ -129,22 +129,22 @@ void explorers::_principal_set_bases(){
             for(ia=0;ia<_chifn->get_dim();ia++){
                 component+=_bases.get_data(i,ia)*_bases.get_data(j,ia);
             }
-        }
 
-        if(i==j){
-            if(fabs(component-1.0)>0.001){
-                printf("WARNING basis %d norm %e\n",i,component);
-                exit(1);
+
+            if(i==j){
+                if(fabs(component-1.0)>0.001){
+                    printf("WARNING basis %d norm %e\n",i,component);
+                    exit(1);
+                }
+            }
+            else{
+                if(fabs(component)>0.001){
+                    printf("WARNING dot product between bases %d %d is %e\n",
+                    i,j,component);
+                    exit(1);
+                }
             }
         }
-        else{
-            if(fabs(component)>0.001){
-                printf("WARNING dot product between bases %d %d is %e\n",
-                i,j,component);
-                exit(1);
-            }
-        }
-
     }
 
 
