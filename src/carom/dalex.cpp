@@ -1682,17 +1682,18 @@ void dalex::tendril_search(){
         ct_last=_chifn->get_pts();
         is_a_strike=simplex_boundary_search(i_particle, use_median);
 
-        if(is_a_strike==1){
-            strikes++;
-        }
-        else{
-            strikes=0;
-        }
-
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
         _end_points.add(i_particle);
 
         add_charge(i_particle);
+
+        if(is_a_strike==1){
+            strikes++;
+            i_particle=i_origin;
+        }
+        else{
+            strikes=0;
+        }
 
         for(i=0;i<_chifn->get_dim();i++){
             if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
