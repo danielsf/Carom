@@ -43,7 +43,7 @@ class dchi_multimodal_simplex : public dchi_simplex_base{
 
 class dchi_interior_simplex : public function_wrapper{
     public:
-        dchi_interior_simplex(chisq_wrapper*, array_1d<int>&, array_2d<double>&);
+        dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
         ~dchi_interior_simplex(){};
         virtual double operator()(array_1d<double>&);
         virtual int get_called();
@@ -95,6 +95,23 @@ class dchi_interior_simplex : public function_wrapper{
         void calibrate_model();
         double apply_model(array_1d<double>&);
 
+        void copy_bases(array_2d<double> &out){
+            int i;
+            out.reset_preserving_room();
+            for(i=0;i<_bases.get_rows();i++){
+                out.add_row(_bases(i)[0]);
+            }
+        }
+
+        void set_bases(){
+            if(_associates.get_dim()<_chifn->get_dim()){
+                _random_set_bases();
+            }
+            else{
+                _principal_set_bases();
+            }
+        }
+
 
     private:
         array_1d<int> _associates;
@@ -106,10 +123,17 @@ class dchi_interior_simplex : public function_wrapper{
         int _just_median;
         double _envelope;
 
-
         array_2d<double> _bases;
         array_1d<double> _norm;
         double _alpha;
+
+        void _principal_set_bases();
+        void _random_set_bases();
+
+        void _set_hyper_ellipse();
+        double _hyper_ellipse_distance(array_1d<double>&);
+        array_1d<double> _hyper_center;
+        array_1d<double> _hyper_norm;
 
 };
 

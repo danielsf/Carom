@@ -19,134 +19,11 @@ void explorers::get_seed(array_2d<double> &seed){
 
 }
 
-void explorers::set_bases(){
-    if(_associates.get_dim()<_chifn->get_dim()){
-        _random_set_bases();
-    }
-    else{
-        _principal_set_bases();
-    }
-}
+void explorers::set_norm(){
 
-void explorers::_random_set_bases(){
-
-    array_1d<double> vv;
-    vv.set_name("exp_set_bases_vv");
-    int i,j;
+    int ip,ia;
     double component;
-
-    _bases.reset_preserving_room();
-    while(_bases.get_rows()<_chifn->get_dim()){
-        for(i=0;i<_chifn->get_dim();i++){
-            vv.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-        }
-        for(i=0;i<_bases.get_rows();i++){
-            component=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                component+=vv.get_data(j)*_bases.get_data(i,j);
-            }
-            for(j=0;j<_chifn->get_dim();j++){
-                vv.subtract_val(j,component*_bases.get_data(i,j));
-            }
-        }
-        component=vv.normalize();
-        if(component>1.0e-10){
-            _bases.add_row(vv);
-        }
-    }
-
-    _min.reset_preserving_room();
-    _max.reset_preserving_room();
-
-    int k;
-    for(i=0;i<_particles.get_rows();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            component=0.0;
-            for(k=0;k<_chifn->get_dim();k++){
-                component+=_particles.get_data(i,k)*_bases.get_data(j,k);
-            }
-            if(j>=_min.get_dim() || component<_min.get_data(j)){
-                _min.set(j,component);
-            }
-            if(j>=_max.get_dim() || component>_max.get_data(j)){
-                _max.set(j,component);
-            }
-        }
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        _norm.set(i,0.2*(_max.get_data(i)-_min.get_data(i)));
-    }
-
-}
-
-
-void explorers::_principal_set_bases(){
-
-    printf("\nprincipal bases\n\n");
-
-    _bases.reset_preserving_room();
-
-    array_1d<double> dir,dir_best;
-    dir.set_name("exp_princ_bases_dir");
-    dir_best.set_name("exp_princ_bases_dir_best");
-
-    int ip,i,j,ia;
-    double dd,dd_best,component;
-
-    while(_bases.get_rows()!=_chifn->get_dim()){
-        for(ip=0;ip<_associates.get_dim();ip++){
-            ia=_associates.get_data(ip);
-            for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,_chifn->get_pt(ia,i)-_chifn->get_pt(_chifn->mindex(),i));
-            }
-            for(i=0;i<_bases.get_rows();i++){
-                component=0.0;
-                for(j=0;j<_chifn->get_dim();j++){
-                    component+=dir.get_data(j)*_bases.get_data(i,j);
-                }
-                for(j=0;j<_chifn->get_dim();j++){
-                    dir.subtract_val(j,component*_bases.get_data(i,j));
-                }
-            }
-
-            dd=dir.normalize();
-            if(ip==0 || dd>dd_best){
-                dd_best=dd;
-                for(i=0;i<_chifn->get_dim();i++){
-                    dir_best.set(i,dir.get_data(i));
-                }
-            }
-        }
-
-        _bases.add_row(dir_best);
-    }
-
-
-    for(i=0;i<_chifn->get_dim();i++){
-        for(j=i;j<_chifn->get_dim();j++){
-            component=0.0;
-            for(ia=0;ia<_chifn->get_dim();ia++){
-                component+=_bases.get_data(i,ia)*_bases.get_data(j,ia);
-            }
-
-
-            if(i==j){
-                if(fabs(component-1.0)>0.001){
-                    printf("WARNING basis %d norm %e\n",i,component);
-                    exit(1);
-                }
-            }
-            else{
-                if(fabs(component)>0.001){
-                    printf("WARNING dot product between bases %d %d is %e\n",
-                    i,j,component);
-                    exit(1);
-                }
-            }
-        }
-    }
-
+    int i,j;
 
     _min.reset_preserving_room();
     _max.reset_preserving_room();
@@ -171,7 +48,6 @@ void explorers::_principal_set_bases(){
     }
 
 }
-
 
 void explorers::initialize_particles(){
 
@@ -244,15 +120,15 @@ void explorers::bump_particles(){
 }
 
 
-void explorers::sample(int n_steps, array_2d<double> &model_bases){
+void explorers::sample(int n_steps){
 
     if(_particles.get_rows()!=_n_particles){
         initialize_particles();
     }
 
-    set_bases();
-
-    dchi_interior_simplex dchifn(_chifn, _associates, model_bases);
+    dchi_interior_simplex dchifn(_chifn, _associates);
+    dchifn.copy_bases(_bases);
+    set_norm();
 
     _mindex=-1;
 
