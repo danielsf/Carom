@@ -75,7 +75,7 @@ void explorers::_random_set_bases(){
     }
 
     for(i=0;i<_chifn->get_dim();i++){
-        _norm.set(i,0.1*(_max.get_data(i)-_min.get_data(i)));
+        _norm.set(i,0.2*(_max.get_data(i)-_min.get_data(i)));
     }
 
 }
@@ -167,7 +167,7 @@ void explorers::_principal_set_bases(){
     }
 
     for(i=0;i<_chifn->get_dim();i++){
-        _norm.set(i,0.1*(_max.get_data(i)-_min.get_data(i)));
+        _norm.set(i,0.2*(_max.get_data(i)-_min.get_data(i)));
     }
 
 }
