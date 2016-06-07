@@ -2,16 +2,21 @@
 
 void explorers::get_seed(array_2d<double> &seed){
 
-    seed.reset_preserving_room();
-    array_1d<int> chosen;
-    int ii;
-    while(seed.get_rows()<_chifn->get_dim()+1){
-        ii=_chifn->random_int()%_n_particles;
-        if(chosen.contains(ii)==0){
-            seed.add_row(_particles(ii)[0]);
-            chosen.add(ii);
-        }
+    array_1d<int> mu_dex;
+    mu_dex.set_name("exp_seed_mu_dex");
+    array_1d<double> mu_sorted;
+    mu_sorted.set_name("exp_mu_sorted");
+
+    int i;
+    for(i=0;i<_mu_arr.get_dim();i++){
+        mu_dex.set(i,i);
     }
+    sort_and_check(_mu_arr,mu_sorted,mu_dex);
+
+    for(i=0;i<_chifn->get_dim()+1;i++){
+        seed.add_row(_particles(mu_dex.get_data(i))[0]);
+    }
+
 }
 
 void explorers::set_bases(){
