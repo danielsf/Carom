@@ -1330,8 +1330,18 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
 
+    array_2d<double> dummy_bases;
+    array_1d<double> trial;
+
     if(specified>=0){
-        tendril_seed(&dchifn, specified, seed);
+        dchifn.copy_bases(dummy_bases);
+        seed.add_row(_chifn->get_pt(specified)[0]);
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.set(j,seed.get_data(0,j)+dummy_bases.get_data(i,j)*dchifn.get_hyper_norm(i)*0.01);
+            }
+            seed.add_row(trial);
+        }
     }
     else{
         _explorers.get_seed(seed);

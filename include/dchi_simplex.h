@@ -113,6 +113,10 @@ class dchi_interior_simplex : public function_wrapper{
         }
 
 
+        double get_hyper_norm(int ii){
+            return _hyper_norm.get_data(ii);
+        }
+
     private:
         array_1d<int> _associates;
         array_1d<int> _mask;
