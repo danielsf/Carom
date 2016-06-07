@@ -331,13 +331,12 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
 
     _called++;
 
-    double mu,mu_model;
+    double mu;
     int i_found;
     _chifn->evaluate(pt,&mu,&i_found);
-    mu_model=apply_model(pt);
 
     if(_associates.get_dim()==0){
-        return mu-mu_model;
+        return mu;
     }
 
     double delta=_chifn->target()-_chifn->chimin();
@@ -352,5 +351,5 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
         exp_term=exp((_chifn->target()-mu)/_envelope);
     }
 
-    return mu-exp_term*mu_model-1.0*delta*distance*exp_term;
+    return mu-1.0*delta*distance*exp_term;
 }
