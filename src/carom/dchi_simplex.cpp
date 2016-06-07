@@ -496,8 +496,10 @@ void dchi_interior_simplex::_set_hyper_ellipse(){
         }
         sort_and_check(cc,cc_sorted,cc_dex);
 
-        x1=cc_sorted.get_data(0);
-        x2=cc_sorted.get_data(cc_dex.get_dim()-1);
+        i=cc_dex.get_dim();
+
+        x1=cc_sorted.get_data(1/6);
+        x2=cc_sorted.get_data((5*i)/6);
         _hyper_center.set(ix,0.5*(x1+x2));
         _hyper_norm.set(ix,0.5*(x2-x1));
     }
