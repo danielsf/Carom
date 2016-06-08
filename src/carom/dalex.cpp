@@ -72,7 +72,7 @@ void dalex::search(){
         explore();
     }
     tendril_search();
-    _update_good_points(pts_0,-1,-1);
+    _update_good_points(pts_0);
 
 }
 
@@ -138,12 +138,7 @@ void dalex::simplex_search(array_1d<int> &specified){
     int i_found;
     evaluate(min_pt, &mu, &i_found);
 
-    if(mu<target()){
-        _update_good_points(pt_0, i_found, -1);
-    }
-    else{
-        _update_good_points(pt_0);
-    }
+    _update_good_points(pt_0);
 
     if(_basis_chimin-chimin()>target()-chimin()){
         find_bases();

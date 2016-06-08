@@ -94,40 +94,15 @@ class dalex{
         }
 
         void _update_good_points(){
-            _update_good_points(_last_checked_good, -1, -1);
+            _update_good_points(_last_checked_good);
         }
 
-        void _update_good_points(int ii){
-            _update_good_points(ii, -1, -1);
-        }
-
-        void _update_good_points(int i_start, int io1, int io2){
+        void _update_good_points(int i_start){
             safety_check("_update_good_points");
 
             int i;
-            double dd1,dd2;
-            int origin_dex;
             for(i=i_start;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target() && _good_points.contains(i)==0){
-                    if(io1<0 && io2>=0){
-                        origin_dex=io2;
-                    }
-                    else if(io2<0 && io1>=0){
-                         origin_dex=io1;
-                    }
-                    else if(io1>=0 && io2>=0){
-                        dd1=distance(i,io1);
-                        dd2=distance(i,io2);
-                        if(dd1<dd2){
-                            origin_dex=io1;
-                        }
-                        else{
-                            origin_dex=io2;
-                        }
-                    }
-                    else{
-                        origin_dex=-1;
-                    }
                     add_good_point(i);
                 }
             }
