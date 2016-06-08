@@ -1135,123 +1135,52 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     assess_charges();
 
     int i_node,i_pt;
-    int i,j;
+    int i,j,k;
     double xmin,xmax,xx;
 
-    int n_origins=0;
-    for(i=0;i<_good_point_origins.get_dim();i++){
-        if(_good_point_origins.get_data(i)>=0){
-             n_origins++;
-        }
-    }
-
-    printf("charges is %d -- origins %d good %d\n",
-    _charges.get_dim(),n_origins,_good_points.get_dim());
-
-    array_1d<int> mask;
-    mask.set_name("dalex_simple_boundary_mask");
-
     int n_good_0=_good_points.get_dim();
-    if(specified>=0){
-        create_mask(specified,mask);
-    }
-    else{
-        for(i=0;i<n_good_0;i++){
-            mask.set(i,1);
-        }
-    }
-
-    if(mask.get_dim()!=n_good_0){
-        printf("WARNING mask dim %d expected %d\n",mask.get_dim(),n_good_0);
-        exit(1);
-    }
 
     array_1d<int> associates;
     associates.set_name("dalex_simplex_boundary_associates");
     int i_start;
-    int n_remaining=0;
-    int n_thin;
-    int use_associate=0;
+    int n_thin=-1;
+    int ip;
 
-    if(use_median==1){
-        for(i=0;i<mask.get_dim();i++){
-            if(mask.get_data(i)==1){
-                associates.add(_good_points.get_data(i));
+    double mu;
+    array_1d<double> trial;
+    trial.set_name("simplex_boundary_trial");
+
+    if(_tendril_path.get_rows()>20000){
+        n_thin=_tendril_path.get_rows()/20000;
+        printf("    thinning %d\n",n_thin);
+    }
+
+    if(n_thin==1){
+       n_thin=2;
+    }
+
+    for(i=0;i<_tendril_path.get_rows();i++){
+        ip=_tendril_path.get_data(i,0);
+        if(n_thin<0 || i%n_thin==0){
+            if(specified<=0){
+                associates.add(ip);
+            }
+            else{
+                for(j=0;j<_chifn->get_dim();j++){
+                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(ip,j)));
+                }
+                evaluate(trial,&mu,&k);
+                if(mu<_chifn->target()){
+                    associates.add(ip);
+                }
             }
         }
     }
-    else{
 
-        // make sure mindex is an associate
-        printf("    at start mindex %d\n",mindex());
-        if(specified<0 || check_association(mindex(), specified)==1){
-            associates.add(mindex());
+    if(associates.get_dim()==0){
+        for(i=0;i<_good_points.get_dim();i++){
+            associates.add(_good_points.get_data(i));
         }
-
-        // all good points without an origin added to associates
-        for(i=0;i<mask.get_dim();i++){
-            if(_good_point_origins.get_data(i)<0 &&
-               mask.get_data(i)==1 &&
-               associates.contains(_good_points.get_data(i))==0){
-
-                associates.add(_good_points.get_data(i));
-            }
-        }
-
-        // all _end_points added to associates
-        for(i=0;i<n_good_0;i++){
-            if(_end_points.contains(_good_points.get_data(i)) && mask.get_data(i)==1){
-                if(associates.contains(_good_points.get_data(i))==0){
-                    associates.add(_good_points.get_data(i));
-                }
-            }
-        }
-
-        // all good points between the last two end points added to associates
-        if(_end_points.get_dim()>0){
-            if(_end_points.get_dim()>=2){
-                i_start=_end_points.get_data(_end_points.get_dim()-2);
-            }
-            else{
-                i_start=_end_points.get_data(_end_points.get_dim()-1);
-            }
-            for(i=0;i<n_good_0;i++){
-                if(mask.get_data(i)==1){
-                    if(associates.contains(_good_points.get_data(i))==0){
-                        if(_good_points.get_data(i)>i_start){
-                            associates.add(_good_points.get_data(i));
-                        }
-                    }
-                }
-            }
-        }
-
-        // keep every 5th of the remaining possible associates added to associates
-        for(i=0;i<n_good_0;i++){
-            if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
-                n_remaining++;
-            }
-        }
-
-        if(n_remaining+associates.get_dim()<20000){
-            n_thin=0;
-        }
-        else{
-            n_thin=5;
-        }
-
-        for(i=0;i<n_good_0;i++){
-            if(mask.get_data(i)==1 && associates.contains(_good_points.get_data(i))==0){
-                if(use_associate>=n_thin){
-                    associates.add(_good_points.get_data(i));
-                    use_associate=0;
-                }
-                else{
-                    use_associate++;
-                }
-            }
-        }
-        printf("    now mindex %d\n",mindex());
     }
 
     double v0,pv0;
@@ -1264,8 +1193,6 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     v0=-1.0;
     pv0=-1.0;
 
-    int k;
-    double mu;
     for(i=0;i<associates.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             mu=_chifn->get_pt(associates.get_data(i),j);
@@ -1303,8 +1230,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
         }
     }
 
-    printf("    associates %d mask contains zero %d associates contain mindex %d\n",
-    associates.get_dim(),mask.contains(0),associates.contains(mindex()));
+    printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
 
     dchi_interior_simplex dchifn(_chifn,associates);
 
@@ -1331,7 +1257,6 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     seed.set_name("dalex_simplex_search_seed");
 
     array_2d<double> dummy_bases;
-    array_1d<double> trial;
 
     if(specified>=0){
         dchifn.copy_bases(dummy_bases);
@@ -1346,22 +1271,16 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     else{
         _explorers.get_seed(seed);
     }
-    /*array_1d<double> epsilon;
-    seed.add_row(_chifn->get_pt(specified)[0]);
-    for(i=0;i<_chifn->get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            epsilon.set(j,seed.get_data(0,j)+_basis_vectors.get_data(i,j)*_basis_norm.get_data(i)*0.01);
-        }
-        seed.add_row(epsilon);
-    }*/
 
     int i_min=-1;
     double mu_min;
     double start_min;
+    int i_start_min;
     for(i=0;i<seed.get_rows();i++){
         mu=dchifn(seed(i)[0]);
         if(i==0 || mu<start_min){
             start_min=mu;
+            _chifn->evaluate(seed(i)[0],&mu,&i_start_min);
         }
     }
     printf("    starting from %e\n",start_min);
@@ -1377,22 +1296,38 @@ int dalex::simplex_boundary_search(int specified, int use_median){
         }
     }
 
-    int i_good_start;
+    array_1d<int> path_row;
+    path_row.set_name("path_row");
 
-    if(specified>=0){
-        _update_good_points(specified, specified, i_min);
+    int start_path;
+    if(pt_start<i_start_min){
+        start_path=i_start_min;
     }
     else{
-        i_good_start=-1;
-        for(i=pt_start;i_good_start<0 && i<_chifn->get_pts();i++){
-            if(_chifn->get_fn(i)<target()){
-                i_good_start=i;
-            }
-        }
-        if(i_start>=0){
-            _update_good_points(i_good_start, i_good_start, i_min);
-        }
+        start_path=pt_start;
     }
+
+    for(i=start_path;i<_chifn->get_pts();i++){
+        if(_tendril_path.get_rows()==0){
+            _tendril_path.set_cols(2);
+        }
+        if(_chifn->get_fn(i)<_chifn->target()){
+            path_row.set(0,i);
+            if(distance(i,i_min)<distance(i,i_start_min)){
+                path_row.set(1,i_min);
+            }
+            else{
+                path_row.set(1,i_start_min);
+            }
+            _tendril_path.add_row(path_row);
+        }
+
+    }
+
+
+    int i_good_start;
+
+    _update_good_points(pt_start);
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_min);
@@ -1693,7 +1628,6 @@ void dalex::tendril_search(){
         is_a_strike=simplex_boundary_search(i_particle, use_median);
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
-        _end_points.add(i_particle);
 
         add_charge(i_particle);
 
@@ -1745,52 +1679,3 @@ void dalex::tendril_search(){
 
 }
 
-void dalex::assess_good_point_origins(){
-    safety_check("assess_good_points_0");
-
-
-    array_1d<int> need_replacing,considered;
-    need_replacing.set_name("dalex_assess_origins_need_replacing");
-    considered.set_name("dalex_assess_origins_considered");
-
-    int i;
-    for(i=0;i<_good_point_origins.get_dim();i++){
-        if(_good_point_origins.get_data(i)>=0 && \
-           considered.contains(_good_point_origins.get_data(i))==0){
-
-           considered.add(_good_point_origins.get_data(i));
-
-           if(need_replacing.contains(_good_point_origins.get_data(i))==0 && \
-              _good_points.contains(_good_point_origins.get_data(i))==0){
-
-               need_replacing.add(_good_point_origins.get_data(i));
-           }
-
-        }
-    }
-
-    array_1d<int> gp_dexes,gp_vals,gp_val_sorted;
-    gp_dexes.set_name("dalex_assess_origins_gp_dexes");
-    gp_vals.set_name("dalex_assess_origins_gp_vals");
-    gp_val_sorted.set_name("dalex_assess_origins_gp_val_sorted");
-    int target_origin,j,replacement;
-    for(i=0;i<need_replacing.get_dim();i++){
-        gp_dexes.reset_preserving_room();
-        gp_vals.reset_preserving_room();
-        gp_val_sorted.reset_preserving_room();
-        target_origin=need_replacing.get_data(i);
-        for(j=0;j<_good_point_origins.get_dim();j++){
-            if(_good_point_origins.get_data(j)==target_origin){
-                gp_dexes.add(j);
-                gp_vals.add(_good_points.get_data(j));
-            }
-        }
-        sort_and_check(gp_vals, gp_val_sorted, gp_dexes);
-        replacement=gp_val_sorted.get_data(gp_dexes.get_dim()/2);
-        for(j=0;j<gp_dexes.get_dim();j++){
-            _good_point_origins.set(gp_dexes.get_data(j), replacement);
-        }
-    }
-
-    safety_check("assess_good_points_1");
-}
