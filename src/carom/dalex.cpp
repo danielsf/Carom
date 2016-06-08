@@ -1144,7 +1144,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     associates.set_name("dalex_simplex_boundary_associates");
     int i_start;
     int n_thin=-1;
-    int ip;
+    int ip,io;
 
     double mu;
     array_1d<double> trial;
@@ -1161,13 +1161,14 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
     for(i=0;i<_tendril_path.get_rows();i++){
         ip=_tendril_path.get_data(i,0);
+        io=_tendril_path.get_data(i,1);
         if(n_thin<0 || i%n_thin==0){
             if(specified<=0){
                 associates.add(ip);
             }
             else{
                 for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(ip,j)));
+                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
                 }
                 evaluate(trial,&mu,&k);
                 if(mu<_chifn->target()){
