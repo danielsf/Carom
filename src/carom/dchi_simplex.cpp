@@ -352,18 +352,6 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
         exp_term=1.0;
     }
 
-    double hyper_distance;
-
-    hyper_distance=_hyper_ellipse_distance(pt);
-    if(hyper_distance<1.0 && mu<_chifn->target()){
-        if(hyper_distance<1.0e-6){
-            hyper_distance=1.0e-6;
-        }
-        mu+=delta*(1.0/(hyper_distance)-1.0);
-        exp_term=0.0;
-    }
-
-
     return mu-1.0*delta*distance*exp_term;
 }
 
