@@ -12,7 +12,6 @@ maps::maps(){
     _time_started=double(time(NULL));
     _good_points.set_name("maps_good_points");
     _explorers.set_name("maps_explorers");
-    _explorer_temp=1.0;
 }
 
 maps::~maps(){

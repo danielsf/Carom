@@ -72,7 +72,6 @@ private:
     array_1d<int> _explorers;
 
     int _last_did_min;
-    double _explorer_temp;
 
 };
 
