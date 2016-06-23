@@ -62,7 +62,6 @@ private:
     int _simplex_mindex;
 
     dalex _cloud;
-    double _mcmc_basis_min;
 
     asymm_array_2d<int> _log;
 
