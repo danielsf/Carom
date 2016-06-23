@@ -107,30 +107,6 @@ class dalex{
             _last_checked_good=_chifn->get_pts();
         }
 
-        void update_good_points_external(){
-            safety_check("update_good_points_external");
-            int i,j;
-            array_1d<double> trial;
-            trial.set_name("dalex_update_good_external_trial");
-            double mu;
-            int i_found;
-            for(i=_last_checked_good;i<_chifn->get_pts();i++){
-                if(_chifn->get_fn(i)<target() && _good_points.contains(i)==0){
-                    for(j=0;j<_chifn->get_dim();j++){
-                        trial.set(j,0.5*(_chifn->get_pt(_chifn->mindex(),j)+
-                                          _chifn->get_pt(i,j)));
-                    }
-
-                    evaluate(trial,&mu,&i_found);
-                    if(mu<target() && _good_points.contains(i)==0){
-                        add_good_point(i);
-                    }
-                }
-            }
-
-            _last_checked_good=_chifn->get_pts();
-        }
-
         void assess_good_points(){
             int i;
             for(i=0;i<_good_points.get_dim();i++){
