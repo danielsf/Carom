@@ -424,7 +424,6 @@ void dalex::find_bases(){
         }
         dir.normalize();
         i_pt=bisection(mindex(),dir,0.5*(target()+chimin()),0.1);
-        add_charge(i_pt);
 
         /*if(fabs(_chifn->get_fn(i_pt)-0.5*(target()+chimin()))>1.0 && chimin()<500.0){
             printf("WARNING failed to get associate within tol %e %e-- %e %e\n",
@@ -436,7 +435,6 @@ void dalex::find_bases(){
         if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
             _basis_associates.add(i_pt);
             i_pt=bisection(mindex(),dir,0.25*chimin()+0.75*target(),0.1);
-            add_charge(i_pt);
             if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
                 _basis_associates.add(i_pt);
 
@@ -961,7 +959,6 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
     assess_good_points();
-    assess_charges();
 
     int i_node,i_pt;
     int i,j,k;
@@ -1293,8 +1290,6 @@ void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &g
 
 void dalex::tendril_search(){
 
-    add_charge(_chifn->mindex());
-
     int i,j,k;
     int pt_0=_chifn->get_pts();
     assess_good_points();
@@ -1451,15 +1446,12 @@ void dalex::tendril_search(){
         iteration++;
 
         printf("    strikes %d use_median %d\n",strikes,use_median);
-        add_charge(_chifn->mindex());
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
         is_a_strike=simplex_boundary_search(i_particle, use_median);
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
-
-        add_charge(i_particle);
 
         if(is_a_strike==1){
             strikes++;

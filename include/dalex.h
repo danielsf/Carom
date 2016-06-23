@@ -24,8 +24,6 @@ class dalex{
             _simplex_mindex=-1;
             _log=NULL;
 
-            _charges.set_name("dalex_charges");
-
             _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
             _basis_mm.set_name("dalex_basis_mm");
@@ -194,24 +192,7 @@ class dalex{
         //////code related to tendrils
         void get_gradient(int,array_1d<double>&,array_1d<double>&);
         void tendril_search();
-        array_1d<int> _charges;
         array_2d<int> _tendril_path;
-
-        void assess_charges(){
-            int i;
-            for(i=0;i<_charges.get_dim();i++){
-                if(_chifn->get_fn(_charges.get_data(i))>target()){
-                    _charges.remove(i);
-                    i--;
-                }
-            }
-        }
-
-        void add_charge(int ii){
-            if(_charges.contains(ii)==0 && _chifn->get_fn(ii)<target()){
-                _charges.add(ii);
-            }
-        }
 
 };
 
