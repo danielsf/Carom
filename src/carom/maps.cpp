@@ -11,9 +11,6 @@ maps::maps(){
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
     _good_points.set_name("maps_good_points");
-    _duds.set_name("maps_duds");
-    _duds_for_min.set_name("maps_duds_for_min");
-    _failed_mins.set_name("maps_failed_mins");
     _explorers.set_name("maps_explorers");
     _explorer_temp=1.0;
 }
