@@ -27,12 +27,8 @@ class dalex{
             _charges.set_name("dalex_charges");
 
             _basis_chimin=2.0*exception_value;
-            _basis_associates.set_name("dalex_basis_associates");
-            _basis_mm.set_name("dalex_basis_mm");
-            _basis_vv.set_name("dalex_basis_vv");
             _basis_norm.set_name("dalex_basis_norm");
             _basis_vectors.set_name("dalex_basis_vectors");
-            _basis_ddsq.set_name("dalex_basis_ddsq");
 
         };
 
@@ -173,17 +169,10 @@ class dalex{
         array_1d<int> _good_points;
 
         ////////code related to finding basis vectors
-        array_1d<int> _basis_associates;
-        array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
         array_1d<double> _basis_norm;
-        array_2d<double> _basis_vectors,_basis_ddsq;
+        array_2d<double> _basis_vectors;
         double _basis_chimin;
 
-        double basis_error(array_2d<double>&, array_1d<double>&);
-        void find_trial_bases(int, array_1d<double>&, array_2d<double> &out_bases);
-        void validate_bases(array_2d<double>&, char*);
-        void guess_bases(array_2d<double>&);
-        void find_covariance_matrix(int, array_2d<double>&);
         void find_bases();
 
 
