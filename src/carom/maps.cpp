@@ -6,7 +6,6 @@ maps::maps(){
     _last_written=0;
     _ct_dalex=0;
     _last_did_min=0;
-    _simplex_mindex=-1;
     _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
@@ -132,7 +131,6 @@ void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
     _cloud.set_log(&_log);
-    _simplex_mindex=_chifn.mindex();
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
     _interpolator.set_ell_factor(1.0);

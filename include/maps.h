@@ -59,7 +59,6 @@ private:
     int _write_every,_last_written;
     int _ct_dalex;
     int _last_wrote_log;
-    int _simplex_mindex;
 
     dalex _cloud;
 
