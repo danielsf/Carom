@@ -42,7 +42,6 @@ public:
     void gibbs_init();
 
     void explore();
-    void simplex_min_search();
     void write_pts();
     void write_log();
 
