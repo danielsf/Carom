@@ -37,7 +37,6 @@ public:
     void search(int);
 
     void mcmc_init();
-    void gibbs_init();
 
     void explore();
     void write_pts();
