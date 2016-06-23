@@ -194,7 +194,6 @@ class dalex{
         //////code related to tendrils
         void get_gradient(int,array_1d<double>&,array_1d<double>&);
         void tendril_search();
-        void tendril_seed(function_wrapper*, int, array_2d<double>&);
         array_1d<int> _charges;
         array_2d<int> _tendril_path;
 
