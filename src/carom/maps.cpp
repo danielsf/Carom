@@ -354,41 +354,6 @@ void maps::simplex_min_search(){
     _simplex_mindex=_chifn.mindex();
 }
 
-
-void maps::mcmc_search(){
-    printf("\ndoing maps.mcmc_search %d %e %d %d\n",
-    _ct_mcmc,_chifn.chimin(),_chifn.get_called(),_chifn.get_pts());
-    int pt_start=_chifn.get_pts();
-
-    int i;
-    double delta=_chifn.target()-_chifn.chimin();
-
-    if(_init_mcmc==0){
-        _mcmc.initialize(4,99,&_chifn);
-        _mcmc.set_name_root(_outname);
-        for(i=0;i<_chifn.get_dim();i++){
-            _mcmc.set_min(i,_chifn.get_min(i));
-            _mcmc.set_max(i,_chifn.get_max(i));
-        }
-        _mcmc.set_burnin(1000);
-        _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0], delta, 1);
-        _init_mcmc=1;
-        _mcmc_basis_min=_chifn.chimin();
-    }
-
-    if(_mcmc_basis_min-_chifn.chimin()>0.1*delta){
-        _mcmc.guess_bases(_chifn.get_pt(_chifn.mindex())[0], delta, 1);
-        _mcmc_basis_min=_chifn.chimin();
-    }
-
-    _mcmc.sample(100*_chifn.get_dim());
-
-    assess_good_points(pt_start);
-
-    _ct_mcmc+=_chifn.get_pts()-pt_start;
-    printf("min %e target %e\n",_chifn.chimin(),_chifn.target());
-}
-
 void maps::explore(){
 
     array_1d<double> min,max,norm;

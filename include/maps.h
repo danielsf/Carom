@@ -44,7 +44,6 @@ public:
 
     void explore();
     void simplex_min_search();
-    void mcmc_search();
     void write_pts();
     void write_log();
 
