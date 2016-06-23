@@ -166,7 +166,6 @@ class dalex{
         int _last_checked_good;
 
         //////code related to tendrils
-        void get_gradient(int,array_1d<double>&,array_1d<double>&);
         void tendril_search();
         array_2d<int> _tendril_path;
 

@@ -1253,41 +1253,6 @@ void dalex::explore(){
     _update_good_points(pt_0);
 }
 
-void dalex::get_gradient(int origin, array_1d<double> &norm, array_1d<double> &grad_out){
-
-    array_1d<double> trial,grad;
-    trial.set_name("dalex_gradient_trial");
-    grad.set_name("dalex_gradient_grad");
-    int i;
-    for(i=0;i<_chifn->get_dim();i++){
-        trial.set(i,_chifn->get_pt(origin,i));
-    }
-    double mu_origin;
-    evaluate(trial,&mu_origin,&i);
-    int ix;
-    double dx,y1,y2;
-    for(ix=0;ix<_chifn->get_dim();ix++){
-        dx=0.001*norm.get_data(ix);
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,_chifn->get_pt(origin,i)-dx*_basis_vectors.get_data(ix,i));
-        }
-        evaluate(trial,&y1,&i);
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,_chifn->get_pt(origin,i)+dx*_basis_vectors.get_data(ix,i));
-        }
-        evaluate(trial,&y2,&i);
-        grad.set(ix,(y2-y1)/(2.0*dx));
-        grad_out.set(ix,0.0);
-    }
-
-    for(ix=0;ix<_chifn->get_dim();ix++){
-        for(i=0;i<_chifn->get_dim();i++){
-            grad_out.add_val(i,grad.get_data(ix)*_basis_vectors.get_data(ix,i));
-        }
-    }
-}
-
-
 void dalex::tendril_search(){
 
     int i,j,k;
