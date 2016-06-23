@@ -4,12 +4,9 @@ maps::maps(){
     _write_every=3000;
     _last_wrote_log=-1;
     _last_written=0;
-    _ct_simplex_boundary=0;
-    _ct_simplex_min=0;
     _ct_dalex=0;
     _last_did_min=0;
     _simplex_mindex=-1;
-    _calls_to_simplex_boundary=0;
     _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
@@ -247,7 +244,7 @@ void maps::write_pts(){
         output=fopen(_timingname,"a");
     }
 
-    fprintf(output,"%d %d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e -- %d -- ",
+    fprintf(output,"%d %d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e",
         _chifn.get_pts(),
         _chifn.get_called(),
         _chifn.chimin(),
@@ -256,8 +253,7 @@ void maps::write_pts(){
         (double(time(NULL))-_time_started)/double(_chifn.get_pts()),
         _chifn.get_time_spent(),
         _chifn.get_time_spent()/double(_chifn.get_pts()),
-        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()),
-        _calls_to_simplex_boundary);
+        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()));
 
     fprintf(output,"\n");
     fclose(output);

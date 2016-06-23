@@ -57,7 +57,6 @@ private:
     chisq_wrapper _chifn;
     gp_lin _interpolator;
     int _write_every,_last_written;
-    int _ct_simplex_boundary,_ct_simplex_min,_calls_to_simplex_boundary;
     int _ct_dalex;
     int _last_wrote_log;
     int _simplex_mindex;
