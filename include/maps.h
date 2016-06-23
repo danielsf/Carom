@@ -53,10 +53,6 @@ public:
     void assess_good_points(int);
     void assess_good_points(int,int);
 
-    int bisection(array_1d<double>&, array_1d<double>&, double, double);
-    int bisection(int, array_1d<double>&, double, double);
-    int bisection(int,int, double, double);
-
 private:
 
     chisq_wrapper _chifn;
