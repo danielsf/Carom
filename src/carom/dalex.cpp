@@ -242,18 +242,183 @@ int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in
 
 }
 
+
+void dalex::find_trial_bases(int idim, array_1d<double> &dx, array_2d<double> &bases_out){
+
+    int i,j;
+
+    array_1d<double> trial_dir;
+    trial_dir.set_name("dalex_find_trial_bases_trial_dir");
+
+    if(_basis_vectors.get_rows()==0){
+        _basis_vectors.reset();
+        _basis_vectors.set_cols(_chifn->get_dim());
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                _basis_vectors.set(i,j,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+        }
+    }
+
+    if(dx.get_dim()==0){
+        for(i=0;i<_chifn->get_dim();i++){
+            dx.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dx.normalize();
+    }
+
+    bases_out.set_cols(_basis_vectors.get_cols());
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            bases_out.set(i,j,_basis_vectors.get_data(i,j));
+        }
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        bases_out.add_val(idim,i,dx.get_data(i));
+    }
+    bases_out(idim)->normalize();
+
+    int ix,jx;
+    double mu;
+
+    for(ix=idim+1;ix!=idim;){
+        if(ix>=_chifn->get_dim()){
+            ix=0;
+        }
+
+        for(jx=idim;jx!=ix;){
+            if(ix>=_chifn->get_dim()){
+                jx=0;
+            }
+
+            mu=0.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                mu+=bases_out.get_data(ix,i)*bases_out.get_data(jx,i);
+            }
+            for(i=0;i<_chifn->get_dim();i++){
+                bases_out.subtract_val(ix,i,mu*bases_out.get_data(jx,i));
+            }
+
+            if(jx<_chifn->get_dim()-1)jx++;
+            else jx=0;
+        }
+
+        bases_out(ix)->normalize();
+
+        if(ix<_chifn->get_dim()-1)ix++;
+        else ix=0;
+
+    }
+
+    validate_bases(bases_out,"dalex_find_trial_bases");
+
+
+}
+
+void dalex::validate_bases(array_2d<double> &bases, char *whereami){
+    int ix,i,jx;
+    double mu;
+    /////////////////testing
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        bases(ix)->normalize();
+        mu=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            mu+=bases.get_data(ix,i)*bases.get_data(ix,i);
+        }
+        if(fabs(mu-1.0)>1.0e-6){
+            printf("WARNING in %s, square norm %e\n",whereami,mu);
+            exit(1);
+        }
+
+        for(jx=ix+1;jx<_chifn->get_dim();jx++){
+            mu=0.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                mu+=bases.get_data(ix,i)*bases.get_data(jx,i);
+            }
+
+            if(fabs(mu)>1.0e-6){
+                printf("WARNING in %s, dot product %e\n",whereami,mu);
+                exit(1);
+            }
+        }
+    }
+
+}
+
+void dalex::guess_bases(array_2d<double> &bases){
+    safety_check("guess_bases");
+
+    array_2d<double> covar;
+    covar.set_name("dalex_guess_bases_covar");
+    covar.set_cols(_chifn->get_dim());
+    bases.set_cols(_chifn->get_dim());
+    int ix,iy;
+    double covarmax=-1.0;
+
+    find_covariance_matrix(mindex(),covar);
+
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        for(iy=ix;iy<_chifn->get_dim();iy++){
+            if(fabs(covar.get_data(ix,iy))>covarmax){
+                covarmax=fabs(covar.get_data(ix,iy));
+            }
+        }
+    }
+
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        for(iy=0;iy<_chifn->get_dim();iy++){
+            covar.divide_val(ix,iy,covarmax);
+        }
+    }
+
+    printf("assembled covariance matrix\n");
+
+    array_2d<double> evecs;
+    evecs.set_name("dalex_guess_bases_evecs");
+    array_1d<double> evals;
+    evals.set_name("dalex_guess_bases_evals");
+
+    evecs.set_cols(_chifn->get_dim());
+
+    try{
+        eval_symm(covar,evecs,evals,0.1);
+    }
+    catch(int iex){
+        printf("Guess failed on of eigen vectors\n");
+        throw -1;
+    }
+
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        for(iy=0;iy<_chifn->get_dim();iy++){
+            bases.set(ix,iy,evecs.get_data(ix,iy));
+        }
+        bases(ix)->normalize();
+    }
+
+    validate_bases(bases,"dalex_guess_bases");
+
+    printf("validated guessed bases\n");
+}
+
+
+
 void dalex::find_bases(){
 
     safety_check("find_bases");
 
-    assess_good_points();
-
     array_1d<double> dir;
     int i,j;
+    for(i=0;i<_basis_associates.get_dim();i++){
+        if(_chifn->get_fn(_basis_associates.get_data(i))>target()){
+            _basis_associates.remove(i);
+            i--;
+        }
+    }
     int i_pt;
     double mu;
-    int ct;
-    for(ct=0;ct<4*_chifn->get_dim();ct++){
+    int n_0=_basis_associates.get_dim();
+    while(_basis_associates.get_dim()<4*_chifn->get_dim()+n_0){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
@@ -261,32 +426,529 @@ void dalex::find_bases(){
         i_pt=bisection(mindex(),dir,0.5*(target()+chimin()),0.1);
         add_charge(i_pt);
 
-    }
+        /*if(fabs(_chifn->get_fn(i_pt)-0.5*(target()+chimin()))>1.0 && chimin()<500.0){
+            printf("WARNING failed to get associate within tol %e %e-- %e %e\n",
+            0.5*(target()+chimin()),_chifn->get_fn(i_pt),chimin(),target());
+            printf("first\n");
+            exit(1);
+        }*/
 
-    array_1d<int> associates;
-    associates.set_name("find_bases_associates");
+        if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
+            _basis_associates.add(i_pt);
+            i_pt=bisection(mindex(),dir,0.25*chimin()+0.75*target(),0.1);
+            add_charge(i_pt);
+            if(i_pt!=mindex() && _basis_associates.contains(i_pt)==0){
+                _basis_associates.add(i_pt);
 
-    int thin_by=0;
-    if(_good_points.get_dim()>20000){
-        thin_by=_good_points.get_dim()/20000;
-    }
-    if(thin_by==1){
-        thin_by=2;
-    }
+                /*if(fabs(_chifn->get_fn(i_pt)-(0.75*target()+0.25*chimin()))>1.0 && chimin()<500.0){
+                    printf("WARNING failed to get associate within tol %e %e -- %e %e\n",
+                    0.75*target()+0.25*chimin(),_chifn->get_fn(i_pt),chimin(),target());
+                    printf("second\n");
+                    exit(1);
+                }*/
 
-    ct=0;
-    for(i=0;i<_good_points.get_dim();i++){
-        if(thin_by==0 || i%ct==0){
-            associates.add(_good_points.get_data(i));
+            }
         }
     }
 
-    dchi_interior_simplex dchifn(_chifn,associates);
-    dchifn.copy_bases(_basis_vectors);
-    for(i=0;i<_chifn->get_dim();i++){
-        _basis_norm.set(i,dchifn.get_hyper_norm(i));
+
+    array_2d<double> trial_bases;
+    array_1d<double> trial_model,dx;
+
+    trial_bases.set_name("dalex_find_bases_trial_bases");
+    trial_model.set_name("dalex_find_bases_trial_model");
+    dx.set_name("dalex_find_bases_dx");
+
+    if(_basis_vectors.get_rows()==0){
+        find_trial_bases(0,dx,trial_bases);
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                _basis_vectors.set(i,j,trial_bases.get_data(i,j));
+            }
+        }
     }
+
+    int dimsq=_chifn->get_dim()*_chifn->get_dim();
+
+    if(_basis_associates.get_dim()==0){
+        printf("WARNING _basis associates is empty\n");
+        exit(1);
+    }
+
+
+    int ct,idim,aborted,max_abort,total_aborted,changed_bases;
+    double error0,error,errorBest,stdev,stdevlim,error1;
+
+    stdev=0.1/sqrt(double(_chifn->get_dim()));
+    stdevlim=1.0e-5/sqrt(double(_chifn->get_dim()));
+    max_abort=_chifn->get_dim()*100;
+
+    error=basis_error(_basis_vectors,_basis_model);
+    error0=error;
+    error1=error;
+    errorBest=error;
+    aborted=0;
+    total_aborted=0;
+    changed_bases=0;
+    ct=0;
+
+    printf("center %e min %e\n",_chifn->get_fn(mindex()),chimin());
+    printf("error0 %e\n", error0);
+
+    if(1==1){
+        printf("guessing basis from second derivative\n");
+        try{
+            guess_bases(trial_bases);
+            error=basis_error(trial_bases,trial_model);
+            printf("guess got error %e\n",error);
+            if(error<error0){
+                changed_bases=1;
+                for(i=0;i<_chifn->get_dim();i++){
+                    _basis_model.set(i,trial_model.get_data(i));
+                    for(j=0;j<_chifn->get_dim();j++){
+                        _basis_vectors.set(i,j,trial_bases.get_data(i,j));
+                    }
+                }
+                error1=error;
+                errorBest=error;
+            }
+        }
+        catch(int iex){
+            printf("never mind; guess did not work\n");
+        }
+    }
+
+    double penalty=0.0;
+    for(i=0;i<_chifn->get_dim();i++){
+        if(_basis_model.get_data(i)<0.0){
+            penalty+=1.0;
+        }
+    }
+
+    double pp0=penalty;
+
+    while(stdev>stdevlim && aborted<max_abort){
+        ct++;
+        idim=-1;
+        while(idim>=_chifn->get_dim() || idim<0){
+            idim=_chifn->random_int()%_chifn->get_dim();
+        }
+
+        for(i=0;i<_chifn->get_dim();i++){
+            dx.set(i,normal_deviate(_chifn->get_dice(),0.0,stdev));
+        }
+
+        find_trial_bases(idim,dx,trial_bases);
+        error=basis_error(trial_bases,trial_model);
+
+        if(error<errorBest){
+            penalty=0.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                if(trial_model.get_data(i)<0.0){
+                    penalty+=1.0;
+                }
+            }
+            if(error1-error>1.0e-5*error){
+                aborted=0;
+            }
+            else{
+                aborted++;
+                total_aborted++;
+            }
+
+            changed_bases=1;
+            for(i=0;i<_chifn->get_dim();i++){
+                _basis_model.set(i,trial_model.get_data(i));
+                for(j=0;j<_chifn->get_dim();j++){
+                    _basis_vectors.set(i,j,trial_bases.get_data(i,j));
+                }
+            }
+            errorBest=error;
+        }
+        else{
+            aborted++;
+            total_aborted++;
+        }
+
+        if(ct%(max_abort/2)==0){
+            if(total_aborted<(3*ct)/4)stdev*=1.5;
+            else if(total_aborted>(3*ct)/4)stdev*=0.5;
+        }
+
+        if(ct%1000==0){
+            error1=errorBest;
+            printf("    ct %d error %.2e pp %.1e from %.2e %.1e min %.3e pts %d\n",
+            ct,errorBest,penalty,error0,pp0,chimin(),_basis_associates.get_dim());
+        }
+    }
+
+    int k;
+    array_1d<double> min,max;
+    min.set_name("find_bases_min");
+    max.set_name("find_bases_max");
+    if(changed_bases==1){
+        for(i=0;i<_good_points.get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                mu=0.0;
+                for(k=0;k<_chifn->get_dim();k++){
+                    mu+=_chifn->get_pt(_good_points.get_data(i),k)*_basis_vectors.get_data(j,k);
+                }
+                if(i==0 || mu<min.get_data(j)){
+                    min.set(j,mu);
+                }
+                if(i==0 || mu>max.get_data(j)){
+                    max.set(j,mu);
+                }
+            }
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            _basis_norm.set(i,max.get_data(i)-min.get_data(i));
+            if(_basis_norm.get_data(i)<1.0e-20){
+                _basis_norm.set(i,1.0);
+            }
+        }
+    }
+
     _basis_chimin=chimin();
+    printf("done finding bases\n");
+
+
+}
+
+
+double dalex::basis_error(array_2d<double> &trial_bases, array_1d<double> &trial_model){
+
+    if(_basis_associates.get_dim()<=0){
+        printf("WARNING cannot calculate basis error there are only %d associates\n",
+        _basis_associates.get_dim());
+
+        exit(1);
+    }
+
+    safety_check("basis_error");
+
+    trial_model.zero();
+    if(_basis_ddsq.get_rows()>_basis_associates.get_dim()){
+        _basis_ddsq.reset();
+    }
+
+    if(_basis_ddsq.get_cols()!=_chifn->get_dim()){
+        _basis_ddsq.set_cols(_chifn->get_dim());
+    }
+
+    if(_basis_mm.get_dim()!=_chifn->get_dim()*_chifn->get_dim()){
+        _basis_mm.set_dim(_chifn->get_dim()*_chifn->get_dim());
+    }
+
+    if(_basis_bb.get_dim()!=_chifn->get_dim()){
+        _basis_bb.set_dim(_chifn->get_dim());
+    }
+
+    if(_basis_vv.get_dim()!=_chifn->get_dim()){
+        _basis_vv.set_dim(_chifn->get_dim());
+    }
+
+    _basis_mm.zero();
+    _basis_bb.zero();
+    _basis_vv.zero();
+    _basis_ddsq.zero();
+
+    int i,j,ix;
+    double mu;
+    for(ix=0;ix<_basis_associates.get_dim();ix++){
+        for(i=0;i<_chifn->get_dim();i++){
+            mu=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                mu+=(_chifn->get_pt(_basis_associates.get_data(ix),j)-_chifn->get_pt(mindex(),j))*trial_bases.get_data(i,j);
+            }
+            _basis_ddsq.set(ix,i,mu*mu);
+        }
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_basis_associates.get_dim();j++){
+            _basis_bb.add_val(i,_basis_ddsq.get_data(j,i)*(_chifn->get_fn(_basis_associates.get_data(j))-chimin()));
+        }
+    }
+
+    int k;
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=i;j<_chifn->get_dim();j++){
+            ix=i*_chifn->get_dim()+j;
+            for(k=0;k<_basis_associates.get_dim();k++){
+                _basis_mm.add_val(ix,_basis_ddsq.get_data(k,i)*_basis_ddsq.get_data(k,j));
+            }
+            if(j!=i){
+                _basis_mm.set(j*_chifn->get_dim()+i,_basis_mm.get_data(ix));
+            }
+        }
+    }
+
+    try{
+        naive_gaussian_solver(_basis_mm,_basis_bb,trial_model,_chifn->get_dim());
+    }
+    catch(int iex){
+        printf("WARNING basis_error was no good\n");
+        return 2.0*exception_value;
+    }
+
+    double error=0.0,chi_model;
+    for(i=0;i<_basis_associates.get_dim();i++){
+        chi_model=chimin();
+        for(j=0;j<_chifn->get_dim();j++){
+            chi_model+=trial_model.get_data(j)*_basis_ddsq.get_data(i,j);
+        }
+        error+=power(_chifn->get_fn(_basis_associates.get_data(i))-chi_model,2);
+    }
+
+    return error/double(_basis_associates.get_dim());
+
+}
+
+
+void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
+    safety_check("find_covariance_matrix");
+
+
+    array_1d<double> trial,center,norm;
+    trial.set_name("dalex_findCovar_trial");
+    norm.set_name("dalex_findCovar_norm");
+    center.set_name("dalex_findCovar_center");
+
+    double fcenter;
+    int i;
+
+    fcenter=_chifn->get_fn(iCenter);
+
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,_chifn->get_pt(iCenter,i));
+        norm.set(i,1.0);
+    }
+
+    array_2d<double> fpp,fpm,fmp,fmm;
+    fpp.set_name("dalex_findCovar_fpp");
+    fpm.set_name("dalex_findCovar_fpm");
+    fmp.set_name("dalex_findCovar_fmp");
+    fmm.set_name("dalex_findCovar_fmm");
+
+    fpp.set_cols(_chifn->get_dim());
+    fpm.set_cols(_chifn->get_dim());
+    fmp.set_cols(_chifn->get_dim());
+    fmm.set_cols(_chifn->get_dim());
+
+    array_1d<double> f2p,f2m;
+    f2p.set_name("dalex_findCovar_f2p");
+    f2m.set_name("dalex_findCovar_f2m");
+
+    int ifpp,ifpm,ifmp,ifmm,if2p,if2m;
+
+    double mu;
+    array_1d<double> dx;
+    dx.set_name("dalex_findCovar_dx");
+    for(i=0;i<_chifn->get_dim();i++){
+        dx.set(i,1.0e-2);
+    }
+
+    int ix,iy,keepGoing,ctAbort,ctAbortMax,calledMax;
+    int ibefore=_chifn->get_called();
+
+    ctAbort=0;
+    ctAbortMax=100;
+    calledMax = 10*_chifn->get_dim()*_chifn->get_dim();
+
+    for(i=0;i<_chifn->get_dim();i++){
+        trial.set(i,center.get_data(i));
+    }
+
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,center.get_data(i));
+        }
+
+        if(_chifn->get_called()-ibefore>calledMax ||
+           ctAbort>=ctAbortMax){
+                printf("Could not find CoVar; aborting\n");
+                printf("ctAbort %d\n",ctAbort);
+                printf("called %d\n",_chifn->get_called()-ibefore);
+                throw -1;
+        }
+
+        if(iCenter<0){
+            printf("Center is invalid; aborting\n");
+            throw -1;
+        }
+
+        keepGoing=1;
+        trial.set(ix,center.get_data(ix)+2.0*dx.get_data(ix)*norm.get_data(ix));
+        evaluate(trial,&mu,&if2p);
+
+        if(if2p>=0 && if2p!=iCenter){
+            f2p.set(ix,mu);
+        }
+        else if(if2p==iCenter){
+            dx.multiply_val(ix,1.5);
+            keepGoing=0;
+            ix--;
+            ctAbort++;
+        }
+        else if(if2p<0){
+            center.subtract_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
+            evaluate(center,&fcenter,&iCenter);
+            keepGoing=0;
+            ix--;
+            ctAbort++;
+        }
+
+        if(keepGoing==1){
+            trial.set(ix,center.get_data(ix)-2.0*dx.get_data(ix)*norm.get_data(ix));
+            evaluate(trial,&mu,&if2m);
+
+            if(if2m>=0 && if2m!=iCenter){
+                f2m.set(ix,mu);
+            }
+            else if(if2m==iCenter){
+                dx.multiply_val(ix,1.5);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+            else if(if2m<0){
+                center.add_val(ix,2.5*dx.get_data(ix)*norm.get_data(ix));
+                evaluate(center,&fcenter,&iCenter);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+        }
+
+        for(iy=ix-1;iy>=0 && keepGoing==1;iy--){
+            for(i=0;i<_chifn->get_dim();i++){
+                trial.set(i,center.get_data(i));
+            }
+
+            if(_chifn->get_called()-ibefore>calledMax ||
+               ctAbort>=ctAbortMax){
+                printf("Could not find CoVar; aborting\n");
+                printf("ctAbort %d\n",ctAbort);
+                printf("called %d\n",_chifn->get_called()-ibefore);
+                throw -1;
+            }
+
+            if(iCenter<0){
+                printf("center is invalid; aborting\n");
+                throw -1;
+            }
+
+            trial.set(ix,center.get_data(ix)+dx.get_data(ix)*norm.get_data(ix));
+            trial.set(iy,center.get_data(iy)+dx.get_data(iy)*norm.get_data(iy));
+            evaluate(trial,&mu,&ifpp);
+            if(ifpp>=0 && ifpp!=iCenter){
+                fpp.set(ix,iy,mu);
+            }
+            else if(ifpp==iCenter){
+                dx.multiply_val(ix,1.5);
+                dx.multiply_val(iy,1.5);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+            else if(ifpp<0){
+                center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                center.subtract_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                evaluate(center,&fcenter,&iCenter);
+                keepGoing=0;
+                ix--;
+                ctAbort++;
+            }
+
+            if(keepGoing==1){
+               trial.set(iy,center.get_data(iy)-dx.get_data(iy)*norm.get_data(iy));
+               evaluate(trial,&mu,&ifpm);
+               if(ifpm>=0 && ifpm!=iCenter){
+                   fpm.set(ix,iy,mu);
+               }
+               else if(ifpm==iCenter){
+                   dx.multiply_val(ix,1.5);
+                   dx.multiply_val(iy,1.5);
+                   keepGoing=0;
+                   ix--;
+                   ctAbort++;
+               }
+               else if(ifpm<0){
+                   center.subtract_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                   center.add_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                   evaluate(center,&fcenter,&iCenter);
+                   keepGoing=0;
+                   ix--;
+                   ctAbort++;
+               }
+            }
+
+            if(keepGoing==1){
+                trial.set(ix,center.get_data(ix)-dx.get_data(ix)*norm.get_data(ix));
+                evaluate(trial,&mu,&ifmm);
+                if(ifmm>=0 && ifmm!=iCenter){
+                    fmm.set(ix,iy,mu);
+                }
+                else if(ifmm==iCenter){
+                    dx.multiply_val(ix,1.5);
+                    dx.multiply_val(iy,1.5);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+                else if(ifmm<0){
+                    center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                    center.add_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                    evaluate(center,&fcenter,&iCenter);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+            }
+
+            if(keepGoing==1){
+                trial.set(iy,center.get_data(iy)+dx.get_data(iy)*norm.get_data(iy));
+                evaluate(trial,&mu,&ifmp);
+                if(ifmp>=0 && ifmp!=iCenter){
+                    fmp.set(ix,iy,mu);
+                }
+                else if(ifmp==iCenter){
+                    dx.multiply_val(ix,1.5);
+                    dx.multiply_val(iy,1.5);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+                else if(ifmp<0){
+                    center.add_val(ix,1.5*dx.get_data(ix)*norm.get_data(ix));
+                    center.subtract_val(iy,1.5*dx.get_data(iy)*norm.get_data(iy));
+                    evaluate(center,&fcenter,&iCenter);
+                    keepGoing=0;
+                    ix--;
+                    ctAbort++;
+                }
+            }
+
+        }
+    }
+
+    covar.set_cols(_chifn->get_dim());
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        covar.set(ix,ix,0.25*(f2p.get_data(ix)+f2m.get_data(ix)-2.0*fcenter)/power(dx.get_data(ix)*norm.get_data(ix),2));
+    }
+
+    double num,denom;
+    for(ix=0;ix<_chifn->get_dim();ix++){
+        for(iy=ix-1;iy>=0;iy--){
+            num=0.25*(fpp.get_data(ix,iy)+fmm.get_data(ix,iy)-fmp.get_data(ix,iy)-fpm.get_data(ix,iy));
+            denom=dx.get_data(ix)*norm.get_data(ix)*dx.get_data(iy)*norm.get_data(iy);
+            covar.set(ix,iy,num/denom);
+            covar.set(iy,ix,num/denom);
+        }
+    }
+
+
 }
 
 int dalex::simplex_boundary_search(){
