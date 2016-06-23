@@ -11,7 +11,6 @@ maps::maps(){
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
     _good_points.set_name("maps_good_points");
-    _explorers.set_name("maps_explorers");
 }
 
 maps::~maps(){
@@ -130,21 +129,6 @@ void maps::initialize(int npts){
     assess_good_points(0);
     _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
     _interpolator.set_ell_factor(1.0);
-
-    array_1d<double> trial;
-    int i,i_pt;
-    double mu;
-    while(_explorers.get_dim()<2*_chifn.get_dim()){
-        for(i=0;i<_chifn.get_dim();i++){
-            trial.set(i,_chifn.get_min(i)+
-                        _chifn.random_double()*(_chifn.get_max(i)-_chifn.get_min(i)));
-        }
-        mu=evaluate(trial, &i_pt);
-        if(i_pt>=0 && mu<exception_value){
-            _explorers.add(i_pt);
-        }
-    }
-
     write_pts();
 }
 
