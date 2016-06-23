@@ -7,8 +7,6 @@ maps::maps(){
     _ct_simplex_boundary=0;
     _ct_simplex_min=0;
     _ct_dalex=0;
-    _ct_mcmc=0;
-    _init_mcmc=0;
     _last_did_min=0;
     _simplex_mindex=-1;
     _calls_to_simplex_boundary=0;

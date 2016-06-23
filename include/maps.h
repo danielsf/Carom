@@ -10,7 +10,6 @@
 #include "dchi_simplex.h"
 #include "dchi_simplex_gp.h"
 #include "search_types.h"
-#include "mcmc/mcmc.h"
 #include "dalex.h"
 #include "maps_initializer.h"
 
@@ -67,14 +66,12 @@ private:
     chisq_wrapper _chifn;
     gp_lin _interpolator;
     int _write_every,_last_written;
-    int _ct_simplex_boundary,_ct_simplex_min,_calls_to_simplex_boundary,_ct_mcmc;
+    int _ct_simplex_boundary,_ct_simplex_min,_calls_to_simplex_boundary;
     int _ct_dalex;
     int _last_wrote_log;
     int _simplex_mindex;
 
-    mcmc _mcmc;
     dalex _cloud;
-    int _init_mcmc;
     double _mcmc_basis_min;
 
     asymm_array_2d<int> _log;
