@@ -38,7 +38,6 @@ public:
 
     void mcmc_init();
 
-    void explore();
     void write_pts();
     void write_log();
 
