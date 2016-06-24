@@ -41,13 +41,45 @@ if __name__ == "__main__":
     data_dir = os.path.join("/Users", "danielsf", "physics")
     data_dir = os.path.join(data_dir, "Carom", "output", "scratch")
 
-    reference_file = os.path.join(data_dir,
-                                  "multinest_comparison_6_9_frequentist.sav")
+    ref_dir = os.path.join("/Users", "danielsf", "physics")
+    ref_dir = os.path.join(ref_dir,"Multinest_v3.9", "chains")
 
+    ref_file = os.path.join(ref_dir, "gaussianJellyBean_d12_s112_n300.txt")
 
-    dt = np.dtype([('x', np.float), ('y', np.float)])
-    print reference_file
-    ref_data = np.genfromtxt(reference_file, dtype=dt)
+    dt_list = [('degen', np.float), ('chisq', np.float)]
+    for ii in range(dim):
+        dt_list.append(('x%d' % ii, np.float))
+    dtype = dt_list
+    ref_data = np.genfromtxt(ref_file, dtype=dtype)
+
+    total_post = ref_data['degen'].sum()
+    sum_post = 0.0
+    for ii in range(len(ref_data)-1, -1, -1):
+        sum_post += ref_data['degen'][ii]
+        cutoff = ref_data['degen'][ii]
+        if sum_post >= 0.95*total_post:
+            break
+
+    good_dexes = np.where(ref_data['degen']>cutoff)
+    raw_ref_x = ref_data['x%d' % ix][good_dexes]
+    raw_ref_y = ref_data['x%d' % iy][good_dexes]
+
+    x_max = raw_ref_x.max()
+    x_min = raw_ref_x.min()
+    y_max = raw_ref_y.max()
+    y_min = raw_ref_y.min()
+
+    x_norm = x_max-x_min
+    y_norm = y_max-y_min
+
+    dd_arr = np.power((raw_ref_x - 0.5*(x_max+x_min))/x_norm,2) + \
+             np.power((raw_ref_y - 0.5*(y_max+y_min))/y_norm,2)
+
+    sorted_dexes = np.argsort(dd_arr)
+
+    ref_x, ref_y = get_scatter(raw_ref_x[sorted_dexes],
+                               raw_ref_y[sorted_dexes],
+                               x_norm, y_norm)
 
     dt_list = []
     for ii in range(dim):
@@ -105,7 +137,7 @@ if __name__ == "__main__":
                                      good_y[dd_sorted_dexes],
                                      x_norm, y_norm)
 
-        ax.scatter(ref_data['x'], ref_data['y'], color = 'k', s=5)
+        ax.scatter(ref_x, ref_y, color = 'k', s=5)
         ax.scatter(x_grid, y_grid, color='r', s=5)
         ax.set_title('seed: %d' % ss, fontdict={'fontsize':10})
         ax.text(x_max-20, y_max-5,
