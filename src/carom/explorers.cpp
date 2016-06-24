@@ -16,7 +16,7 @@ void explorers::get_seed(array_2d<double> &seed){
     int j,k;
     double rr;
 
-    for(i=0;i<_chifn->get_dim();i++){
+    for(i=0;i<_chifn->get_dim()+1;i++){
         seed.add_row(_particles(mu_dex.get_data(i))[0]);
         for(j=0;j<_chifn->get_dim();j++){
             rr=normal_deviate(_chifn->get_dice(),0.0,2.0);
@@ -25,8 +25,6 @@ void explorers::get_seed(array_2d<double> &seed){
             }
         }
     }
-    seed.add_row(_chifn->get_pt(_chifn->mindex())[0]);
-
 }
 
 void explorers::set_norm(){
