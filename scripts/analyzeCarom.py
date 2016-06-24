@@ -44,7 +44,7 @@ if __name__ == "__main__":
     ref_dir = os.path.join("/Users", "danielsf", "physics")
     ref_dir = os.path.join(ref_dir,"Multinest_v3.9", "chains")
 
-    ref_file = os.path.join(ref_dir, "gaussianJellyBean_d12_s112_n300.txt")
+    ref_file = os.path.join(ref_dir, "gaussianJellyBean_d12_s99_n300.txt")
 
     dt_list = [('degen', np.float), ('chisq', np.float)]
     for ii in range(dim):
