@@ -13,8 +13,17 @@ void explorers::get_seed(array_2d<double> &seed){
     }
     sort_and_check(_mu_arr,mu_sorted,mu_dex);
 
+    int j,k;
+    double rr;
+
     for(i=0;i<_chifn->get_dim();i++){
         seed.add_row(_particles(mu_dex.get_data(i))[0]);
+        for(j=0;j<_chifn->get_dim();j++){
+            rr=normal_deviate(_chifn->get_dice(),0.0,2.0);
+            for(k=0;k<_chifn->get_dim();k++){
+                _particles.add_val(mu_dex.get_data(i),k,rr*_norm.get_data(j)*_bases.get_data(j,k));
+            }
+        }
     }
     seed.add_row(_chifn->get_pt(_chifn->mindex())[0]);
 
