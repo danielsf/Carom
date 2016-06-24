@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     dim = 12
     delta_chi = 21.0
-    ix = 6
-    iy = 9
+    ix = 0
+    iy = 1
     seeds = [234, 786, 932, 99, 66, 125, 6475]
 
     row_max = 2
@@ -100,7 +100,8 @@ if __name__ == "__main__":
             ifig += 1
             fig, ax_arr = plt.subplots(nrows=row_max, ncols=col_max)
             fig.figsize=(30,30)
-            out_name = os.path.join(data_dir, "jb_matrix_%d.eps" % ifig)
+            out_name = os.path.join(data_dir, "jb_matrix_%d_x%d_%d.eps" %
+                                    (ifig, ix, iy))
 
 
         n_row = ct/col_max
