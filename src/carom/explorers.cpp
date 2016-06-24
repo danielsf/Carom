@@ -13,9 +13,10 @@ void explorers::get_seed(array_2d<double> &seed){
     }
     sort_and_check(_mu_arr,mu_sorted,mu_dex);
 
-    for(i=0;i<_chifn->get_dim()+1;i++){
+    for(i=0;i<_chifn->get_dim();i++){
         seed.add_row(_particles(mu_dex.get_data(i))[0]);
     }
+    seed.add_row(_chifn->get_pt(_chifn->mindex())[0]);
 
 }
 
