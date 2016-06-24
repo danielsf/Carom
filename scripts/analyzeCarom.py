@@ -140,7 +140,7 @@ if __name__ == "__main__":
         ax.scatter(ref_x, ref_y, color = 'k', s=5)
         ax.scatter(x_grid, y_grid, color='r', s=5)
         ax.set_title('seed: %d' % ss, fontdict={'fontsize':10})
-        ax.text(x_max-20, y_max-5,
+        ax.text(x_min+0.75*(x_max-x_min), y_min+0.75*(y_max-y_min),
                '$\chi^2_{min}$=%.2f\npts %d' % (chisq_min, len(data['x0'])),
                fontdict={'fontsize':10})
 
