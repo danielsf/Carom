@@ -21,16 +21,6 @@ class dchi_simplex_base : public function_wrapper{
         double _min_0;
 };
 
-class dchi_boundary_simplex : public dchi_simplex_base{
-
-    public:
-        dchi_boundary_simplex(chisq_wrapper*, array_1d<int>&);
-        ~dchi_boundary_simplex(){};
-
-        virtual double operator()(array_1d<double>&);
-};
-
-
 class dchi_multimodal_simplex : public dchi_simplex_base{
 
     public:

@@ -75,33 +75,6 @@ double dchi_simplex_base::operator()(array_1d<double> &pt){
     exit(1);
 }
 
-dchi_boundary_simplex::dchi_boundary_simplex(chisq_wrapper *cc, array_1d<int> &aa) :
-                       dchi_simplex_base(cc, aa){}
-
-double dchi_boundary_simplex::operator()(array_1d<double> &pt){
-    double distance=associate_distance(pt);
-    double mu;
-    int i_found;
-    _chifn->evaluate(pt,&mu,&i_found);
-
-    double dmu;
-
-    dmu=fabs(_chifn->target()-mu);
-
-    double delta=_chifn->target()-_chifn->chimin();
-
-    double exp_term;
-    if(_chifn->target()<mu){
-        exp_term=exp(-0.1*fabs(dmu)/delta);
-    }
-    else{
-        exp_term=1.0;
-    }
-
-    _called++;
-    return dmu-exp_term*delta*distance*2.0;
-}
-
 dchi_multimodal_simplex::dchi_multimodal_simplex(chisq_wrapper *cc, array_1d<int> &aa) :
                          dchi_simplex_base(cc, aa){}
 
