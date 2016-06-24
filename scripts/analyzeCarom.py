@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
 
         ct += 1
-        if ct == row_max*col_max or ct == len(seeds):
+        if ct == row_max*col_max or ss==seeds[-1]:
             fig.savefig(out_name)
             fig = None
 
