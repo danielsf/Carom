@@ -121,7 +121,7 @@ public:
 
 
         if(data==NULL){
-            room=2;
+            room=10;
 	    data=new T[room];
 	    dim=0;
         }
