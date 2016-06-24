@@ -18,7 +18,10 @@ class dalex{
         dalex(){
             _chifn=NULL;
             _good_points.set_name("dalex_good_points");
+            _good_points.set_room(100000);
             _tendril_path.set_name("dalex_tendril_path");
+            _tendril_path.set_cols(2);
+            _tendril_path.set_row_room(20000);
             _target_factor=1.0;
             _last_checked_good=0;
             _simplex_mindex=-1;

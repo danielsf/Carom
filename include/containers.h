@@ -101,6 +101,33 @@ public:
 
     }
 
+    inline void set_room(int room_in){
+        if(room_in<room){
+            printf("dying from set_room; room is %d trying %d\n",
+            room,room_in);
+            die(0);
+        }
+        T *buffer;
+        int i;
+
+        if(data!=NULL){
+            buffer=new T[dim];
+            for(i=0;i<dim;i++)buffer[i]=data[i];
+	        delete [] data;
+	        data=new T[room_in];
+	        for(i=0;i<dim;i++){
+	            data[i]=buffer[i];
+	    }
+            delete [] buffer;
+        }
+        else{
+            data=new T[room_in];
+        }
+
+        room=room_in;
+
+    }
+
     /*add an element onto the end of the array*/
     inline void add(T in){
 
@@ -126,19 +153,8 @@ public:
 	    dim=0;
         }
 
-        T *buffer;
-        int i;
-
         if(dim==room){
-            buffer=new T[dim];
-            for(i=0;i<dim;i++)buffer[i]=data[i];
-	    delete [] data;
-            room*=2;
-	    data=new T[room];
-	    for(i=0;i<dim;i++){
-	        data[i]=buffer[i];
-	    }
-	    delete [] buffer;
+            set_room(2*room);
         }
 
         data[dim]=in;
@@ -503,7 +519,7 @@ public:
     inline void set_cols(int ii){
         reset();
 
-        row_room=2;
+        row_room=100;
         rows=0;
         cols=ii;
         data=new array_1d<T>[row_room];
@@ -563,6 +579,8 @@ public:
 
     /*print name to screen*/
     void print_name();
+
+    void set_row_room(int);
 
     /*add the array_1d as a row to this array_2d.  If this array_2d is blank,
     then the number of columns in this array_2d will be set to the length

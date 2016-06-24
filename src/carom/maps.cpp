@@ -11,6 +11,7 @@ maps::maps(){
     sprintf(_timingname,"output/carom_timing.sav");
     _time_started=double(time(NULL));
     _good_points.set_name("maps_good_points");
+    _good_points.set_room(100000);
 }
 
 maps::~maps(){
