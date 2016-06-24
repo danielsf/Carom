@@ -133,7 +133,7 @@ public:
             buffer=new T[dim];
             for(i=0;i<dim;i++)buffer[i]=data[i];
 	    delete [] data;
-            room+=5;
+            room*=2;
 	    data=new T[room];
 	    for(i=0;i<dim;i++){
 	        data[i]=buffer[i];
