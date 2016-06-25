@@ -114,6 +114,8 @@ void control_integrator::run_analysis(array_1d<double> &cc){
     array_1d<int> idx;
     idx.set_name("control_idx");
 
+    double expected_time;
+
     while(keep_going==1){
 
         keep_going=_iter_p->get_pt(pt,idx);
@@ -136,9 +138,13 @@ void control_integrator::run_analysis(array_1d<double> &cc){
         }
 
         if(_iter_p->get_current_ct()%1000000==0 && _iter_p->get_current_ct()>0){
-            printf("ct %ld good %d in %e %e -- %e\n",
+
+            expected_time = ((double(time(NULL))-start)*_iter_p->get_total_ct())/double(_iter_p->get_current_ct());
+
+            printf("ct %ld good %d in %.4e %.4e -- %.4e -- expect %e\n",
             _iter_p->get_current_ct(),chi_vals.get_dim(),double(time(NULL))-start,
-            (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin);
+            (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin,
+            expected_time);
         }
 
         if(mu<119.8){

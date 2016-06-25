@@ -32,6 +32,12 @@ class iteration_parameters{
             return _current_ct;
         }
 
+        virtual long int get_total_ct(){
+            printf("cannot call default get_total_ct\n");
+            exit(1);
+        }
+
+
         protected:
             long int _current_ct;
 
@@ -84,6 +90,10 @@ class default_iteration_parameters : public iteration_parameters{
             else{
                 return 0;
             }
+        }
+
+        virtual long int get_total_ct(){
+            return _total_ct;
         }
 
     private:
