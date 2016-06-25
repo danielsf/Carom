@@ -31,9 +31,12 @@ if __name__ == "__main__":
 
     dim = 12
     delta_chi = 21.0
-    ix = 0
-    iy = 1
+    ix = 6
+    iy = 9
     seeds = [234, 786, 932, 99, 66, 125, 6475]
+    fig_dir = os.path.join("/Users", "danielsf", "physics")
+    fig_dir = os.path.join(fig_dir, "Carom", "figures")
+    fig_dir = os.path.join(fig_dir, "factorOf5")
 
     row_max = 2
     col_max = 2
@@ -75,7 +78,7 @@ if __name__ == "__main__":
     dd_arr = np.power((raw_ref_x - 0.5*(x_max+x_min))/x_norm,2) + \
              np.power((raw_ref_y - 0.5*(y_max+y_min))/y_norm,2)
 
-    sorted_dexes = np.argsort(dd_arr)
+    sorted_dexes = np.argsort(-1.0*dd_arr)
 
     ref_x, ref_y = get_scatter(raw_ref_x[sorted_dexes],
                                raw_ref_y[sorted_dexes],
@@ -100,15 +103,18 @@ if __name__ == "__main__":
             ifig += 1
             fig, ax_arr = plt.subplots(nrows=row_max, ncols=col_max)
             fig.figsize=(30,30)
-            out_name = os.path.join(data_dir, "jb_matrix_%d_x%d_%d.eps" %
+            out_name = os.path.join(fig_dir, "jb_factorOf5_matrix_%d_x%d_%d.eps" %
                                     (ifig, ix, iy))
 
 
         n_row = ct/col_max
         n_col = ct%row_max
         ax = ax_arr[n_row][n_col]
-        data_name = os.path.join(data_dir,'jellyBean_d%d_s%d_output.sav'
+        data_name = os.path.join(data_dir,'jellyBean_d%d_s%d_proj_output.sav'
                                  % (dim, ss))
+
+        if not os.path.exists(data_name):
+            continue
 
         data = np.genfromtxt(data_name, dtype=dtype)
         mindex = np.argmin(data['chisq'])
