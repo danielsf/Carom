@@ -36,7 +36,7 @@ if __name__ == "__main__":
     seeds = [234, 786, 932, 99, 66, 125, 6475]
     fig_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(fig_dir, "Carom", "figures")
-    fig_dir = os.path.join(fig_dir, "ddsq")
+    fig_dir = os.path.join(fig_dir, "dd")
 
     row_max = 2
     col_max = 2
@@ -103,53 +103,52 @@ if __name__ == "__main__":
             ifig += 1
             fig, ax_arr = plt.subplots(nrows=row_max, ncols=col_max)
             fig.figsize=(30,30)
-            out_name = os.path.join(fig_dir, "jb_ddsq_matrix_%d_x%d_%d.eps" %
+            out_name = os.path.join(fig_dir, "jb_dd_matrix_%d_x%d_%d.eps" %
                                     (ifig, ix, iy))
 
 
         n_row = ct/col_max
         n_col = ct%row_max
         ax = ax_arr[n_row][n_col]
-        data_name = os.path.join(data_dir,'jellyBean_d%d_s%d_ddsq_output.sav'
+        data_name = os.path.join(data_dir,'jellyBean_d%d_s%d_dd_output.sav'
                                  % (dim, ss))
 
-        if not os.path.exists(data_name):
-            continue
+        if os.path.exists(data_name):
 
-        data = np.genfromtxt(data_name, dtype=dtype)
-        mindex = np.argmin(data['chisq'])
-        chisq_min = data['chisq'][mindex]
-        target = chisq_min + delta_chi
+            data = np.genfromtxt(data_name, dtype=dtype)
+            mindex = np.argmin(data['chisq'])
+            chisq_min = data['chisq'][mindex]
+            target = chisq_min + delta_chi
 
-        good_dexes = np.where(data['chisq'] <= target)
-        good_x = data['x%d' % ix][good_dexes]
-        good_y = data['x%d' % iy][good_dexes]
-
-
-        x_max = good_x.max()
-        x_min = good_x.min()
-        y_max = good_y.max()
-        y_min = good_y.min()
-
-        x_norm = x_max-x_min
-        y_norm = y_max-y_min
+            good_dexes = np.where(data['chisq'] <= target)
+            good_x = data['x%d' % ix][good_dexes]
+            good_y = data['x%d' % iy][good_dexes]
 
 
-        dd_arr = np.power((good_x-data['x%d' % ix][mindex])/x_norm, 2) + \
-                 np.power((good_y-data['x%d' % iy][mindex])/y_norm, 2)
+            x_max = good_x.max()
+            x_min = good_x.min()
+            y_max = good_y.max()
+            y_min = good_y.min()
 
-        dd_sorted_dexes = np.argsort(-1.0*dd_arr)
+            x_norm = x_max-x_min
+            y_norm = y_max-y_min
 
-        x_grid, y_grid = get_scatter(good_x[dd_sorted_dexes],
-                                     good_y[dd_sorted_dexes],
-                                     x_norm, y_norm)
 
-        ax.scatter(ref_x, ref_y, color = 'k', s=5)
-        ax.scatter(x_grid, y_grid, color='r', s=5)
-        ax.set_title('seed: %d' % ss, fontdict={'fontsize':10})
-        ax.text(x_min+0.75*(x_max-x_min), y_min+0.75*(y_max-y_min),
-               '$\chi^2_{min}$=%.2f\npts %d' % (chisq_min, len(data['x0'])),
-               fontdict={'fontsize':10})
+            dd_arr = np.power((good_x-data['x%d' % ix][mindex])/x_norm, 2) + \
+                     np.power((good_y-data['x%d' % iy][mindex])/y_norm, 2)
+
+            dd_sorted_dexes = np.argsort(-1.0*dd_arr)
+
+            x_grid, y_grid = get_scatter(good_x[dd_sorted_dexes],
+                                         good_y[dd_sorted_dexes],
+                                         x_norm, y_norm)
+
+            ax.scatter(ref_x, ref_y, color = 'k', s=5)
+            ax.scatter(x_grid, y_grid, color='r', s=5)
+            ax.set_title('seed: %d' % ss, fontdict={'fontsize':10})
+            ax.text(x_min+0.75*(x_max-x_min), y_min+0.75*(y_max-y_min),
+                   '$\chi^2_{min}$=%.2f\npts %d' % (chisq_min, len(data['x0'])),
+                   fontdict={'fontsize':10})
 
 
         ct += 1
