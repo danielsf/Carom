@@ -5,6 +5,43 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+def marginalize(data_x, data_y, density_in, prob=0.95):
+
+    i_dx = 100
+
+    xmax = data_x.max()
+    xmin = data_x.min()
+    dx = (xmax-xmin)/float(i_dx)
+
+    ymax = data_y.max()
+    ymin = data_y.min()
+    dy = (ymax-ymin)/float(i_dx)
+
+    i_x = np.array(range((i_dx+1)*(i_dx+1)))
+
+    x_out = np.array([xmin + (ii%i_dx)*dx for ii in i_x])
+    y_out = np.array([ymin + (ii/i_dx)*dy for ii in i_x])
+
+    density_out = np.zeros(len(x_out))
+
+    for xx, yy, dd in zip(data_x, data_y, density_in):
+        ix = int(round((xx-xmin)/dx))
+        iy = int(round((yy-ymin)/dy))
+        dex = ix + iy*i_dx
+        density_out[dex] += dd
+
+    sorted_density = np.sort(density_out)
+    total_sum = density_out.sum()
+    sum_cutoff = 0.0
+    for ii in range(len(sorted_density)-1, -1, -1):
+        sum_cutoff += sorted_density[ii]
+        if sum_cutoff >= prob*total_sum:
+            cutoff = sorted_density[ii]
+            break
+
+    dexes = np.where(density_out>=cutoff)
+    return x_out[dexes], y_out[dexes]
+
 
 def get_scatter(data_x, data_y, x_norm, y_norm):
 
@@ -31,8 +68,8 @@ if __name__ == "__main__":
 
     dim = 12
     delta_chi = 21.0
-    ix = 6
-    iy = 9
+    ix = 0
+    iy = 1
     seeds = [234, 786, 932, 99, 66, 125, 6475]
     fig_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(fig_dir, "Carom", "figures")
@@ -55,34 +92,9 @@ if __name__ == "__main__":
     dtype = dt_list
     ref_data = np.genfromtxt(ref_file, dtype=dtype)
 
-    total_post = ref_data['degen'].sum()
-    sum_post = 0.0
-    for ii in range(len(ref_data)-1, -1, -1):
-        sum_post += ref_data['degen'][ii]
-        cutoff = ref_data['degen'][ii]
-        if sum_post >= 0.95*total_post:
-            break
-
-    good_dexes = np.where(ref_data['degen']>cutoff)
-    raw_ref_x = ref_data['x%d' % ix][good_dexes]
-    raw_ref_y = ref_data['x%d' % iy][good_dexes]
-
-    x_max = raw_ref_x.max()
-    x_min = raw_ref_x.min()
-    y_max = raw_ref_y.max()
-    y_min = raw_ref_y.min()
-
-    x_norm = x_max-x_min
-    y_norm = y_max-y_min
-
-    dd_arr = np.power((raw_ref_x - 0.5*(x_max+x_min))/x_norm,2) + \
-             np.power((raw_ref_y - 0.5*(y_max+y_min))/y_norm,2)
-
-    sorted_dexes = np.argsort(-1.0*dd_arr)
-
-    ref_x, ref_y = get_scatter(raw_ref_x[sorted_dexes],
-                               raw_ref_y[sorted_dexes],
-                               x_norm, y_norm)
+    ref_x, ref_y = marginalize(ref_data['x%d' % ix],
+                               ref_data['x%d' % iy],
+                               ref_data['degen'])
 
     dt_list = []
     for ii in range(dim):
