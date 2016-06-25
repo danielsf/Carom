@@ -161,8 +161,12 @@ include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
         object/gp_lin.o \
 	$(LIBRARIES)
 
+object/explorers.o: src/carom/explorers.cpp include/explorers.h \
+object/chisq_wrapper.o object/dchi_simplex.o
+	$(gg) -c -o object/explorers.o src/carom/explorers.cpp
+
 object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
-object/goto_tools.o object/chisq_wrapper.o object/simplex.o
+object/goto_tools.o object/chisq_wrapper.o object/simplex.o object/explorers.o
 	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
 
 object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializer.h \
@@ -171,7 +175,7 @@ object/chisq_wrapper.o object/simplex.o
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
 object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
-object/mcmc.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
+object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
 object/maps_initializer.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
@@ -196,14 +200,14 @@ object/simplex.o object/chisq_wrapper.o
 
 
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
-object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o \
+object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
 object/dchi_simplex_gp.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
-        object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
-	object/maps_initializer.o \
+	object/dchi_simplex.o object/maps.o object/jellyBean.o \
+        object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
+	object/maps_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
 test_opt: src/examples/test_opt.cpp object/maps.o \

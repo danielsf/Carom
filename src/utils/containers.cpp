@@ -402,6 +402,74 @@ void array_2d<T>::die(int ir, int ic) const{
     throw ifail;
 }
 
+
+template <typename T>
+void array_2d<T>::set_row_room(int row_room_in){
+
+    if(row_room_in<row_room){
+        printf("dying from set_row_room; row_roomis %d trying to set %d\n",
+        row_room, row_room_in);
+        die(0,0);
+    }
+
+    if(cols<=0){
+       printf("dying from set_row_room because cols are %d\n",cols);
+       die(0,0);
+    }
+
+    array_1d<T> *buffer;
+    int i,j;
+
+    if(data!=NULL){
+        buffer=new array_1d<T>[rows];
+        for(i=0;i<rows;i++){
+            buffer[i].set_dim(data[i].get_dim());
+            for(j=0;j<data[i].get_dim();j++){
+                buffer[i].set(j,data[i].get_data(j));
+            }
+        }
+        delete [] data;
+
+        data=new array_1d<T>[row_room_in];
+        for(i=0;i<row_room_in;i++){
+            data[i].set_dim(cols);
+        }
+        for(i=0;i<rows;i++){
+            for(j=0;j<buffer[i].get_dim();j++){
+                data[i].set(j,buffer[i].get_data(j));
+            }
+        }
+        delete [] buffer;
+
+        for(i=0;i<row_room_in;i++){
+            try{
+                data[i].assert_name(name);
+            }
+            catch(int iex){
+                printf("in 2d set_row_room\n");
+                die(0,0);
+            }
+
+            try{
+                data[i].assert_where(where_am_i);
+            }
+            catch(int iex){
+                printf("in 2d set_row_room\n");
+                die(0,0);
+            }
+        }
+    }
+    else{
+        data=new array_1d<T>[row_room_in];
+        for(i=0;i<row_room_in;i++){
+            data[i].set_dim(cols);
+        }
+    }
+
+    row_room=row_room_in;
+}
+
+
 template <typename T>
 void array_2d<T>::add_row(array_1d<T> &in){
 
@@ -448,70 +516,11 @@ void array_2d<T>::add_row(array_1d<T> &in){
     int i,j;
 
     if(data==NULL){
-        row_room=2;
-        data=new array_1d<T>[row_room];
-        for(i=0;i<row_room;i++){
-            try{
-                data[i].assert_name(name);
-            }
-            catch(int iex){
-                printf("in 2d add row\n");
-                die(0,0);
-            }
-
-            try{
-                data[i].assert_where(where_am_i);
-            }
-            catch(int iex){
-                printf("in 2d add row\n");
-                die(0,0);
-            }
-        }
+        set_row_room(100);
     }
 
-    array_1d<T> *buffer;
-
     if(rows==row_room){
-        buffer=new array_1d<T>[rows];
-        for(i=0;i<rows;i++){
-            buffer[i].set_dim(data[i].get_dim());
-            for(j=0;j<data[i].get_dim();j++){
-                buffer[i].set(j,data[i].get_data(j));
-            }
-        }
-        delete [] data;
-
-        i=row_room/2;
-        if(i<100)i=100;
-
-        row_room*=2;
-        data=new array_1d<T>[row_room];
-        for(i=0;i<rows;i++){
-            data[i].set_dim(buffer[i].get_dim());
-            for(j=0;j<buffer[i].get_dim();j++){
-                data[i].set(j,buffer[i].get_data(j));
-            }
-        }
-        delete [] buffer;
-
-        for(i=0;i<row_room;i++){
-            try{
-                data[i].assert_name(name);
-            }
-            catch(int iex){
-                printf("in 2d add row\n");
-                die(0,0);
-            }
-
-            try{
-                data[i].assert_where(where_am_i);
-            }
-            catch(int iex){
-                printf("in 2d add row\n");
-                die(0,0);
-            }
-        }
-
+        set_row_room(2*row_room);
     }
 
     data[rows].set_dim(cols);

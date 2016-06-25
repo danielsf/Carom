@@ -21,26 +21,6 @@ class dchi_simplex_base : public function_wrapper{
         double _min_0;
 };
 
-class dchi_boundary_simplex : public dchi_simplex_base{
-
-    public:
-        dchi_boundary_simplex(chisq_wrapper*, array_1d<int>&);
-        ~dchi_boundary_simplex(){};
-
-        virtual double operator()(array_1d<double>&);
-};
-
-
-class dchi_multimodal_simplex : public dchi_simplex_base{
-
-    public:
-        dchi_multimodal_simplex(chisq_wrapper*, array_1d<int>&);
-        ~dchi_multimodal_simplex(){};
-
-        void set_norm(array_1d<double>&);
-        virtual double operator()(array_1d<double>&);
-};
-
 class dchi_interior_simplex : public function_wrapper{
     public:
         dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
@@ -80,20 +60,65 @@ class dchi_interior_simplex : public function_wrapper{
             }
 
             for(i=0;i<_chifn->get_dim();i++){
-                if(max.get_data(i)-min.get_data(i)>1.0e-20 && max.get_data(i)-min.get_data(i)<_norm){
-                    _norm=max.get_data(i)-min.get_data(i);
+                if(max.get_data(i)-min.get_data(i)>1.0e-20 && max.get_data(i)-min.get_data(i)<_scalar_norm){
+                    _scalar_norm=max.get_data(i)-min.get_data(i);
                 }
             }
 
         }
 
+        void use_median(){
+            _just_median=1;
+        }
+
+
+        void calibrate_model();
+        double apply_model(array_1d<double>&);
+
+        void copy_bases(array_2d<double> &out){
+            int i;
+            out.reset_preserving_room();
+            for(i=0;i<_bases.get_rows();i++){
+                out.add_row(_bases(i)[0]);
+            }
+        }
+
+        void set_bases(){
+            if(_associates.get_dim()<_chifn->get_dim()){
+                _random_set_bases();
+            }
+            else{
+                _principal_set_bases();
+            }
+        }
+
+
+        double get_hyper_norm(int ii){
+            return _hyper_norm.get_data(ii);
+        }
+
     private:
         array_1d<int> _associates;
         array_1d<int> _mask;
-        double _norm;
+        array_1d<double> _median_associate;
+        double _scalar_norm;
         chisq_wrapper *_chifn;
         int _called;
+        int _just_median;
         double _envelope;
+
+        array_2d<double> _bases;
+        array_1d<double> _norm;
+        double _alpha;
+
+        void _principal_set_bases();
+        void _random_set_bases();
+
+        void _set_hyper_ellipse();
+        double _hyper_ellipse_distance(array_1d<double>&);
+        array_1d<double> _hyper_center;
+        array_1d<double> _hyper_norm;
+
 };
 
 #endif

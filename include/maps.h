@@ -10,7 +10,6 @@
 #include "dchi_simplex.h"
 #include "dchi_simplex_gp.h"
 #include "search_types.h"
-#include "mcmc/mcmc.h"
 #include "dalex.h"
 #include "maps_initializer.h"
 
@@ -38,13 +37,7 @@ public:
     void search(int);
 
     void mcmc_init();
-    void simplex_init();
-    void nested_simplex_init();
-    void gibbs_init();
 
-    void explore();
-    void simplex_min_search();
-    void mcmc_search();
     void write_pts();
     void write_log();
 
@@ -59,24 +52,15 @@ public:
     void assess_good_points(int);
     void assess_good_points(int,int);
 
-    int bisection(array_1d<double>&, array_1d<double>&, double, double);
-    int bisection(int, array_1d<double>&, double, double);
-    int bisection(int,int, double, double);
-
 private:
 
     chisq_wrapper _chifn;
     gp_lin _interpolator;
     int _write_every,_last_written;
-    int _ct_simplex_boundary,_ct_simplex_min,_calls_to_simplex_boundary,_ct_mcmc;
     int _ct_dalex;
     int _last_wrote_log;
-    int _simplex_mindex;
 
-    mcmc _mcmc;
     dalex _cloud;
-    int _init_mcmc;
-    double _mcmc_basis_min;
 
     asymm_array_2d<int> _log;
 
@@ -84,12 +68,9 @@ private:
 
     char _outname[letters],_timingname[letters];
 
-    array_1d<int> _good_points,_duds,_duds_for_min;
-    array_1d<int> _failed_mins;
-    array_1d<int> _explorers;
+    array_1d<int> _good_points;
 
     int _last_did_min;
-    double _explorer_temp;
 
 };
 
