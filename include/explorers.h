@@ -16,6 +16,7 @@ class explorers{
             _mindex=-1;
             _temp=1.0;
             _associates.set_name("explorers_associates");
+            _median_associate.set_name("explorers_mean_associate");
             _particles.set_name("explorers_particles");
             _bases.set_name("explorers_bases");
             _norm.set_name("explorers_norm");
@@ -70,6 +71,7 @@ class explorers{
     private:
         chisq_wrapper *_chifn;
         array_1d<int> _associates;
+        array_1d<double> _median_associate;
         array_2d<double> _bases;
         array_1d<double> _norm,_min,_max;
         array_1d<double> _mu_arr;

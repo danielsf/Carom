@@ -19,6 +19,9 @@ void explorers::get_seed(array_2d<double> &seed){
     for(i=0;i<_chifn->get_dim()+1;i++){
         seed.add_row(_particles(mu_dex.get_data(i))[0]);
         for(j=0;j<_chifn->get_dim();j++){
+            _particles.set(mu_dex.get_data(i),j,_median_associate.get_data(j));
+        }
+        for(j=0;j<_chifn->get_dim();j++){
             rr=normal_deviate(_chifn->get_dice(),0.0,2.0);
             for(k=0;k<_chifn->get_dim();k++){
                 _particles.add_val(mu_dex.get_data(i),k,rr*_norm.get_data(j)*_bases.get_data(j,k));
@@ -52,7 +55,14 @@ void explorers::set_norm(){
     }
 
     for(i=0;i<_chifn->get_dim();i++){
+       _median_associate.set(i,0.0);
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
         _norm.set(i,0.2*(_max.get_data(i)-_min.get_data(i)));
+        for(j=0;j<_chifn->get_dim();j++){
+             _median_associate.add_val(j,_bases.get_data(i,j)*0.5*(_max.get_data(i)+_min.get_data(i)));
+        }
     }
 
 }
