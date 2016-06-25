@@ -217,6 +217,8 @@ double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
     int i,j;
 
     if(_just_median==1){
+        printf("cannot use median distance\n");
+        exit(1);
         dd=0.0;
         for(i=0;i<_chifn->get_dim();i++){
             dd+=power((pt.get_data(i)-_median_associate.get_data(i))/_scalar_norm,2);
@@ -228,20 +230,30 @@ double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
         return 0.0;
     }
     double dd_min=2.0*exception_value;
+    double dd_av;
+    double wgt,total_wgt;
 
+    double delta=_chifn->target()-_chifn->chimin();
+
+    total_wgt=0.0;
+    dd_av=0.0;
     for(i=0;i<_associates.get_dim();i++){
         if(_mask.get_dim()==0 || _mask.get_data(i)==1){
             dd=0.0;
             for(j=0;j<_chifn->get_dim();j++){
                 dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
             }
+            dd=sqrt(dd);
+            wgt=exp(-0.5*dd);
+            total_wgt+=wgt;
+            dd_av+=wgt*(delta*dd+dd*dd);
             if(dd<dd_min){
                 dd_min=dd;
             }
         }
     }
 
-    return sqrt(dd_min);
+    return dd_av/total_wgt;
 }
 
 
@@ -274,7 +286,7 @@ double dchi_interior_simplex::operator()(array_1d<double> &pt){
         exp_term=1.0;
     }
 
-    return mu-1.0*delta*distance*exp_term;
+    return mu-1.0*distance*exp_term;
 }
 
 
