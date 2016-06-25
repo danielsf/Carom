@@ -36,7 +36,7 @@ if __name__ == "__main__":
     seeds = [234, 786, 932, 99, 66, 125, 6475]
     fig_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(fig_dir, "Carom", "figures")
-    fig_dir = os.path.join(fig_dir, "factorOf5")
+    fig_dir = os.path.join(fig_dir, "ddsq")
 
     row_max = 2
     col_max = 2
@@ -103,14 +103,14 @@ if __name__ == "__main__":
             ifig += 1
             fig, ax_arr = plt.subplots(nrows=row_max, ncols=col_max)
             fig.figsize=(30,30)
-            out_name = os.path.join(fig_dir, "jb_factorOf5_matrix_%d_x%d_%d.eps" %
+            out_name = os.path.join(fig_dir, "jb_ddsq_matrix_%d_x%d_%d.eps" %
                                     (ifig, ix, iy))
 
 
         n_row = ct/col_max
         n_col = ct%row_max
         ax = ax_arr[n_row][n_col]
-        data_name = os.path.join(data_dir,'jellyBean_d%d_s%d_proj_output.sav'
+        data_name = os.path.join(data_dir,'jellyBean_d%d_s%d_ddsq_output.sav'
                                  % (dim, ss))
 
         if not os.path.exists(data_name):
