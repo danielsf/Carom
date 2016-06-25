@@ -230,30 +230,22 @@ double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
         return 0.0;
     }
     double dd_min=2.0*exception_value;
-    double dd_av;
-    double wgt,total_wgt;
 
     double delta=_chifn->target()-_chifn->chimin();
 
-    total_wgt=0.0;
-    dd_av=0.0;
     for(i=0;i<_associates.get_dim();i++){
         if(_mask.get_dim()==0 || _mask.get_data(i)==1){
             dd=0.0;
             for(j=0;j<_chifn->get_dim();j++){
                 dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
             }
-            dd=sqrt(dd);
-            wgt=exp(-0.5*dd);
-            total_wgt+=wgt;
-            dd_av+=wgt*(delta*dd+dd*dd);
             if(dd<dd_min){
                 dd_min=dd;
             }
         }
     }
 
-    return dd_av/total_wgt;
+    return delta*sqrt(dd_min);
 }
 
 
