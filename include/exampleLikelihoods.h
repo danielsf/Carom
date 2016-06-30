@@ -9,9 +9,9 @@ class integrableJellyBean : public jellyBeanData{
         integrableJellyBean() :
         jellyBeanData(4,1,1.0,100,0.4){
             _widths.set(0,0,100.0);
-            _widths.set(0,1,5.0);
-            _widths.set(0,2,5.0);
-            _widths.set(0,3,40.0);
+            _widths.set(0,1,1.0);
+            _widths.set(0,2,1.0);
+            _widths.set(0,3,4.0);
             _parabola_curvature=4.0;
         }
 };
