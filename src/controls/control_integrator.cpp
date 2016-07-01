@@ -70,6 +70,7 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
 
     printf("nameroot %s\n",_name_root);
+    printf("max_chi_lim_freq %e\n",max_chi_lim_freq);
 
     array_1d<double> pt;
 
@@ -116,6 +117,9 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
     double expected_time;
 
+    double good_threshold=max_chi_lim_freq+d_threshold;
+    printf("good_threshold %e\n",good_threshold);
+
     while(keep_going==1){
 
         keep_going=_iter_p->get_pt(pt,idx);
@@ -124,7 +128,7 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
         if(mu<foundMin)foundMin=mu;
 
-        if(mu<max_chi_lim_freq+d_threshold){
+        if(mu<good_threshold){
             for(ix=0;ix<_min.get_dim();ix++){
                 if(pt.get_data(ix)<good_min.get_data(ix)){
                     good_min.set(ix,pt.get_data(ix));
