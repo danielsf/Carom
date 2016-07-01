@@ -113,6 +113,8 @@ jellyBeanData *chisq;
 if(chisq_dex==0){
     if(dim==4){
         chisq=new gaussianJellyBean4;
+        printf("not going to let you do 4d non-integrable\n");
+        exit(1);
     }
     else if(dim==12){
         chisq=new gaussianJellyBean12;
