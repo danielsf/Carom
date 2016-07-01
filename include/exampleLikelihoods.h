@@ -11,7 +11,7 @@ class integrableJellyBean : public jellyBeanData{
             _widths.set(0,0,100.0);
             _widths.set(0,1,2.0);
             _widths.set(0,2,10.0);
-            _widths.set(0,3,4.0);
+            _widths.set(0,3,10.0);
 
             _parabola_curvature=4.0;
 
