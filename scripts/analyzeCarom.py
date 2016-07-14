@@ -40,6 +40,21 @@ def marginalize(data_x, data_y, density_in, prob=0.95):
     return x_out[dexes], y_out[dexes]
 
 
+def raw_bayes(data_x, data_y, density_in, prob=0.95):
+
+    sorted_density = np.sort(density_in)
+    total_sum = density_in.sum()
+    sum_cutoff = 0.0
+    for ii in range(len(sorted_density)-1, -1, -1):
+        sum_cutoff += sorted_density[ii]
+        if sum_cutoff >= prob*total_sum:
+            cutoff = sorted_density[ii]
+            break
+
+    dexes = np.where(density_in>=cutoff)
+    return data_x[dexes], data_y[dexes]
+
+
 def get_scatter(data_x, data_y, x_norm, y_norm):
 
     x_out = np.ones(len(data_x))*data_x[-1]
