@@ -1,6 +1,8 @@
 import numpy as np
 
-__all__ = ["scatter_from_multinest", "scatter_from_carom"]
+__all__ = ["scatter_from_multinest_projection",
+           "scatter_from_multinest_marginalized",
+           "scatter_from_carom"]
 
 def marginalize(data_x, data_y, density_in, prob=0.95):
 
@@ -75,7 +77,25 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
     return x_out[:actual_len], y_out[:actual_len]
 
 
-def scatter_from_multinest(file_name, dim, ix, iy, data=None):
+def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
+
+    if data is None:
+        dt_list = [('degen', np.float), ('chisq', np.float)]
+        for ii in range(dim):
+            dt_list.append(('x%d' % ii, np.float))
+        dtype = dt_list
+        ref_data = np.genfromtxt(file_name, dtype=dtype)
+
+    else:
+        ref_data = data
+
+    ref_x, ref_y = raw_bayes(ref_data['x%d' % ix],
+                               ref_data['x%d' % iy],
+                               ref_data['degen'])
+
+    return ref_x, ref_y, ref_data
+
+def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
 
     if data is None:
         dt_list = [('degen', np.float), ('chisq', np.float)]
