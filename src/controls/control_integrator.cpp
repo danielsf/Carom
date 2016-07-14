@@ -409,7 +409,8 @@ void control_integrator::write_output(int xdex, int ydex,
         iy=coordinates.get_data(true_dex,ydex);
 
         if(used.get_data(ix,iy)==0){
-            bayesianFullD.set(row,0,_min.get_data(xdex)+ix*_dx.get_data(xdex));
+            bayesianFullD.set(row,0,_
+            (xdex)+ix*_dx.get_data(xdex));
             bayesianFullD.set(row,1,_min.get_data(ydex)+iy*_dx.get_data(ydex));
             used.set(ix,iy,1);
             row++;

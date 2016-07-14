@@ -128,7 +128,16 @@ if(chisq_dex==0){
     }
 }
 else if(chisq_dex==1){
-    chisq=new integrableJellyBean;
+    if(dim==4){
+        chisq=new integrableJellyBean;
+    }
+    else if(dim==12){
+        printf("creating new class\n");
+        chisq=new integrableJellyBean12;
+    }
+    else{
+        printf("WARNING do not have integrable jellyBean for dim %d\n",dim);
+    }
 }
 else{
     printf("WARNING do not know what to do with chisq_dex %d\n",chisq_dex);
@@ -137,7 +146,7 @@ else{
 
 printf("done constructing chisq\n");
 
-chisq->print_mins();
+//chisq->print_mins();
 
 //declare APS
 //the '20' below is the number of nearest neighbors to use when seeding the
@@ -202,7 +211,7 @@ carom_test.initialize(init);
 int active_nodes=1;
 printf("ready to search\n");
 carom_test.search(nsamples);
-chisq->print_mins();
+//chisq->print_mins();
 
 array_1d<double> v0,v1;
 chisq->get_basis(0,v0);

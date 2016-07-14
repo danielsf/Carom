@@ -37,6 +37,69 @@ class integrableJellyBean : public jellyBeanData{
         }
 };
 
+class integrableJellyBean12 : public jellyBeanData{
+
+    public:
+        integrableJellyBean12() : jellyBeanData(12,1,1.0,100,0.4){
+            Ran local_dice(1132);
+            int i;
+            for(i=0;i<8;i++){
+                _d8_center.set(i, -10.0+20.0*local_dice.doub());
+                _d8_widths.set(i,local_dice.doub()*2.0);
+            }
+            _d8_bases.set_cols(8);
+            array_1d<double> trial;
+            int j;
+            double component;
+            while(_d8_bases.get_rows()<8){
+                for(i=0;i<8;i++){
+                    trial.set(i,normal_deviate(&local_dice, 0.0, 1.0));
+                }
+                for(i=0;i<_d8_bases.get_rows();i++){
+                    component=0.0;
+                    for(j=0;j<8;j++){
+                        component+=trial.get_data(j)*_d8_bases.get_data(i,j);
+                    }
+                    for(j=0;j<8;j++){
+                        trial.subtract_val(j,component*_d8_bases.get_data(i,j));
+                    }
+                }
+                component=trial.normalize();
+                if(component>1.0e-20){
+                    _d8_bases.add_row(trial);
+                }
+            }
+        }
+
+        virtual double operator()(array_1d<double> &pt){
+            array_1d<double> four_d_pt;
+            int i;
+            for(i=0;i<4;i++){
+                four_d_pt.set(i,pt.get_data(i));
+            }
+            double d4_val = _d4_chisq(four_d_pt);
+            double d8_val = 0.0;
+            double component;
+            int ix;
+            for(ix=0;ix<8;ix++){
+                component=0.0;
+                for(i=0;i<8;i++){
+                    component+=(pt.get_data(4+i)-_d8_center.get_data(i))*_d8_bases.get_data(ix,i);
+                }
+                d8_val += power(component/_d8_widths.get_data(ix),2);
+            }
+
+            return d4_val + d8_val;
+        }
+
+    private:
+        integrableJellyBean _d4_chisq;
+        array_1d<double> _d8_center;
+        array_2d<double> _d8_bases;
+        array_1d<double> _d8_widths;
+
+};
+
 class gaussianJellyBean4 : public jellyBeanData{
 
     public:
