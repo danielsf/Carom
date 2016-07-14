@@ -114,7 +114,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
     return ref_x, ref_y, ref_data
 
 
-def scatter_from_carom(data_name, dim, ix, iy, delta_chi, data=None):
+def scatter_from_carom(data_name, dim, ix, iy, delta_chi, data=None, limit=None):
     if data is None:
         dt_list = []
         for ii in range(dim):
@@ -128,13 +128,18 @@ def scatter_from_carom(data_name, dim, ix, iy, delta_chi, data=None):
 
         data = np.genfromtxt(data_name, dtype=dtype)
 
-    mindex = np.argmin(data['chisq'])
-    chisq_min = data['chisq'][mindex]
+    if limit is not None:
+        data_cut = data[:limit]
+    else:
+        data_cut = data
+
+    mindex = np.argmin(data_cut['chisq'])
+    chisq_min = data_cut['chisq'][mindex]
     target = chisq_min + delta_chi
 
-    good_dexes = np.where(data['chisq'] <= target)
-    good_x = data['x%d' % ix][good_dexes]
-    good_y = data['x%d' % iy][good_dexes]
+    good_dexes = np.where(data_cut['chisq'] <= target)
+    good_x = data_cut['x%d' % ix][good_dexes]
+    good_y = data_cut['x%d' % iy][good_dexes]
 
     x_max = good_x.max()
     x_min = good_x.min()
@@ -145,8 +150,8 @@ def scatter_from_carom(data_name, dim, ix, iy, delta_chi, data=None):
     y_norm = y_max-y_min
 
 
-    dd_arr = np.power((good_x-data['x%d' % ix][mindex])/x_norm, 2) + \
-             np.power((good_y-data['x%d' % iy][mindex])/y_norm, 2)
+    dd_arr = np.power((good_x-data_cut['x%d' % ix][mindex])/x_norm, 2) + \
+             np.power((good_y-data_cut['x%d' % iy][mindex])/y_norm, 2)
 
     dd_sorted_dexes = np.argsort(-1.0*dd_arr)
 
