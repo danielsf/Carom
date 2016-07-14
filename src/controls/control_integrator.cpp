@@ -423,7 +423,7 @@ void control_integrator::write_output(int xdex, int ydex,
     for(ix=0;ix<xct;ix++){
         trial.set(0,_min.get_data(xdex)+ix*_dx.get_data(xdex));
         for(iy=0;iy<yct;iy++){
-            trial.set(1,_min.get_data(xdex)+iy*_dx.get_data(ydex));
+            trial.set(1,_min.get_data(ydex)+iy*_dx.get_data(ydex));
 
             effective_chi=-2.0*log(marginalized_likelihood.get_data(ix,iy))-min_chi2_eff;
             if(effective_chi<0.0){
