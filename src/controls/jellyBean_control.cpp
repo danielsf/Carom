@@ -68,6 +68,10 @@ int main(){
     raw_max.set(3,-3.0);
 
     int i;
+    for(i=0;i<4;i++){
+        raw_min.subtract_val(i,7.0);
+        raw_max.add_val(i,7.0);
+    }
     double dd;
     for(i=0;i<4;i++){
         //dd=raw_max.get_data(i)-raw_min.get_data(i);
@@ -84,7 +88,7 @@ int main(){
     //dx.multiply_val(2,2.0);
     //dx.multiply_val(3,2.0);
 
-    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_p100");
+    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_extended");
     array_1d<double> cc;
     cc.add(0.95);
     cc.add(0.68);
