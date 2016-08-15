@@ -24,7 +24,7 @@ if __name__ == "__main__":
     for ifig, (ix, iy) in enumerate(zip(ix_list, iy_list)):
         tag = '%d_%d' % (ix, iy)
         plt.subplot(3, 2, ifig+1)
-        indices = np.where(data[tag][2]<50.0)
+        indices = np.where(data[tag][2]<20.0)
         plt.scatter(data[tag][0][indices], data[tag][1][indices],
                     c=data[tag][2][indices],
                     #c=np.exp(-0.5*data[tag][2]/data[tag][2].max()),
@@ -32,10 +32,10 @@ if __name__ == "__main__":
                     edgecolor='')
         ticks=np.linspace(0.0,30.0,5.0,endpoint=True)
         #plt.contour(data[tag][0], data[tag][1], data[tag][2],ticks)
-        xmax=data[tag][0].max()
-        xmin=data[tag][0].min()
-        ymax=data[tag][1].max()
-        ymin=data[tag][1].min()
+        xmax=data[tag][0][indices].max()
+        xmin=data[tag][0][indices].min()
+        ymax=data[tag][1][indices].max()
+        ymin=data[tag][1][indices].min()
         dx=(xmax-xmin)*0.1
         dy=(ymax-ymin)*0.1
         plt.text(xmax-2*dx, ymax-1*dy, tag, fontsize=30)
