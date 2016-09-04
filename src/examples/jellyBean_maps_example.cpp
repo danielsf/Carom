@@ -134,6 +134,7 @@ else if(chisq_dex==1){
     else if(dim==12){
         printf("creating new class\n");
         chisq=new integrableJellyBean12;
+        exit(1);
     }
     else{
         printf("WARNING do not have integrable jellyBean for dim %d\n",dim);
