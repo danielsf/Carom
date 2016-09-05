@@ -182,7 +182,7 @@ void kd_tree::build_tree(array_2d<double> &mm,
          inn.set(i,i);
     }
 
-    sort_and_check(tosort,sorted,inn);
+    sort(tosort,sorted,inn);
 
     /*try to pick the median value as the first node in the tree (the
     masterparent)*/
@@ -328,7 +328,7 @@ void kd_tree::organize(array_1d<int> &use_in, int u_start,
         */
 
         for(i=0;i<ct;i++)tosort.set(i,data.get_data(use.get_data(i),idim));
-        sort_and_check(tosort,sorted,use);
+        sort(tosort,sorted,use);
 
         inp=ct/2;
 
@@ -907,7 +907,7 @@ array_1d<double> &dd){
     }
 
     /*arrange dd so that it is in ascending order of parameter space distance*/
-    sort_and_check(ddstore,dd,neigh);
+    sort(ddstore,dd,neigh);
 
     /*
     Check the three subdivisions of the tree defined by node:

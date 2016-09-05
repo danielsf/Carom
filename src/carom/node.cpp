@@ -778,7 +778,7 @@ void node::set_transform(){
             _transform.set(ix,dd.get_data(0));
         }
         else if(dd.get_dim()>1){
-            sort_and_check(dd,dd_sorted,dd_dexes);
+            sort(dd,dd_sorted,dd_dexes);
             _transform.set(ix,dd_sorted.get_data(dd.get_dim()/2));
         }
     }
@@ -3144,7 +3144,7 @@ double node::_ricochet_model(array_1d<double> &pt, kd_tree &tree,
         }
     }
 
-    sort_and_check(mutual_dd,mutual_dd_sorted,mutual_dexes);
+    sort(mutual_dd,mutual_dd_sorted,mutual_dexes);
 
     ell=mutual_dd_sorted.get_data(k/2);
     covar.set_dim(npts,npts);
@@ -3250,7 +3250,7 @@ void node::cull_ricochet(){
         return;
     }
 
-    sort_and_check(strikes,strikes_sorted,strikes_dexes);
+    sort(strikes,strikes_sorted,strikes_dexes);
     int n_started=_ricochet_particles.get_dim();
     int target_particle,j;
     for(i=0;i<strikes_sorted.get_dim() && i<n_started-_chisquared->get_dim()/2;i++){

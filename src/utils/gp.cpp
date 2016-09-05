@@ -39,7 +39,7 @@ double gp::operator()(array_1d<double> &pt){
         }
     }
 
-    sort_and_check(distance,distance_sorted,distance_dex);
+    sort(distance,distance_sorted,distance_dex);
     _ell=_ell_factor*distance_sorted.get_data(ct/2);
 
     //printf("\n    nearest dd %e -- %e\n",
@@ -127,7 +127,7 @@ void gp::_set_covarin(){
         }
     }
 
-    sort_and_check(terms,sorted_terms,term_dexes);
+    sort(terms,sorted_terms,term_dexes);
 
     //printf("    fb %e\n",_fbar);
     //printf("    minterm %e\n",minterm);
@@ -166,7 +166,7 @@ void gp::optimize(array_2d<double> &pts, array_1d<double> &ff){
             cost_arr.set(i,cost);
             cost_dex.set(i,i);
         }
-        sort_and_check(cost_arr,cost_sorted,cost_dex);
+        sort(cost_arr,cost_sorted,cost_dex);
         cost=cost_sorted.get_data(pts.get_rows()/2);
         if(cost<cost_best || ell_best<0.0){
              //printf("   best cost %e best ell %e\n",cost,_ell);

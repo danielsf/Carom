@@ -62,7 +62,7 @@ double gp_lin::operator()(array_1d<double> &pt){
         raw_ff.add(_fn->get_data(local_dex.get_data(i)));
         raw_ff_dex.add(local_dex.get_data(i));
     }
-    sort_and_check(raw_ff,raw_ff_sorted,raw_ff_dex);
+    sort(raw_ff,raw_ff_sorted,raw_ff_dex);
     lower_rank.add(raw_ff_dex.get_data(raw_ff.get_dim()/2));
     for(i=0;i<raw_ff_dex.get_dim();i++){
         if(lower_rank.contains(raw_ff_dex.get_data(i))==0){
@@ -135,10 +135,10 @@ double gp_lin::operator()(array_1d<double> &pt){
         }
     }
 
-    sort_and_check(distance,distance_sorted,distance_dex);
+    sort(distance,distance_sorted,distance_dex);
     _ell=_ell_factor*(distance_sorted.get_data(distance.get_dim()/2)-distance_sorted.get_data(0));
 
-    sort_and_check(mu,mu_sorted,mu_dex);
+    sort(mu,mu_sorted,mu_dex);
 
     double total_wgt=0.0;
     array_1d<double> wgt;
@@ -192,7 +192,7 @@ void gp_lin::optimize(array_2d<double> &pts, array_1d<double> &ff){
              //printf("%e %e\n\n",ff.get_data(i),mu);
         }
         //printf("        worst %e %e %e\n",worst_ff,worst_mu,worst_dmu);
-        sort_and_check(cost_arr,cost_sorted,cost_dex);
+        sort(cost_arr,cost_sorted,cost_dex);
         cost=cost_sorted.get_data(pts.get_rows()/2);
         if(cost<cost_best || ell_best<0.0){
              //printf("   best cost %e best ell %e\n",cost,_ell);

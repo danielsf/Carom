@@ -370,7 +370,7 @@ void aps_extractor::make_boxes(){
                 r_dex.set(k,k);
             }
 
-            sort_and_check(r_dim,r_dim_sorted,r_dex);
+            sort(r_dim,r_dim_sorted,r_dex);
 
             /*
             iterate over the dimensions, trying to find the component of the neighbor point that
@@ -543,10 +543,10 @@ void aps_extractor::make_boxes(){
     array_1d<double> sorted_prob;
     for(i=0;i<l_probability.get_dim();i++)l_prob_dexes.set(i,i);
 
-    sort_and_check(chisq,sorted_prob,l_prob_dexes);
+    sort(chisq,sorted_prob,l_prob_dexes);
 
     //for(i=0;i<chisq.get_dim();i++)chisq.multiply_val(i,-1.0);
-    //sort_and_check(chisq,sorted_prob,dexes);
+    //sort(chisq,sorted_prob,dexes);
 
 }
 
@@ -732,7 +732,7 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
     }
 
     array_1d<double> sorted;
-    sort_and_check(dd,sorted,dex);
+    sort(dd,sorted,dex);
 
     /*
     been_plotted will contain all of the points that finally were output to the output file.

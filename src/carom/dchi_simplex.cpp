@@ -408,7 +408,7 @@ void dchi_interior_simplex::_set_hyper_ellipse(){
             cc.set(i,component);
             cc_dex.set(i,i);
         }
-        sort_and_check(cc,cc_sorted,cc_dex);
+        sort(cc,cc_sorted,cc_dex);
 
         i=cc_dex.get_dim();
 

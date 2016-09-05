@@ -1135,7 +1135,7 @@ void arrayOfChains::_get_contour_bounds(){
         }
     }
 
-    sort_and_check(chisq_list,chisq_list_sorted,dexes);
+    sort(chisq_list,chisq_list_sorted,dexes);
     double sum;
     int ix;
     sum=0.0;

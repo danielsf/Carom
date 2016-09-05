@@ -603,7 +603,7 @@ double gp_cost::operator()(array_1d<double> &pt){
             }
         }
 
-        sort_and_check(dd,dd_sorted,dexes);
+        sort(dd,dd_sorted,dexes);
         _ell=dd_sorted.get_data(ct/2);
 
         _fbar=0.0;

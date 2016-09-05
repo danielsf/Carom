@@ -207,7 +207,7 @@ void maps_initializer::search(){
             for(i=0;i<n_particles;i++){
                 accepted_dex.set(i,i);
             }
-            sort_and_check(accepted,accepted_sorted,accepted_dex);
+            sort(accepted,accepted_sorted,accepted_dex);
 
             med_acc=accepted_sorted.get_data(accepted_dex.get_dim()/2);
             min_acc=accepted_sorted.get_data(0);
@@ -231,7 +231,7 @@ void maps_initializer::search(){
             }
 
             if(needs_adjustment!=0){
-                sort_and_check(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
+                sort(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 old_temp=_temp;
                 _temp=needed_temp_sorted.get_data(needed_temp_dex.get_dim()/2);
 
@@ -407,7 +407,7 @@ void maps_initializer::search(){
         min_vals.add(_chifn->get_fn(_abs_min.get_data(i)));
         min_dexes.add(_abs_min.get_data(i));
     }
-    sort_and_check(min_vals, min_val_sorted, min_dexes);
+    sort(min_vals, min_val_sorted, min_dexes);
     array_2d<double> seed;
     array_1d<int> chosen;
     for(i=0;i<_chifn->get_dim()+1;i++){
@@ -428,7 +428,7 @@ void maps_initializer::search(){
             min_dexes.add(_abs_min.get_data(i));
         }
     }
-    sort_and_check(min_vals, min_val_sorted, min_dexes);
+    sort(min_vals, min_val_sorted, min_dexes);
     for(i=0;i<min_dexes.get_dim() && seed.get_rows()!=_chifn->get_dim()+1;i++){
         seed.add_row(_chifn->get_pt(min_dexes.get_data(i))[0]);
         chosen.add(min_dexes.get_data(i));
