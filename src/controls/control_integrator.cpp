@@ -172,7 +172,7 @@ void control_integrator::run_analysis(array_1d<double> &cc){
     dexes.set_dim(chi_vals.get_dim());
     likelihood_sorted.set_dim(chi_vals.get_dim());
     for(i=0;i<chi_vals.get_dim();i++)dexes.set(i,i);
-    sort_and_check(chi_vals, chi_sorted, dexes);
+    sort(chi_vals, chi_sorted, dexes);
     printf("sorting took %e\n",double(time(NULL))-start);
 
     double trial_chi_min;
@@ -374,7 +374,7 @@ void control_integrator::write_output(int xdex, int ydex,
         sorted_dexes.set(i,i);
     }
 
-    sort_and_check(marginalized_likelihood_line,sorted,sorted_dexes);
+    sort(marginalized_likelihood_line,sorted,sorted_dexes);
     double sum=0.0;
     row=0;
     for(i=sorted.get_dim()-1;i>=0 && sum<confidence_limit*totalLikelihood;i--){
