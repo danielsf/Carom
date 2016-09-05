@@ -1013,6 +1013,8 @@ If this maximum error is greater than 10^-12, then the code throws an exception
 template <typename T>
 double sort_and_check(const array_1d<T>&, array_1d<T>&, array_1d<int>&);
 
+template <typename T>
+void sort(const array_1d<T>&, array_1d<T>&, array_1d<int>&);
 
 
 /*return the index of the element of the array_1d that is closest in value to T;

@@ -778,14 +778,21 @@ if(shld_fail!=did_fail){
 //////////////////time to test merge sort///////////////
 
 int sorted_pts=100,iteration;
-array_1d<double> to_sort_double,sorted_double;
-array_1d<int> dexes;
+array_1d<double> to_sort_double,sorted_double,just_sort_double;
+array_1d<int> dexes,just_sort_dexes;
+
+to_sort_double.set_name("to_sort_double");
+sorted_double.set_name("sorted_double");
+just_sort_double.set_name("just_sort_double");
+dexes.set_name("dexes");
+just_sort_dexes.set_name("just_sort_dexes");
 
 for(iteration=0;iteration<2;iteration++){
 
     for(i=0;i<sorted_pts;i++){
         to_sort_double.set(i,chaos.doub());
         dexes.set(i,i);
+        just_sort_dexes.set(i,i);
     }
 
     if(to_sort_double.get_dim()!=sorted_pts || dexes.get_dim()!=sorted_pts){
@@ -796,9 +803,17 @@ for(iteration=0;iteration<2;iteration++){
     }
 
     sort_and_check(to_sort_double,sorted_double,dexes);
+    sort(to_sort_double, just_sort_double, just_sort_dexes);
 
     if(sorted_double.get_dim()!=sorted_pts){
         printf("%d WARNING sorted_pts %d but sorted %d\n",
+        iteration,sorted_pts,sorted_double.get_dim());
+
+        exit(1);
+    }
+
+    if(just_sort_double.get_dim()!=sorted_pts){
+        printf("%d WARNING sorted_pts %d but just_sort_double %d\n",
         iteration,sorted_pts,sorted_double.get_dim());
 
         exit(1);
@@ -808,6 +823,20 @@ for(iteration=0;iteration<2;iteration++){
         err=fabs(to_sort_double.get_data(dexes.get_data(i))-sorted_double.get_data(i));
         if(to_sort_double.get_data(dexes.get_data(i))!=0.0){
             err=err/fabs(to_sort_double.get_data(dexes.get_data(i)));
+        }
+
+        if(err>maxerr)maxerr=err;
+
+        err=fabs(just_sort_double.get_data(i)-sorted_double.get_data(i));
+        if(to_sort_double.get_data(dexes.get_data(i))!=0.0){
+            err=err/fabs(to_sort_double.get_data(dexes.get_data(i)));
+        }
+
+        if(err>maxerr)maxerr=err;
+
+        if(just_sort_dexes.get_data(i)!=dexes.get_data(i)){
+            printf("WARNING just sort did not mimic sort_and_check\n");
+            exit(1);
         }
 
 	if(i>0){

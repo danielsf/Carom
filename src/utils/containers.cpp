@@ -1125,9 +1125,17 @@ void merge_sort(array_1d<T> &in, array_1d<int> &dexes,
 }
 
 template <typename T>
+void sort(const array_1d<T> &in, array_1d<T> &sorted, array_1d<int> &dexes){
+    sorted.set_dim(in.get_dim());
+    int i;
+    for(i=0;i<in.get_dim();i++){
+        sorted.set(i,in.get_data(i));
+    }
+    merge_sort(sorted,dexes,0,in.get_dim()-1);
+}
+
+template <typename T>
 double sort_and_check(const array_1d<T> &in, array_1d<T> &sorted, array_1d<int> &dexes){
-
-
 
     if(in.get_dim()!=dexes.get_dim()){
         printf("WARNING in sort_and_check in.dim %d dexes.dim %d\n",
@@ -1277,6 +1285,10 @@ template void merge_sort<int>(array_1d<int>&,array_1d<int>&,int,int);
 
 template double sort_and_check<double>(const array_1d<double>&,array_1d<double>&,array_1d<int>&);
 template double sort_and_check<int>(const array_1d<int>&,array_1d<int>&,array_1d<int>&);
+
+template void sort<double>(const array_1d<double>&,array_1d<double>&,array_1d<int>&);
+template void sort<int>(const array_1d<int>&,array_1d<int>&,array_1d<int>&);
+
 
 template int get_dex(const array_1d<int>&,int);
 template int get_dex(const array_1d<double>&,double);
