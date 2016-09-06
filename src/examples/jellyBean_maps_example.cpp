@@ -108,7 +108,7 @@ printf("seed %d\n",seed);
 
 //jellyBeanData chisq(dim,1,width,100,0.4,0.4,0.02,20.0);
 
-jellyBeanData *chisq;
+chisquared *chisq;
 
 if(chisq_dex==0){
     if(dim==4){
@@ -134,7 +134,7 @@ else if(chisq_dex==1){
     else if(dim==12){
         printf("creating new class\n");
         chisq=new integrableJellyBean12;
-        exit(1);
+
     }
     else{
         printf("WARNING do not have integrable jellyBean for dim %d\n",dim);

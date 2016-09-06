@@ -37,38 +37,45 @@ class integrableJellyBean : public jellyBeanData{
         }
 };
 
-class integrableJellyBean12 : public jellyBeanData{
+class integrableJellyBean12 : public chisquared{
 
     public:
-        integrableJellyBean12() : jellyBeanData(12,1,1.0,100,0.4){
-            Ran local_dice(1132);
+        integrableJellyBean12(): chisquared(12){
+            _d8_widths.set(0,0.5);
+            _d8_widths.set(1,0.1);
+            _d8_widths.set(2,0.2);
+            _d8_widths.set(3,0.5);
+            _d8_widths.set(4,0.25);
+            _d8_widths.set(5,0.1);
+            _d8_widths.set(6,0.77);
+            _d8_widths.set(7,0.31);
+
             int i;
             for(i=0;i<8;i++){
-                _d8_center.set(i, -10.0+20.0*local_dice.doub());
-                _d8_widths.set(i,local_dice.doub()*2.0);
+                _d8_center.set(i,_dice->doub()*(10.0)-5.0);
             }
-            _d8_bases.set_cols(8);
             array_1d<double> trial;
-            int j;
+            int j,k;
             double component;
             while(_d8_bases.get_rows()<8){
                 for(i=0;i<8;i++){
-                    trial.set(i,normal_deviate(&local_dice, 0.0, 1.0));
+                    trial.set(i,normal_deviate(_dice,0.0,1.0));
                 }
-                for(i=0;i<_d8_bases.get_rows();i++){
+                for(j=0;j<_d8_bases.get_rows();j++){
                     component=0.0;
-                    for(j=0;j<8;j++){
-                        component+=trial.get_data(j)*_d8_bases.get_data(i,j);
+                    for(k=0;k<8;k++){
+                        component+=trial.get_data(k)*_d8_bases.get_data(j,k);
                     }
-                    for(j=0;j<8;j++){
-                        trial.subtract_val(j,component*_d8_bases.get_data(i,j));
+                    for(k=0;k<8;k++){
+                        trial.subtract_val(k,component*_d8_bases.get_data(j,k));
                     }
                 }
                 component=trial.normalize();
-                if(component>1.0e-20){
-                    _d8_bases.add_row(trial);
+                if(component>1.0e-10){
+                   _d8_bases.add_row(trial);
                 }
             }
+
         }
 
         virtual double operator()(array_1d<double> &pt){
