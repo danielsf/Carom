@@ -19,7 +19,7 @@ if __name__ == "__main__":
     data = {}
 
     for ix, iy in zip(ix_list, iy_list):
-        name = 'integrable_detailed_0.95_%d_%d_heatmap.txt' % (ix, iy)
+        name = 'gentle_integrable_detailed_0.95_%d_%d_heatmap.txt' % (ix, iy)
         input_name = os.path.join(scratch_dir, name)
         data['%d_%d' % (ix, iy)] = np.genfromtxt(input_name).transpose()
 

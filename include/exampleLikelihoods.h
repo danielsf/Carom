@@ -8,12 +8,12 @@ class integrableJellyBean : public jellyBeanData{
     public:
         integrableJellyBean() :
         jellyBeanData(4,1,1.0,100,0.4){
-            _widths.set(0,0,100.0);
+            _widths.set(0,0,10.0);
             _widths.set(0,1,2.0);
             _widths.set(0,2,10.0);
             _widths.set(0,3,10.0);
 
-            _parabola_curvature=4.0;
+            _parabola_curvature=0.5;
 
             _bases.set(0,0,0.3);
             _bases.set(0,1,sqrt(1.0-0.3*0.3));

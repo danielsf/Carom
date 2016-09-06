@@ -58,10 +58,10 @@ int main(){
     raw_max.set(3,2.189316e+01);
 
     //for integrableJellyBean
-    raw_min.set(0,-18.0);
+    raw_min.set(0,2.0);
     raw_max.set(0,13.0);
-    raw_min.set(1,-12.0);
-    raw_max.set(1, 17.0);
+    raw_min.set(1,3.0);
+    raw_max.set(1, 15.0);
     raw_min.set(2,-12.0);
     raw_max.set(2,-4.0);
     raw_min.set(3,-16.0);
@@ -88,7 +88,7 @@ int main(){
     //dx.multiply_val(2,2.0);
     //dx.multiply_val(3,2.0);
 
-    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_detailed");
+    control_integrator integrator(chisq,min,max,dx,"controls/scratch/gentle_integrable_detailed");
     array_1d<double> cc;
     cc.add(0.95);
     cc.add(0.68);
