@@ -37,73 +37,70 @@ class integrableJellyBean : public jellyBeanData{
         }
 };
 
-class integrableJellyBean12 : public chisquared{
+class integrableJellyBeanXX : public chisquared{
 
     public:
-        integrableJellyBean12(): chisquared(12){
-            _d8_widths.set(0,0.5);
-            _d8_widths.set(1,0.1);
-            _d8_widths.set(2,0.2);
-            _d8_widths.set(3,0.5);
-            _d8_widths.set(4,0.25);
-            _d8_widths.set(5,0.1);
-            _d8_widths.set(6,0.77);
-            _d8_widths.set(7,0.31);
+        integrableJellyBeanXX(int ii_dim): chisquared(ii_dim){
+
+            int dxx=ii_dim-4;
 
             int i;
-            for(i=0;i<8;i++){
-                _d8_center.set(i,_dice->doub()*(10.0)-5.0);
+            for(i=0;i<dxx;i++){
+                _dxx_center.set(i,_dice->doub()*(10.0)-5.0);
+                _dxx_widths.set(i,_dice->doub()*0.9+0.1);
             }
             array_1d<double> trial;
             int j,k;
             double component;
-            while(_d8_bases.get_rows()<8){
-                for(i=0;i<8;i++){
+            while(_dxx_bases.get_rows()<dxx){
+                for(i=0;i<dxx;i++){
                     trial.set(i,normal_deviate(_dice,0.0,1.0));
                 }
-                for(j=0;j<_d8_bases.get_rows();j++){
+                for(j=0;j<_dxx_bases.get_rows();j++){
                     component=0.0;
-                    for(k=0;k<8;k++){
-                        component+=trial.get_data(k)*_d8_bases.get_data(j,k);
+                    for(k=0;k<dxx;k++){
+                        component+=trial.get_data(k)*_dxx_bases.get_data(j,k);
                     }
-                    for(k=0;k<8;k++){
-                        trial.subtract_val(k,component*_d8_bases.get_data(j,k));
+                    for(k=0;k<dxx;k++){
+                        trial.subtract_val(k,component*_dxx_bases.get_data(j,k));
                     }
                 }
                 component=trial.normalize();
                 if(component>1.0e-10){
-                   _d8_bases.add_row(trial);
+                   _dxx_bases.add_row(trial);
                 }
             }
 
         }
 
         virtual double operator()(array_1d<double> &pt){
+            _called++;
             array_1d<double> four_d_pt;
             int i;
             for(i=0;i<4;i++){
                 four_d_pt.set(i,pt.get_data(i));
             }
             double d4_val = _d4_chisq(four_d_pt);
-            double d8_val = 0.0;
+            double dxx_val = 0.0;
             double component;
             int ix;
-            for(ix=0;ix<8;ix++){
+            int dxx=_dxx_center.get_dim();
+            for(ix=0;ix<dxx;ix++){
                 component=0.0;
-                for(i=0;i<8;i++){
-                    component+=(pt.get_data(4+i)-_d8_center.get_data(i))*_d8_bases.get_data(ix,i);
+                for(i=0;i<dxx;i++){
+                    component+=(pt.get_data(4+i)-_dxx_center.get_data(i))*_dxx_bases.get_data(ix,i);
                 }
-                d8_val += power(component/_d8_widths.get_data(ix),2);
+                dxx_val += power(component/_dxx_widths.get_data(ix),2);
             }
 
-            return d4_val + d8_val;
+            return d4_val + dxx_val;
         }
 
     private:
         integrableJellyBean _d4_chisq;
-        array_1d<double> _d8_center;
-        array_2d<double> _d8_bases;
-        array_1d<double> _d8_widths;
+        array_1d<double> _dxx_center;
+        array_2d<double> _dxx_bases;
+        array_1d<double> _dxx_widths;
 
 };
 

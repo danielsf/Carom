@@ -131,9 +131,9 @@ else if(chisq_dex==1){
     if(dim==4){
         chisq=new integrableJellyBean;
     }
-    else if(dim==12){
+    else if(dim>4){
         printf("creating new class\n");
-        chisq=new integrableJellyBean12;
+        chisq=new integrableJellyBeanXX(dim);
 
     }
     else{
