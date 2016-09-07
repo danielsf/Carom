@@ -8,7 +8,7 @@ class integrableJellyBean : public jellyBeanData{
     public:
         integrableJellyBean() :
         jellyBeanData(4,1,1.0,100,0.4){
-            _widths.set(0,0,50.0);
+            _widths.set(0,0,20.0);
             _widths.set(0,1,2.0);
             _widths.set(0,2,10.0);
             _widths.set(0,3,10.0);
