@@ -335,7 +335,8 @@ void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &ou
 
     double y_distance;
     y_distance=(y_is+0.25/_parabola_curvature)/_widths.get_data(ic,0);
-    out.set(0,y_distance);
+    double y_term=0.2*sin(y_distance)+log(0.5*y_distance+1.0);
+    out.set(0,y_term);
 
     double x_shldbe,dx;
     if(y_distance<0.0){

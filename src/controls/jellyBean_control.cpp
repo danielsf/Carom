@@ -58,9 +58,9 @@ int main(){
     raw_max.set(3,2.189316e+01);
 
     //for integrableJellyBean
-    raw_min.set(0,2.0);
+    raw_min.set(0,-16.0);
     raw_max.set(0,13.0);
-    raw_min.set(1,3.0);
+    raw_min.set(1,-13.0);
     raw_max.set(1, 15.0);
     raw_min.set(2,-12.0);
     raw_max.set(2,-4.0);
