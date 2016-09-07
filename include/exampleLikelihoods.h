@@ -85,12 +85,19 @@ class integrableJellyBeanXX : public chisquared{
             double component;
             int ix;
             int dxx=_dxx_center.get_dim();
+            double ratio;
             for(ix=0;ix<dxx;ix++){
                 component=0.0;
                 for(i=0;i<dxx;i++){
                     component+=(pt.get_data(4+i)-_dxx_center.get_data(i))*_dxx_bases.get_data(ix,i);
                 }
-                dxx_val += power(component/_dxx_widths.get_data(ix),2);
+                ratio=fabs(component/_dxx_widths.get_data(ix));
+                if(ratio<0.5){
+                    dxx_val+=power(ratio,2);
+                }
+                else{
+                    dxx_val+=ratio*log(ratio+1.0)+0.05;
+                }
             }
 
             return d4_val + dxx_val;
