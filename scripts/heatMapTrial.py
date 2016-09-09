@@ -11,7 +11,7 @@ import os
 if __name__ == "__main__":
 
     scratch_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom')
-    scratch_dir = os.path.join(scratch_dir, 'controls', 'scratch')
+    scratch_dir = os.path.join(scratch_dir, 'controls', 'draft_160907')
 
     ix_list = (0, 0, 0, 1, 1, 2)
     iy_list = (1, 2, 3, 2, 3, 3)
