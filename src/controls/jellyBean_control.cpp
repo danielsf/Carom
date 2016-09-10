@@ -83,12 +83,12 @@ int main(){
         dx.set(i,(max.get_data(i)-min.get_data(i))*0.005);
         printf("dx %e\n",dx.get_data(i));
     }
-    //dx.multiply_val(0,0.5);
-    //dx.multiply_val(1,0.5);
+    dx.multiply_val(0,0.5);
+    dx.multiply_val(1,0.5);
     //dx.multiply_val(2,2.0);
     //dx.multiply_val(3,2.0);
 
-    control_integrator integrator(chisq,min,max,dx,"controls/draft_160907/gentle_integrable_detailed");
+    control_integrator integrator(chisq,min,max,dx,"controls/draft_160907/gentle_integrable_detailed_x2");
     array_1d<double> cc;
     cc.add(0.95);
     cc.add(0.68);
