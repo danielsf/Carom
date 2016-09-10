@@ -275,6 +275,8 @@ void control_integrator::write_output(int xdex, int ydex,
         }
     }
 
+    printf("xct %d yct %d\n",xct,yct);
+
     array_2d<double> minChi2Grid,marginalized_likelihood;
     minChi2Grid.set_name("prepare_output_minChi2Grid");
     marginalized_likelihood.set_name("prepare_output_marginalized_likelihood");
@@ -286,6 +288,8 @@ void control_integrator::write_output(int xdex, int ydex,
             marginalized_likelihood.set(i,j,0.0);
         }
     }
+
+    printf("made marginalized_likelihood and minChi2Grid\n");
 
     int row,true_dex,ix,iy;
     for(row=chi_vals_sorted.get_dim()-1;row>=0;row--){
