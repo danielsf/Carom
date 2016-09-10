@@ -145,10 +145,10 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
             expected_time = ((double(time(NULL))-start)*_iter_p->get_total_ct())/double(_iter_p->get_current_ct());
 
-            printf("ct %ld good %d in %.4e %.4e -- %.4e -- expect %e\n",
+            printf("ct %ld good %d in %.4e %.4e -- %.4e -- expect %e hours\n",
             _iter_p->get_current_ct(),chi_vals.get_dim(),double(time(NULL))-start,
             (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin,
-            expected_time);
+            expected_time/3600.0);
         }
 
         if(mu<119.8){
