@@ -198,7 +198,6 @@ void aps_extractor::write_good_points(char *outname, int ix, int iy){
         for(i=0;i<extra_words-2;i++)fscanf(input,"%le",&nn);
     }
 
-
     fclose(input);
 
     plot_thinned_data(to_plot,outname);
@@ -333,7 +332,7 @@ void aps_extractor::make_boxes(){
         /*find the nearest neighbors of each point*/
         found_n_neigh=-1;
         while(found_n_neigh==-1){
-            kd.nn_srch(*data(i),n_neigh,neigh,dd);
+            kd.nn_srch(data(i),n_neigh,neigh,dd);
 
             found_n_neigh=1;
             for(j=0;j<nparams && found_n_neigh==1;j++){
@@ -764,7 +763,7 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
             /*otherwise, only plot the point if the nearest already plotted point is farther away
             than a normalized parameter space distance of 0.05*/
 
-            been_plotted_tree->nn_srch(*to_plot(chosen),1,neigh,ddneigh);
+            been_plotted_tree->nn_srch(to_plot(chosen),1,neigh,ddneigh);
 
             if(ddneigh.get_data(0)>0.05){
                 plot_it=1;
@@ -778,7 +777,7 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
             fprintf(output,"%e %e\n",to_plot.get_data(chosen,0),to_plot.get_data(chosen,1));
 
             if(been_plotted_tree==NULL){
-                been_plotted.add_row(*to_plot(chosen));
+                been_plotted.add_row(to_plot(chosen));
 
                 if(been_plotted.get_rows()>=10){
                     been_plotted_tree=new kd_tree(been_plotted,min,max);
@@ -786,7 +785,7 @@ void aps_extractor::plot_thinned_data(array_2d<double> &to_plot, char *filename)
 
             }
             else{
-                been_plotted_tree->add(*to_plot(chosen));
+                been_plotted_tree->add(to_plot(chosen));
             }
 
         }

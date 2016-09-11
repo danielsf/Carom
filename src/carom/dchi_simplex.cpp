@@ -70,7 +70,7 @@ double dchi_simplex_base::associate_distance(array_1d<double> &pt){
      return sqrt(ddmin);
 }
 
-double dchi_simplex_base::operator()(array_1d<double> &pt){
+double dchi_simplex_base::operator()(const array_1d<double> &pt){
     printf("WARNING calling dchi_simplex_base operator; shouldn't do that\n");
     exit(1);
 }
@@ -212,7 +212,7 @@ double dchi_interior_simplex::apply_model(array_1d<double> &pt){
 }
 
 
-double dchi_interior_simplex::nn_distance(array_1d<double> &pt){
+double dchi_interior_simplex::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j;
 
@@ -253,7 +253,7 @@ int dchi_interior_simplex::get_called(){
    return _called;
 }
 
-double dchi_interior_simplex::operator()(array_1d<double> &pt){
+double dchi_interior_simplex::operator()(const array_1d<double> &pt){
 
     _called++;
 

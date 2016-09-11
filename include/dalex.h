@@ -53,7 +53,7 @@ class dalex{
 
         int bisection(int, int, double, double);
         int bisection(int, array_1d<double>&, double, double);
-        int bisection(array_1d<double>&, array_1d<double>&, double, double);
+        int bisection(const array_1d<double>&, const array_1d<double>&, double, double);
 
         double get_basis(int i, int j){
             return _basis_vectors.get_data(i,j);
@@ -87,7 +87,7 @@ class dalex{
            }
        }
 
-        void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
+        void evaluate(const array_1d<double> &pt, double *mu_out, int *i_out){
             _chifn->evaluate(pt,mu_out,i_out);
             if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
                 add_good_point(i_out[0]);

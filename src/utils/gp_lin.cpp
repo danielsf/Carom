@@ -43,7 +43,7 @@ void gp_lin::add_pt(array_1d<double> &pt, double ff){
     _fn->add(ff);
 }
 
-double gp_lin::operator()(array_1d<double> &pt){
+double gp_lin::operator()(const array_1d<double> &pt){
 
     int i;
 
@@ -175,7 +175,7 @@ void gp_lin::optimize(array_2d<double> &pts, array_1d<double> &ff){
         cost=0.0;
         _ell_factor=exp(ln10*log_ell);
         for(i=0;i<pts.get_rows();i++){
-            mu=this[0](pts(i)[0]);
+            mu=this[0](pts(i));
             if(fabs(ff.get_data(i))<fabs(mu)){
                 dmu=fabs((mu-ff.get_data(i))/ff.get_data(i));
             }

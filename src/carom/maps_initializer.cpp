@@ -411,7 +411,7 @@ void maps_initializer::search(){
     array_2d<double> seed;
     array_1d<int> chosen;
     for(i=0;i<_chifn->get_dim()+1;i++){
-        seed.add_row(_chifn->get_pt(min_dexes.get_data(i))[0]);
+        seed.add_row(_chifn->get_pt(min_dexes.get_data(i)));
         chosen.add(min_dexes.get_data(i));
     }
     ffmin.find_minimum(seed,trial);

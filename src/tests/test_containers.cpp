@@ -8,6 +8,7 @@ void assert_equal(int i1, int i2, char *msg){
     if(i1!=i2){
         printf("WARNING %d neq %d\n",i1,i2);
         printf("%s\n",msg);
+        exit(1);
     }
 }
 
@@ -15,9 +16,16 @@ void assert_equal(double e1, double e2, double tol, char *msg){
     if(fabs(e1-e2)>tol){
         printf("WARNING diff between %e, %e > %e\n",e1,e2,tol);
         printf("%s\n",msg);
+        exit(1);
     }
 }
 
+void assert_greater(double n1, double n2){
+    if(n1<=n2){
+       printf("WARNING %e <= %e\n",n1,n2);
+       exit(1);
+    }
+}
 
 int main(int iargc, char *argv[]){
 
@@ -1208,6 +1216,21 @@ for(i=0;i<test_2d.get_cols();i++){
     assert_equal(test_2d.get_data(9,i), other_test_2d.get_data(0,i), 1.0e-6, "get vals");
 }
 
+
+nn=0.0;
+for(i=0;i<test_2d.get_cols();i++){
+    nn+=power(test_2d.get_data(11,i),2);
+}
+nn=sqrt(nn);
+assert_greater(nn,1.0);
+double mm=test_2d.normalize_row(11);
+assert_equal(mm,nn,nn*1.0e-6,"normalizing");
+nn=0.0;
+for(i=0;i<test_2d.get_cols();i++){
+    nn+=power(test_2d.get_data(11,i),2);
+}
+nn=sqrt(nn);
+assert_equal(nn,1.0,1.0e-6,"normalizing");
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);
 
 

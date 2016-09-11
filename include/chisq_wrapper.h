@@ -45,12 +45,12 @@ public:
     double random_double();
     int random_int();
 
-    double raw_evaluate(array_1d<double>&);
-    void evaluate(array_1d<double>&, double*, int*);
-    virtual double operator()(array_1d<double>&);
+    double raw_evaluate(const array_1d<double>&);
+    void evaluate(const array_1d<double>&, double*, int*);
+    virtual double operator()(const array_1d<double>&);
     double get_fn(int);
     double get_pt(int,int);
-    array_1d<double>* get_pt(int);
+    array_1d<double> get_pt(int);
 
     double distance(array_1d<double>&,int);
     double distance(array_1d<double>&,array_1d<double>&);
@@ -67,7 +67,7 @@ public:
 
     void find_gradient(array_1d<double>&,array_1d<double>&);
 
-    int in_bounds(array_1d<double>&);
+    int in_bounds(const array_1d<double>&);
     int in_bounds(int, double);
 
     void set_confidence_limit(double);
@@ -89,7 +89,7 @@ private:
     kd_tree *_kptr;
     Ran *_dice;
 
-    int is_valid(array_1d<double>&, int*);
+    int is_valid(const array_1d<double>&, int*);
     void is_it_safe(char*);
 
     array_1d<double> _valid_dd;

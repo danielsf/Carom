@@ -73,7 +73,7 @@ class integrableJellyBeanXX : public chisquared{
 
         }
 
-        virtual double operator()(array_1d<double> &pt){
+        virtual double operator()(const array_1d<double> &pt){
             _called++;
             array_1d<double> four_d_pt;
             int i;

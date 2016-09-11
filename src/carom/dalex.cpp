@@ -110,7 +110,7 @@ void dalex::simplex_search(array_1d<int> &specified){
     array_1d<int> chosen_seed;
 
     for(i=0;i<specified.get_dim();i++){
-        seed.add_row(_chifn->get_pt(specified.get_data(i))[0]);
+        seed.add_row(_chifn->get_pt(specified.get_data(i)));
     }
 
     while(seed.get_rows()<_chifn->get_dim()+1){
@@ -166,18 +166,18 @@ int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, doubl
         rr*=2.0;
     }
 
-    return bisection(_chifn->get_pt(ilow)[0], trial_high, local_target, tol);
+    return bisection(_chifn->get_pt(ilow), trial_high, local_target, tol);
 }
 
 
 int dalex::bisection(int ilow, int ihigh, double local_target, double tol){
     safety_check("bisection(int, int)");
-    return bisection(_chifn->get_pt(ilow)[0], _chifn->get_pt(ihigh)[0],
+    return bisection(_chifn->get_pt(ilow), _chifn->get_pt(ihigh),
                      local_target, tol);
 }
 
 
-int dalex::bisection(array_1d<double>& lowball_in, array_1d<double>& highball_in,
+int dalex::bisection(const array_1d<double>& lowball_in, const array_1d<double>& highball_in,
                      double local_target, double tol){
 
     safety_check("bisection(arr, arr)");
@@ -277,7 +277,7 @@ void dalex::find_trial_bases(int idim, array_1d<double> &dx, array_2d<double> &b
     for(i=0;i<_chifn->get_dim();i++){
         bases_out.add_val(idim,i,dx.get_data(i));
     }
-    bases_out(idim)->normalize();
+    bases_out.normalize_row(idim);
 
     int ix,jx;
     double mu;
@@ -304,7 +304,7 @@ void dalex::find_trial_bases(int idim, array_1d<double> &dx, array_2d<double> &b
             else jx=0;
         }
 
-        bases_out(ix)->normalize();
+        bases_out.normalize_row(ix);
 
         if(ix<_chifn->get_dim()-1)ix++;
         else ix=0;
@@ -321,7 +321,7 @@ void dalex::validate_bases(array_2d<double> &bases, char *whereami){
     double mu;
     /////////////////testing
     for(ix=0;ix<_chifn->get_dim();ix++){
-        bases(ix)->normalize();
+        bases.normalize_row(ix);
         mu=0.0;
         for(i=0;i<_chifn->get_dim();i++){
             mu+=bases.get_data(ix,i)*bases.get_data(ix,i);
@@ -393,7 +393,7 @@ void dalex::guess_bases(array_2d<double> &bases){
         for(iy=0;iy<_chifn->get_dim();iy++){
             bases.set(ix,iy,evecs.get_data(ix,iy));
         }
-        bases(ix)->normalize();
+        bases.normalize_row(ix);
     }
 
     validate_bases(bases,"dalex_guess_bases");
@@ -1087,7 +1087,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
     if(specified>=0){
         dchifn.copy_bases(dummy_bases);
-        seed.add_row(_chifn->get_pt(specified)[0]);
+        seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
                 trial.set(j,seed.get_data(0,j)+dummy_bases.get_data(i,j)*dchifn.get_hyper_norm(i)*0.01);
@@ -1104,10 +1104,10 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     double start_min;
     int i_start_min;
     for(i=0;i<seed.get_rows();i++){
-        mu=dchifn(seed(i)[0]);
+        mu=dchifn(seed(i));
         if(i==0 || mu<start_min){
             start_min=mu;
-            _chifn->evaluate(seed(i)[0],&mu,&i_start_min);
+            _chifn->evaluate(seed(i),&mu,&i_start_min);
         }
     }
     printf("    starting from %e\n",start_min);
@@ -1166,7 +1166,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     }
 
     printf("    adjusted %e from %e\n",
-    dchifn(_chifn->get_pt(i_min)[0]),_chifn->get_fn(i_min));
+    dchifn(_chifn->get_pt(i_min)),_chifn->get_fn(i_min));
 
     printf("    min is %e target %e\n",chimin(),target());
     if(_chifn->get_dim()>9){

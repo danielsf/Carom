@@ -4,7 +4,7 @@ function_wrapper::function_wrapper(){}
 
 function_wrapper::~function_wrapper(){}
 
-double function_wrapper::operator()(array_1d<double> &vv){
+double function_wrapper::operator()(const array_1d<double> &vv){
     printf("WARNING calling un-implemented function_wrapper operator\n");
     exit(1);
 }

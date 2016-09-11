@@ -722,6 +722,25 @@ public:
     }
 
 
+    inline double normalize_row(int dex){
+        if(dex>=_rows){
+            printf("WARNING trying to normalize row %d; only have %d\n",
+                   dex,_rows);
+
+            die(dex,0);
+        }
+        double ans=0.0;
+        int i;
+        for(i=0;i<_cols;i++){
+            ans+=_data[dex*_cols+i]*_data[dex*_cols+i];
+        }
+        ans=sqrt(ans);
+        for(i=0;i<_cols;i++){
+            _data[dex*_cols+i]/=ans;
+        }
+        return ans;
+    }
+
 private:
 
    int _rows,_cols,_room;

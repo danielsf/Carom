@@ -107,7 +107,7 @@ class kd_tree{
         void write_tree(char*);
         
         /*add a point to the tree*/
-        void add(array_1d<double>&);
+        void add(const array_1d<double>&);
         
         /*removes a node from the tree and then rebuilds the tree*/
         void remove(int);

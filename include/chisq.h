@@ -21,7 +21,7 @@ public:
         }
     }
 
-    virtual double operator()(array_1d<double>&);
+    virtual double operator()(const array_1d<double>&);
 
     virtual int get_called();
     void reset_timer();
@@ -37,8 +37,8 @@ public:
     void get_basis(int,array_1d<double>&);
     double get_basis(int,int);
 
-    double project_to_basis(int,array_1d<double>&) const;
-    void project_to_basis(array_1d<double>&, array_1d<double>&) const;
+    double project_to_basis(int,const array_1d<double>&) const;
+    void project_to_basis(const array_1d<double>&, array_1d<double>&) const;
 
     double get_width(int,int);
 
@@ -83,7 +83,7 @@ protected:
 
     int _with_logging;
 
-    void _log_point(array_1d<double> &pt, double mu){
+    void _log_point(const array_1d<double> &pt, double mu){
         if(_with_logging==0){
              return;
         }

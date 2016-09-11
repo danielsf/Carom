@@ -601,7 +601,7 @@ void kd_tree::confirm(int idim, int compareto, int dir, int where){
 
 }
 
-void kd_tree::add(array_1d<double> &v){
+void kd_tree::add(const array_1d<double> &v){
     /*
     add the point v to the tree
     */

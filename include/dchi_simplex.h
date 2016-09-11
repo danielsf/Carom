@@ -11,7 +11,7 @@ class dchi_simplex_base : public function_wrapper{
 
         virtual int get_called();
         double associate_distance(array_1d<double>&);
-        virtual double operator()(array_1d<double>&);
+        virtual double operator()(const array_1d<double>&);
 
     protected:
         array_1d<int> _associates;
@@ -25,9 +25,9 @@ class dchi_interior_simplex : public function_wrapper{
     public:
         dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
         ~dchi_interior_simplex(){};
-        virtual double operator()(array_1d<double>&);
+        virtual double operator()(const array_1d<double>&);
         virtual int get_called();
-        double nn_distance(array_1d<double>&);
+        double nn_distance(const array_1d<double>&);
         void set_envelope(double dd){
             _envelope=dd;
         }
@@ -79,7 +79,7 @@ class dchi_interior_simplex : public function_wrapper{
             int i;
             out.reset_preserving_room();
             for(i=0;i<_bases.get_rows();i++){
-                out.add_row(_bases(i)[0]);
+                out.add_row(_bases(i));
             }
         }
 

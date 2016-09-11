@@ -155,7 +155,7 @@ void chiSquaredData::initialize_data(){
 
 }
 
-void chiSquaredData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+void chiSquaredData::convert_params(const array_1d<double> &pt, array_1d<double> &out, int ic){
     printf("Called void convert_params");
     exit(1);
 }
@@ -190,7 +190,7 @@ double chiSquaredData::data_function(array_1d<double> &params, double xx){
 
 }
 
-double chiSquaredData::operator()(array_1d<double> &pt){
+double chiSquaredData::operator()(const array_1d<double> &pt){
 
     double before=double(time(NULL));
 
@@ -285,7 +285,7 @@ chiSquaredData(dd, cc, wc, nData, sigma){
 }
 
 
-void jellyBeanData::convert_params(array_1d<double> &pt_in, array_1d<double> &out, int ic){
+void jellyBeanData::convert_params(const array_1d<double> &pt_in, array_1d<double> &out, int ic){
 
     array_1d<double> pt;
     pt.set_name("convert_params_pt");
@@ -409,7 +409,7 @@ chiSquaredData(dd, cc, 1.0, nData, sigma){
     }
 }
 
-void ellipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+void ellipseData::convert_params(const array_1d<double> &pt, array_1d<double> &out, int ic){
 
     int ix;
     for(ix=0;ix<_dim;ix++){
@@ -426,7 +426,7 @@ void ellipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, in
 nonGaussianEllipseData::nonGaussianEllipseData(int i1, int i2, int i3, double d1) :
 ellipseData(i1, i2, i3, d1){}
 
-void nonGaussianEllipseData::convert_params(array_1d<double> &pt, array_1d<double> &out, int ic){
+void nonGaussianEllipseData::convert_params(const array_1d<double> &pt, array_1d<double> &out, int ic){
 
     int ix;
     for(ix=0;ix<_dim;ix++){

@@ -17,7 +17,7 @@ void explorers::get_seed(array_2d<double> &seed){
     double rr;
 
     for(i=0;i<_chifn->get_dim()+1;i++){
-        seed.add_row(_particles(mu_dex.get_data(i))[0]);
+        seed.add_row(_particles(mu_dex.get_data(i)));
         for(j=0;j<_chifn->get_dim();j++){
             _particles.set(mu_dex.get_data(i),j,_median_associate.get_data(j));
         }
@@ -161,7 +161,7 @@ void explorers::sample(int n_steps){
     trial.set_name("exp_sample_trial");
 
     for(ip=0;ip<_n_particles;ip++){
-        mu=dchifn(_particles(ip)[0]);
+        mu=dchifn(_particles(ip));
         if(ip==0 || mu<_mu_min){
             _mindex=ip;
             _mu_min=mu;

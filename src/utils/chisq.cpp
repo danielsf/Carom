@@ -228,7 +228,7 @@ void chisquared::reset_timer(){
     _time_spent=0.0;
 }
 
-double chisquared::operator()(array_1d<double> &v){
+double chisquared::operator()(const array_1d<double> &v){
     death_knell("meaningless operator");
     return -1.0;
 }
@@ -248,7 +248,7 @@ void chisquared::get_basis(int ix, array_1d<double> &v){
     }
 }
 
-void chisquared::project_to_basis(array_1d<double> &in, array_1d<double> &out) const{
+void chisquared::project_to_basis(const array_1d<double> &in, array_1d<double> &out) const{
     int ix,iy;
     for(ix=0;ix<_dim;ix++){
         out.set(ix,0.0);
@@ -259,7 +259,7 @@ void chisquared::project_to_basis(array_1d<double> &in, array_1d<double> &out) c
 
 }
 
-double chisquared::project_to_basis(int ix, array_1d<double> &vv) const{
+double chisquared::project_to_basis(int ix, const array_1d<double> &vv) const{
     int i;
     double nn=1.0e30;
     if(ix<_dim){
