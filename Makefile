@@ -44,6 +44,10 @@ test_containers: object/containers.o src/tests/test_containers.cpp object/goto_t
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
 
+diagnose_containers: object/containers.o src/tests/diagnose_containers.cpp object/goto_tools.o
+	$(gg) -o bin/diagnose_containers src/tests/diagnose_containers.cpp object/containers.o \
+        object/goto_tools.o $(LIBRARIES)
+
 test_grid: object/containers.o src/tests/test_grid.cpp object/goto_tools.o
 	$(gg) -o bin/test_grid src/tests/test_grid.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
