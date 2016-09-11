@@ -409,16 +409,6 @@ private:
 template <typename T>
 class array_2d{
 
-    /*
-    This is a class for 2-dimensional matrices in which each row has
-    the same number of columns.
-
-    Each row will be an instantiation of array_1d above.
-
-    As with array_1d, the code is presently compiled so that one can
-    have an array_2d of either ints or doubles
-    */
-
 public:
 
     /*
@@ -725,33 +715,13 @@ public:
 
 private:
 
-   /*
-   rows is the number of rows
-
-   cols is the number of columns
-
-   row_room is the number of array_1d's that have been allotted to store
-   rows (so that the code knows how much room it already has when you call
-   add_row)
-   */
    int rows,cols,row_room;
 
-   /*
-   This will be allocated an array of array_1d's to store the rows of this
-   array_2d
-   */
    array_1d<T> *data;
 
-   /*the name of this array_2d for purposes of diagnostics*/
    char *name;
 
-   /*the current location of this array_2d for purposes of diagnostics*/
    mutable char *where_am_i;
-
-    /*
-    name and where_am_i will be passed down to the array_1d's making up the
-    rows of this array_2d
-    */
 
 };
 
