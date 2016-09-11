@@ -1194,6 +1194,19 @@ for(i=0;i<test_rows;i++){
     }
 }
 
+array_1d<double> test_vec;
+test_vec=test_2d(9);
+assert_equal(test_vec.get_dim(), test_2d.get_cols(),"copy to vv dim");
+for(i=0;i<test_2d.get_cols();i++){
+    assert_equal(test_vec.get_data(i),test_2d.get_data(9,i),1.0e-6,"copy to vv");
+}
+
+array_2d<double> other_test_2d;
+other_test_2d.add_row(test_2d(9));
+assert_equal(other_test_2d.get_cols(), test_2d.get_cols(), "get cols");
+for(i=0;i<test_2d.get_cols();i++){
+    assert_equal(test_2d.get_data(9,i), other_test_2d.get_data(0,i), 1.0e-6, "get vals");
+}
 
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);
 

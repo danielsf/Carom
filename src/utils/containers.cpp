@@ -441,7 +441,7 @@ void array_2d<T>::set_row_room(int row_room_in){
 
 
 template <typename T>
-void array_2d<T>::add_row(array_1d<T> &in){
+void array_2d<T>::add_row(const array_1d<T> &in){
 
 
     if(_data==NULL && _room>0){
@@ -532,7 +532,7 @@ void array_2d<T>::remove_row(int dex){
 
 
 template <typename T>
-void array_2d<T>::set_row(int dex, array_1d<T> &in){
+void array_2d<T>::set_row(int dex, const array_1d<T> &in){
 
     if(dex<0){
         printf("tried to set to negative row\n");

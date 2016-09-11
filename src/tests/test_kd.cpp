@@ -199,7 +199,7 @@ for(outerloop=0;outerloop<3;outerloop++){
 
     data.reset();
     for(i=0;i<kd_test.get_pts();i++){
-        data.add_row(*kd_test.get_pt(i));
+        data.add_row(kd_test.get_pt(i));
     }
 
     total_remove=data.get_rows()/2;
@@ -225,7 +225,7 @@ for(outerloop=0;outerloop<3;outerloop++){
         }
 
         for(j=0;j<data.get_rows();j++){
-            kd_test.nn_srch(*data(j),1,neigh,dd);
+            kd_test.nn_srch(data(j),1,neigh,dd);
             if(dd.get_data(0)>tol){
                 printf("WARNING after removing %d distance error %e\n",
                 i,dd.get_data(0));

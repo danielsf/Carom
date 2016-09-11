@@ -581,10 +581,10 @@ public:
     /*add the array_1d as a row to this array_2d.  If this array_2d is blank,
     then the number of columns in this array_2d will be set to the length
     of the input array_1d*/
-    void add_row(array_1d<T>&);
+    void add_row(const array_1d<T>&);
 
     /*set the row indexed by int to the array_1d provided*/
-    void set_row(int,array_1d<T>&);
+    void set_row(int,const array_1d<T>&);
 
     /*set the element indexed by the two ints to the value provided.
     If you try to set a row that is beyond the current size of this
