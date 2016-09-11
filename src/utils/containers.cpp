@@ -421,7 +421,7 @@ void array_2d<T>::set_row_room(int row_room_in){
             buffer[i]=_data[i];
         }
         delete[] _data;
-        
+
         _data=new T[row_room_in*_cols];
         for(i=0;i<_room;i++){
             _data[i]=buffer[i];

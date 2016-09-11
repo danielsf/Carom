@@ -379,7 +379,7 @@ public:
 
     inline array_1d& operator=(const array_1d &in){
         if(this==&in) return *this;
-        
+
         if(data!=NULL){
             delete [] data;
         }
@@ -389,7 +389,7 @@ public:
         if(where_am_i!=NULL){
             delete [] where_am_i;
         }
-        
+
         dim=in.dim;
         room=in.room;
         name_set=in.name_set;
@@ -410,7 +410,7 @@ public:
             }
             where_am_i[i]=0;
         }
-        
+
         data = new T[room];
         for(i=0;i<room;i++){
             data[i]=in.data[i];
