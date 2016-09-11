@@ -4,6 +4,21 @@
 #include <time.h>
 #include <stdlib.h>
 
+void assert_equal(int i1, int i2, char *msg){
+    if(i1!=i2){
+        printf("WARNING %d neq %d\n",i1,i2);
+        printf("%s\n",msg);
+    }
+}
+
+void assert_equal(double e1, double e2, double tol, char *msg){
+    if(fabs(e1-e2)>tol){
+        printf("WARNING diff between %e, %e > %e\n",e1,e2,tol);
+        printf("%s\n",msg);
+    }
+}
+
+
 int main(int iargc, char *argv[]){
 
 int seed=43;
@@ -358,44 +373,37 @@ for(i=0;i<cols;i++){
     comparison_vector[i]=matrix.get_data(3,i);
 }
 
-array_1d<double> *vptr;
-
+array_1d<double> vptr;
 vptr=matrix(3);
 
 for(i=0;i<cols;i++){
-    err=fabs(comparison_vector[i]-(*vptr).get_data(i));
+    err=fabs(comparison_vector[i]-vptr.get_data(i));
     if(comparison_vector[i]!=0.0)err=err/fabs(comparison_vector[i]);
 
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
-        printf("WARNING failed on vptr\n");
+        printf("WARNING failed on vptr %e %e %d\n",
+        vptr.get_data(i),comparison_vector[i],i);
+        for(j=0;j<matrix.get_rows();j++){
+            for(k=0;k<matrix.get_cols();k++){
+               printf("%e ",matrix.get_data(j,k));
+            }
+            printf("\n");
+        }
 	exit(1);
     }
 }
 
 for(i=0;i<cols;i++){
     nn=fabs(chaos.doub())+0.1;
-    (*vptr).add_val(i,nn);
+    vptr.add_val(i,nn);
 
-    err=fabs((*vptr).get_data(i)-matrix.get_data(3,i));
-    if((*vptr).get_data(i)!=0.0)err=err/fabs((*vptr).get_data(i));
-
-    if(err>maxerr){
-       maxerr=err;
-       printf("relating back to matrix %e %e %e\n",
-       (*vptr).get_data(i),matrix.get_data(3,i),maxerr);
-    }
-    if(maxerr>tol){
-        printf("WARNING failed associating vptr to matrix\n");
-	exit(1);
-    }
-
-    err=fabs((*vptr).get_data(i)-comparison_vector[i]-nn);
-    if((*vptr).get_data(i)!=0.0)err=err/fabs((*vptr).get_data(i));
+    err=fabs(vptr.get_data(i)-comparison_vector[i]-nn);
+    if(vptr.get_data(i)!=0.0)err=err/fabs(vptr.get_data(i));
 
     if(err>maxerr){
         maxerr=err;
-        printf("actually changing vptr %e %e %e %e %e\n",(*vptr).get_data(i),
+        printf("actually changing vptr %e %e %e %e %e\n",vptr.get_data(i),
 	comparison_vector[i]+nn,maxerr,err,nn);
     }
     if(maxerr>tol){
@@ -1105,9 +1113,90 @@ if(arr.contains(13)!=0){
 }
 
 
+///////////////////exercise 2d
+array_2d<double> test_2d;
+
+test_2d.set_dim(3,2);
+assert_equal(test_2d.get_rows(), 3, "2d rows");
+assert_equal(test_2d.get_cols(), 2, "2d cols");
+test_2d.set(0,0,1.4);
+test_2d.set(0,1,2.3);
+test_2d.set(1,0,0.7);
+test_2d.set(1,1,0.9);
+test_2d.set(2,0,91.2);
+test_2d.set(2,1,19.1);
+assert_equal(test_2d.get_data(0,0),1.4,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(0,1),2.3,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(1,0),0.7,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(1,1),0.9,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(2,0),91.2,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(2,1),19.1,1.0e-6,"2d val");
+
+test_2d.multiply_val(2,1,3.0);
+assert_equal(test_2d.get_data(2,1),57.3,1.0e-6,"2d mult");
+test_2d.add_val(1,1,1.4);
+assert_equal(test_2d.get_data(1,1),2.3,1.0e-6,"2d add");
+test_2d.subtract_val(0,1,0.5);
+assert_equal(test_2d.get_data(0,1), 1.8,1.0e-6, "2d subtract");
+test_2d.divide_val(2,0,3.0);
+assert_equal(test_2d.get_data(2,0),91.2/3.0,1.0e-6,"2d divide");
+
+array_1d<double> test_1d;
+test_1d.set(0,9.0);
+test_1d.set(1,3.0);
+test_1d.set(2,4.5);
+assert_equal(test_1d.get_dim(),3,"1d dim");
+assert_equal(test_1d.get_data(0),9.0,1.0e-6,"1d val");
+assert_equal(test_1d.get_data(1),3.0,1.0e-6,"1d val");
+assert_equal(test_1d.get_data(2),4.5,1.0e-6,"1d val");
+test_1d.add_val(2,1.0);
+assert_equal(test_1d.get_data(2),5.5,1.0e-6,"1d add");
+test_1d.multiply_val(1,1.7);
+assert_equal(test_1d.get_data(1),5.1,1.0e-6,"1d mult");
+test_1d.subtract_val(0,9.1);
+assert_equal(test_1d.get_data(0),-0.1,1.0e-6,"1d subtract");
+test_1d.divide_val(0,2.0);
+assert_equal(test_1d.get_data(0),-0.05,1.0e-6,"1d divide");
+
+test_2d.reset_preserving_room();
+test_2d.set_dim(4,2);
+assert_equal(test_2d.get_rows(),4,"2d rows");
+assert_equal(test_2d.get_cols(),2,"2d cols");
+for(i=0;i<test_2d.get_rows();i++){
+    for(j=0;j<test_2d.get_cols();j++){
+         test_2d.set(i,j,i*0.1+j*0.01);
+    }
+}
+
+for(i=0;i<test_2d.get_rows();i++){
+    for(j=0;j<test_2d.get_cols();j++){
+         assert_equal(test_2d.get_data(i,j),i*0.1+j*0.01,1.0e-6,"2d vals");
+    }
+}
+
+
+test_2d.reset_preserving_room();
+test_2d.set_cols(90);
+int test_rows=10000;
+for(i=0;i<test_rows;i++){
+    for(j=0;j<test_2d.get_cols();j++){
+        test_2d.set(i,j,1.2*i+0.57*j);
+    }
+}
+
+assert_equal(test_2d.get_rows(),test_rows,"2d rows");
+assert_equal(test_2d.get_cols(),90,"2d cols");
+
+
+for(i=0;i<test_rows;i++){
+    for(j=0;j<test_2d.get_cols();j++){
+        assert_equal(test_2d.get_data(i,j),1.2*i+0.57*j,1.0e-6,"2d vals");
+    }
+}
+
+
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);
-printf("have not tested self add, subtract, divide, or multiply\n");
-printf("also have not tested 2d.set(int,int,T)\n");
+
 
 }
 
