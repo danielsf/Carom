@@ -103,11 +103,6 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
     double foundMin=exception_value;
 
-
-    FILE *output;
-
-    output=fopen("output/scratch/control_scatter.sav","w");
-
     int keep_going=1;
 
     _initialize_iterate();
@@ -151,17 +146,9 @@ void control_integrator::run_analysis(array_1d<double> &cc){
             expected_time/3600.0);
         }
 
-        if(mu<119.8){
-            for(ix=0;ix<_min.get_dim();ix++){
-                fprintf(output,"%e ",pt.get_data(ix));
-            }
-            fprintf(output,"\n");
-        }
-
 
     }
 
-    fclose(output);
     printf("foundMin %e in %ld\n",foundMin,_iter_p->get_current_ct());
 
     start=double(time(NULL));
