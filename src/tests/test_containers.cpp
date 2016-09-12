@@ -1122,6 +1122,7 @@ if(arr.contains(13)!=0){
 
 
 ///////////////////exercise 2d
+printf("more methodical\n");
 array_2d<double> test_2d;
 
 test_2d.set_dim(3,2);
@@ -1183,7 +1184,7 @@ for(i=0;i<test_2d.get_rows();i++){
 }
 
 
-test_2d.reset_preserving_room();
+test_2d.reset();
 test_2d.set_cols(90);
 int test_rows=10000;
 for(i=0;i<test_rows;i++){
