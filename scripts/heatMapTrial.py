@@ -10,8 +10,11 @@ import os
 
 if __name__ == "__main__":
 
-    scratch_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom')
-    scratch_dir = os.path.join(scratch_dir, 'controls', 'draft_160907')
+    input_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom')
+    input_dir = os.path.join(input_dir, 'controls', 'draft_160907')
+
+    output_dir = os.path.join('/Users', 'danielsf', 'physics', 'Carom_drafts')
+    output_dir = os.path.join(output_dir, 'figures')
 
     ix_list = (0, 0, 0, 1, 1, 2)
     iy_list = (1, 2, 3, 2, 3, 3)
@@ -19,8 +22,8 @@ if __name__ == "__main__":
     data = {}
 
     for ix, iy in zip(ix_list, iy_list):
-        name = 'gentle_integrable_detailed_0.95_%d_%d_heatmap.txt' % (ix, iy)
-        input_name = os.path.join(scratch_dir, name)
+        name = 'gentle_integrable_detailed_x2_0.95_%d_%d_heatmap.txt' % (ix, iy)
+        input_name = os.path.join(input_dir, name)
         data['%d_%d' % (ix, iy)] = np.genfromtxt(input_name).transpose()
 
 
@@ -83,4 +86,4 @@ if __name__ == "__main__":
         plt.yticks(fontsize=40)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(scratch_dir, 'heat_map.png'))
+    plt.savefig(os.path.join(output_dir, 'heat_map.png'))
