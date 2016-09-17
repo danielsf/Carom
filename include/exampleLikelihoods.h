@@ -129,9 +129,9 @@ class gaussianJellyBean12 : public jellyBeanData{
             Ran constructor_dice(44);
             int i;
 
-            _widths.set(0,0,250.0);
+            _widths.set(0,0,100.0);
             _widths.set(0,1,2.0);
-            _parabola_curvature=8.0;
+            _parabola_curvature=0.5;
 
             for(i=2;i<12;i++){
                 _widths.set(0,i,0.5+3.0*constructor_dice.doub());
