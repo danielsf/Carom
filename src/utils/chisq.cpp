@@ -229,7 +229,7 @@ void chisquared::reset_timer(){
 }
 
 double chisquared::operator()(const array_1d<double> &v){
-    death_knell("meaningless operator");
+    death_knell("meaningless chisq operator");
     return -1.0;
 }
 
