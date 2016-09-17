@@ -115,6 +115,14 @@ class control_integrator{
 
         control_integrator(function_wrapper&,array_1d<double>&,array_1d<double>&,array_1d<double>&,char*);
 
+        void set_d_threshold(double dd){
+            _d_threshold=dd;
+        }
+
+        void set_max_chi_lim_freq(double mm){
+            _max_chi_lim_freq=mm;
+        }
+
         void set_chi_lim_freq(double);
 
         void run_analysis(array_1d<double>&);
@@ -138,6 +146,8 @@ class control_integrator{
     protected:
         array_1d<double> _min,_max,_dx;
         double _chi_min;
+        double _d_threshold;
+        double _max_chi_lim_freq;
         function_wrapper *_chisq;
         char _name_root[letters];
 

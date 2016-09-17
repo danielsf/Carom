@@ -5,10 +5,13 @@ control_integrator::control_integrator(function_wrapper &chisq,
                      array_1d<double> &dx, char *name_root){
 
     _iter_p = NULL;
-
+    _d_threshold=60.0;
     _min.set_name("control_min");
     _max.set_name("control_max");
     _dx.set_name("control_dx");
+
+    chisquared_distribution distro;
+    _max_chi_lim_freq=distro.confidence_limit(100.0,0.95);
 
     _chisq=&chisq;
     int i;
@@ -56,9 +59,7 @@ void control_integrator::_initialize_iterate(){
 
 void control_integrator::run_analysis(array_1d<double> &cc){
 
-    chisquared_distribution distro;
-
-    double max_confidence_limit, max_chi_lim_freq;
+    double max_confidence_limit;
     int ic;
     for(ic=0;ic<cc.get_dim();ic++){
         if(ic==0 || cc.get_data(ic)>max_confidence_limit){
@@ -66,11 +67,9 @@ void control_integrator::run_analysis(array_1d<double> &cc){
         }
     }
 
-    max_chi_lim_freq=distro.confidence_limit(100.0,max_confidence_limit);
-
 
     printf("nameroot %s\n",_name_root);
-    printf("max_chi_lim_freq %e\n",max_chi_lim_freq);
+    printf("max_chi_lim_freq %e\n",_max_chi_lim_freq);
 
     array_1d<double> pt;
 
@@ -95,7 +94,6 @@ void control_integrator::run_analysis(array_1d<double> &cc){
         good_max.set(ix,-2.0*exception_value);
     }
 
-    double d_threshold=60.0;
     double mu;
     double start=double(time(NULL));
 
@@ -112,7 +110,7 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
     double expected_time;
 
-    double good_threshold=max_chi_lim_freq+d_threshold;
+    double good_threshold=_max_chi_lim_freq+_d_threshold;
     printf("good_threshold %e\n",good_threshold);
 
     while(keep_going==1){
