@@ -114,7 +114,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
     return ref_x, ref_y, ref_data
 
 
-def scatter_from_carom(data_name, dim, ix, iy, delta_chi, data=None, limit=None):
+def scatter_from_carom(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
     if data is None:
         dt_list = []
         for ii in range(dim):
@@ -135,7 +135,11 @@ def scatter_from_carom(data_name, dim, ix, iy, delta_chi, data=None, limit=None)
 
     mindex = np.argmin(data_cut['chisq'])
     chisq_min = data_cut['chisq'][mindex]
-    target = chisq_min + delta_chi
+
+    if delta_chi is not None:
+        if target is not None:
+            raise RuntimeWarning("You have specified both target and delta_chi; don't do that")
+        target = chisq_min + delta_chi
 
     good_dexes = np.where(data_cut['chisq'] <= target)
     good_x = data_cut['x%d' % ix][good_dexes]
