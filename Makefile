@@ -136,6 +136,13 @@ object/jellyBean.o include/exampleLikelihoods.h
 	object/simplex.o \
 	$(LIBRARIES)
 
+cartoon_control: object/control_integrator.o src/controls/cartoon_control.cpp \
+object/chisq.o
+	$(gg) -o bin/cartoon_control src/controls/cartoon_control.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/wrappers.o \
+	object/chisq.o object/control_integrator.o object/simplex.o \
+	$(LIBRARIES)
+
 jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o \
 object/jellyBean.o include/exampleLikelihoods.h
 	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
