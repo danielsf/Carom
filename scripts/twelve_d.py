@@ -1,13 +1,179 @@
 from __future__ import with_statement
 import os
+import numpy as np
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import time
 
+import scipy.spatial as spatial
+
 from analyzeCarom import scatter_from_multinest_projection, scatter_from_carom
 from analyzeCarom import scatter_from_multinest_marginalized
+
+def sales_metric(pts):
+    ans = np.sqrt(np.power(pts[:-1]-pts[1:],2).sum(axis=1)).sum()
+    return ans
+
+def replace(i1, i2, pts, trial_pts):
+    if i1<i2:
+        imin = i1
+        imax = i2
+    else:
+        imin = i2
+        imax = i1
+
+    if imax-imin == 1:
+        trial_pts[imin][0]=pts[imax][0]
+        trial_pts[imin][1]=pts[imax][1]
+        trial_pts[imax][0]=pts[imin][0]
+        trial_pts[imax][1]=pts[imin][1]
+    else:
+        for ii in range(imin+1,imax+1):
+            trial_pts[ii-1][0] = trial_pts[ii][0]
+            trial_pts[ii-1][1] = trial_pts[ii][1]
+        trial_pts[imax][0] = pts[imin][0]
+        trial_pts[imax][1] = pts[imin][1]
+
+
+
+def refine_salesman(rng, pts, iterations):
+
+    orig_shape = pts.shape
+
+    tree = spatial.KDTree(pts)
+    n_nn = 30
+
+    print 'pts shape ',pts.shape
+
+    d_current = sales_metric(pts)
+    print 'start with ',d_current
+
+    i_last = 0
+    bad_pts = None
+    for i_iteration in range(iterations):
+        if bad_pts is None:
+            dist, dex = tree.query(pts, 3)
+            dex = dex.transpose()
+            bad_pts = np.where(np.logical_and(np.abs(dex[1]-dex[0])>1, np.abs(dex[2]-dex[0])>1))[0]
+
+        i1 = bad_pts[rng.random_integers(0,len(bad_pts)-1,1)[0]]
+
+        dist, dex = tree.query(pts[i1], n_nn)
+        has_chosen = []
+        has_changed = False
+        i_attempt = 0
+        while not has_changed and i_attempt<10:
+            i_attempt += 1
+            i2 = i1
+            while i2==i1 or i2 in has_chosen:
+                i2 = dex[rng.random_integers(0,n_nn-1,1)[0]]
+            has_chosen.append(i2)
+            trial_pts = np.copy(pts)
+            replace(i1, i2, pts, trial_pts)
+
+            d_trial = sales_metric(trial_pts)
+            if d_trial<d_current:
+                d_current = d_trial
+                pts = np.copy(trial_pts)
+                tree = spatial.KDTree(pts)
+                i_last = i_iteration
+                bad_pts = None
+                has_changed = True
+
+        if i_iteration-i_last>1000:
+            break
+
+
+        print d_current
+    print pts.shape,orig_shape
+    return pts
+
+def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
+
+    m_x, m_y, data = scatter_from_multinest_projection(file_name, dim, ix, iy, data=data)
+
+    xmin = m_x.min()
+    xmax = m_x.max()
+    ymin = m_y.min()
+    ymax = m_y.max()
+    dx = 0.01*(xmax-xmin)
+    dy = 0.01*(ymax-ymin)
+
+    m_d_x = np.round(m_x/dx)
+    m_d_y = np.round(m_y/dy)
+    tree_data = np.array([m_d_x, m_d_y]).transpose()
+    dex_raw = np.ascontiguousarray(tree_data).view(np.dtype((np.void, tree_data.dtype.itemsize*tree_data.shape[1])))
+    _, unique_rows = np.unique(dex_raw, return_index=True)
+    tree_data = tree_data[unique_rows]
+    tree =spatial.KDTree(tree_data)
+    boundary_pts = []
+    for pt in tree_data:
+        dist, dex = tree.query(pt, 5)
+        if dist[4]>1.001:
+            boundary_pts.append([pt[0], pt[1]])
+
+    print "scatter %d boundary %d" % (len(tree_data), len(boundary_pts))
+
+    boundary_pts_raw = np.array(boundary_pts)
+
+    boundary_pts = []
+    boundary_pts.append(np.copy(boundary_pts_raw[0]))
+    boundary_pts_raw = np.delete(boundary_pts_raw, 0, 0)
+    while len(boundary_pts_raw)>0:
+        last_dex = len(boundary_pts)-1
+        dex = None
+        if len(boundary_pts_raw)==1:
+            dex = 0
+        if dex is None:
+            possibilities = []
+            dd_possibilities = []
+            for i_pt, pt in enumerate(boundary_pts_raw):
+                dd_last = np.power(pt-boundary_pts[last_dex],2).sum()
+                dd_arr = np.sort(np.power(pt-boundary_pts_raw,2).sum(axis=1))
+                if dd_last < dd_arr[1]:
+                    possibilities.append(i_pt)
+                    dd_possibilities.append(dd_last)
+
+            if len(possibilities)>0:
+                dd_possibilities = np.array(dd_possibilities)
+                dex=possibilities[np.argsort(dd_possibilities)[0]]
+
+        if dex is None:
+            distance = np.sqrt(np.power(boundary_pts[last_dex]-boundary_pts_raw,2).sum(axis=1))
+            dex = np.argmin(distance)
+
+        pt = np.copy(boundary_pts_raw[dex])
+        boundary_pts.append(pt)
+        boundary_pts_raw = np.delete(boundary_pts_raw, dex, 0)
+
+    rng = np.random.RandomState(22)
+    un_refined = np.array(boundary_pts).transpose()
+    boundary_pts = refine_salesman(rng, np.array(boundary_pts), 50000)
+
+    #print boundary_pts[0]
+    #print boundary_pts[1]
+
+    for pt in un_refined.transpose():
+        dd = np.power(pt-boundary_pts,2).sum(axis=1).min()
+        try:
+            assert dd<1.0e-30
+        except:
+            dex = np.argmin(np.power(pt-boundary_pts,2).sum(axis=1))
+            print pt
+            print boundary_pts[dex]
+            print dd
+            raise
+
+    boundary_pts = boundary_pts.transpose()
+
+    plt.figsize=(30,30)
+    plt.scatter(m_x, m_y, color='k')
+    plt.plot(boundary_pts[0]*dx, boundary_pts[1]*dy, color='b', linestyle='-')
+    plt.plot(un_refined[0]*dx, un_refined[1]*dy, color='r', linestyle='--')
+    plt.savefig('junk.png')
+
 
 if __name__ == "__main__":
 
@@ -56,6 +222,10 @@ if __name__ == "__main__":
                 lines = input_file.readlines()
                 n_mult = len(lines)
 
+
+            boundary_from_multinest_projection(os.path.join(multinest_dir, multinest_name),
+                                               full_dim, dim[0], dim[1])
+            exit()
 
             m_x, m_y, m_data = scatter_from_multinest_projection(
                                  os.path.join(multinest_dir, multinest_name),
