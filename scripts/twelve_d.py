@@ -43,7 +43,7 @@ def refine_salesman(rng, pts, iterations):
     orig_shape = pts.shape
 
     tree = spatial.KDTree(pts)
-    n_nn = 30
+    n_nn = len(pts)/2
 
     print 'pts shape ',pts.shape
 
@@ -91,6 +91,7 @@ def refine_salesman(rng, pts, iterations):
     return pts
 
 def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
+    t_start = time.time()
 
     m_x, m_y, data = scatter_from_multinest_projection(file_name, dim, ix, iy, data=data)
 
@@ -98,8 +99,8 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
     xmax = m_x.max()
     ymin = m_y.min()
     ymax = m_y.max()
-    dx = 0.01*(xmax-xmin)
-    dy = 0.01*(ymax-ymin)
+    dx = 0.05*(xmax-xmin)
+    dy = 0.05*(ymax-ymin)
 
     m_d_x = np.round(m_x/dx)
     m_d_y = np.round(m_y/dy)
@@ -116,7 +117,9 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
 
     print "scatter %d boundary %d" % (len(tree_data), len(boundary_pts))
 
-    boundary_pts_raw = np.array(boundary_pts)
+    boundary_pts_raw = np.array(boundary_pts).transpose()
+    return boundary_pts_raw[0]*dx, boundary_pts_raw[1]*dy, data
+
 
     boundary_pts = []
     boundary_pts.append(np.copy(boundary_pts_raw[0]))
@@ -129,15 +132,14 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
         if dex is None:
             possibilities = []
             dd_possibilities = []
-            for i_pt, pt in enumerate(boundary_pts_raw):
-                dd_last = np.power(pt-boundary_pts[last_dex],2).sum()
-                dd_arr = np.sort(np.power(pt-boundary_pts_raw,2).sum(axis=1))
-                if dd_last < dd_arr[1]:
-                    possibilities.append(i_pt)
-                    dd_possibilities.append(dd_last)
+            dd_last = np.sqrt(np.power(boundary_pts_raw-boundary_pts[last_dex],2).sum(axis=1))
+            tree = spatial.KDTree(boundary_pts_raw)
+            dist_arr, dex_arr = tree.query(boundary_pts_raw, 2)
+            i_poss = np.where(dd_last<dist_arr.transpose()[1])
+            dd_possibilities = dd_last[i_poss]
+            possibilities = i_poss[0]
 
             if len(possibilities)>0:
-                dd_possibilities = np.array(dd_possibilities)
                 dex=possibilities[np.argsort(dd_possibilities)[0]]
 
         if dex is None:
@@ -148,9 +150,12 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
         boundary_pts.append(pt)
         boundary_pts_raw = np.delete(boundary_pts_raw, dex, 0)
 
-    rng = np.random.RandomState(22)
     un_refined = np.array(boundary_pts).transpose()
-    boundary_pts = refine_salesman(rng, np.array(boundary_pts), 50000)
+    print "boundary took ",time.time()-t_start
+    return un_refined[0]*dx, un_refined[1]*dy, data
+
+    """
+    #boundary_pts = refine_salesman(rng, np.array(boundary_pts), 50000)
 
     #print boundary_pts[0]
     #print boundary_pts[1]
