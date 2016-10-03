@@ -8,7 +8,6 @@
 #include "simplex.h"
 #include "gp_lin.h"
 #include "dchi_simplex.h"
-#include "dchi_simplex_gp.h"
 #include "search_types.h"
 #include "dalex.h"
 #include "maps_initializer.h"
