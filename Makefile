@@ -155,11 +155,6 @@ object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
 object/wrappers.o
 	$(gg) -c -o object/gp.o src/utils/gp.cpp
 
-
-object/gp_lin.o: src/utils/gp_lin.cpp include/gp_lin.h object/kd.o object/eigen_wrapper.o \
-object/wrappers.o
-	$(gg) -c -o object/gp_lin.o src/utils/gp_lin.cpp
-
 test_gp: src/tests/test_gp.cpp object/gp.o object/jellyBean.o \
 include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
 	$(gg) -o bin/test_gp src/tests/test_gp.cpp object/goto_tools.o \
@@ -183,8 +178,7 @@ object/chisq_wrapper.o object/simplex.o
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
 object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
-object/gp_lin.o object/dalex.o \
-object/maps_initializer.o
+object/dalex.o object/maps_initializer.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
 test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
@@ -213,8 +207,7 @@ object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/dchi_simplex.o object/maps.o object/jellyBean.o \
-        object/gp_lin.o object/dalex.o \
-	object/maps_initializer.o object/explorers.o \
+        object/dalex.o object/maps_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
 test_opt: src/examples/test_opt.cpp object/maps.o \

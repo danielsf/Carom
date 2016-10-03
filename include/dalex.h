@@ -7,7 +7,6 @@
 #include "simplex.h"
 #include "eigen_wrapper.h"
 #include "search_types.h"
-#include "gp_lin.h"
 #include "explorers.h"
 
 class dalex{

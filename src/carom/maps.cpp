@@ -128,8 +128,6 @@ void maps::initialize(int npts){
     _cloud.build(&_chifn);
     _cloud.set_log(&_log);
     assess_good_points(0);
-    _interpolator.set_kd_fn(_chifn.get_tree(), _chifn.get_fn_arr());
-    _interpolator.set_ell_factor(1.0);
     write_pts();
 }
 

@@ -6,7 +6,6 @@
 #include "eigen_wrapper.h"
 #include "chisq_wrapper.h"
 #include "simplex.h"
-#include "gp_lin.h"
 #include "dchi_simplex.h"
 #include "search_types.h"
 #include "dalex.h"
@@ -54,7 +53,6 @@ public:
 private:
 
     chisq_wrapper _chifn;
-    gp_lin _interpolator;
     int _write_every,_last_written;
     int _ct_dalex;
     int _last_wrote_log;
