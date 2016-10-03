@@ -264,7 +264,7 @@ if __name__ == "__main__":
             m_h = plt.scatter(m_x, m_y, color='k', s=7)
 
 
-            d_h = plt.scatter(d_x, d_y, color='r', s=3)
+            d_h = plt.scatter(d_x, d_y, color='r', s=7, marker='+')
             d_h_list.append(d_h)
             d_label_list.append('Dale$\chi$')
 
