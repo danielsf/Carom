@@ -254,7 +254,7 @@ if __name__ == "__main__":
             if ymin is None or d_y.min()<ymin:
                 ymin=d_y.min()
 
-            m_x, m_y, m_data = boundary_from_multinest_projection(
+            m_x, m_y, m_data = scatter_from_multinest_projection(
                                  os.path.join(multinest_dir, multinest_name),
                                  full_dim, dim[0], dim[1],
                                  data=m_data_dict[seed])
