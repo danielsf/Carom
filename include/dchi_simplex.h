@@ -3,24 +3,6 @@
 
 #include "chisq_wrapper.h"
 
-class dchi_simplex_base : public function_wrapper{
-
-    public:
-        dchi_simplex_base(chisq_wrapper*, array_1d<int>&);
-        ~dchi_simplex_base(){};
-
-        virtual int get_called();
-        double associate_distance(array_1d<double>&);
-        virtual double operator()(const array_1d<double>&);
-
-    protected:
-        array_1d<int> _associates;
-        array_1d<double> _norm;
-        chisq_wrapper *_chifn;
-        int _called;
-        double _min_0;
-};
-
 class dchi_interior_simplex : public function_wrapper{
     public:
         dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
