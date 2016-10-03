@@ -173,19 +173,23 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
 
     boundary_pts = boundary_pts.transpose()
 
+
+
     plt.figsize=(30,30)
     plt.scatter(m_x, m_y, color='k')
-    plt.plot(boundary_pts[0]*dx, boundary_pts[1]*dy, color='b', linestyle='-')
-    plt.plot(un_refined[0]*dx, un_refined[1]*dy, color='r', linestyle='--')
+    #plt.plot(boundary_pts[0]*dx, boundary_pts[1]*dy, color='b', linestyle='-')
+    plt.plot(un_refined[0]*dx, un_refined[1]*dy, color='r', linestyle='-')
     plt.savefig('junk.png')
+    return un_refined[0], un_refined[1], data
+    """
 
 
 if __name__ == "__main__":
 
     seed_list = [932, 99, 66, 125, 6475]
+    limit_list = [400000, 300000, 300000, 300000, 500000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
-    limit_list = [500000, 400000, 300000, 200000]
-    color_list = ['k', 'y', 'g', 'b']
+    color_list = ['r', 'y', 'g', 'c']
 
     delta_chi = 21.03
     full_dim = 12
@@ -210,15 +214,14 @@ if __name__ == "__main__":
     for dim in dim_list:
         plt.figsize = (30,30)
 
-
-
         text_list = []
         xmax = None
         xmin = None
         ymax = None
         ymin = None
 
-        for i_seed, (title, seed) in enumerate(zip(title_list, seed_list)):
+        for i_seed, (title, seed, limit) in enumerate(zip(title_list, seed_list, limit_list)):
+            t_start = time.time()
             dalex_name = "jellyBean_d12_s%d_output.sav" % seed
             multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03.txt" % seed
 
@@ -227,49 +230,46 @@ if __name__ == "__main__":
                 lines = input_file.readlines()
                 n_mult = len(lines)
 
+            plt.subplot(3,2,i_seed+1)
+            plt.title(title, fontsize=7)
 
-            boundary_from_multinest_projection(os.path.join(multinest_dir, multinest_name),
-                                               full_dim, dim[0], dim[1])
-            exit()
+            d_h_list = []
+            d_label_list = []
 
-            m_x, m_y, m_data = scatter_from_multinest_projection(
+            (d_x, d_y, chisq_min, target,
+             d_data) = scatter_from_carom(os.path.join(data_dir, dalex_name),
+                                          full_dim, dim[0], dim[1], delta_chi=delta_chi,
+                                          data=d_data_dict[seed],
+                                          limit=limit)
+
+            d_data_dict[seed] = d_data
+
+
+            if xmax is None or d_x.max()>xmax:
+                xmax=d_x.max()
+            if xmin is None or d_x.min()<xmin:
+                xmin=d_x.min()
+            if ymax is None or d_y.max()>ymax:
+                ymax=d_y.max()
+            if ymin is None or d_y.min()<ymin:
+                ymin=d_y.min()
+
+            m_x, m_y, m_data = boundary_from_multinest_projection(
                                  os.path.join(multinest_dir, multinest_name),
                                  full_dim, dim[0], dim[1],
                                  data=m_data_dict[seed])
 
             m_data_dict[seed] = m_data
 
-            plt.subplot(3,2,i_seed+1)
-            plt.title(title, fontsize=20)
-            m_h = plt.scatter(m_x, m_y, color='r', s=7)
+            m_h = plt.scatter(m_x, m_y, color='k', s=7)
 
-            d_h_list = []
-            d_label_list = []
 
-            for limit, color in zip(limit_list, color_list):
+            d_h = plt.scatter(d_x, d_y, color='r', s=3)
+            d_h_list.append(d_h)
+            d_label_list.append('Dale$\chi$')
 
-                (d_x, d_y, chisq_min, target,
-                 d_data) = scatter_from_carom(os.path.join(data_dir, dalex_name),
-                                          full_dim, dim[0], dim[1], delta_chi=delta_chi,
-                                          data=d_data_dict[seed],
-                                          limit=limit)
-
-                d_data_dict[seed] = d_data
-
-                d_h = plt.scatter(d_x, d_y, color=color, s=3)
-                d_h_list.append(d_h)
-                d_label_list.append('Dale$\chi$: %.2e calls' % limit)
-
-                if xmax is None or d_x.max()>xmax:
-                    xmax=d_x.max()
-                if xmin is None or d_x.min()<xmin:
-                    xmin=d_x.min()
-                if ymax is None or d_y.max()>ymax:
-                    ymax=d_y.max()
-                if ymin is None or d_y.min()<ymin:
-                    ymin=d_y.min()
-
-            text = ('MultiNest: %.2e $\chi^2$ calls\n' % (n_mult))
+            text = ('MultiNest: %.2e $\chi^2$ calls\n' % n_mult
+                    + 'Dale$\chi$: %.2e $\chi^2$ calls' % limit)
             text_list.append(text)
 
             for xx in (m_x.min(), m_x.max(), d_x.min(), d_x.max()):
@@ -283,6 +283,7 @@ if __name__ == "__main__":
                     ymax=yy
                 if ymin is None or yy<ymin:
                     ymin=yy
+            print "one seed took ",time.time()-t_start
 
         for i_seed in range(5):
             plt.subplot(3,2,i_seed+1)
@@ -290,8 +291,9 @@ if __name__ == "__main__":
             dy=ymax-ymin
             plt.xlim((xmin-0.05*dx, xmax+0.05*dx))
             plt.ylim((ymin-0.05*dy, ymax+0.6*dy))
-            plt.xlabel('$\\theta_%d$' % dim[0], fontsize=20)
-            plt.ylabel('$\\theta_%d$' % dim[1], fontsize=20)
+            if i_seed==0:
+                plt.xlabel('$\\theta_%d$' % dim[0], fontsize=15)
+                plt.ylabel('$\\theta_%d$' % dim[1], fontsize=15)
             plt.text(xmin, ymax+0.01*dy, text_list[i_seed], fontsize=10)
 
         plt.legend([m_h] + d_h_list,
