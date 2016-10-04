@@ -2,8 +2,8 @@
 
 void maps_initializer::search(){
     safety_check();
-    int total_per=1000;
-    int adjust_every=50;
+    int total_per=100*_chifn->get_dim();
+    int adjust_every=total_per/10;
     int n_groups=2;
     int n_particles=n_groups*(_chifn->get_dim()+1);
 
@@ -377,13 +377,6 @@ void maps_initializer::search(){
         }
     }
 
-    for(i=0;i<n_particles;i++){
-        printf("min %e %d - %e - %d\n",
-        _chifn->get_fn(_abs_min.get_data(i)),
-        total_accepted.get_data(i),
-        _chifn->get_fn(_local_min.get_data(i)),
-        connected.get_data(i));
-    }
     printf("called %d -- %e\n",_chifn->get_pts(),_chifn->chimin());
     printf("min disconnected %e - %d\n",min_disconnected,n_disconnected);
     printf("re_norm %e\n",re_norm);
@@ -416,9 +409,7 @@ void maps_initializer::search(){
     }
     ffmin.find_minimum(seed,trial);
 
-    /*seed.reset_preserving_room();
-
-
+    seed.reset_preserving_room();
     min_vals.reset();
     min_val_sorted.reset();
     min_dexes.reset();
@@ -430,18 +421,18 @@ void maps_initializer::search(){
     }
     sort(min_vals, min_val_sorted, min_dexes);
     for(i=0;i<min_dexes.get_dim() && seed.get_rows()!=_chifn->get_dim()+1;i++){
-        seed.add_row(_chifn->get_pt(min_dexes.get_data(i))[0]);
+        seed.add_row(_chifn->get_pt(min_dexes.get_data(i)));
         chosen.add(min_dexes.get_data(i));
     }
 
     while(seed.get_rows()!=_chifn->get_dim()+1){
         i=_chifn->random_int()%_abs_min.get_dim();
         if(chosen.contains(_abs_min.get_data(i))==0 && _abs_min.get_data(i)!=dex_min){
-            seed.add_row(_chifn->get_pt(_abs_min.get_data(i))[0]);
+            seed.add_row(_chifn->get_pt(_abs_min.get_data(i)));
             chosen.add(_abs_min.get_data(i));
         }
     }
 
-    ffmin.find_minimum(seed,trial);*/
+    ffmin.find_minimum(seed,trial);
 
 }
