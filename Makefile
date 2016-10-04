@@ -176,6 +176,14 @@ object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializ
 object/chisq_wrapper.o object/simplex.o
 	$(gg) -c -o object/maps_initializer.o src/carom/maps_initializer.cpp
 
+test_maps_init: src/tests/test_maps_init.cpp object/maps_initializer.o \
+include/exampleLikelihoods.h
+	$(gg) -o bin/test_maps_init src/tests/test_maps_init.cpp \
+	object/containers.o object/goto_tools.o \
+	object/wrappers.o object/maps_initializer.o object/simplex.o \
+	object/chisq_wrapper.o object/kd.o object/jellyBean.o \
+	object/chisq.o
+
 object/maps.o: src/carom/maps.cpp include/maps.h \
 object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
 object/dalex.o object/maps_initializer.o
