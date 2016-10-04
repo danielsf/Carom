@@ -102,6 +102,8 @@ void maps_initializer::search(){
     int i_dim,i_half;
     double sgn;
 
+    array_1d<double> geocenter;
+    geocenter.set_name("maps_init_geocenter");
 
     printf("\nstarting steps with min %e\n",_chifn->chimin());
     for(i_step=0;i_step<total_per;i_step++){
@@ -238,6 +240,18 @@ void maps_initializer::search(){
             local_min.reset_preserving_room();
             local_max.reset_preserving_room();
 
+            for(i=0;i<_chifn->get_dim();i++){
+                geocenter.set(i,0.0);
+            }
+            for(ip=0;ip<_particles.get_dim();ip++){
+                for(i=0;i<_chifn->get_dim();i++){
+                    geocenter.add_val(i,_chifn->get_pt(_particles.get_data(ip),i));
+                }
+            }
+            for(i=0;i<_chifn->get_dim();i++){
+                geocenter.divide_val(i,double(_particles.get_dim()));
+            }
+
             for(ip=0;ip<_particles.get_dim();ip++){
                 if(_since_min.get_data(ip)>=adjust_every){
                     /*min_pt_connected=0;
@@ -280,8 +294,8 @@ void maps_initializer::search(){
                             rr=normal_deviate(_chifn->get_dice(),0.5,0.1);
 
                             for(i=0;i<_chifn->get_dim();i++){
-                                trial.set(i,_chifn->get_pt(_abs_min.get_data(ip),i)+
-                                          rr*(_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
+                                trial.set(i,geocenter.get_data(i)+
+                                          0.5*(_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
                             }
 
                             mu=evaluate(trial,&i_found,ip,&mu_true);
