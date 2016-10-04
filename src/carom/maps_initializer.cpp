@@ -21,7 +21,9 @@ void maps_initializer::search(){
     dir.set_name("mcmc_init_dir");
     norm.set_name("mcmc_init_norm");
 
-    double rr;
+    double rr, global_norm;
+
+    global_norm=0.05;
 
     int ip,i,j,k,i_step,i_found;
 
@@ -143,7 +145,7 @@ void maps_initializer::search(){
             }
 
             for(i=0;i<_chifn->get_dim();i++){
-                norm.set(i,0.1*(local_max.get_data(i)-local_min.get_data(i)));
+                norm.set(i,global_norm*(local_max.get_data(i)-local_min.get_data(i)));
             }
 
         }
@@ -275,8 +277,8 @@ void maps_initializer::search(){
                             }
                             dir.normalize();
                             for(i=0;i<_chifn->get_dim();i++){
-                                trial.set(i,_chifn->get_pt(_chifn->mindex(),i)+
-                                          0.5*(_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
+                                trial.set(i,_chifn->get_pt(_abs_min.get_data(ip),i)+
+                                          (_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
                             }
 
                             for(i=0;i<_particles.get_dim();i++){
