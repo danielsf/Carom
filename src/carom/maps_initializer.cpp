@@ -102,7 +102,7 @@ void maps_initializer::search(){
     int i_dim,i_half;
     double sgn;
 
-    printf("starting steps with min %e\n",_chifn->chimin());
+    printf("\nstarting steps with min %e\n",_chifn->chimin());
     for(i_step=0;i_step<total_per;i_step++){
         if(i_step%(4*_chifn->get_dim())==0){
             bases.reset_preserving_room();
@@ -377,13 +377,13 @@ void maps_initializer::search(){
         }
     }
 
-    for(i=0;i<n_particles;i++){
+    /*for(i=0;i<n_particles;i++){
         printf("min %e %d - %e - %d\n",
         _chifn->get_fn(_abs_min.get_data(i)),
         total_accepted.get_data(i),
         _chifn->get_fn(_local_min.get_data(i)),
         connected.get_data(i));
-    }
+    }*/
     printf("called %d -- %e\n",_chifn->get_pts(),_chifn->chimin());
     printf("min disconnected %e - %d\n",min_disconnected,n_disconnected);
     printf("re_norm %e\n",re_norm);
