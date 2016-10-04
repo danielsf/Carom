@@ -245,7 +245,7 @@ void maps_initializer::search(){
 
             for(ip=0;ip<_particles.get_dim();ip++){
                 if(_since_min.get_data(ip)>=adjust_every){
-                    min_pt_connected=0;
+                    /*min_pt_connected=0;
                     for(i=0;i<_chifn->get_dim();i++){
                         trial.set(i,0.5*(_chifn->get_pt(_chifn->mindex(),i)+
                                    _chifn->get_pt(_local_min.get_data(ip),i)));
@@ -253,7 +253,8 @@ void maps_initializer::search(){
                     mu=evaluate(trial,&i_found,ip,&mu_true);
                     if(mu<_chifn->get_fn(_local_min.get_data(ip)) || _local_min.get_data(ip)==_chifn->mindex()){
                         min_pt_connected=1;
-                    }
+                    }*/
+                    min_pt_connected=1;
 
                     if(min_pt_connected==0){
                         n_opt_out++;
