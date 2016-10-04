@@ -93,6 +93,7 @@ int main(){
     }
     for(seed=99,ii=0;ii<iterations;ii++){
         seed+=d_seed;
+        printf("\nseed %d\n",seed);
 
         d24_chisq=new gaussianJellyBean24();
         chifn_wrapped = new chisq_wrapper();

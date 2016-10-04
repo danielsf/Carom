@@ -199,6 +199,7 @@ void maps_initializer::search(){
         step_ct++;
 
         if(i_step>0 && i_step%adjust_every==0){
+            printf("adjusting min %e\n",_chifn->chimin());
 
             accepted_sorted.reset_preserving_room();
             accepted_dex.reset_preserving_room();
