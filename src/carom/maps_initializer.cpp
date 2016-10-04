@@ -21,9 +21,7 @@ void maps_initializer::search(){
     dir.set_name("mcmc_init_dir");
     norm.set_name("mcmc_init_norm");
 
-    double rr,re_norm;
-
-    re_norm=1.0;
+    double rr;
 
     int ip,i,j,k,i_step,i_found;
 
@@ -223,13 +221,6 @@ void maps_initializer::search(){
                 needs_adjustment=-1;
             }
 
-            if(needs_adjustment==1){
-                re_norm*=0.7;
-            }
-            else{
-                re_norm+=0.1;
-            }
-
             if(needs_adjustment!=0){
                 sort(needed_temp_arr, needed_temp_sorted, needed_temp_dex);
                 old_temp=_temp;
@@ -319,9 +310,6 @@ void maps_initializer::search(){
 
             needed_temp_sorted.reset_preserving_room();
 
-            //printf("    acc %d %d %d out of %d temp %e re_norm %e min %e\n",
-            //min_acc,med_acc,max_acc,step_ct,_temp, re_norm, _chifn->chimin());
-
             for(ip=0;ip<_particles.get_dim();ip++){
                 current_particles.set(ip,_particles.get_data(ip));
             }
@@ -387,7 +375,6 @@ void maps_initializer::search(){
     }*/
     printf("called %d -- %e\n",_chifn->get_pts(),_chifn->chimin());
     printf("min disconnected %e - %d\n",min_disconnected,n_disconnected);
-    printf("re_norm %e\n",re_norm);
     printf("jumped %d vs %d\n",n_jumps,n_opt_out);
 
     array_1d<double> smin,smax;
