@@ -416,7 +416,7 @@ void maps_initializer::search(){
     }
     ffmin.find_minimum(seed,trial);
 
-    /*seed.reset_preserving_room();
+    seed.reset_preserving_room();
 
 
     min_vals.reset();
@@ -430,18 +430,18 @@ void maps_initializer::search(){
     }
     sort(min_vals, min_val_sorted, min_dexes);
     for(i=0;i<min_dexes.get_dim() && seed.get_rows()!=_chifn->get_dim()+1;i++){
-        seed.add_row(_chifn->get_pt(min_dexes.get_data(i))[0]);
+        seed.add_row(_chifn->get_pt(min_dexes.get_data(i)));
         chosen.add(min_dexes.get_data(i));
     }
 
     while(seed.get_rows()!=_chifn->get_dim()+1){
         i=_chifn->random_int()%_abs_min.get_dim();
         if(chosen.contains(_abs_min.get_data(i))==0 && _abs_min.get_data(i)!=dex_min){
-            seed.add_row(_chifn->get_pt(_abs_min.get_data(i))[0]);
+            seed.add_row(_chifn->get_pt(_abs_min.get_data(i)));
             chosen.add(_abs_min.get_data(i));
         }
     }
 
-    ffmin.find_minimum(seed,trial);*/
+    ffmin.find_minimum(seed,trial);
 
 }
