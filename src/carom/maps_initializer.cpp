@@ -102,6 +102,7 @@ void maps_initializer::search(){
     int i_dim,i_half;
     double sgn;
 
+
     printf("\nstarting steps with min %e\n",_chifn->chimin());
     for(i_step=0;i_step<total_per;i_step++){
         if(i_step%(4*_chifn->get_dim())==0){
@@ -270,46 +271,29 @@ void maps_initializer::search(){
                             }
                         }
 
-                        i_best=-1;
-                        for(k=0;k<100 || i_best<0;k++){
+                        i_found=-1;
+                        while(i_found<0){
                             for(i=0;i<_chifn->get_dim();i++){
                                 dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
                             }
                             dir.normalize();
+                            rr=normal_deviate(_chifn->get_dice(),0.5,0.1);
+
                             for(i=0;i<_chifn->get_dim();i++){
                                 trial.set(i,_chifn->get_pt(_abs_min.get_data(ip),i)+
-                                          (_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
-                            }
-
-                            for(i=0;i<_particles.get_dim();i++){
-                                dd=0.0;
-                                for(j=0;j<_chifn->get_dim();j++){
-                                    dd+=power((trial.get_data(j)-_chifn->get_pt(_abs_min.get_data(i),j))/
-                                               (_chifn->get_max(j)-_chifn->get_min(j)),2);
-                                }
-                                if(i==0 || dd<dd_min){
-                                     dd_min=dd;
-                                }
+                                          rr*(_chifn->get_max(i)-_chifn->get_min(i))*dir.get_data(i));
                             }
 
                             mu=evaluate(trial,&i_found,ip,&mu_true);
-
-                            if(i_best<0 || dd_min>dd_best){
-                                dd_best=dd_min;
-                                i_best=i_found;
-                            }
-
                         }
 
-                        _particles.set(ip,i_best);
-                        _local_min.set(ip,i_best);
-                        trails.add(ip, i_best);
+                        _particles.set(ip,i_found);
+                        _local_min.set(ip,i_found);
+                        trails.add(ip, i_found);
                         _since_min.set(ip,0);
                     }
                 }
             }
-
-
 
             needed_temp_sorted.reset_preserving_room();
 
