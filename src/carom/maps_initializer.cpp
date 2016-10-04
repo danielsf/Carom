@@ -2,9 +2,9 @@
 
 void maps_initializer::search(){
     safety_check();
-    int total_per=1000;
-    int adjust_every=50;
-    int n_groups=2;
+    int total_per=100*_chifn->get_dim();
+    int adjust_every=total_per/5;
+    int n_groups=3;
     int n_particles=n_groups*(_chifn->get_dim()+1);
 
     array_1d<int> accepted,accepted_sorted,accepted_dex;
