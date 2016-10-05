@@ -6,6 +6,7 @@ void maps_initializer::search(){
     int adjust_every=total_per/10;
     int n_groups=2;
     int n_particles=n_groups*(_chifn->get_dim()+1);
+    double global_norm=0.05;
 
     array_1d<int> accepted,accepted_sorted,accepted_dex;
     array_1d<int> total_accepted;
@@ -143,7 +144,7 @@ void maps_initializer::search(){
             }
 
             for(i=0;i<_chifn->get_dim();i++){
-                norm.set(i,0.1*(local_max.get_data(i)-local_min.get_data(i)));
+                norm.set(i,global_norm*(local_max.get_data(i)-local_min.get_data(i)));
             }
 
         }
