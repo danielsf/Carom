@@ -232,9 +232,6 @@ void maps_initializer::search(){
                 }
             }
 
-            local_min.reset_preserving_room();
-            local_max.reset_preserving_room();
-
             for(ip=0;ip<_particles.get_dim();ip++){
                 if(_since_min.get_data(ip)>=adjust_every){
                     min_pt_connected=0;
@@ -253,19 +250,6 @@ void maps_initializer::search(){
 
                     if(min_pt_connected==1){
                         n_jumps++;
-                        if(local_min.get_dim()==0){
-                            for(i=0;i<_particles.get_dim();i++){
-                                for(j=0;j<_chifn->get_dim();j++){
-                                    mu=_chifn->get_pt(trails.get_data(i,trails.get_cols(i)/3),j);
-                                    if(j>=local_min.get_dim() || mu<local_min.get_data(j)){
-                                        local_min.set(j,mu);
-                                    }
-                                    if(j>=local_max.get_dim() || mu>local_max.get_data(j)){
-                                        local_max.set(j,mu);
-                                    }
-                                }
-                            }
-                        }
 
                         i_best=-1;
                         for(k=0;k<100 || i_best<0;k++){
