@@ -138,6 +138,22 @@ void maps_initializer::set_bases(){
         _vol*=mu_best;
     }
 
+    double rr;
+    for(i=0;i<_particles.get_rows();i++){
+        rr=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            mu=0.0;
+            for(dim=0;dim<_chifn->get_dim();dim++){
+                mu+=(_particles.get_data(i,dim)-_center.get_data(dim))*_bases.get_data(j,dim)/_radii.get_data(j);
+            }
+            rr+=mu*mu;
+        }
+        if(i==0 || rr>_max_radius){
+            _max_radius=rr;
+        }
+    }
+    _max_radius=sqrt(_max_radius);
+
 }
 
 void maps_initializer::evaluate(array_1d<double> &pt, double *mu, int *i_found){
@@ -153,6 +169,7 @@ void maps_initializer::sample(){
     while(rr<0.0){
         rr=normal_deviate(_chifn->get_dice(),1.0,1.0);
     }
+    rr*=_max_radius;
     for(i=0;i<_chifn->get_dim();i++){
         _dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
     }
