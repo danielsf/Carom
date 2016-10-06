@@ -7,15 +7,22 @@
 class maps_initializer{
 
     public:
-    
+
         ~maps_initializer(){}
-    
+
         maps_initializer(){
             _chifn=NULL;
+            _transform.set_name("maps_init_transform");
+            _bases.set_name("maps_init_bases");
             _particles.set_name("maps_init_particles");
-            _local_min.set_name("maps_init_local_min");
-            _abs_min.set_name("maps_init_abs_min");
-            _since_min.set_name("maps_init_since_min");
+            _radii.set_name("maps_init_radii");
+            _geocenter.set_name("maps_init_geocenter");
+            _fn.set_name("maps_init_fn");
+            _dex.set_name("maps_init_dex");
+            _dir.set_name("maps_init_dir");
+            _pt_shell.set_name("maps_init_pt_shell");
+            _pt_true.set_name("maps_init_pt_true");
+
         }
 
         void set_chifn(chisq_wrapper *cc){
@@ -29,31 +36,30 @@ class maps_initializer{
             }
         }
 
-        double evaluate(array_1d<double> &pt, int *i_found, int i_point, double *mu_true_out){
-            double mu;
-            _chifn->evaluate(pt, &mu, i_found);
-            mu_true_out[0]=mu;
-            if(i_point>=0 && i_found[0]>=0){
-                if(i_point>=_abs_min.get_dim() || mu_true_out[0]<_chifn->get_fn(_abs_min.get_data(i_point))){
-                    _abs_min.set(i_point,i_found[0]);
-                }
-                if(i_point>=_local_min.get_dim() || mu_true_out[0]<_chifn->get_fn(_local_min.get_data(i_point))){
-                    _local_min.set(i_point,i_found[0]);
-                    _since_min.set(i_point,0);
-                }
-                else{
-                    _since_min.add_val(i_point,1);
-                }
-            }
-            return mu;
-        }
-
-
+        void initialize();
         void search();
+        void set_bases();
+        void convert_to_truth(array_1d<double>&,array_1d<double>&);
+        void convert_to_shell(array_1d<double>&,array_1d<double>&);
+        void evaluate(array_1d<double>&, double*, int*);
+        void sample();
 
     private:
         chisq_wrapper *_chifn;
-        array_1d<int> _particles,_local_min,_abs_min,_since_min;
+        array_1d<double> _transform;
+        array_2d<double> _particles;
+        array_1d<double> _fn;
+        array_1d<int> _dex;
+        array_2d<double> _bases;
+        array_1d<double> _radii;
+        array_1d<double> _geocenter;
+        array_1d<double>_pt_true;
+        array_1d<double>_pt_shell;
+        array_1d<double> _dir;
+        double _fn_max;
+        int _max_dex;
+        int _ct_replace;
+        double _vol;
 };
 
 
