@@ -79,13 +79,16 @@ void maps_initializer::set_bases(){
 
     int dim,i,j;
     double fn_min;
+    for(i=0;i<_chifn->get_dim();i++){
+        _center.set(i,0.0);
+    }
     for(i=0;i<_particles.get_rows();i++){
-        if(i==0 || _fn.get_data(i)<fn_min){
-            fn_min=_fn.get_data(i);
-            for(j=0;j<_chifn->get_dim();j++){
-                _center.set(j,_particles.get_data(i,j));
-            }
+        for(j=0;j<_chifn->get_dim();j++){
+            _center.add_val(j,_particles.get_data(i,j));
         }
+    }
+    for(i=0;i<_chifn->get_dim();i++){
+        _center.divide_val(i,double(_particles.get_rows()));
     }
     double mu, mu_best;
     array_1d<double> dir,dir_best;
