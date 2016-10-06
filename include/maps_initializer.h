@@ -19,7 +19,6 @@ class maps_initializer{
             _geocenter.set_name("maps_init_geocenter");
             _fn.set_name("maps_init_fn");
             _dex.set_name("maps_init_dex");
-            _dir.set_name("maps_init_dir");
             _pt_shell.set_name("maps_init_pt_shell");
             _pt_true.set_name("maps_init_pt_true");
 
@@ -55,7 +54,6 @@ class maps_initializer{
         array_1d<double> _geocenter;
         array_1d<double>_pt_true;
         array_1d<double>_pt_shell;
-        array_1d<double> _dir;
         double _fn_max;
         int _max_dex;
         int _ct_replace;
