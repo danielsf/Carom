@@ -180,7 +180,7 @@ void maps_initializer::search(){
     int i;
     for(i=0;i<n_steps;i++){
         sample();
-        if(i%(100*_chifn->get_dim())==0){
+        if(i%(10*_chifn->get_dim())==0){
             printf("called %d min %e -- %d %e -- %e\n",
             _chifn->get_called(),_chifn->chimin(),_ct_replace,_fn_max,_vol);
             set_bases();
