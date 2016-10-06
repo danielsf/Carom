@@ -48,6 +48,14 @@ void maps_initializer::initialize(){
 
     set_bases();
     printf("after init %e\n",_chifn->chimin());
+
+    /*double dd;
+    for(i=0;i<_chifn->get_dim();i++){
+        printf("    %e\n",_chifn->get_pt(_chifn->mindex(),i));
+        dd+=power(_chifn->get_pt(_chifn->mindex(),i),2);
+    }
+    printf("dd %e\n",sqrt(dd));
+    exit(1);*/
 }
 
 
