@@ -39,8 +39,8 @@ class maps_initializer{
         void initialize();
         void search();
         void set_bases();
-        void convert_to_truth(array_1d<double>&,array_1d<double>&);
-        void convert_to_shell(array_1d<double>&,array_1d<double>&);
+        void convert_to_truth(const array_1d<double>&,array_1d<double>&);
+        void convert_to_shell(const array_1d<double>&,array_1d<double>&);
         void evaluate(array_1d<double>&, double*, int*);
         void sample();
 

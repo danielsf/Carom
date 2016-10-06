@@ -51,14 +51,14 @@ void maps_initializer::initialize(){
 }
 
 
-void maps_initializer::convert_to_truth(array_1d<double> &in, array_1d<double> &out){
+void maps_initializer::convert_to_truth(const array_1d<double> &in, array_1d<double> &out){
     int i;
     for(i=0;i<_chifn->get_dim();i++){
         out.set(i,in.get_data(i)*_transform.get_data(i));
     }
 }
 
-void maps_initializer::convert_to_shell(array_1d<double> &in, array_1d<double> &out){
+void maps_initializer::convert_to_shell(const array_1d<double> &in, array_1d<double> &out){
     int i;
     for(i=0;i<_chifn->get_dim();i++){
         out.set(i,in.get_data(i)/_transform.get_data(i));
@@ -138,7 +138,10 @@ void maps_initializer::sample(){
 
     int i,j;
     double rr;
-    rr=fabs(normal_deviate(_chifn->get_dice(),1.0,1.0));
+    rr=-1.0;
+    while(rr<0.0){
+        rr=normal_deviate(_chifn->get_dice(),1.0,1.0);
+    }
     for(i=0;i<_chifn->get_dim();i++){
         _dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
     }
@@ -176,16 +179,40 @@ void maps_initializer::sample(){
 void maps_initializer::search(){
     safety_check();
     initialize();
-    int n_steps=100000;
+    int n_steps=200000;
     int i;
     for(i=0;i<n_steps;i++){
         sample();
-        if(i%(10*_chifn->get_dim())==0){
+        if(i%(100*_chifn->get_dim())==0){
             printf("called %d min %e -- %d %e -- %e\n",
             _chifn->get_called(),_chifn->chimin(),_ct_replace,_fn_max,_vol);
             set_bases();
         }
     }
 
+    array_2d<double> seed;
+    array_1d<double> min,max;
+    array_1d<double> fn_sorted;
+    array_1d<int> fn_dex;
+    for(i=0;i<_fn.get_dim();i++){
+        fn_dex.add(i);
+    }
+    sort(_fn,fn_sorted,fn_dex);
+    array_1d<double> trial;
+    for(i=0;i<_chifn->get_dim()+1;i++){
+        convert_to_truth(_particles(i),trial);
+        seed.add_row(trial);
+    }
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,0.0);
+        max.set(i,_chifn->get_characteristic_length(i));
+    }
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(_chifn);
+    ffmin.set_minmax(min,max);
+    ffmin.set_dice(_chifn->get_dice());
+    ffmin.use_gradient();
+    ffmin.find_minimum(seed,trial);
 
 }
