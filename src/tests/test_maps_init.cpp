@@ -16,7 +16,7 @@ int main(){
 
     int seed,d_seed;
     d_seed=17;
-    dim=4;
+    /*dim=4;
     fprintf(output,"dim %d\n",dim);
     for(jj=0;jj<dim;jj++){
         min.set(jj,-40.0);
@@ -80,7 +80,7 @@ int main(){
         delete initializer;
     }
 
-    /*fprintf(output,"\n");
+    fprintf(output,"\n");*/
 
     gaussianJellyBean24 *d24_chisq;
 
@@ -113,7 +113,7 @@ int main(){
         delete d24_chisq;
         delete chifn_wrapped;
         delete initializer;
-    }*/
+    }
 
     fclose(output);
 
