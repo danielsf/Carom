@@ -2,6 +2,7 @@
 
 void maps_initializer::initialize(){
     safety_check();
+    printf("starting min is %e\n",_chifn->chimin());
     _particles.reset_preserving_room();
     _fn.reset_preserving_room();
     _dex.reset_preserving_room();
@@ -46,6 +47,7 @@ void maps_initializer::initialize(){
     }
 
     set_bases();
+    printf("after init %e\n",_chifn->chimin());
 }
 
 
