@@ -134,14 +134,17 @@ void maps_initializer::sample(){
 
     int i,j;
     double rr;
-
+    rr=fabs(normal_deviate(_chifn->get_dice(),1.0,0.5));
+    for(i=0;i<_chifn->get_dim();i++){
+        _dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+    }
+    _dir.normalize();
     for(i=0;i<_chifn->get_dim();i++){
         _pt_shell.set(i,_geocenter.get_data(i));
     }
     for(i=0;i<_chifn->get_dim();i++){
-        rr=2.0*(_chifn->random_double()-0.5);
         for(j=0;j<_chifn->get_dim();j++){
-            _pt_shell.add_val(j,rr*_radii.get_data(i)*_bases.get_data(i,j));
+            _pt_shell.add_val(j,rr*_radii.get_data(i)*_dir.get_data(i)*_bases.get_data(i,j));
         }
     }
 
