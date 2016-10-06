@@ -200,17 +200,19 @@ void maps_initializer::search(){
 
     array_2d<double> seed;
     array_1d<double> min,max;
-    array_1d<double> fn_sorted;
-    array_1d<int> fn_dex;
-    for(i=0;i<_fn.get_dim();i++){
-        fn_dex.add(i);
-    }
-    sort(_fn,fn_sorted,fn_dex);
+
     array_1d<double> trial;
-    for(i=0;i<_chifn->get_dim()+1;i++){
-        convert_to_truth(_particles(i),trial);
+
+    seed.add_row(_chifn->get_pt(_chifn->mindex()));
+    int j;
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            trial.set(j,_chifn->get_pt(_chifn->mindex(),j));
+        }
+        trial.add_val(i,0.1*_chifn->get_characteristic_length(i));
         seed.add_row(trial);
     }
+
     for(i=0;i<_chifn->get_dim();i++){
         min.set(i,0.0);
         max.set(i,_chifn->get_characteristic_length(i));
