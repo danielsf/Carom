@@ -5,7 +5,7 @@ void maps_initializer::search(){
     int total_per=100*_chifn->get_dim();
     int adjust_every=total_per/10;
     int n_groups=2;
-    int n_particles=n_groups*(_chifn->get_dim()+1);
+    int n_particles=n_groups*(_chifn->get_dim()+1)+_chifn->get_dim()/2;
     double global_norm=0.05;
 
     array_1d<int> accepted,accepted_sorted,accepted_dex;
