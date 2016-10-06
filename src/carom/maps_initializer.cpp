@@ -189,7 +189,7 @@ void maps_initializer::search(){
     initialize();
     int n_steps=200000;
     int i;
-    for(i=0;i<n_steps;i++){
+    for(i=0;i<n_steps && _vol>1.0;i++){
         sample();
         if(i%(100*_chifn->get_dim())==0){
             printf("called %d min %e -- %d %e -- %e\n",
