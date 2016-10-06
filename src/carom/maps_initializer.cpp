@@ -136,7 +136,7 @@ void maps_initializer::sample(){
 
     int i,j;
     double rr;
-    rr=fabs(normal_deviate(_chifn->get_dice(),1.0,0.5));
+    rr=fabs(normal_deviate(_chifn->get_dice(),1.0,1.0));
     for(i=0;i<_chifn->get_dim();i++){
         _dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
     }
