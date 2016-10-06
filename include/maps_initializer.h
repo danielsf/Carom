@@ -16,7 +16,7 @@ class maps_initializer{
             _bases.set_name("maps_init_bases");
             _particles.set_name("maps_init_particles");
             _radii.set_name("maps_init_radii");
-            _geocenter.set_name("maps_init_geocenter");
+            _center.set_name("maps_init_center");
             _fn.set_name("maps_init_fn");
             _dex.set_name("maps_init_dex");
             _dir.set_name("maps_init_dir");
@@ -52,7 +52,7 @@ class maps_initializer{
         array_1d<int> _dex;
         array_2d<double> _bases;
         array_1d<double> _radii;
-        array_1d<double> _geocenter;
+        array_1d<double> _center;
         array_1d<double>_pt_true;
         array_1d<double>_pt_shell;
         array_1d<double> _dir;

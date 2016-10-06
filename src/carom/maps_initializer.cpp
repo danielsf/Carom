@@ -70,12 +70,14 @@ void maps_initializer::set_bases(){
     _radii.reset_preserving_room();
 
     int dim,i,j;
-    for(dim=0;dim<_chifn->get_dim();dim++){
-        _geocenter.set(dim,0.0);
-        for(i=0;i<_particles.get_rows();i++){
-            _geocenter.add_val(dim,_particles.get_data(i,dim));
+    double fn_min;
+    for(i=0;i<_particles.get_rows();i++){
+        if(i==0 || _fn.get_data(i)<fn_min){
+            fn_min=_fn.get_data(i);
+            for(j=0;j<_chifn->get_dim();j++){
+                _center.set(j,_particles.get_data(i,j));
+            }
         }
-        _geocenter.divide_val(dim,double(_particles.get_rows()));
     }
     double mu, mu_best;
     array_1d<double> dir,dir_best;
@@ -84,7 +86,7 @@ void maps_initializer::set_bases(){
     while(_bases.get_rows()<_chifn->get_dim()){
         for(i=0;i<_particles.get_rows();i++){
             for(dim=0;dim<_chifn->get_dim();dim++){
-                dir.set(dim,_particles.get_data(i,dim)-_geocenter.get_data(dim));
+                dir.set(dim,_particles.get_data(i,dim)-_center.get_data(dim));
             }
 
             for(j=0;j<_bases.get_rows();j++){
@@ -142,7 +144,7 @@ void maps_initializer::sample(){
     }
     _dir.normalize();
     for(i=0;i<_chifn->get_dim();i++){
-        _pt_shell.set(i,_geocenter.get_data(i));
+        _pt_shell.set(i,_center.get_data(i));
     }
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
