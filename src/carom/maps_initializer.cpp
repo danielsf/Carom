@@ -92,6 +92,7 @@ void maps_initializer::set_bases(){
 
     _vol=1.0;
     while(_bases.get_rows()<_chifn->get_dim()){
+        radius_best=-1.0;
         for(i=0;i<_particles.get_rows();i++){
             for(dim=0;dim<_chifn->get_dim();dim++){
                 dir.set(dim,_particles.get_data(i,dim)-_center.get_data(dim));
@@ -109,22 +110,30 @@ void maps_initializer::set_bases(){
                 remainder-=(component*component)/(_radii.get_data(j)*_radii.get_data(j));
             }
 
-            component=dir.normalize();
-            radius=sqrt(component*component/remainder);
-            if(i==0 || radius>radius_best){
-                radius_best=radius;
-                for(dim=0;dim<_chifn->get_dim();dim++){
-                    dir_best.set(dim,dir.get_data(dim));
+            if(remainder>0.0){
+                component=dir.normalize();
+                radius=sqrt(component*component/remainder);
+                if(radius>radius_best){
+                    radius_best=radius;
+                    for(dim=0;dim<_chifn->get_dim();dim++){
+                        dir_best.set(dim,dir.get_data(dim));
+                    }
                 }
             }
         }
+
+        if(radius_best<0.0){
+            printf("WARNING radius_best %e\n",radius_best);
+                exit(1);
+        }
+
         for(i=0;i<_bases.get_rows();i++){
             component=0.0;
             for(j=0;j<_chifn->get_dim();j++){
                 component+=_bases.get_data(i,j)*dir_best.get_data(j);
             }
             if(fabs(component)>1.0e-4){
-                printf("WARNING basis dot prod %e\n",component);
+                printf("WARNING basis dot prod %e %d %d\n",component,_bases.get_rows(),i);
                 exit(1);
             }
         }
