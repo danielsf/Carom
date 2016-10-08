@@ -178,33 +178,28 @@ void maps_initializer::evaluate(array_1d<double> &pt, double *mu, int *i_found){
 
 void maps_initializer::get_ellipse_pt(array_1d<double> &out){
 
-    double remainder=1.0;
-    double sqrt_remainder=1.0;
+    double mu,remainder;
+    remainder=10.0;
+    int i,j,k;
     array_1d<double> coords;
-    int i;
-    double rr;
-    for(i=0;i<_chifn->get_dim();i++){
-        coords.set(i,0.0);
-    }
-    int valid=0;
-    for(i=0;i<_chifn->get_dim() && remainder>=-0.01;i++){
-        valid++;
-        rr=(_chifn->random_double()-0.5)*sqrt_remainder;
-        coords.set(i,rr);
-        remainder-=rr*rr;
-        sqrt_remainder=sqrt(remainder);
+    while(remainder>1.01){
+        remainder=0.0;
+        for(i=0;i<_chifn->get_dim() && remainder<1.01;i++){
+            coords.set(i,2.0*(_chifn->random_double()-0.5));
+            remainder+=coords.get_data(i)*coords.get_data(i);
+        }
     }
 
-    int j;
     for(i=0;i<_chifn->get_dim();i++){
         out.set(i,_center.get_data(i));
     }
+
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             out.add_val(j,coords.get_data(i)*_radii.get_data(i)*_bases.get_data(i,j));
         }
     }
-
+    printf("got a point %d\n",_chifn->get_called());
 }
 
 void maps_initializer::sample(){
