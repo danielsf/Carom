@@ -46,6 +46,24 @@ void maps_initializer::initialize(){
         }
     }
 
+    int n_cos_steps=1000;
+    _cos_n_grid.set_dim(_chifn->get_dim(),n_cos_steps);
+
+    int i_dim;
+    int i_step;
+    double theta;
+    double d_x=1.0/double(n_cos_steps-1);
+    for(i_dim=0;i_dim<_cos_n_grid.get_rows();i_dim++){
+        for(i_step=0;i_step<n_cos_steps;i_step++){
+            theta=asin(i_step*d_x);
+            if(isnan(theta)){
+                 printf("WARNING theta %e\n",theta);
+                 exit(1);
+            }
+            _cos_n_grid.set(i_dim,i_step,integrate_cos_n(0.0,theta,i_dim));
+        }
+    }
+
     set_bases();
     printf("after init %e\n",_chifn->chimin());
 
