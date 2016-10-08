@@ -8,7 +8,7 @@ void maps_initializer::initialize(){
     _dex.reset_preserving_room();
     _transform.reset_preserving_room();
     _ct_replace=0;
-    int n_particles=1000;
+    int n_particles=300;
     int i,j;
     for(i=0;i<_chifn->get_dim();i++){
         _transform.set(i,_chifn->get_characteristic_length(i));
@@ -139,7 +139,7 @@ void maps_initializer::set_bases(){
         }
         component=dir_best.normalize();
         if(fabs(component-1.0)>1.0e-5){
-            printf("WARNING basis norm %e\n",component);
+            printf("WARNING basis norm %e %e\n",component,radius_best);
             exit(1);
         }
         _bases.add_row(dir_best);
@@ -176,29 +176,42 @@ void maps_initializer::evaluate(array_1d<double> &pt, double *mu, int *i_found){
     _chifn->evaluate(_pt_true, mu, i_found);
 }
 
-void maps_initializer::sample(){
+void maps_initializer::get_ellipse_pt(array_1d<double> &out){
 
-    int i,j;
+    double remainder=1.0;
+    double sqrt_remainder=1.0;
+    array_1d<double> coords;
+    int i;
     double rr;
-    rr=-1.0;
-    while(rr<0.0){
-        rr=normal_deviate(_chifn->get_dice(),1.0,1.0);
-    }
     for(i=0;i<_chifn->get_dim();i++){
-        _dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        coords.set(i,0.0);
     }
-    _dir.normalize();
+    int valid=0;
+    for(i=0;i<_chifn->get_dim() && remainder>=-0.01;i++){
+        valid++;
+        rr=(_chifn->random_double()-0.5)*sqrt_remainder;
+        coords.set(i,rr);
+        remainder-=rr*rr;
+        sqrt_remainder=sqrt(remainder);
+    }
+
+    int j;
     for(i=0;i<_chifn->get_dim();i++){
-        _pt_shell.set(i,_center.get_data(i));
+        out.set(i,_center.get_data(i));
     }
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
-            _pt_shell.add_val(j,rr*_radii.get_data(i)*_dir.get_data(i)*_bases.get_data(i,j));
+            out.add_val(j,coords.get_data(i)*_radii.get_data(i)*_bases.get_data(i,j));
         }
     }
 
+}
+
+void maps_initializer::sample(){
+
+    get_ellipse_pt(_pt_shell);
     double mu;
-    int i_found;
+    int i,i_found;
     evaluate(_pt_shell, &mu, &i_found);
 
     if(mu<_fn_max){

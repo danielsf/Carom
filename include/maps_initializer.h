@@ -44,6 +44,7 @@ class maps_initializer{
         void convert_to_shell(const array_1d<double>&,array_1d<double>&);
         void evaluate(array_1d<double>&, double*, int*);
         void sample();
+        void get_ellipse_pt(array_1d<double>&);
 
     private:
         chisq_wrapper *_chifn;
