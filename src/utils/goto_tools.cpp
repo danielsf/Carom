@@ -613,3 +613,26 @@ double bisection(function_wrapper &fn,
    return fout;
 
 }
+
+double integrate_cos_n(double b1, double b2, int n){
+
+    double upper,lower;
+
+    if(n<0){
+        printf("integrate_cos_n cannot handle n<0\n");
+        exit(1);
+    }
+
+    if(n==0){
+        return b2-b1;
+    }
+    else if(n==1){
+        return sin(b1)-sin(b2);
+    }
+    else{
+        upper=power(cos(b1),n-1)*sin(b1);
+        lower=power(cos(b2),n-1)*sin(b2);
+        return (upper-lower)/double(n)+\
+                double(n-1)*integrate_cos_n(b1, b2, n-2)/double(n);
+    }
+}

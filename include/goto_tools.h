@@ -93,6 +93,8 @@ int compare_int_arr(array_1d<int>&, array_1d<int>&);
 
 double bisection(function_wrapper&,array_1d<double>&,array_1d<double>&,double,double,array_1d<double>&);
 
+double integrate_cos_n(double, double, int);
+
 inline void expand_grid(int ii ,array_1d<int> &grid_ct, array_1d<int> &out){
     int ix,iy,denom,subtract;
 
