@@ -87,8 +87,8 @@ void maps_initializer::set_bases(){
             }
         }
     }
-    double mu, mu_best;
     array_1d<double> dir,dir_best;
+    double remainder,component,radius,radius_best;
 
     _vol=1.0;
     while(_bases.get_rows()<_chifn->get_dim()){
@@ -97,53 +97,56 @@ void maps_initializer::set_bases(){
                 dir.set(dim,_particles.get_data(i,dim)-_center.get_data(dim));
             }
 
+            remainder=1.0;
             for(j=0;j<_bases.get_rows();j++){
-                mu=0.0;
+                component=0.0;
                 for(dim=0;dim<_chifn->get_dim();dim++){
-                    mu+=dir.get_data(dim)*_bases.get_data(j,dim);
+                    component+=dir.get_data(dim)*_bases.get_data(j,dim);
                 }
                 for(dim=0;dim<_chifn->get_dim();dim++){
-                    dir.subtract_val(dim,mu*_bases.get_data(j,dim));
+                    dir.subtract_val(dim,component*_bases.get_data(j,dim));
                 }
+                remainder-=(component*component)/(_radii.get_data(j)*_radii.get_data(j));
             }
 
-            mu=dir.normalize();
-            if(i==0 || mu>mu_best){
-                mu_best=mu;
+            component=dir.normalize();
+            radius=sqrt(component*component/remainder);
+            if(i==0 || radius>radius_best){
+                radius_best=radius;
                 for(dim=0;dim<_chifn->get_dim();dim++){
                     dir_best.set(dim,dir.get_data(dim));
                 }
             }
         }
         for(i=0;i<_bases.get_rows();i++){
-            mu=0.0;
+            component=0.0;
             for(j=0;j<_chifn->get_dim();j++){
-                mu+=_bases.get_data(i,j)*dir_best.get_data(j);
+                component+=_bases.get_data(i,j)*dir_best.get_data(j);
             }
-            if(fabs(mu)>1.0e-4){
-                printf("WARNING basis dot prod %e\n",mu);
+            if(fabs(component)>1.0e-4){
+                printf("WARNING basis dot prod %e\n",component);
                 exit(1);
             }
         }
-        mu=dir_best.normalize();
-        if(fabs(mu-1.0)>1.0e-5){
-            printf("WARNING basis norm %e\n",mu);
+        component=dir_best.normalize();
+        if(fabs(component-1.0)>1.0e-5){
+            printf("WARNING basis norm %e\n",component);
             exit(1);
         }
         _bases.add_row(dir_best);
-        _radii.add(mu_best);
-        _vol*=mu_best;
+        _radii.add(radius_best);
+        _vol*=radius_best;
     }
 
     double rr;
     for(i=0;i<_particles.get_rows();i++){
         rr=0.0;
         for(j=0;j<_chifn->get_dim();j++){
-            mu=0.0;
+            component=0.0;
             for(dim=0;dim<_chifn->get_dim();dim++){
-                mu+=(_particles.get_data(i,dim)-_center.get_data(dim))*_bases.get_data(j,dim)/_radii.get_data(j);
+                component+=(_particles.get_data(i,dim)-_center.get_data(dim))*_bases.get_data(j,dim)/_radii.get_data(j);
             }
-            rr+=mu*mu;
+            rr+=component*component;
         }
         if(i==0 || rr>_max_radius){
             _max_radius=rr;
