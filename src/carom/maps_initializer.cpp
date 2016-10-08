@@ -146,6 +146,13 @@ void maps_initializer::set_bases(){
         _radii.add(radius_best);
         _vol*=radius_best;
     }
+
+    array_1d<double> radii_sorted;
+    for(i=0;i<_chifn->get_dim();i++){
+       _radii_dexes.set(i,i);
+    }
+    sort(_radii,radii_sorted,_radii_dexes);
+
 }
 
 void maps_initializer::evaluate(array_1d<double> &pt, double *mu, int *i_found){

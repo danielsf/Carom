@@ -22,6 +22,7 @@ class maps_initializer{
             _dir.set_name("maps_init_dir");
             _pt_shell.set_name("maps_init_pt_shell");
             _pt_true.set_name("maps_init_pt_true");
+            _radii_dexes.set_name("maps_init_radii_dexes");
 
         }
 
@@ -56,6 +57,7 @@ class maps_initializer{
         array_1d<double>_pt_true;
         array_1d<double>_pt_shell;
         array_1d<double> _dir;
+        array_1d<int> _radii_dexes;
         double _fn_max;
         int _max_dex;
         int _ct_replace;
