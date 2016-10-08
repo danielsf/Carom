@@ -58,7 +58,6 @@ class maps_initializer{
         array_1d<double> _dir;
         double _fn_max;
         int _max_dex;
-        double _max_radius;
         int _ct_replace;
         double _vol;
 };
