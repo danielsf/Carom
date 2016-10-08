@@ -153,6 +153,22 @@ void maps_initializer::set_bases(){
     }
     sort(_radii,radii_sorted,_radii_dexes);
 
+    for(i=0;i<_particles.get_rows();i++){
+        remainder=0.0;
+        for(j=0;j<_bases.get_rows();j++){
+            component=0.0;
+            for(dim=0;dim<_chifn->get_dim();dim++){
+                component+=(_particles.get_data(i,dim)-_center.get_data(dim))*
+                            _bases.get_data(j,dim);
+            }
+            remainder+=component*component/(_radii.get_data(j)*_radii.get_data(j));
+        }
+        if(remainder>1.01){
+            printf("WARNING post-facto remainder %e\n",remainder);
+            exit(1);
+        }
+    }
+
 }
 
 void maps_initializer::evaluate(array_1d<double> &pt, double *mu, int *i_found){
