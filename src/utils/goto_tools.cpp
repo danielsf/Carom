@@ -627,11 +627,11 @@ double integrate_cos_n(double b1, double b2, int n){
         return b2-b1;
     }
     else if(n==1){
-        return sin(b1)-sin(b2);
+        return sin(b2)-sin(b1);
     }
     else{
-        upper=power(cos(b1),n-1)*sin(b1);
-        lower=power(cos(b2),n-1)*sin(b2);
+        upper=power(cos(b2),n-1)*sin(b2);
+        lower=power(cos(b1),n-1)*sin(b1);
         return (upper-lower)/double(n)+\
                 double(n-1)*integrate_cos_n(b1, b2, n-2)/double(n);
     }
