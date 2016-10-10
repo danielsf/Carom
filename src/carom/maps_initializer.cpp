@@ -47,7 +47,7 @@ void maps_initializer::initialize(){
     }
 
     int n_cos_steps=1000;
-    _cos_n_grid.set_dim(_chifn->get_dim(),n_cos_steps);
+    _cos_n_grid.set_dim(_chifn->get_dim()+1,n_cos_steps);
 
     int i_dim;
     int i_step;
