@@ -176,6 +176,11 @@ object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializ
 object/chisq_wrapper.o object/simplex.o
 	$(gg) -c -o object/maps_initializer.o src/carom/maps_initializer.cpp
 
+test_ellipse_sampler: src/tests/test_ellipse_sampler.cpp \
+object/containers.o object/goto_tools.o
+	$(gg) -o bin/test_ellipse_sampler src/tests/test_ellipse_sampler.cpp \
+	object/containers.o object/goto_tools.o
+
 test_maps_init: src/tests/test_maps_init.cpp object/maps_initializer.o \
 include/exampleLikelihoods.h
 	$(gg) -o bin/test_maps_init src/tests/test_maps_init.cpp \
