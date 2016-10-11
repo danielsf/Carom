@@ -1226,7 +1226,6 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
 }
 
-
 void dalex::explore(){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
