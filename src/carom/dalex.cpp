@@ -1273,20 +1273,6 @@ void dalex::tendril_search(){
 
     double mu;
     int i_found;
-    array_1d<int> specified;
-    array_1d<double> trial;
-    specified.add(mindex());
-    for(j=0;j<_chifn->get_dim();j++){
-        mu=2.0*(_chifn->random_double()-0.5);
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,_chifn->get_pt(mindex(),i)+mu*_basis_vectors.get_data(j,i)*_basis_norm.get_data(j));
-        }
-        _chifn->evaluate(trial,&mu,&i_found);
-        if(i_found>=0 && specified.contains(i_found)==0){
-            specified.add(i_found);
-        }
-    }
-    simplex_search(specified);
 
     simplex_boundary_search();
     _update_good_points();
