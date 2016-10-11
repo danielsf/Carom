@@ -581,9 +581,11 @@ void dalex::find_bases(){
     }
 
     int k;
-    array_1d<double> min,max;
+    array_1d<double> min,max,focused_min,focused_max;
     min.set_name("find_bases_min");
     max.set_name("find_bases_max");
+    focused_min.set_name("find_bases_focused_min");
+    focused_max.set_name("find_bases_focused_max");
     if(changed_bases==1){
         for(i=0;i<_good_points.get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
@@ -597,6 +599,15 @@ void dalex::find_bases(){
                 if(i==0 || mu>max.get_data(j)){
                     max.set(j,mu);
                 }
+
+                if(_basis_associates.contains(_good_points.get_data(i))==1){
+                    if(j>=focused_min.get_dim() || mu<focused_min.get_data(j)){
+                        focused_min.set(j,mu);
+                    }
+                    if(j>=focused_max.get_dim() || mu>focused_max.get_data(j)){
+                        focused_max.set(j,mu);
+                    }
+                }
             }
         }
         for(i=0;i<_chifn->get_dim();i++){
@@ -604,7 +615,14 @@ void dalex::find_bases(){
             if(_basis_norm.get_data(i)<1.0e-20){
                 _basis_norm.set(i,1.0);
             }
+
+            _basis_associate_norm.set(i,focused_max.get_data(i)-focused_min.get_data(i));
+            if(_basis_associate_norm.get_data(i)<1.0e-20){
+                printf("WARNING basis associate norm %d %e\n",
+                i,_basis_associate_norm.get_data(i));
+            }
         }
+
     }
 
     _basis_chimin=chimin();
