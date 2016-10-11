@@ -58,19 +58,9 @@ void dalex::search(){
 
     int has_explored=0;
 
-    if(mindex()!=_simplex_mindex){
-        find_bases();
-        explore();
-        simplex_search();
-        has_explored=1;
-        if(chimin()<_basis_chimin-(target()-chimin())){
-            find_bases();
-        }
-    }
+    iterate_on_minimum();
 
-    if(has_explored==0){
-        explore();
-    }
+    explore();
     tendril_search();
     _update_good_points(pts_0);
 
