@@ -1400,6 +1400,7 @@ void dalex::iterate_on_minimum(){
         min_0=chimin();
         find_bases();
         explore();
+        refine_minimum();
         simplex_search(mindex());
         min_1=chimin();
     }
