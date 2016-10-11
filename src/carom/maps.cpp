@@ -99,6 +99,10 @@ void maps::set_write_every(int ww){
     _write_every=ww;
 }
 
+int maps::get_dim(){
+    return _chifn.get_dim();
+}
+
 int maps::get_called(){
     return _chifn.get_called();
 }

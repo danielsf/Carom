@@ -39,6 +39,7 @@ public:
     void write_pts();
     void write_log();
 
+    int get_dim();
     int get_called();
     double get_chimin();
 
