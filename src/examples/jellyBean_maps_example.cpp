@@ -238,4 +238,9 @@ for(i=0;i<chisq->get_dim();i++){
     printf("%e\n",chisq->get_width(0,i));
 }
 
+FILE *min_output=fopen("output/scratch/test_min_pt.sav","a");
+fprintf(min_output,"%d %d %d %e\n",
+carom_test.get_dim(),seed,carom_test.get_called(),carom_test.get_chimin());
+fclose(min_output);
+
 }
