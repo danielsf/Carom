@@ -1425,16 +1425,17 @@ void dalex::iterate_on_minimum(){
     double min_1=-2.0*exception_value;
     array_1d<int> seed;
     int i,j;
-    while(min_1<min_0-1.0){
+    find_bases();
+    while(min_1<min_0){
         seed.reset_preserving_room();
         min_0=chimin();
-        find_bases();
-        explore();
-        refine_minimum();
+        min_explore(2*_chifn->get_dim(), 4*_chifn->get_dim());
         simplex_search(mindex());
         min_1=chimin();
     }
+    find_bases();
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
+
 }
 
 void dalex::refine_minimum(){
