@@ -177,7 +177,7 @@ object/chisq_wrapper.o object/simplex.o
 	$(gg) -c -o object/maps_initializer.o src/carom/maps_initializer.cpp
 
 test_maps_init: src/tests/test_maps_init.cpp object/maps_initializer.o \
-include/exampleLikelihoods.h
+include/exampleLikelihoods.h object/jellyBean.o
 	$(gg) -o bin/test_maps_init src/tests/test_maps_init.cpp \
 	object/containers.o object/goto_tools.o \
 	object/wrappers.o object/maps_initializer.o object/simplex.o \
