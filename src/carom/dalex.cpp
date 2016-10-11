@@ -1354,8 +1354,6 @@ void dalex::tendril_search(){
 
     while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
-        refine_minimum();
-
         iteration++;
 
         printf("    strikes %d use_median %d\n",strikes,use_median);
