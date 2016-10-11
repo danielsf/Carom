@@ -131,10 +131,6 @@ void dalex::simplex_search(array_1d<int> &specified){
 
     _update_good_points(pt_0);
 
-    if(_basis_chimin-chimin()>target()-chimin()){
-        find_bases();
-    }
-
 }
 
 
