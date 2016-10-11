@@ -1414,6 +1414,24 @@ void dalex::tendril_search(){
 
 }
 
+void dalex::iterate_on_minimum(){
+    printf("iterating with %e\n",chimin());
+    double min_0=chimin();
+
+    double min_1=-2.0*exception_value;
+    array_1d<int> seed;
+    int i,j;
+    while(min_1<min_0-1.0){
+        seed.reset_preserving_room();
+        min_0=chimin();
+        find_bases();
+        explore();
+        simplex_search(mindex());
+        min_1=chimin();
+    }
+    printf("done iterating %e %d\n",chimin(),_chifn->get_called());
+}
+
 void dalex::refine_minimum(){
 
     printf("    refining minimum %e\n",chimin());
