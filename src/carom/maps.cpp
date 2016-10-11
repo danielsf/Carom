@@ -259,6 +259,8 @@ void maps::search(int limit){
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
 
+    _cloud.set_limit(limit);
+
     while(_chifn.get_pts()<limit){
 
         pt_start=_chifn.get_pts();

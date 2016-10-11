@@ -1330,7 +1330,7 @@ void dalex::tendril_search(){
     int use_median=0;
     int is_a_strike;
 
-    while(strikes<3){
+    while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
         iteration++;
 

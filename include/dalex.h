@@ -15,6 +15,7 @@ class dalex{
         ~dalex(){};
         dalex(){
             _chifn=NULL;
+            _limit=-1;
             _good_points.set_name("dalex_good_points");
             _good_points.set_room(100000);
             _tendril_path.set_name("dalex_tendril_path");
@@ -36,6 +37,10 @@ class dalex{
         };
 
         void build(chisq_wrapper*);
+
+        void set_limit(int ii){
+            _limit=ii;
+        }
 
         void set_log(asymm_array_2d<int> *_ll){
             _log=_ll;
@@ -170,6 +175,8 @@ class dalex{
         void tendril_search();
         array_2d<int> _tendril_path;
 
+
+        int _limit;
 };
 
 #endif
