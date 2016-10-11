@@ -14,7 +14,8 @@ int main(){
     int n_samples=10000;
     int i_sample;
     array_1d<double> pt;
-    ellipse_sampler sampler(dim,3215);
+    ellipse_sampler sampler;
+    sampler.initialize(dim,3215);
     double remainder;
     FILE *output;
     output=fopen("ellipse_samples.txt", "w");

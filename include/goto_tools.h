@@ -223,9 +223,14 @@ struct chisquared_distribution{
 class ellipse_sampler{
 
     public:
-        ellipse_sampler(int, int);
-        ~ellipse_sampler(){delete _dice;}
+        ellipse_sampler();
+        ~ellipse_sampler(){
+            if(_dice!=NULL){
+                delete _dice;
+            }
+        }
 
+        void initialize(int, int);
         void get_pt(array_1d<double>&);
 
     private:

@@ -637,13 +637,18 @@ double integrate_cos_n(double b1, double b2, int n){
     }
 }
 
-ellipse_sampler::ellipse_sampler(int dd, int seed){
-    _dim=dd;
-    _dice=new Ran(seed);
+ellipse_sampler::ellipse_sampler(){
+    _dice=NULL;
     _steps=1000;
     _dx=1.0/double(_steps);
+
     _cos_n_grid.set_name("ellipse_n_cos_grid");
     _dim_record.set_name("ellipse_dim_record");
+}
+
+void ellipse_sampler::initialize(int dd, int seed){
+    _dim=dd;
+    _dice=new Ran(seed);
     _cos_n_grid.set_dim(_dim+1,_steps);
     int i,j;
     double theta;
