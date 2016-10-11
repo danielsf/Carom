@@ -1411,7 +1411,7 @@ void dalex::refine_minimum(){
     printf("    refining minimum %e\n",chimin());
 
     int n_particles=2*_chifn->get_dim();
-    int n_steps=10*_chifn->get_dim();
+    int n_steps=5*_chifn->get_dim();
     int accepted=0;
     int rejected=0;
 
