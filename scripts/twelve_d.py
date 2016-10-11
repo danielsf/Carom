@@ -244,6 +244,12 @@ if __name__ == "__main__":
 
             d_data_dict[seed] = d_data
 
+            (d_x_forced, d_y_forced, chisq_min_forced, target_forced,
+             d_data_forced) = scatter_from_carom(os.path.join(data_dir, dalex_name),
+                                          full_dim, dim[0], dim[1], target=116.03,
+                                          data=d_data_dict[seed],
+                                          limit=limit)
+
 
             if xmax is None or d_x.max()>xmax:
                 xmax=d_x.max()
@@ -265,11 +271,14 @@ if __name__ == "__main__":
 
 
             d_h = plt.scatter(d_x, d_y, color='r', s=7, marker='+')
+            d_h_forced = plt.scatter(d_x_forced, d_y_forced, color='g', s=7, marker='x')
             d_h_list.append(d_h)
             d_label_list.append('Dale$\chi$')
+            d_h_list.append(d_h_forced)
+            d_label_list.append('Dale$\chi$ (forced)')
 
             text = ('MultiNest: %.2e $\chi^2$ calls\n' % n_mult
-                    + 'Dale$\chi$: %.2e $\chi^2$ calls' % limit)
+                    + 'Dale$\chi$: %.2e $\chi^2$ calls; %.2f' % (limit, chisq_min))
             text_list.append(text)
 
             for xx in (m_x.min(), m_x.max(), d_x.min(), d_x.max()):
