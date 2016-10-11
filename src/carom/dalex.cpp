@@ -1272,7 +1272,9 @@ void dalex::tendril_search(){
             trial.set(i,_chifn->get_pt(mindex(),i)+mu*_basis_vectors.get_data(j,i)*_basis_norm.get_data(j));
         }
         _chifn->evaluate(trial,&mu,&i_found);
-        specified.add(i_found);
+        if(i_found>=0 && specified.contains(i_found)==0){
+            specified.add(i_found);
+        }
     }
     simplex_search(specified);
 
