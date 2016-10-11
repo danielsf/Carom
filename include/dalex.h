@@ -35,6 +35,7 @@ class dalex{
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
+            _minimizers.set_name("dalex_minimizers");
         };
 
         void build(chisq_wrapper*);
@@ -171,6 +172,10 @@ class dalex{
         ///////code related to explorers
         explorers _explorers;
         int _last_checked_good;
+
+        /////code related to minimizers
+        array_1d<int> _minimizers;
+        void refine_minimum();
 
         //////code related to tendrils
         void tendril_search();
