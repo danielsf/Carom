@@ -46,24 +46,7 @@ void maps_initializer::initialize(){
         }
     }
 
-    int n_cos_steps=1000;
-    _cos_n_grid.set_dim(_chifn->get_dim()+1,n_cos_steps);
-
-    int i_dim;
-    int i_step;
-    double theta;
-    double d_x=1.0/double(n_cos_steps-1);
-    for(i_dim=0;i_dim<_cos_n_grid.get_rows();i_dim++){
-        for(i_step=0;i_step<n_cos_steps;i_step++){
-            theta=asin(i_step*d_x);
-            if(isnan(theta)){
-                 printf("WARNING theta %e\n",theta);
-                 exit(1);
-            }
-            _cos_n_grid.set(i_dim,i_step,integrate_cos_n(0.0,theta,i_dim));
-        }
-    }
-
+    _e_sampler.initialize(_chifn->get_dim(),_chifn->random_int());
     set_bases();
     printf("after init %e\n",_chifn->chimin());
 
@@ -195,29 +178,19 @@ void maps_initializer::evaluate(array_1d<double> &pt, double *mu, int *i_found){
 }
 
 void maps_initializer::get_ellipse_pt(array_1d<double> &out){
-
-    double mu,remainder;
-    remainder=10.0;
-    int i,j,k;
     array_1d<double> coords;
-    while(remainder>1.01){
-        remainder=0.0;
-        for(i=0;i<_chifn->get_dim() && remainder<1.01;i++){
-            coords.set(i,2.0*(_chifn->random_double()-0.5));
-            remainder+=coords.get_data(i)*coords.get_data(i);
-        }
-    }
+    _e_sampler.get_pt(coords);
 
+    int i,j;
     for(i=0;i<_chifn->get_dim();i++){
         out.set(i,_center.get_data(i));
     }
-
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             out.add_val(j,coords.get_data(i)*_radii.get_data(i)*_bases.get_data(i,j));
         }
     }
-    printf("got a point %d\n",_chifn->get_called());
+
 }
 
 void maps_initializer::sample(){

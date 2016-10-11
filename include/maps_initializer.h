@@ -48,6 +48,7 @@ class maps_initializer{
 
     private:
         chisq_wrapper *_chifn;
+        ellipse_sampler _e_sampler;
         array_1d<double> _transform;
         array_2d<double> _particles;
         array_1d<double> _fn;
@@ -59,7 +60,6 @@ class maps_initializer{
         array_1d<double>_pt_shell;
         array_1d<double> _dir;
         array_1d<int> _radii_dexes;
-        array_2d<double> _cos_n_grid;
         double _fn_max;
         int _max_dex;
         int _ct_replace;
