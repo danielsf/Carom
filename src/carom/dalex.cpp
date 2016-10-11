@@ -5,6 +5,7 @@ void dalex::build(chisq_wrapper *cc){
     _chifn=cc;
 
     _explorers.set_chifn(_chifn);
+    _min_explorers.set_chifn(_chifn);
 
     int i,j;
     _basis_vectors.set_cols(_chifn->get_dim());
@@ -104,9 +105,9 @@ void dalex::simplex_search(array_1d<int> &specified){
     }
 
     while(seed.get_rows()<_chifn->get_dim()+1){
-        i=_chifn->random_int()%_explorers.get_n_particles();
+        i=_chifn->random_int()%_min_explorers.get_n_particles();
         if(chosen_seed.contains(i)==0){
-            _explorers.get_pt(i,trial);
+            _min_explorers.get_pt(i,trial);
             seed.add_row(trial);
             chosen_seed.add(i);
         }
@@ -1253,6 +1254,39 @@ void dalex::explore(){
 
     _explorers.set_associates(associates);
     _explorers.sample(4*_chifn->get_dim());
+
+    if(_log!=NULL){
+         for(i=pt_0;i<_chifn->get_pts();i++){
+             _log->add(_log_mcmc, i);
+         }
+    }
+
+    _update_good_points(pt_0);
+}
+
+void dalex::min_explore(int n_particles, int n_steps){
+    printf("\nexploring\n");
+    int pt_0=_chifn->get_pts();
+
+    _min_explorers.set_n_particles(n_particles);
+    array_1d<int> associates;
+    associates.set_name("dalex_explore_associates");
+    int skip;
+    if(_good_points.get_dim()<5000){
+        skip=-1;
+    }
+    else{
+        skip=5;
+    }
+    int i;
+    for(i=0;i<_good_points.get_dim();i++){
+        if(skip<0 || i%skip==0){
+            associates.add(_good_points.get_data(i));
+        }
+    }
+
+    _min_explorers.set_associates(associates);
+    _min_explorers.sample(n_steps);
 
     if(_log!=NULL){
          for(i=pt_0;i<_chifn->get_pts();i++){

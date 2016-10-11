@@ -55,6 +55,7 @@ class dalex{
         int simplex_boundary_search();
         int simplex_boundary_search(int, int);
         void explore();
+        void min_explore(int, int);
 
         int bisection(int, int, double, double);
         int bisection(int, array_1d<double>&, double, double);
@@ -171,6 +172,7 @@ class dalex{
 
         ///////code related to explorers
         explorers _explorers;
+        explorers _min_explorers;
         int _last_checked_good;
 
         /////code related to minimizers
