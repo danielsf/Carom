@@ -25,7 +25,7 @@ radii['x4']=1.501453
 
 data = np.genfromtxt(data_file, dtype=dtype)
 
-dx=0.1
+dx=0.01
 
 plt.figsize=(30,30)
 plt.subplot(1,2,1)

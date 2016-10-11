@@ -636,3 +636,61 @@ double integrate_cos_n(double b1, double b2, int n){
                 double(n-1)*integrate_cos_n(b1, b2, n-2)/double(n);
     }
 }
+
+ellipse_sampler::ellipse_sampler(int dd, int seed){
+    _dim=dd;
+    _dice=new Ran(seed);
+    _steps=1000;
+    _dx=1.0/double(_steps);
+    _cos_n_grid.set_name("ellipse_n_cos_grid");
+    _dim_record.set_name("ellipse_dim_record");
+    _cos_n_grid.set_dim(_dim+1,_steps);
+    int i,j;
+    double theta;
+    for(i=0;i<_cos_n_grid.get_rows();i++){
+        for(j=0;j<_steps;j++){
+            theta=asin(j*_dx);
+            _cos_n_grid.set(i,j,integrate_cos_n(0.0,theta,i));
+        }
+    }
+}
+
+void ellipse_sampler::get_pt(array_1d<double> &out){
+    _dim_record.reset_preserving_room();
+    double remainder=1.0;
+    double sqrt_remainder=1.0;
+    int dim_used,dim_left;
+    int i_dim,i;
+    int i_max_vol;
+    double max_vol;
+    double roll,coord;
+    for(dim_used=0;dim_used<_dim;dim_used++){
+        dim_left=_dim-dim_used-1;
+        i_dim=-1;
+        while(i_dim<0 || _dim_record.contains(i_dim)==1){
+            i_dim=_dice->int32()%_dim;
+        }
+        _dim_record.add(i_dim);
+        i_max_vol=int(sqrt_remainder/_dx);
+        if(i_max_vol==_cos_n_grid.get_cols()){
+            i_max_vol--;
+        }
+        max_vol=_cos_n_grid.get_data(dim_left,i_max_vol);
+        roll=2.0*(_dice->doub()-0.5)*max_vol;
+        for(i=0;i<_cos_n_grid.get_cols() && _cos_n_grid.get_data(dim_left,i)<fabs(roll);i++);
+        if(i!=0){
+            i--;
+        }
+
+        coord=10.0;
+        while(coord*coord>remainder){
+            coord=(i+_dice->doub())*_dx;
+        }
+        out.set(i_dim,coord);
+        if(roll<0.0){
+            out.multiply_val(i_dim,-1.0);
+        }
+        remainder-=coord*coord;
+        sqrt_remainder=sqrt(remainder);
+    }
+}

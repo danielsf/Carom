@@ -37,8 +37,8 @@ struct Ran{
 // discovered by George Marsaglia and published in
 //Journal of Statistical Software, volume 8, no. 14 pp 1-6
 
-//parameters are drawn from the table on page 347 of 
-//Numerical Recipes (3rd edition) 
+//parameters are drawn from the table on page 347 of
+//Numerical Recipes (3rd edition)
 //William H. press, Saul A. Teukolsky, William T. Vetterling, Brian P. Flannery
 //Cambridge University Press, 2007
 
@@ -114,7 +114,7 @@ inline void expand_grid(int ii ,array_1d<int> &grid_ct, array_1d<int> &out){
 
 inline void expand_grid(long int ii ,array_1d<int> &grid_ct, array_1d<int> &out){
     int ix,iy;
-    
+
     long int denom,subtract,quotient;
 
     for(ix=0;ix<grid_ct.get_dim();ix++){
@@ -195,7 +195,7 @@ struct chisquared_distribution{
                 lmax=lnpdf;
             }
             total+=0.5*(pdf+pdfold)*(x-xold);
- 
+
             xold=x;
             pdfold=pdf;
         }
@@ -211,12 +211,30 @@ struct chisquared_distribution{
             ans+=0.5*(pdfold+pdf)*(x-xold);
             xold=x;
             pdfold=pdf;
- 
+
         }
 
         return xold;
 
     }
+};
+
+
+class ellipse_sampler{
+
+    public:
+        ellipse_sampler(int, int);
+        ~ellipse_sampler(){delete _dice;}
+
+        void get_pt(array_1d<double>&);
+
+    private:
+        int _dim;
+        int _steps;
+        double _dx;
+        array_1d<int> _dim_record;
+        Ran *_dice;
+        array_2d<double> _cos_n_grid;
 };
 
 #endif
