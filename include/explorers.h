@@ -64,6 +64,7 @@ class explorers{
         void get_seed(array_2d<double>&);
 
         void set_norm();
+        void reset();
         void initialize_particles();
         void bump_particles();
         void sample(int);

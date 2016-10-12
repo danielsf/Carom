@@ -67,12 +67,20 @@ void explorers::set_norm(){
 
 }
 
+void explorers::reset(){
+    _particles.reset_preserving_room();
+    _attempted=0;
+    _accepted.reset_preserving_room();
+    _req_temp.reset_preserving_room();
+    _temp=1.0;
+}
+
 void explorers::initialize_particles(){
 
-    _particles.reset();
+    _particles.reset_preserving_room();
     _attempted=0;
-    _accepted.reset();
-    _req_temp.reset();
+    _accepted.reset_preserving_room();
+    _req_temp.reset_preserving_room();
 
     array_1d<double> min,max;
     min.set_name("exp_init_min");
