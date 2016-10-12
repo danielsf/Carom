@@ -1420,6 +1420,7 @@ void dalex::tendril_search(){
 void dalex::iterate_on_minimum(){
     printf("iterating with %e\n",chimin());
     double min_0=chimin();
+    double min_00=min_0;
 
     double min_1=-2.0*exception_value;
     array_1d<int> seed;
@@ -1431,6 +1432,10 @@ void dalex::iterate_on_minimum(){
         min_explore(2*_chifn->get_dim(), 4*_chifn->get_dim());
         simplex_search(mindex());
         min_1=chimin();
+    }
+    if(chimin()<min_00-2.0){
+        _good_points.reset_preserving_room();
+        _explorers.reset();
     }
     find_bases();
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
