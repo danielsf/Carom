@@ -64,7 +64,21 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
 
     tol = 0.0025
 
+    i_x_min = np.argmin(data_x)
+    i_x_max = np.argmax(data_x)
+    i_y_min = np.argmin(data_y)
+    i_y_max = np.argmax(data_y)
+
     actual_len = 1
+    chosen_dexes = [len(data_x)-1]
+
+    for dex in (i_x_min, i_x_max, i_y_min, i_y_max):
+        if dex not in chosen_dexes:
+            x_out[actual_len] = data_x[dex]
+            y_out[actual_len] = data_y[dex]
+            actual_len += 1
+            chosen_dexes.append(dex)
+
     for ii in range(len(data_x)-1, -1, -1):
         dd_min = (np.power((data_x[ii]-x_out[:actual_len])/x_norm,2) +
                   np.power((data_y[ii]-y_out[:actual_len])/y_norm,2)).min()
@@ -157,7 +171,7 @@ def scatter_from_carom(data_name, dim, ix, iy, delta_chi=None, target=None, data
     dd_arr = np.power((good_x-data_cut['x%d' % ix][mindex])/x_norm, 2) + \
              np.power((good_y-data_cut['x%d' % iy][mindex])/y_norm, 2)
 
-    dd_sorted_dexes = np.argsort(-1.0*dd_arr)
+    dd_sorted_dexes = np.argsort(dd_arr)
 
     x_grid, y_grid = get_scatter(good_x[dd_sorted_dexes],
                                  good_y[dd_sorted_dexes],
