@@ -1423,11 +1423,13 @@ void dalex::iterate_on_minimum(){
     double min_00=min_0;
 
     double min_1=-2.0*exception_value;
-    array_1d<int> seed;
     int i,j;
-    find_bases();
+
+    if(_good_points.get_dim()==0){
+        find_bases();
+    }
+
     while(min_1<min_0){
-        seed.reset_preserving_room();
         min_0=chimin();
         min_explore(2*_chifn->get_dim(), 4*_chifn->get_dim());
         simplex_search(mindex());
@@ -1437,7 +1439,10 @@ void dalex::iterate_on_minimum(){
         _good_points.reset_preserving_room();
         _explorers.reset();
     }
-    find_bases();
+
+    if(chimin()<min_00){
+        find_bases();
+    }
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
 
 }
