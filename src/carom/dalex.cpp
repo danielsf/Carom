@@ -1440,7 +1440,7 @@ void dalex::iterate_on_minimum(){
         _explorers.reset();
     }
 
-    if(chimin()<min_00){
+    if(chimin()<min_00-0.01){
         find_bases();
     }
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
