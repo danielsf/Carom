@@ -21,6 +21,7 @@ double width=1.0;
 double delta_chisq=-1.0;
 double abs_target=-1.0;
 double confidence_limit=0.95;
+int min_test=0;
 
 char timingname[letters],outname[letters];
 
@@ -88,6 +89,9 @@ for(i=1;i<iargc;i++){
                     timingname[j]=argv[i][j];
                 }
                 timingname[j]=0;
+                break;
+            case 'm':
+                min_test=1;
                 break;
 
         }
@@ -238,9 +242,13 @@ for(i=0;i<chisq->get_dim();i++){
     printf("%e\n",chisq->get_width(0,i));
 }
 
-FILE *min_output=fopen("output/scratch/test_min_pt.sav","a");
-fprintf(min_output,"%d %d %d %e\n",
-carom_test.get_dim(),seed,carom_test.get_called(),carom_test.get_chimin());
-fclose(min_output);
+FILE *min_output;
+
+if(min_test==1){
+    min_output=fopen("output/scratch/test_min_pt.sav","a");
+    fprintf(min_output,"%d %d %d %e\n",
+    carom_test.get_dim(),seed,carom_test.get_called(),carom_test.get_chimin());
+    fclose(min_output);
+}
 
 }
