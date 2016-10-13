@@ -294,7 +294,7 @@ if __name__ == "__main__":
                     ymin=yy
             print "one seed took ",time.time()-t_start
 
-        for i_seed in range(5):
+        for i_seed in range(len(seed_list)):
             plt.subplot(3,2,i_seed+1)
             dx=xmax-xmin
             dy=ymax-ymin
