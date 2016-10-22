@@ -1017,6 +1017,11 @@ int dalex::simplex_boundary_search(int specified, int use_median){
         }
     }
 
+    cost_fn dchifn(_chifn,associates);
+    array_2d<double> cost_bases;
+    cost_bases.set_name("dalex_simplex_boundary_cost_bases");
+    dchifn.copy_bases(cost_bases);
+
     double v0,pv0;
     array_1d<double> pvmin,pvmax,vmin,vmax;
     vmin.set_name("dalex_bou_vmin");
@@ -1041,7 +1046,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
             mu=0.0;
             for(k=0;k<_chifn->get_dim();k++){
-                mu+=_chifn->get_pt(associates.get_data(i),k)*_basis_vectors.get_data(j,k);
+                mu+=_chifn->get_pt(associates.get_data(i),k)*cost_bases.get_data(j,k);
             }
 
             if(i==0 || mu<pvmin.get_data(j)){
@@ -1066,7 +1071,6 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
 
-    cost_fn dchifn(_chifn,associates);
 
     if(use_median==1){
         dchifn.use_median();
@@ -1090,14 +1094,11 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
 
-    array_2d<double> dummy_bases;
-
     if(specified>=0){
-        dchifn.copy_bases(dummy_bases);
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,seed.get_data(0,j)+dummy_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
+                trial.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
             }
             seed.add_row(trial);
         }
@@ -1199,7 +1200,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
         }
         mu=0.0;
         for(j=0;j<_chifn->get_dim();j++){
-            mu+=_chifn->get_pt(i_min,j)*_basis_vectors.get_data(i,j);
+            mu+=_chifn->get_pt(i_min,j)*cost_bases.get_data(i,j);
         }
         if(mu<pvmin.get_data(i)){
             pvmin.set(i,mu);
