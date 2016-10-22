@@ -37,7 +37,7 @@ class cost_fn : public function_wrapper{
         }
 
 
-        double get_hyper_norm(int ii){
+        double get_norm(int ii){
             return _norm.get_data(ii);
         }
 
