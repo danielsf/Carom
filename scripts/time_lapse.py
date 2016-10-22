@@ -80,7 +80,7 @@ if __name__ == "__main__":
                                       4, dim[0], dim[1])
             
             (d_x, d_y, d_chisq_min, d_target,
-             d_data) = scatter_from_carom("junk.txt", 4, dim[0], dim[1], delta_chi=9.49,
+             d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
                                           data=dalex_data, limit=n_pts)
 
             hh, = plt.plot(control_data[dim]['x'], control_data[dim]['y'],
