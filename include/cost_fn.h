@@ -1,12 +1,12 @@
-#ifndef DCHI_SIMPLEX_H
-#define DCHI_SIMPLEX_H
+#ifndef COST_FN_H
+#define COST_FN_H
 
 #include "chisq_wrapper.h"
 
-class dchi_interior_simplex : public function_wrapper{
+class cost_fn : public function_wrapper{
     public:
-        dchi_interior_simplex(chisq_wrapper*, array_1d<int>&);
-        ~dchi_interior_simplex(){};
+        cost_fn(chisq_wrapper*, array_1d<int>&);
+        ~cost_fn(){};
         virtual double operator()(const array_1d<double>&);
         virtual int get_called();
         double nn_distance(const array_1d<double>&);
@@ -19,7 +19,7 @@ class dchi_interior_simplex : public function_wrapper{
             if(mm.get_dim()!=_associates.get_dim()){
                 printf("WARNING trying to set %d masks for %d associates\n",
                 mm.get_dim(),_associates.get_dim());
-                printf("in dchi_interior_simplex\n");
+                printf("in cost_fn\n");
                 exit(1);
             }
             for(i=0;i<mm.get_dim();i++){

@@ -153,7 +153,7 @@ void explorers::sample(int n_steps){
         initialize_particles();
     }
 
-    dchi_interior_simplex dchifn(_chifn, _associates);
+    cost_fn dchifn(_chifn, _associates);
     dchifn.copy_bases(_bases);
     set_norm();
 

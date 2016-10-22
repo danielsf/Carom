@@ -1,6 +1,6 @@
-#include "dchi_simplex.h"
+#include "cost_fn.h"
 
-dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &aa){
+cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
     _called=0;
 
@@ -59,7 +59,7 @@ dchi_interior_simplex::dchi_interior_simplex(chisq_wrapper *cc, array_1d<int> &a
 
 }
 
-void dchi_interior_simplex::calibrate_model(){
+void cost_fn::calibrate_model(){
 
     array_1d<double> ddsq;
     ddsq.set_name("dchi_calibrate_ddsq");
@@ -119,7 +119,7 @@ void dchi_interior_simplex::calibrate_model(){
 }
 
 
-double dchi_interior_simplex::apply_model(array_1d<double> &pt){
+double cost_fn::apply_model(array_1d<double> &pt){
 
     double ddsq,mu;
     int i,j;
@@ -136,7 +136,7 @@ double dchi_interior_simplex::apply_model(array_1d<double> &pt){
 }
 
 
-double dchi_interior_simplex::nn_distance(const array_1d<double> &pt){
+double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j;
 
@@ -173,11 +173,11 @@ double dchi_interior_simplex::nn_distance(const array_1d<double> &pt){
 }
 
 
-int dchi_interior_simplex::get_called(){
+int cost_fn::get_called(){
    return _called;
 }
 
-double dchi_interior_simplex::operator()(const array_1d<double> &pt){
+double cost_fn::operator()(const array_1d<double> &pt){
 
     _called++;
 
@@ -206,7 +206,7 @@ double dchi_interior_simplex::operator()(const array_1d<double> &pt){
 }
 
 
-void dchi_interior_simplex::_principal_set_bases(){
+void cost_fn::_principal_set_bases(){
 
     printf("\nprincipal bases\n\n");
 
@@ -275,7 +275,7 @@ void dchi_interior_simplex::_principal_set_bases(){
 }
 
 
-void dchi_interior_simplex::_random_set_bases(){
+void cost_fn::_random_set_bases(){
 
     array_1d<double> vv;
     vv.set_name("dchi_set_bases_vv");
@@ -305,7 +305,7 @@ void dchi_interior_simplex::_random_set_bases(){
 }
 
 
-void dchi_interior_simplex::_set_hyper_ellipse(){
+void cost_fn::_set_hyper_ellipse(){
 
     _hyper_center.reset_preserving_room();
     _hyper_norm.reset_preserving_room();
@@ -345,7 +345,7 @@ void dchi_interior_simplex::_set_hyper_ellipse(){
 }
 
 
-double dchi_interior_simplex::_hyper_ellipse_distance(array_1d<double> &pt){
+double cost_fn::_hyper_ellipse_distance(array_1d<double> &pt){
     double component;
     int i,j;
     double dd=0.0;

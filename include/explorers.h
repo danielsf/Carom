@@ -3,7 +3,7 @@
 
 #include "goto_tools.h"
 #include "chisq_wrapper.h"
-#include "dchi_simplex.h"
+#include "cost_fn.h"
 
 
 class explorers{

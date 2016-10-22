@@ -1066,7 +1066,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
 
-    dchi_interior_simplex dchifn(_chifn,associates);
+    cost_fn dchifn(_chifn,associates);
 
     if(use_median==1){
         dchifn.use_median();

@@ -6,7 +6,7 @@
 #include "eigen_wrapper.h"
 #include "chisq_wrapper.h"
 #include "simplex.h"
-#include "dchi_simplex.h"
+#include "cost_fn.h"
 #include "search_types.h"
 #include "dalex.h"
 #include "maps_initializer.h"
