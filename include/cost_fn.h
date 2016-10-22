@@ -38,7 +38,7 @@ class cost_fn : public function_wrapper{
 
 
         double get_hyper_norm(int ii){
-            return _hyper_norm.get_data(ii);
+            return _norm.get_data(ii);
         }
 
     private:
@@ -55,9 +55,9 @@ class cost_fn : public function_wrapper{
         void _principal_set_bases();
         void _random_set_bases();
 
-        void _set_hyper_ellipse();
+        void _set_norm();
         array_1d<double> _hyper_center;
-        array_1d<double> _hyper_norm;
+        array_1d<double> _norm;
 
 };
 

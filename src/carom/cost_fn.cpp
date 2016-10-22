@@ -7,7 +7,7 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
     _hyper_center.set_name("dchi_interior_hyper_center");
-    _hyper_norm.set_name("dchi_interior_hyper_norm");
+    _norm.set_name("dchi_interior_norm");
 
     _just_median=0;
     _chifn=cc;
@@ -52,7 +52,7 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     }
 
     set_bases();
-    _set_hyper_ellipse();
+    _set_norm();
 
 }
 
@@ -224,10 +224,10 @@ void cost_fn::_random_set_bases(){
 }
 
 
-void cost_fn::_set_hyper_ellipse(){
+void cost_fn::_set_norm(){
 
     _hyper_center.reset_preserving_room();
-    _hyper_norm.reset_preserving_room();
+    _norm.reset_preserving_room();
 
     double component;
     array_1d<double> cc,cc_sorted;
@@ -258,7 +258,7 @@ void cost_fn::_set_hyper_ellipse(){
         x1=cc_sorted.get_data(1/6);
         x2=cc_sorted.get_data((5*i)/6);
         _hyper_center.set(ix,0.5*(x1+x2));
-        _hyper_norm.set(ix,0.5*(x2-x1));
+        _norm.set(ix,0.5*(x2-x1));
     }
 
 }
