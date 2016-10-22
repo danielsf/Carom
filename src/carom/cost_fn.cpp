@@ -75,8 +75,6 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     }
     double dd_min=2.0*exception_value;
 
-    double delta=_chifn->target()-_chifn->chimin();
-
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
@@ -87,7 +85,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         }
     }
 
-    return delta*sqrt(dd_min);
+    return sqrt(dd_min);
 }
 
 
@@ -120,7 +118,7 @@ double cost_fn::operator()(const array_1d<double> &pt){
         exp_term=1.0;
     }
 
-    return mu-1.0*distance*exp_term;
+    return mu-1.0*delta*distance*exp_term;
 }
 
 
