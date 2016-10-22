@@ -90,7 +90,6 @@ class cost_fn : public function_wrapper{
 
         array_2d<double> _bases;
         array_1d<double> _norm;
-        double _alpha;
 
         void _principal_set_bases();
         void _random_set_bases();

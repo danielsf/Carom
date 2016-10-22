@@ -109,13 +109,6 @@ void cost_fn::calibrate_model(){
         ddsqsum+=dd;
     }
 
-    _alpha=0.0;
-    for(i=0;i<_associates.get_dim();i++){
-        ip=_associates.get_data(i);
-        _alpha+=ddsq.get_data(i)*(_chifn->get_fn(ip)-_chifn->chimin());
-    }
-
-    _alpha=_alpha/ddsqsum;
 }
 
 
