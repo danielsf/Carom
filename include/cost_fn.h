@@ -56,7 +56,6 @@ class cost_fn : public function_wrapper{
         void _random_set_bases();
 
         void _set_norm();
-        array_1d<double> _hyper_center;
         array_1d<double> _norm;
 
 };

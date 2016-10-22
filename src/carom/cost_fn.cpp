@@ -6,7 +6,6 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
-    _hyper_center.set_name("dchi_interior_hyper_center");
     _norm.set_name("dchi_interior_norm");
 
     _just_median=0;
@@ -226,7 +225,6 @@ void cost_fn::_random_set_bases(){
 
 void cost_fn::_set_norm(){
 
-    _hyper_center.reset_preserving_room();
     _norm.reset_preserving_room();
 
     double component;
@@ -257,7 +255,6 @@ void cost_fn::_set_norm(){
 
         x1=cc_sorted.get_data(1/6);
         x2=cc_sorted.get_data((5*i)/6);
-        _hyper_center.set(ix,0.5*(x1+x2));
         _norm.set(ix,0.5*(x2-x1));
     }
 
