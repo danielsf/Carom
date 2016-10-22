@@ -54,8 +54,6 @@ class cost_fn : public function_wrapper{
         }
 
 
-        void calibrate_model();
-
         void copy_bases(array_2d<double> &out){
             int i;
             out.reset_preserving_room();
@@ -89,7 +87,6 @@ class cost_fn : public function_wrapper{
         double _envelope;
 
         array_2d<double> _bases;
-        array_1d<double> _norm;
 
         void _principal_set_bases();
         void _random_set_bases();
