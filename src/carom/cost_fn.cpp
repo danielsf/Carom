@@ -262,18 +262,3 @@ void cost_fn::_set_hyper_ellipse(){
     }
 
 }
-
-
-double cost_fn::_hyper_ellipse_distance(array_1d<double> &pt){
-    double component;
-    int i,j;
-    double dd=0.0;
-    for(i=0;i<_chifn->get_dim();i++){
-        component=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            component+=pt.get_data(j)*_bases.get_data(i,j);
-        }
-        dd+=power((component-_hyper_center.get_data(i))/_hyper_norm.get_data(i),2);
-    }
-    return sqrt(dd);
-}
