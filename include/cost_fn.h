@@ -55,7 +55,6 @@ class cost_fn : public function_wrapper{
 
 
         void calibrate_model();
-        double apply_model(array_1d<double>&);
 
         void copy_bases(array_2d<double> &out){
             int i;

@@ -119,23 +119,6 @@ void cost_fn::calibrate_model(){
 }
 
 
-double cost_fn::apply_model(array_1d<double> &pt){
-
-    double ddsq,mu;
-    int i,j;
-    ddsq=0.0;
-    for(i=0;i<_chifn->get_dim();i++){
-        mu=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            mu+=(_chifn->get_pt(_chifn->mindex(),j)-pt.get_data(j))*_bases.get_data(i,j);
-        }
-        ddsq+=power(mu/_norm.get_data(i),2);
-    }
-
-    return _chifn->chimin()+_alpha*ddsq;
-}
-
-
 double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j;
