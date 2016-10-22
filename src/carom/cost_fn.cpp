@@ -6,7 +6,6 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
     _mask.set_name("dchi_interior_mask");
     _median_associate.set_name("dchi_interior_median");
-    _norm.set_name("dchi_interior_norm");
     _bases.set_name("dchi_interior_bases");
     _hyper_center.set_name("dchi_interior_hyper_center");
     _hyper_norm.set_name("dchi_interior_hyper_norm");
