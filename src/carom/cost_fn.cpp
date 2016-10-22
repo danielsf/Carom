@@ -4,7 +4,6 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
     _called=0;
 
-    _mask.set_name("dchi_interior_mask");
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
     _hyper_center.set_name("dchi_interior_hyper_center");
@@ -80,14 +79,12 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     double delta=_chifn->target()-_chifn->chimin();
 
     for(i=0;i<_associates.get_dim();i++){
-        if(_mask.get_dim()==0 || _mask.get_data(i)==1){
-            dd=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
-            }
-            if(dd<dd_min){
-                dd_min=dd;
-            }
+        dd=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
+        }
+        if(dd<dd_min){
+            dd_min=dd;
         }
     }
 
