@@ -50,7 +50,7 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
         }
     }
 
-    set_bases();
+    _set_bases();
     _set_norm();
 
 }

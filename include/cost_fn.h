@@ -27,16 +27,6 @@ class cost_fn : public function_wrapper{
             }
         }
 
-        void set_bases(){
-            if(_associates.get_dim()<_chifn->get_dim()){
-                _random_set_bases();
-            }
-            else{
-                _principal_set_bases();
-            }
-        }
-
-
         double get_norm(int ii){
             return _norm.get_data(ii);
         }
@@ -54,6 +44,16 @@ class cost_fn : public function_wrapper{
 
         void _principal_set_bases();
         void _random_set_bases();
+
+        void _set_bases(){
+            if(_associates.get_dim()<_chifn->get_dim()){
+                _random_set_bases();
+            }
+            else{
+                _principal_set_bases();
+            }
+        }
+
 
         void _set_norm();
         array_1d<double> _norm;
