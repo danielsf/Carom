@@ -3,7 +3,7 @@
 
 #include "goto_tools.h"
 #include "chisq_wrapper.h"
-#include "dchi_simplex.h"
+#include "cost_fn.h"
 
 
 class explorers{
@@ -64,6 +64,7 @@ class explorers{
         void get_seed(array_2d<double>&);
 
         void set_norm();
+        void reset();
         void initialize_particles();
         void bump_particles();
         void sample(int);

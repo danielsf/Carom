@@ -169,7 +169,7 @@ void kd_tree::build_tree(array_2d<double> &mm,
     array_1d<double> vector;
 
     for(i=0;i<data.get_rows();i++){
-         data.set_row(i,(*mm(i)));
+         data.set_row(i,mm(i));
     }
 
     sorted.set_name("kd_tree_constructor_sorted");
@@ -182,7 +182,7 @@ void kd_tree::build_tree(array_2d<double> &mm,
          inn.set(i,i);
     }
 
-    sort_and_check(tosort,sorted,inn);
+    sort(tosort,sorted,inn);
 
     /*try to pick the median value as the first node in the tree (the
     masterparent)*/
@@ -328,7 +328,7 @@ void kd_tree::organize(array_1d<int> &use_in, int u_start,
         */
 
         for(i=0;i<ct;i++)tosort.set(i,data.get_data(use.get_data(i),idim));
-        sort_and_check(tosort,sorted,use);
+        sort(tosort,sorted,use);
 
         inp=ct/2;
 
@@ -485,7 +485,7 @@ int kd_tree::get_pts(){
     return data.get_rows();
 }
 
-array_1d<double>* kd_tree::get_pt(int dex){
+array_1d<double> kd_tree::get_pt(int dex){
     return data(dex);
 }
 
@@ -601,7 +601,7 @@ void kd_tree::confirm(int idim, int compareto, int dir, int where){
 
 }
 
-void kd_tree::add(array_1d<double> &v){
+void kd_tree::add(const array_1d<double> &v){
     /*
     add the point v to the tree
     */
@@ -665,7 +665,7 @@ void kd_tree::add(array_1d<double> &v){
 
 }
 
-int kd_tree::find_node(array_1d<double> &v){
+int kd_tree::find_node(const array_1d<double> &v){
 
     int i,j,k,l,nextstep,where;
 
@@ -688,7 +688,7 @@ int kd_tree::find_node(array_1d<double> &v){
 
 }
 
-double kd_tree::distance(int dex, array_1d<double> &vv){
+double kd_tree::distance(int dex, const array_1d<double> &vv){
     return distance(vv,dex);
 }
 
@@ -713,7 +713,7 @@ double kd_tree::distance(int dex1, int dex2){
 
 }
 
-double kd_tree::distance(array_1d<double> &vv, int dex){
+double kd_tree::distance(const array_1d<double> &vv, int dex){
     if(dex<0 || dex>=data.get_rows()){
         printf("WARNING asked for distance to %d but pts %d\n",dex,data.get_rows());
     }
@@ -729,7 +729,7 @@ double kd_tree::distance(array_1d<double> &vv, int dex){
 
 }
 
-double kd_tree::distance(array_1d<double> &p1, array_1d<double> &p2){
+double kd_tree::distance(const array_1d<double> &p1, const array_1d<double> &p2){
   double dd;
   int i;
 
@@ -740,7 +740,7 @@ double kd_tree::distance(array_1d<double> &p1, array_1d<double> &p2){
   return dd;
 }
 
-void kd_tree::neigh_check(array_1d<double> &v, int kk,
+void kd_tree::neigh_check(const array_1d<double> &v, int kk,
 array_1d<int> &neigh, array_1d<double> &dd, int where, int wherefrom){
 
     /*
@@ -842,11 +842,11 @@ array_1d<double> &dd){
     int i;
     array_1d<double> vector;
 
-    nn_srch((*data(dex)),kk,neigh,dd);
+    nn_srch(data(dex),kk,neigh,dd);
 
 }
 
-void kd_tree::nn_srch(array_1d<double> &v, int kk, array_1d<int> &neigh,
+void kd_tree::nn_srch(const array_1d<double> &v, int kk, array_1d<int> &neigh,
 array_1d<double> &dd){
 
     /*
@@ -907,7 +907,7 @@ array_1d<double> &dd){
     }
 
     /*arrange dd so that it is in ascending order of parameter space distance*/
-    sort_and_check(ddstore,dd,neigh);
+    sort(ddstore,dd,neigh);
 
     /*
     Check the three subdivisions of the tree defined by node:
@@ -1375,7 +1375,7 @@ void convert_to_boundary(array_2d<double> &pts, double dx, double dy, array_2d<d
         }
 
         if(dd.get_data(4)>1.001){
-            boundary.add_row(pts(i)[0]);
+            boundary.add_row(pts(i));
         }
     }
     delete point_tree;
@@ -1403,11 +1403,11 @@ void convert_to_boundary(array_2d<double> &pts, double dx, double dy, array_2d<d
         //printf("removing %d %e %e\n",last_dex,point_tree->get_pt(last_dex,0),point_tree->get_pt(last_dex,1));
         point_tree->remove(last_dex);
         point_tree->nn_srch(last_point,1,neigh,dd);
-        output.add_row(point_tree->get_pt(neigh.get_data(0))[0]);
+        output.add_row(point_tree->get_pt(neigh.get_data(0)));
         last_dex=neigh.get_data(0);
         point_tree->get_pt(last_dex, last_point);
     }
-    output.add_row(point_tree->get_pt(0)[0]);
+    output.add_row(point_tree->get_pt(0));
     output.add_row(original_point);
 
     delete point_tree;

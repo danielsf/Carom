@@ -278,7 +278,7 @@ int chisq_wrapper::in_bounds(int dex, double val){
     return 1;
 }
 
-int chisq_wrapper::in_bounds(array_1d<double> &pt){
+int chisq_wrapper::in_bounds(const array_1d<double> &pt){
     is_it_safe("in_bounds");
 
     int i;
@@ -294,7 +294,7 @@ int chisq_wrapper::in_bounds(array_1d<double> &pt){
 
 }
 
-int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
+int chisq_wrapper::is_valid(const array_1d<double> &pt, int *neighdex){
     is_it_safe("is_valid");
 
     neighdex[0]=-1;
@@ -313,7 +313,7 @@ int chisq_wrapper::is_valid(array_1d<double> &pt, int *neighdex){
 
 }
 
-double chisq_wrapper::operator()(array_1d<double> &pt){
+double chisq_wrapper::operator()(const array_1d<double> &pt){
     double mu;
     int dex;
     int i;
@@ -321,11 +321,11 @@ double chisq_wrapper::operator()(array_1d<double> &pt){
     return mu;
 }
 
-double chisq_wrapper::raw_evaluate(array_1d<double> &pt){
+double chisq_wrapper::raw_evaluate(const array_1d<double> &pt){
     return _chifn[0](pt);
 }
 
-void chisq_wrapper::evaluate(array_1d<double> &pt, double *value, int *dex){
+void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex){
     is_it_safe("evaluate");
 
     int validity,neighdex;
@@ -432,7 +432,7 @@ double chisq_wrapper::get_pt(int dex, int idim){
     return _kptr->get_pt(dex,idim);
 }
 
-array_1d<double>* chisq_wrapper::get_pt(int dex){
+array_1d<double> chisq_wrapper::get_pt(int dex){
     is_it_safe("get_pt(dex)");
     if(dex<0 || dex>=_fn.get_dim()){
         printf("WARNING asking wrapper for pt %d but only have %d\n",

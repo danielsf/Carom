@@ -28,6 +28,21 @@ array_1d<T>::array_1d(){
 }
 
 template <typename T>
+array_1d<T>::array_1d(const array_1d<T> &in){
+    room=in.room;
+    dim=in.dim;
+    name=NULL;
+    where_am_i=NULL;
+    name_set=0;
+    where_set=0;
+    data=new T[room];
+    int i;
+    for(i=0;i<room;i++){
+        data[i]=in.data[i];
+    }
+}
+
+template <typename T>
 array_1d<T>::~array_1d(){
     if(data!=NULL){
        delete [] data;
@@ -325,25 +340,25 @@ void array_1d<T>::print_name(){
 
 template <typename T>
 array_2d<T>::array_2d(){
-    rows=0;
-    cols=0;
-    row_room=0;
-    data=NULL;
-    name=NULL;
-    where_am_i=NULL;
+    _rows=0;
+    _cols=0;
+    _room=0;
+    _data=NULL;
+    _name=NULL;
+    _where_am_i=NULL;
 }
 
 template <typename T>
 array_2d<T>::array_2d(int r, int c){
     int i,j;
-    rows=0;
-    cols=c;
-    row_room=r;
+    _rows=0;
+    _cols=c;
+    _room=r*c;
 
-    data=new array_1d<T>[row_room];
+    _data=new T[_room];
 
-    name=NULL;
-    where_am_i=NULL;
+    _name=NULL;
+    _where_am_i=NULL;
 
 
 }
@@ -352,33 +367,13 @@ template <typename T>
 array_2d<T>::~array_2d(){
     int i;
 
-    for(i=0;i<row_room;i++){
-        try{
-            data[i].assert_name_null();
-        }
-        catch(int iex){
-            printf("in 2d destructor\n");
-            die(0,0);
-        }
-
-        try{
-            data[i].assert_where_null();
-        }
-        catch(int iex){
-            printf("in 2d destructor\n");
-            die(0,0);
-        }
+    if(_data!=NULL){
+        delete [] _data;
     }
 
-    //printf("calling 2d destructor on %s\n",name);
+    if(_name!=NULL)delete [] _name;
 
-    if(data!=NULL){
-        delete [] data;
-    }
-
-    if(name!=NULL)delete [] name;
-
-    if(where_am_i!=NULL)delete [] where_am_i;
+    if(_where_am_i!=NULL)delete [] _where_am_i;
 
 }
 
@@ -386,14 +381,14 @@ template <typename T>
 void array_2d<T>::die(int ir, int ic) const{
     printf("\nWARNING 2d array\n");
 
-    if(name!=NULL)printf("in 2d_array %s\n",name);
-    if(where_am_i!=NULL)printf("in routine %s\n",where_am_i);
+    if(_name!=NULL)printf("in 2d_array %s\n",_name);
+    if(_where_am_i!=NULL)printf("in routine %s\n",_where_am_i);
 
     printf("asked for %d %d\n",ir,ic);
-    printf("but dimensions are %d %d\n",rows,cols);
-    printf("row_room %d\n",row_room);
+    printf("but dimensions are %d %d\n",_rows,_cols);
+    printf("room %d\n",_room);
 
-    if(data==NULL){
+    if(_data==NULL){
         printf("data is null\n");
     }
 
@@ -406,195 +401,170 @@ void array_2d<T>::die(int ir, int ic) const{
 template <typename T>
 void array_2d<T>::set_row_room(int row_room_in){
 
-    if(row_room_in<row_room){
+    if(row_room_in*_cols<_room){
         printf("dying from set_row_room; row_roomis %d trying to set %d\n",
-        row_room, row_room_in);
+        _room/_cols, row_room_in);
         die(0,0);
     }
 
-    if(cols<=0){
-       printf("dying from set_row_room because cols are %d\n",cols);
+    if(_cols<=0){
+       printf("dying from set_row_room because cols are %d\n",_cols);
        die(0,0);
     }
 
-    array_1d<T> *buffer;
+    T *buffer;
     int i,j;
 
-    if(data!=NULL){
-        buffer=new array_1d<T>[rows];
-        for(i=0;i<rows;i++){
-            buffer[i].set_dim(data[i].get_dim());
-            for(j=0;j<data[i].get_dim();j++){
-                buffer[i].set(j,data[i].get_data(j));
-            }
+    if(_data!=NULL){
+        buffer=new T[_room];
+        for(i=0;i<_room;i++){
+            buffer[i]=_data[i];
         }
-        delete [] data;
+        delete[] _data;
 
-        data=new array_1d<T>[row_room_in];
-        for(i=0;i<row_room_in;i++){
-            data[i].set_dim(cols);
-        }
-        for(i=0;i<rows;i++){
-            for(j=0;j<buffer[i].get_dim();j++){
-                data[i].set(j,buffer[i].get_data(j));
-            }
+        _data=new T[row_room_in*_cols];
+        for(i=0;i<_room;i++){
+            _data[i]=buffer[i];
         }
         delete [] buffer;
-
-        for(i=0;i<row_room_in;i++){
-            try{
-                data[i].assert_name(name);
-            }
-            catch(int iex){
-                printf("in 2d set_row_room\n");
-                die(0,0);
-            }
-
-            try{
-                data[i].assert_where(where_am_i);
-            }
-            catch(int iex){
-                printf("in 2d set_row_room\n");
-                die(0,0);
-            }
+        _room=row_room_in*_cols;
+        for(;i<_room;i++){
+            _data[i]=0;
         }
     }
     else{
-        data=new array_1d<T>[row_room_in];
-        for(i=0;i<row_room_in;i++){
-            data[i].set_dim(cols);
-        }
+        _data = new T[row_room_in*_cols];
     }
 
-    row_room=row_room_in;
+    _room=row_room_in*_cols;
 }
 
 
 template <typename T>
-void array_2d<T>::add_row(array_1d<T> &in){
+void array_2d<T>::add_row(const array_1d<T> &in){
 
 
-    if(data==NULL && row_room>0){
+    if(_data==NULL && _room>0){
         printf("dying from add_row\n");
         die(0,0);
     }
 
-    if(data==NULL && rows>0){
+    if(_data==NULL && _rows>0){
         printf("dying from add_row\n");
         die(1,0);
     }
 
-    if(data==NULL && cols>0){
+    if(_data==NULL && _cols>0){
         printf("dying from add_row\n");
         die(2,0);
     }
 
-    if(row_room<rows){
+    if(_room<_rows*_cols){
         printf("dying from add_row\n");
         die(3,0);
     }
 
-    if((cols<=0 || row_room<=0) && data!=NULL){
+    if((_cols<=0 || _room<=0) && _data!=NULL){
         printf("dying from add_row\n");
         die(4,0);
     }
 
-    if(cols>0 && cols!=in.get_dim()){
-        printf("dying from add_row cols are: %d but got: %d\n",cols,in.get_dim());
+    if(_cols>0 && _cols!=in.get_dim()){
+        printf("dying from add_row cols are: %d but got: %d\n",_cols,in.get_dim());
         die(-2,0);
     }
 
-    if(cols==0){
-        cols=in.get_dim();
+    if(_cols==0){
+        _cols=in.get_dim();
     }
 
-    if(cols==0){
+    if(_cols==0){
         printf("about add a row but cols zero\n");
         die(-1,-1);
     }
 
     int i,j;
 
-    if(data==NULL){
+    if(_data==NULL){
         set_row_room(100);
     }
 
-    if(rows==row_room){
-        set_row_room(2*row_room);
+    if(_rows==_room/_cols){
+        set_row_room(2*_room/_cols);
     }
 
-    data[rows].set_dim(cols);
-    for(i=0;i<cols;i++){
+    for(i=0;i<_cols;i++){
         try{
-            data[rows].set(i,in.get_data(i));
+            _data[_rows*_cols+i]=in.get_data(i);
         }
         catch(int iex){
-            die(rows,i);
+            printf("dying from array_2d add_row when actually copying data\n");
+            die(_rows,i);
         }
     }
-    rows++;
+
+    _rows++;
 }
 
 template <typename T>
 void array_2d<T>::zero(){
     int i;
-    for(i=0;i<row_room;i++){
-        data[i].zero();
+    for(i=0;i<_room;i++){
+        _data[i]=0;
     }
 }
 
 template <typename T>
 void array_2d<T>::remove_row(int dex){
 
-    if(dex<0 || dex>=rows)return;
+    if(dex<0 || dex>=_rows)return;
 
     int i,j;
-    for(i=dex+1;i<rows;i++){
-        for(j=0;j<data[i].get_dim();j++){
-            data[i-1].set(j,data[i].get_data(j));
+    for(i=dex+1;i<_rows;i++){
+        for(j=0;j<_cols;j++){
+            _data[(i-1)*_cols+j]= _data[i*_cols+j];
         }
     }
 
-    data[rows-1].reset();
-    rows--;
+    _rows--;
 
 }
 
 
 template <typename T>
-void array_2d<T>::set_row(int dex, array_1d<T> &in){
+void array_2d<T>::set_row(int dex, const array_1d<T> &in){
 
     if(dex<0){
         printf("tried to set to negative row\n");
         die(dex,0);
     }
 
-    if(data==NULL && row_room>0){
+    if(_data==NULL && _room>0){
         printf("dying from set_row\n");
         die(0,0);
     }
 
-    if(data==NULL && rows>0){
+    if(_data==NULL && _rows>0){
          printf("dying from set_row\n");
         die(1,0);
     }
 
-    if(data==NULL && cols>0){
+    if(_data==NULL && _cols>0){
          printf("dying from set_row\n");
         die(2,0);
     }
 
-    if(row_room<rows){
+    if(_room<_rows){
         printf("dying from set_row\n");
         die(3,0);
     }
 
-    if((cols<=0 || row_room<=0) && data!=NULL){
+    if((_cols<=0 || _room<=0) && _data!=NULL){
          printf("dying from set_row\n");
         die(4,0);
     }
 
-    if(cols>0 && cols!=in.get_dim()){
+    if(_cols>0 && _cols!=in.get_dim()){
          printf("dying from set_row\n");
         printf("columns do not match\n");
         die(-2,0);
@@ -606,16 +576,16 @@ void array_2d<T>::set_row(int dex, array_1d<T> &in){
     }
 
     int i;
-    if(dex>=rows){
-        for(i=rows;i<dex+1;i++)add_row(in);
+    if(dex>=_rows){
+        for(i=_rows;i<dex+1;i++)add_row(in);
     }
     else{
-        for(i=0;i<cols;i++){
+        for(i=0;i<_cols;i++){
             try{
-                data[dex].set(i,in.get_data(i));
+                _data[dex*_cols+i]=in.get_data(i);
             }
             catch(int ifail){
-                die(dex,cols);
+                die(dex,_cols);
             }
         }
     }
@@ -625,21 +595,17 @@ void array_2d<T>::set_row(int dex, array_1d<T> &in){
 template <typename T>
 void array_2d<T>::decrement_rows(){
 
-    if(rows==0){
+    if(_rows==0){
         printf("WARNING trying to decrement rows but rows already zero\n");
         die(0,0);
     }
 
-    rows--;
+    _rows--;
 }
 
 template <typename T>
 void array_2d<T>::reset_preserving_room(){
-    int i;
-    for(i=0;i<rows;i++){
-        data[i].reset_preserving_room();
-    }
-    rows=0;
+    _rows=0;
 }
 
 template <typename T>
@@ -651,30 +617,30 @@ void array_2d<T>::reset(){
 
     int i;
 
-    if(data==NULL && (rows>0 || cols>0 || row_room>0)){
+    if(_data==NULL && (_rows>0 || _cols>0 || _room>0)){
         printf("resetting but data is null and something is wrong\n");
         die(-1,-1);
     }
 
-    if(row_room==0 && data!=NULL){
+    if(_room==0 && _data!=NULL){
         die(-1,-1);
     }
 
-    if(cols==0 && data!=NULL){
+    if(_cols==0 && _data!=NULL){
         die(-1,-1);
     }
 
-    if(row_room<rows){
+    if(_room<_rows){
         die(-2,-2);
     }
 
-    if(data!=NULL){
-        delete [] data;
+    if(_data!=NULL){
+        delete [] _data;
 
-        data=NULL;
-        row_room=0;
-        rows=0;
-        cols=0;
+        _data=NULL;
+        _room=0;
+        _rows=0;
+        _cols=0;
     }
 
 
@@ -683,7 +649,7 @@ void array_2d<T>::reset(){
 
 template <typename T>
 void array_2d<T>::print_name(){
-    if(name!=NULL)printf("%s\n",name);
+    if(_name!=NULL)printf("%s\n",_name);
 }
 
 template <typename T>
@@ -694,21 +660,11 @@ void array_2d<T>::set_where(char *word) const {
     for(i=0;word[i]!=0;i++)ct++;
     ct++;
 
-    if(where_am_i!=NULL)delete [] where_am_i;
-    where_am_i=new char[ct];
+    if(_where_am_i!=NULL)delete [] _where_am_i;
+    _where_am_i=new char[ct];
 
-    for(i=0;i<ct && word[i]!=0;i++)where_am_i[i]=word[i];
-    where_am_i[ct-1]=0;
-
-    for(i=0;i<row_room;i++){
-        try{
-            data[i].assert_where(where_am_i);
-        }
-        catch(int iex){
-            printf("in 2d set where\n");
-            die(0,0);
-        }
-    }
+    for(i=0;i<ct && word[i]!=0;i++)_where_am_i[i]=word[i];
+    _where_am_i[ct-1]=0;
 
 }
 
@@ -719,23 +675,13 @@ void array_2d<T>::set_name(char *word){
     for(i=0;word[i]!=0;i++)ct++;
     ct++;
 
-    if(name!=NULL){
-        delete [] name;
+    if(_name!=NULL){
+        delete [] _name;
     }
 
-    name=new char[ct];
-    for(i=0;i<ct && word[i]!=0;i++)name[i]=word[i];
-    name[ct-1]=0;
-
-    for(i=0;i<row_room;i++){
-        try{
-            data[i].assert_name(name);
-        }
-        catch(int iex){
-            printf("in 2d set name\n");
-            die(0,0);
-        }
-    }
+    _name=new char[ct];
+    for(i=0;i<ct && word[i]!=0;i++)_name[i]=word[i];
+    _name[ct-1]=0;
 
 }
 
@@ -1125,9 +1071,17 @@ void merge_sort(array_1d<T> &in, array_1d<int> &dexes,
 }
 
 template <typename T>
+void sort(const array_1d<T> &in, array_1d<T> &sorted, array_1d<int> &dexes){
+    sorted.set_dim(in.get_dim());
+    int i;
+    for(i=0;i<in.get_dim();i++){
+        sorted.set(i,in.get_data(i));
+    }
+    merge_sort(sorted,dexes,0,in.get_dim()-1);
+}
+
+template <typename T>
 double sort_and_check(const array_1d<T> &in, array_1d<T> &sorted, array_1d<int> &dexes){
-
-
 
     if(in.get_dim()!=dexes.get_dim()){
         printf("WARNING in sort_and_check in.dim %d dexes.dim %d\n",
@@ -1277,6 +1231,10 @@ template void merge_sort<int>(array_1d<int>&,array_1d<int>&,int,int);
 
 template double sort_and_check<double>(const array_1d<double>&,array_1d<double>&,array_1d<int>&);
 template double sort_and_check<int>(const array_1d<int>&,array_1d<int>&,array_1d<int>&);
+
+template void sort<double>(const array_1d<double>&,array_1d<double>&,array_1d<int>&);
+template void sort<int>(const array_1d<int>&,array_1d<int>&,array_1d<int>&);
+
 
 template int get_dex(const array_1d<int>&,int);
 template int get_dex(const array_1d<double>&,double);

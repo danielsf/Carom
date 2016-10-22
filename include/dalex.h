@@ -7,8 +7,6 @@
 #include "simplex.h"
 #include "eigen_wrapper.h"
 #include "search_types.h"
-#include "gp_lin.h"
-#include "dchi_simplex_gp.h"
 #include "explorers.h"
 
 class dalex{
@@ -17,6 +15,7 @@ class dalex{
         ~dalex(){};
         dalex(){
             _chifn=NULL;
+            _limit=-1;
             _good_points.set_name("dalex_good_points");
             _good_points.set_room(100000);
             _tendril_path.set_name("dalex_tendril_path");
@@ -32,12 +31,18 @@ class dalex{
             _basis_mm.set_name("dalex_basis_mm");
             _basis_vv.set_name("dalex_basis_vv");
             _basis_norm.set_name("dalex_basis_norm");
+            _basis_associate_norm.set_name("dalex_basis_associate_norm");
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
+            _minimizers.set_name("dalex_minimizers");
         };
 
         void build(chisq_wrapper*);
+
+        void set_limit(int ii){
+            _limit=ii;
+        }
 
         void set_log(asymm_array_2d<int> *_ll){
             _log=_ll;
@@ -50,10 +55,11 @@ class dalex{
         int simplex_boundary_search();
         int simplex_boundary_search(int, int);
         void explore();
+        void min_explore(int, int);
 
         int bisection(int, int, double, double);
         int bisection(int, array_1d<double>&, double, double);
-        int bisection(array_1d<double>&, array_1d<double>&, double, double);
+        int bisection(const array_1d<double>&, const array_1d<double>&, double, double);
 
         double get_basis(int i, int j){
             return _basis_vectors.get_data(i,j);
@@ -87,7 +93,7 @@ class dalex{
            }
        }
 
-        void evaluate(array_1d<double> &pt, double *mu_out, int *i_out){
+        void evaluate(const array_1d<double> &pt, double *mu_out, int *i_out){
             _chifn->evaluate(pt,mu_out,i_out);
             if(mu_out[0]<target() && _good_points.contains(i_out[0])==0){
                 add_good_point(i_out[0]);
@@ -152,7 +158,7 @@ class dalex{
         ////////code related to finding basis vectors
         array_1d<int> _basis_associates;
         array_1d<double> _basis_mm,_basis_bb,_basis_model,_basis_vv;
-        array_1d<double> _basis_norm;
+        array_1d<double> _basis_norm,_basis_associate_norm;
         array_2d<double> _basis_vectors,_basis_ddsq;
         double _basis_chimin;
 
@@ -166,12 +172,20 @@ class dalex{
 
         ///////code related to explorers
         explorers _explorers;
+        explorers _min_explorers;
         int _last_checked_good;
+
+        /////code related to minimizers
+        array_1d<int> _minimizers;
+        void refine_minimum();
+        void iterate_on_minimum();
 
         //////code related to tendrils
         void tendril_search();
         array_2d<int> _tendril_path;
 
+
+        int _limit;
 };
 
 #endif

@@ -11,13 +11,13 @@ void explorers::get_seed(array_2d<double> &seed){
     for(i=0;i<_mu_arr.get_dim();i++){
         mu_dex.set(i,i);
     }
-    sort_and_check(_mu_arr,mu_sorted,mu_dex);
+    sort(_mu_arr,mu_sorted,mu_dex);
 
     int j,k;
     double rr;
 
     for(i=0;i<_chifn->get_dim()+1;i++){
-        seed.add_row(_particles(mu_dex.get_data(i))[0]);
+        seed.add_row(_particles(mu_dex.get_data(i)));
         for(j=0;j<_chifn->get_dim();j++){
             _particles.set(mu_dex.get_data(i),j,_median_associate.get_data(j));
         }
@@ -67,12 +67,20 @@ void explorers::set_norm(){
 
 }
 
+void explorers::reset(){
+    _particles.reset_preserving_room();
+    _attempted=0;
+    _accepted.reset_preserving_room();
+    _req_temp.reset_preserving_room();
+    _temp=1.0;
+}
+
 void explorers::initialize_particles(){
 
-    _particles.reset();
+    _particles.reset_preserving_room();
     _attempted=0;
-    _accepted.reset();
-    _req_temp.reset();
+    _accepted.reset_preserving_room();
+    _req_temp.reset_preserving_room();
 
     array_1d<double> min,max;
     min.set_name("exp_init_min");
@@ -100,7 +108,8 @@ void explorers::initialize_particles(){
     while(_particles.get_rows()<_n_particles){
         for(i=0;i<_chifn->get_dim();i++){
             span=max.get_data(i)-min.get_data(i);
-            trial.set(i,(2.0*_chifn->random_double()-0.5)*span+min.get_data(i));
+            //sfd this should be 2.0*(double()-0.5)*span
+            trial.set(i,2.0*(_chifn->random_double()-0.5)*span+min.get_data(i));
         }
         _chifn->evaluate(trial,&mu,&i_found);
         if(i_found>=0){
@@ -144,7 +153,7 @@ void explorers::sample(int n_steps){
         initialize_particles();
     }
 
-    dchi_interior_simplex dchifn(_chifn, _associates);
+    cost_fn dchifn(_chifn, _associates);
     dchifn.copy_bases(_bases);
     set_norm();
 
@@ -160,7 +169,7 @@ void explorers::sample(int n_steps){
     trial.set_name("exp_sample_trial");
 
     for(ip=0;ip<_n_particles;ip++){
-        mu=dchifn(_particles(ip)[0]);
+        mu=dchifn(_particles(ip));
         if(ip==0 || mu<_mu_min){
             _mindex=ip;
             _mu_min=mu;
@@ -242,7 +251,7 @@ void explorers::sample(int n_steps){
                 acceptance_rate.set(i,double(_accepted.get_data(i))/double(_attempted));
                 acceptance_rate_dex.set(i,i);
             }
-            sort_and_check(acceptance_rate, acceptance_rate_sorted, acceptance_rate_dex);
+            sort(acceptance_rate, acceptance_rate_sorted, acceptance_rate_dex);
             med_acc=acceptance_rate_sorted.get_data(acceptance_rate_dex.get_dim()/2);
             if(med_acc>0.75 || med_acc<0.3333){
                 old_temp=_temp;
@@ -251,7 +260,7 @@ void explorers::sample(int n_steps){
                 for(i=0;i<_req_temp.get_dim();i++){
                     req_temp_dex.set(i,i);
                 }
-                sort_and_check(_req_temp, req_temp_sorted, req_temp_dex);
+                sort(_req_temp, req_temp_sorted, req_temp_dex);
                 _temp=req_temp_sorted.get_data(req_temp_dex.get_dim()/2);
                 if(fabs(1.0-old_temp/_temp)>0.01){
                     _req_temp.reset();

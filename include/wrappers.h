@@ -11,7 +11,7 @@ class function_wrapper{
 public:
     function_wrapper();
     ~function_wrapper();
-    virtual double operator()(array_1d<double>&);
+    virtual double operator()(const array_1d<double>&);
     virtual int get_called();
     virtual double get_min(int i){
         printf("unimplemented get_min in function_wrapper");

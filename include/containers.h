@@ -69,6 +69,7 @@ class array_1d{
 public:
 
     array_1d();
+    array_1d(const array_1d<T> &in);
     ~array_1d();
 
     /*return a pointer to the data in this array*/
@@ -375,6 +376,48 @@ public:
     spaces in the array*/
     int get_room();
 
+
+    inline array_1d& operator=(const array_1d &in){
+        if(this==&in) return *this;
+
+        if(data!=NULL){
+            delete [] data;
+        }
+        if(name!=NULL){
+            delete [] name;
+        }
+        if(where_am_i!=NULL){
+            delete [] where_am_i;
+        }
+
+        dim=in.dim;
+        room=in.room;
+        name_set=in.name_set;
+        int i;
+        if(in.name!=NULL){
+           for(i=0;in.name[i]!=0;i++);
+           name=new char[i+1];
+           for(i=0;in.name[i]!=0;i++){
+               name[i]=in.name[i];
+           }
+           name[i]=0;
+        }
+        if(in.where_am_i!=NULL){
+            for(i=0;in.where_am_i[i]!=0;i++);
+            where_am_i=new char[i+1];
+            for(i=0;in.where_am_i[i]!=0;i++){
+                where_am_i[i]=in.where_am_i[i];
+            }
+            where_am_i[i]=0;
+        }
+
+        data = new T[room];
+        for(i=0;i<room;i++){
+            data[i]=in.data[i];
+        }
+        return *this;
+    }
+
 private:
 
     /*this is where the data is actually stored for the array*/
@@ -409,16 +452,6 @@ private:
 template <typename T>
 class array_2d{
 
-    /*
-    This is a class for 2-dimensional matrices in which each row has
-    the same number of columns.
-
-    Each row will be an instantiation of array_1d above.
-
-    As with array_1d, the code is presently compiled so that one can
-    have an array_2d of either ints or doubles
-    */
-
 public:
 
     /*
@@ -444,23 +477,23 @@ public:
             die(ir,ic);
         }
 
-        if(data==NULL && (rows>0 || cols>0)){
+        if(_data==NULL && (_rows>0 || _cols>0)){
             printf("WARNING data is null but rows %d cols %d\n",
-            rows,cols);
-            if(name!=NULL)printf("name %s\n",name);
-            if(where_am_i!=NULL)printf("where %s\n",where_am_i);
+            _rows,_cols);
+            if(_name!=NULL)printf("name %s\n",_name);
+            if(_where_am_i!=NULL)printf("where %s\n",_where_am_i);
             exit(1);
         }
 
-        if(data!=NULL && cols<=0){
+        if(_data!=NULL && _cols<=0){
             printf("WARNING data is not null but rows %d cols %d\n",
-            rows,cols);
-            if(name!=NULL)printf("name %s\n",name);
-            if(where_am_i!=NULL)printf("where %s\n",where_am_i);
+            _rows,_cols);
+            if(_name!=NULL)printf("name %s\n",_name);
+            if(_where_am_i!=NULL)printf("where %s\n",_where_am_i);
             exit(1);
         }
 
-        if(ir==rows && ic==cols){
+        if(ir==_rows && ic==_cols){
             return;
         }
 
@@ -475,42 +508,27 @@ public:
         }
 
         int i;
-        if(data!=NULL){
-            delete [] data;
+        if(_data!=NULL){
+            delete [] _data;
         }
 
-        row_room=ir;
-        rows=ir;
-        cols=ic;
-        data=new array_1d<T>[row_room];
+        _room=ir*ic;
+        _rows=ir;
+        _cols=ic;
+        _data=new T[_room];
 
-        int j;
-        for(i=0;i<rows;i++){
-            data[i].set_dim(cols);
-            for(j=0;j<cols;j++){
-                if(i!=j)data[i].set(j,0);
-                else data[i].set(j,1);
+        int j,dex;
+        for(i=0;i<_rows;i++){
+            for(j=0;j<_cols;j++){
+                dex=i*_cols+j;
+                if(i==j){
+                  _data[dex]=1;
+                }
+                else{
+                  _data[dex]=0;
+                }
             }
         }
-
-        for(i=0;i<row_room;i++){
-            try{
-                data[i].assert_name(name);
-            }
-            catch(int iex){
-                printf("in 2d set dim\n");
-                die(0,0);
-            }
-
-            try{
-                data[i].assert_where(where_am_i);
-            }
-            catch(int iex){
-                printf("in 2d set dim\n");
-                die(0,0);
-            }
-        }
-
     }
 
     /*set the number of columns of the array_2d. Once this is set, it cannot
@@ -519,32 +537,10 @@ public:
     inline void set_cols(int ii){
         reset();
 
-        row_room=100;
-        rows=0;
-        cols=ii;
-        data=new array_1d<T>[row_room];
-        int i;
-        for(i=0;i<row_room;i++){
-            data[i].set_dim(cols);
-        }
-
-        for(i=0;i<row_room;i++){
-            try{
-                data[i].assert_name(name);
-            }
-            catch(int iex){
-                printf("in 2d set dim\n");
-                die(0,0);
-            }
-
-            try{
-                data[i].assert_where(where_am_i);
-            }
-            catch(int iex){
-                printf("in 2d set dim\n");
-                die(0,0);
-            }
-        }
+        _room=100*ii;
+        _rows=0;
+        _cols=ii;
+        _data=new T[_room];
 
     }
 
@@ -553,20 +549,20 @@ public:
     columns second)*/
     inline T get_data(int ir, int ic) const{
 
-        if(data==NULL){
+        if(_data==NULL){
             printf("dying from get_data\n");
             die(ir,ic);
         }
-        else if(row_room<rows){
+        else if(_room<_rows*_cols){
            printf("dying from get_data\n");
             die(ir,ic);
         }
-        else if(ir>=rows || ir<0 || ic>=cols || ic<0){
+        else if(ir>=_rows || ir<0 || ic>=_cols || ic<0){
            printf("dying from get_data\n");
             die(ir,ic);
         }
 
-        return data[ir].get_data(ic);
+        return _data[ir*_cols+ic];
 
     }
 
@@ -585,10 +581,10 @@ public:
     /*add the array_1d as a row to this array_2d.  If this array_2d is blank,
     then the number of columns in this array_2d will be set to the length
     of the input array_1d*/
-    void add_row(array_1d<T>&);
+    void add_row(const array_1d<T>&);
 
     /*set the row indexed by int to the array_1d provided*/
-    void set_row(int,array_1d<T>&);
+    void set_row(int,const array_1d<T>&);
 
     /*set the element indexed by the two ints to the value provided.
     If you try to set a row that is beyond the current size of this
@@ -603,30 +599,30 @@ public:
             die(ir,ic);
         }
 
-        if(ic<0 || ic>=cols){
+        if(ic<0 || ic>=_cols){
             printf("dying from set\n");
             die(ir,ic);
         }
 
-        if(cols<=0){
+        if(_cols<=0){
             printf("\nYou cannot use set(int,int) on a 2d array if cols are zero\n");
             die(ir,ic);
         }
 
-        if(data==NULL){
+        if(_data==NULL){
             printf("dying from set\n");
             die(ir,ic);
         }
 
         int i;
         array_1d<T> vector;
-        if(ir>=rows){
-            for(i=0;i<cols;i++)vector.set(i,0);
-            while(rows<=ir)add_row(vector);
+        if(ir>=_rows){
+            for(i=0;i<_cols;i++)vector.set(i,0);
+            while(_rows<=ir)add_row(vector);
 
         }
 
-        data[ir].set(ic,val);
+        _data[ir*_cols+ic]=val;
 
     }
 
@@ -639,44 +635,41 @@ public:
     */
     inline void add_val(int ir, int ic, T val){
 
-        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+        if(ir>=_rows || ic>=_cols || _data==NULL || ir<0 || ic<0){
             printf("dying from add_val\n");
              die(ir,ic);
         }
-        data[ir].add_val(ic,val);
+        _data[ir*_cols+ic]+=val;
     }
 
     /*subtract the provided value from the indexed element*/
     inline void subtract_val(int ir, int ic, T val){
 
-        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+        if(ir>=_rows || ic>=_cols || _data==NULL || ir<0 || ic<0){
             printf("dying from subtract_val\n");
             die(ir,ic);
         }
-
-        data[ir].subtract_val(ic,val);
+        _data[ir*_cols+ic]-=val;
     }
 
     /*multiply the indexed element by the provided value*/
     inline void multiply_val(int ir, int ic, T val){
 
-        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+        if(ir>=_rows || ic>=_cols || _data==NULL || ir<0 || ic<0){
             printf("dying from multiply_val\n");
             die(ir,ic);
         }
-
-        data[ir].multiply_val(ic,val);
+        _data[ir*_cols+ic]*=val;
     }
 
     /*divide the indexed element by the provided value*/
     inline void divide_val(int ir, int ic, T val){
 
-        if(ir>=rows || ic>=cols || data==NULL || ir<0 || ic<0){
+        if(ir>=_rows || ic>=_cols || _data==NULL || ir<0 || ic<0){
             printf("dying from divide_val\n");
             die(ir,ic);
         }
-
-        data[ir].divide_val(ic,val);
+        _data[ir*_cols+ic]/=val;
 
     }
 
@@ -690,12 +683,12 @@ public:
 
     /*return the number of rows*/
     inline int get_rows() const{
-        return rows;
+        return _rows;
     }
 
     /*return the number of columns*/
     inline int get_cols() const{
-        return cols;
+        return _cols;
     }
 
     /*throw an exception; the arguments are for indicating which element
@@ -712,46 +705,51 @@ public:
 
     *myArray2d(i) behaves just like an array_1d
     */
-    inline array_1d<T>* operator()(int dex){
+    inline array_1d<T> operator()(int dex){
 
-        if(dex<0 || dex>=rows){
-            printf("WARNING asked for row %d but only have %d\n",dex,rows);
+        if(dex<0 || dex>=_rows){
+            printf("WARNING asked for row %d but only have %d\n",dex,_rows);
             die(-1,-1);
         }
+        array_1d<T> vv;
+        int i;
+        vv.set_dim(_cols);
+        for(i=0;i<_cols;i++){
+            vv.set(i,_data[dex*_cols+i]);
+        }
+        return vv;
 
-        return &data[dex];
+    }
 
+
+    inline double normalize_row(int dex){
+        if(dex>=_rows){
+            printf("WARNING trying to normalize row %d; only have %d\n",
+                   dex,_rows);
+
+            die(dex,0);
+        }
+        double ans=0.0;
+        int i;
+        for(i=0;i<_cols;i++){
+            ans+=_data[dex*_cols+i]*_data[dex*_cols+i];
+        }
+        ans=sqrt(ans);
+        for(i=0;i<_cols;i++){
+            _data[dex*_cols+i]/=ans;
+        }
+        return ans;
     }
 
 private:
 
-   /*
-   rows is the number of rows
+   int _rows,_cols,_room;
 
-   cols is the number of columns
+   T *_data;
 
-   row_room is the number of array_1d's that have been allotted to store
-   rows (so that the code knows how much room it already has when you call
-   add_row)
-   */
-   int rows,cols,row_room;
+   char *_name;
 
-   /*
-   This will be allocated an array of array_1d's to store the rows of this
-   array_2d
-   */
-   array_1d<T> *data;
-
-   /*the name of this array_2d for purposes of diagnostics*/
-   char *name;
-
-   /*the current location of this array_2d for purposes of diagnostics*/
-   mutable char *where_am_i;
-
-    /*
-    name and where_am_i will be passed down to the array_1d's making up the
-    rows of this array_2d
-    */
+   mutable char *_where_am_i;
 
 };
 
@@ -1013,6 +1011,8 @@ If this maximum error is greater than 10^-12, then the code throws an exception
 template <typename T>
 double sort_and_check(const array_1d<T>&, array_1d<T>&, array_1d<int>&);
 
+template <typename T>
+void sort(const array_1d<T>&, array_1d<T>&, array_1d<int>&);
 
 
 /*return the index of the element of the array_1d that is closest in value to T;

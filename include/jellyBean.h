@@ -11,11 +11,11 @@ class chiSquaredData : public chisquared{
 
         void set_width(int, int, double);
 
-        virtual double operator()(array_1d<double>&);
+        virtual double operator()(const array_1d<double>&);
         void write_data();
         void print_mins();
         
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(const array_1d<double>&, array_1d<double>&, int);
 
     protected:
         int _ndata;
@@ -38,7 +38,7 @@ class jellyBeanData : public chiSquaredData{
         ~jellyBeanData(){}
         jellyBeanData(int,int,double,int,double);
         
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(const array_1d<double>&, array_1d<double>&, int);
 
 
     protected:
@@ -53,7 +53,7 @@ class ellipseData : public chiSquaredData{
         ~ellipseData(){}
         ellipseData(int, int, int, double);
 
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(const array_1d<double>&, array_1d<double>&, int);
     
     protected:
         array_1d<double> _dir,_projected;
@@ -65,7 +65,7 @@ class nonGaussianEllipseData : public ellipseData{
     public:
         ~nonGaussianEllipseData(){}
         nonGaussianEllipseData(int, int, int, double);
-        virtual void convert_params(array_1d<double>&, array_1d<double>&, int);
+        virtual void convert_params(const array_1d<double>&, array_1d<double>&, int);
 };
 
 #endif

@@ -82,7 +82,7 @@ while(fscanf(input,"%le",&mu)>0){
 }
 fclose(input);
 
-sort_and_check(wgt,wgt_sorted,dexes);
+sort(wgt,wgt_sorted,dexes);
 
 int dex;
 input=fopen(outName,"w");

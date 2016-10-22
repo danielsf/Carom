@@ -81,12 +81,12 @@ class kd_tree{
         */
         
         /*the parameter space distance between arbitrary points*/
-        double distance(array_1d<double>&,array_1d<double>&);
+        double distance(const array_1d<double>&, const array_1d<double>&);
  
         /*the parameter space distance between and arbitrary point and a node
         on the tree*/
-        double distance(array_1d<double>&,int);
-        double distance(int,array_1d<double>&);
+        double distance(const array_1d<double>&,int);
+        double distance(int,const array_1d<double>&);
         
         /*the parameter space distance between two nodes on the tree*/
         double distance(int,int);
@@ -99,7 +99,7 @@ class kd_tree{
         double get_pt(int,int);
         
         /*return a pointer to a node on the tree*/
-        array_1d<double>* get_pt(int);
+        array_1d<double> get_pt(int);
         
         /*return the number of points stored in the tree*/
         int get_pts();
@@ -107,7 +107,7 @@ class kd_tree{
         void write_tree(char*);
         
         /*add a point to the tree*/
-        void add(array_1d<double>&);
+        void add(const array_1d<double>&);
         
         /*removes a node from the tree and then rebuilds the tree*/
         void remove(int);
@@ -131,7 +131,7 @@ class kd_tree{
         Remember: all distances are normalized by maxs-mins (see documentation
         of the distance() routines)
         */
-        void nn_srch(array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
+        void nn_srch(const array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
         void nn_srch(int,int,array_1d<int>&,array_1d<double>&);
         
         /*
@@ -249,10 +249,10 @@ class kd_tree{
         
         /*find the node where a new point would be added to the tree;
         this is part of the backend for the add() routine*/
-        int find_node(array_1d<double>&);
+        int find_node(const array_1d<double>&);
         
         /*neigh_check provides the back end for nn_srch*/
-        void neigh_check(array_1d<double>&,
+        void neigh_check(const array_1d<double>&,
             int,array_1d<int>&,array_1d<double>&,int,int);
         
         /*kernel_check provides the backend for kernel_srch*/

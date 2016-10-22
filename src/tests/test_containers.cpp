@@ -4,6 +4,29 @@
 #include <time.h>
 #include <stdlib.h>
 
+void assert_equal(int i1, int i2, char *msg){
+    if(i1!=i2){
+        printf("WARNING %d neq %d\n",i1,i2);
+        printf("%s\n",msg);
+        exit(1);
+    }
+}
+
+void assert_equal(double e1, double e2, double tol, char *msg){
+    if(fabs(e1-e2)>tol){
+        printf("WARNING diff between %e, %e > %e\n",e1,e2,tol);
+        printf("%s\n",msg);
+        exit(1);
+    }
+}
+
+void assert_greater(double n1, double n2){
+    if(n1<=n2){
+       printf("WARNING %e <= %e\n",n1,n2);
+       exit(1);
+    }
+}
+
 int main(int iargc, char *argv[]){
 
 int seed=43;
@@ -358,44 +381,37 @@ for(i=0;i<cols;i++){
     comparison_vector[i]=matrix.get_data(3,i);
 }
 
-array_1d<double> *vptr;
-
+array_1d<double> vptr;
 vptr=matrix(3);
 
 for(i=0;i<cols;i++){
-    err=fabs(comparison_vector[i]-(*vptr).get_data(i));
+    err=fabs(comparison_vector[i]-vptr.get_data(i));
     if(comparison_vector[i]!=0.0)err=err/fabs(comparison_vector[i]);
 
     if(err>maxerr)maxerr=err;
     if(maxerr>tol){
-        printf("WARNING failed on vptr\n");
+        printf("WARNING failed on vptr %e %e %d\n",
+        vptr.get_data(i),comparison_vector[i],i);
+        for(j=0;j<matrix.get_rows();j++){
+            for(k=0;k<matrix.get_cols();k++){
+               printf("%e ",matrix.get_data(j,k));
+            }
+            printf("\n");
+        }
 	exit(1);
     }
 }
 
 for(i=0;i<cols;i++){
     nn=fabs(chaos.doub())+0.1;
-    (*vptr).add_val(i,nn);
+    vptr.add_val(i,nn);
 
-    err=fabs((*vptr).get_data(i)-matrix.get_data(3,i));
-    if((*vptr).get_data(i)!=0.0)err=err/fabs((*vptr).get_data(i));
-
-    if(err>maxerr){
-       maxerr=err;
-       printf("relating back to matrix %e %e %e\n",
-       (*vptr).get_data(i),matrix.get_data(3,i),maxerr);
-    }
-    if(maxerr>tol){
-        printf("WARNING failed associating vptr to matrix\n");
-	exit(1);
-    }
-
-    err=fabs((*vptr).get_data(i)-comparison_vector[i]-nn);
-    if((*vptr).get_data(i)!=0.0)err=err/fabs((*vptr).get_data(i));
+    err=fabs(vptr.get_data(i)-comparison_vector[i]-nn);
+    if(vptr.get_data(i)!=0.0)err=err/fabs(vptr.get_data(i));
 
     if(err>maxerr){
         maxerr=err;
-        printf("actually changing vptr %e %e %e %e %e\n",(*vptr).get_data(i),
+        printf("actually changing vptr %e %e %e %e %e\n",vptr.get_data(i),
 	comparison_vector[i]+nn,maxerr,err,nn);
     }
     if(maxerr>tol){
@@ -778,14 +794,21 @@ if(shld_fail!=did_fail){
 //////////////////time to test merge sort///////////////
 
 int sorted_pts=100,iteration;
-array_1d<double> to_sort_double,sorted_double;
-array_1d<int> dexes;
+array_1d<double> to_sort_double,sorted_double,just_sort_double;
+array_1d<int> dexes,just_sort_dexes;
+
+to_sort_double.set_name("to_sort_double");
+sorted_double.set_name("sorted_double");
+just_sort_double.set_name("just_sort_double");
+dexes.set_name("dexes");
+just_sort_dexes.set_name("just_sort_dexes");
 
 for(iteration=0;iteration<2;iteration++){
 
     for(i=0;i<sorted_pts;i++){
         to_sort_double.set(i,chaos.doub());
         dexes.set(i,i);
+        just_sort_dexes.set(i,i);
     }
 
     if(to_sort_double.get_dim()!=sorted_pts || dexes.get_dim()!=sorted_pts){
@@ -796,9 +819,17 @@ for(iteration=0;iteration<2;iteration++){
     }
 
     sort_and_check(to_sort_double,sorted_double,dexes);
+    sort(to_sort_double, just_sort_double, just_sort_dexes);
 
     if(sorted_double.get_dim()!=sorted_pts){
         printf("%d WARNING sorted_pts %d but sorted %d\n",
+        iteration,sorted_pts,sorted_double.get_dim());
+
+        exit(1);
+    }
+
+    if(just_sort_double.get_dim()!=sorted_pts){
+        printf("%d WARNING sorted_pts %d but just_sort_double %d\n",
         iteration,sorted_pts,sorted_double.get_dim());
 
         exit(1);
@@ -808,6 +839,20 @@ for(iteration=0;iteration<2;iteration++){
         err=fabs(to_sort_double.get_data(dexes.get_data(i))-sorted_double.get_data(i));
         if(to_sort_double.get_data(dexes.get_data(i))!=0.0){
             err=err/fabs(to_sort_double.get_data(dexes.get_data(i)));
+        }
+
+        if(err>maxerr)maxerr=err;
+
+        err=fabs(just_sort_double.get_data(i)-sorted_double.get_data(i));
+        if(to_sort_double.get_data(dexes.get_data(i))!=0.0){
+            err=err/fabs(to_sort_double.get_data(dexes.get_data(i)));
+        }
+
+        if(err>maxerr)maxerr=err;
+
+        if(just_sort_dexes.get_data(i)!=dexes.get_data(i)){
+            printf("WARNING just sort did not mimic sort_and_check\n");
+            exit(1);
         }
 
 	if(i>0){
@@ -1076,9 +1121,119 @@ if(arr.contains(13)!=0){
 }
 
 
+///////////////////exercise 2d
+printf("more methodical\n");
+array_2d<double> test_2d;
+
+test_2d.set_dim(3,2);
+assert_equal(test_2d.get_rows(), 3, "2d rows");
+assert_equal(test_2d.get_cols(), 2, "2d cols");
+test_2d.set(0,0,1.4);
+test_2d.set(0,1,2.3);
+test_2d.set(1,0,0.7);
+test_2d.set(1,1,0.9);
+test_2d.set(2,0,91.2);
+test_2d.set(2,1,19.1);
+assert_equal(test_2d.get_data(0,0),1.4,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(0,1),2.3,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(1,0),0.7,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(1,1),0.9,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(2,0),91.2,1.0e-6,"2d val");
+assert_equal(test_2d.get_data(2,1),19.1,1.0e-6,"2d val");
+
+test_2d.multiply_val(2,1,3.0);
+assert_equal(test_2d.get_data(2,1),57.3,1.0e-6,"2d mult");
+test_2d.add_val(1,1,1.4);
+assert_equal(test_2d.get_data(1,1),2.3,1.0e-6,"2d add");
+test_2d.subtract_val(0,1,0.5);
+assert_equal(test_2d.get_data(0,1), 1.8,1.0e-6, "2d subtract");
+test_2d.divide_val(2,0,3.0);
+assert_equal(test_2d.get_data(2,0),91.2/3.0,1.0e-6,"2d divide");
+
+array_1d<double> test_1d;
+test_1d.set(0,9.0);
+test_1d.set(1,3.0);
+test_1d.set(2,4.5);
+assert_equal(test_1d.get_dim(),3,"1d dim");
+assert_equal(test_1d.get_data(0),9.0,1.0e-6,"1d val");
+assert_equal(test_1d.get_data(1),3.0,1.0e-6,"1d val");
+assert_equal(test_1d.get_data(2),4.5,1.0e-6,"1d val");
+test_1d.add_val(2,1.0);
+assert_equal(test_1d.get_data(2),5.5,1.0e-6,"1d add");
+test_1d.multiply_val(1,1.7);
+assert_equal(test_1d.get_data(1),5.1,1.0e-6,"1d mult");
+test_1d.subtract_val(0,9.1);
+assert_equal(test_1d.get_data(0),-0.1,1.0e-6,"1d subtract");
+test_1d.divide_val(0,2.0);
+assert_equal(test_1d.get_data(0),-0.05,1.0e-6,"1d divide");
+
+test_2d.reset_preserving_room();
+test_2d.set_dim(4,2);
+assert_equal(test_2d.get_rows(),4,"2d rows");
+assert_equal(test_2d.get_cols(),2,"2d cols");
+for(i=0;i<test_2d.get_rows();i++){
+    for(j=0;j<test_2d.get_cols();j++){
+         test_2d.set(i,j,i*0.1+j*0.01);
+    }
+}
+
+for(i=0;i<test_2d.get_rows();i++){
+    for(j=0;j<test_2d.get_cols();j++){
+         assert_equal(test_2d.get_data(i,j),i*0.1+j*0.01,1.0e-6,"2d vals");
+    }
+}
+
+
+test_2d.reset();
+test_2d.set_cols(90);
+int test_rows=10000;
+for(i=0;i<test_rows;i++){
+    for(j=0;j<test_2d.get_cols();j++){
+        test_2d.set(i,j,1.2*i+0.57*j);
+    }
+}
+
+assert_equal(test_2d.get_rows(),test_rows,"2d rows");
+assert_equal(test_2d.get_cols(),90,"2d cols");
+
+
+for(i=0;i<test_rows;i++){
+    for(j=0;j<test_2d.get_cols();j++){
+        assert_equal(test_2d.get_data(i,j),1.2*i+0.57*j,1.0e-6,"2d vals");
+    }
+}
+
+array_1d<double> test_vec;
+test_vec=test_2d(9);
+assert_equal(test_vec.get_dim(), test_2d.get_cols(),"copy to vv dim");
+for(i=0;i<test_2d.get_cols();i++){
+    assert_equal(test_vec.get_data(i),test_2d.get_data(9,i),1.0e-6,"copy to vv");
+}
+
+array_2d<double> other_test_2d;
+other_test_2d.add_row(test_2d(9));
+assert_equal(other_test_2d.get_cols(), test_2d.get_cols(), "get cols");
+for(i=0;i<test_2d.get_cols();i++){
+    assert_equal(test_2d.get_data(9,i), other_test_2d.get_data(0,i), 1.0e-6, "get vals");
+}
+
+
+nn=0.0;
+for(i=0;i<test_2d.get_cols();i++){
+    nn+=power(test_2d.get_data(11,i),2);
+}
+nn=sqrt(nn);
+assert_greater(nn,1.0);
+double mm=test_2d.normalize_row(11);
+assert_equal(mm,nn,nn*1.0e-6,"normalizing");
+nn=0.0;
+for(i=0;i<test_2d.get_cols();i++){
+    nn+=power(test_2d.get_data(11,i),2);
+}
+nn=sqrt(nn);
+assert_equal(nn,1.0,1.0e-6,"normalizing");
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);
-printf("have not tested self add, subtract, divide, or multiply\n");
-printf("also have not tested 2d.set(int,int,T)\n");
+
 
 }
 

@@ -58,29 +58,37 @@ int main(){
     raw_max.set(3,2.189316e+01);
 
     //for integrableJellyBean
-    raw_min.set(0,-14.0);
-    raw_max.set(0,-6.5);
-    raw_min.set(1,13.0);
-    raw_max.set(1, 17.5);
-    raw_min.set(2,5.5);
-    raw_max.set(2,16.0);
-    raw_min.set(3,-22.0);
-    raw_max.set(3,-6.0);
+    raw_min.set(0,-3.0);
+    raw_max.set(0,13.0);
+    raw_min.set(1,-2.0);
+    raw_max.set(1, 15.0);
+    raw_min.set(2,-12.0);
+    raw_max.set(2,-4.0);
+    raw_min.set(3,-16.0);
+    raw_max.set(3,-3.0);
 
     int i;
+    for(i=0;i<4;i++){
+        raw_min.subtract_val(i,7.0);
+        raw_max.add_val(i,7.0);
+    }
     double dd;
     for(i=0;i<4;i++){
-        dd=raw_max.get_data(i)-raw_min.get_data(i);
-        min.set(i,raw_min.get_data(i)-0.5*dd);
-        max.set(i,raw_max.get_data(i)+0.5*dd);
+        //dd=raw_max.get_data(i)-raw_min.get_data(i);
+        min.set(i,raw_min.get_data(i));
+        max.set(i,raw_max.get_data(i));
     }
 
     for(i=0;i<4;i++){
         dx.set(i,(max.get_data(i)-min.get_data(i))*0.005);
         printf("dx %e\n",dx.get_data(i));
     }
+    dx.multiply_val(0,0.5);
+    dx.multiply_val(1,0.5);
+    //dx.multiply_val(2,2.0);
+    //dx.multiply_val(3,2.0);
 
-    control_integrator integrator(chisq,min,max,dx,"controls/scratch/integrable_gross");
+    control_integrator integrator(chisq,min,max,dx,"controls/draft_160907/gentle_integrable_detailed_x2");
     array_1d<double> cc;
     cc.add(0.95);
     cc.add(0.68);

@@ -5,10 +5,13 @@ control_integrator::control_integrator(function_wrapper &chisq,
                      array_1d<double> &dx, char *name_root){
 
     _iter_p = NULL;
-
+    _d_threshold=60.0;
     _min.set_name("control_min");
     _max.set_name("control_max");
     _dx.set_name("control_dx");
+
+    chisquared_distribution distro;
+    _max_chi_lim_freq=distro.confidence_limit(100.0,0.95);
 
     _chisq=&chisq;
     int i;
@@ -56,9 +59,7 @@ void control_integrator::_initialize_iterate(){
 
 void control_integrator::run_analysis(array_1d<double> &cc){
 
-    chisquared_distribution distro;
-
-    double max_confidence_limit, max_chi_lim_freq;
+    double max_confidence_limit;
     int ic;
     for(ic=0;ic<cc.get_dim();ic++){
         if(ic==0 || cc.get_data(ic)>max_confidence_limit){
@@ -66,10 +67,9 @@ void control_integrator::run_analysis(array_1d<double> &cc){
         }
     }
 
-    max_chi_lim_freq=distro.confidence_limit(100.0,max_confidence_limit);
-
 
     printf("nameroot %s\n",_name_root);
+    printf("max_chi_lim_freq %e\n",_max_chi_lim_freq);
 
     array_1d<double> pt;
 
@@ -94,7 +94,6 @@ void control_integrator::run_analysis(array_1d<double> &cc){
         good_max.set(ix,-2.0*exception_value);
     }
 
-    double d_threshold=50.0;
     double mu;
     double start=double(time(NULL));
 
@@ -102,17 +101,17 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
     double foundMin=exception_value;
 
-
-    FILE *output;
-
-    output=fopen("output/scratch/control_scatter.sav","w");
-
     int keep_going=1;
 
     _initialize_iterate();
 
     array_1d<int> idx;
     idx.set_name("control_idx");
+
+    double expected_time;
+
+    double good_threshold=_max_chi_lim_freq+_d_threshold;
+    printf("good_threshold %e\n",good_threshold);
 
     while(keep_going==1){
 
@@ -122,7 +121,7 @@ void control_integrator::run_analysis(array_1d<double> &cc){
 
         if(mu<foundMin)foundMin=mu;
 
-        if(mu<max_chi_lim_freq+d_threshold){
+        if(mu<good_threshold){
             for(ix=0;ix<_min.get_dim();ix++){
                 if(pt.get_data(ix)<good_min.get_data(ix)){
                     good_min.set(ix,pt.get_data(ix));
@@ -136,22 +135,18 @@ void control_integrator::run_analysis(array_1d<double> &cc){
         }
 
         if(_iter_p->get_current_ct()%1000000==0 && _iter_p->get_current_ct()>0){
-            printf("ct %ld good %d in %e %e -- %e\n",
-            _iter_p->get_current_ct(),chi_vals.get_dim(),double(time(NULL))-start,
-            (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin);
-        }
 
-        if(mu<119.8){
-            for(ix=0;ix<_min.get_dim();ix++){
-                fprintf(output,"%e ",pt.get_data(ix));
-            }
-            fprintf(output,"\n");
+            expected_time = ((double(time(NULL))-start)*_iter_p->get_total_ct())/double(_iter_p->get_current_ct());
+
+            printf("ct %ld good %d room %d in %.4e %.4e -- %.4e -- expect %e hours\n",
+            _iter_p->get_current_ct(),chi_vals.get_dim(),chi_vals.get_room(),(double(time(NULL))-start)/3600.0,
+            (double(time(NULL))-start)/double(_iter_p->get_current_ct()),foundMin,
+            expected_time/3600.0);
         }
 
 
     }
 
-    fclose(output);
     printf("foundMin %e in %ld\n",foundMin,_iter_p->get_current_ct());
 
     start=double(time(NULL));
@@ -162,7 +157,7 @@ void control_integrator::run_analysis(array_1d<double> &cc){
     dexes.set_dim(chi_vals.get_dim());
     likelihood_sorted.set_dim(chi_vals.get_dim());
     for(i=0;i<chi_vals.get_dim();i++)dexes.set(i,i);
-    sort_and_check(chi_vals, chi_sorted, dexes);
+    sort(chi_vals, chi_sorted, dexes);
     printf("sorting took %e\n",double(time(NULL))-start);
 
     double trial_chi_min;
@@ -265,6 +260,8 @@ void control_integrator::write_output(int xdex, int ydex,
         }
     }
 
+    printf("xct %d yct %d\n",xct,yct);
+
     array_2d<double> minChi2Grid,marginalized_likelihood;
     minChi2Grid.set_name("prepare_output_minChi2Grid");
     marginalized_likelihood.set_name("prepare_output_marginalized_likelihood");
@@ -276,6 +273,8 @@ void control_integrator::write_output(int xdex, int ydex,
             marginalized_likelihood.set(i,j,0.0);
         }
     }
+
+    printf("made marginalized_likelihood and minChi2Grid\n");
 
     int row,true_dex,ix,iy;
     for(row=chi_vals_sorted.get_dim()-1;row>=0;row--){
@@ -364,7 +363,7 @@ void control_integrator::write_output(int xdex, int ydex,
         sorted_dexes.set(i,i);
     }
 
-    sort_and_check(marginalized_likelihood_line,sorted,sorted_dexes);
+    sort(marginalized_likelihood_line,sorted,sorted_dexes);
     double sum=0.0;
     row=0;
     for(i=sorted.get_dim()-1;i>=0 && sum<confidence_limit*totalLikelihood;i--){
@@ -413,7 +412,7 @@ void control_integrator::write_output(int xdex, int ydex,
     for(ix=0;ix<xct;ix++){
         trial.set(0,_min.get_data(xdex)+ix*_dx.get_data(xdex));
         for(iy=0;iy<yct;iy++){
-            trial.set(1,_min.get_data(xdex)+iy*_dx.get_data(ydex));
+            trial.set(1,_min.get_data(ydex)+iy*_dx.get_data(ydex));
 
             effective_chi=-2.0*log(marginalized_likelihood.get_data(ix,iy))-min_chi2_eff;
             if(effective_chi<0.0){

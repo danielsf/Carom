@@ -106,7 +106,7 @@ void simplex_minimizer::paranoia(){
     int i;
     double mu;
     for(i=0;i<_pts.get_rows();i++){
-        mu=evaluate(_pts(i)[0]);
+        mu=evaluate(_pts(i));
         _ff.set(i,mu);
     }
 
@@ -146,7 +146,7 @@ void simplex_minimizer::find_il(){
    }*/
 }
 
-double simplex_minimizer::evaluate(array_1d<double> &pt){
+double simplex_minimizer::evaluate(const array_1d<double> &pt){
     /*
     pt will be in the transformed dimensions of the simplex
     */
@@ -249,7 +249,7 @@ void simplex_minimizer::cool_off(){
     _freeze_temp=1;
 
     for(i=0;i<_pts.get_rows();i++){
-        _ff.set(i,evaluate(_pts(i)[0]));
+        _ff.set(i,evaluate(_pts(i)));
     }
     _fstar=evaluate(_pstar);
     _fstarstar=evaluate(_pstarstar);
@@ -267,7 +267,7 @@ void simplex_minimizer::cool_off(){
 
 }
 
-double simplex_minimizer::evaluate_cost(array_1d<double> &vv){
+double simplex_minimizer::evaluate_cost(const array_1d<double> &vv){
     /*
     vv will already be transformed into natural coordinates
     */
@@ -381,7 +381,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
 
     double mu;
     for(i=0;i<seed.get_rows();i++){
-        mu=evaluate(_pts(i)[0]);
+        mu=evaluate(_pts(i));
         _ff.set(i,mu);
     }
 
@@ -564,7 +564,7 @@ double simplex_minimizer::get_dx(int dex){
 }
 
 
-void simplex_minimizer::calculate_gradient(array_1d<double> &pp, array_1d<double> &grad){
+void simplex_minimizer::calculate_gradient(const array_1d<double> &pp, array_1d<double> &grad){
 
     array_1d<double> trial;
     trial.set_name("simplex_calculate_gradient_trial");
@@ -632,7 +632,7 @@ void simplex_minimizer::gradient_cloud(){
     int ix;
     for(ix=0;ix<_pts.get_rows();ix++){
 
-        calculate_gradient(_pts(ix)[0], gradient);
+        calculate_gradient(_pts(ix), gradient);
         gradient.normalize();
         for(i=0;i<_pts.get_cols();i++){
             gradient.multiply_val(i,-1.0);
@@ -646,7 +646,7 @@ void simplex_minimizer::gradient_cloud(){
     double mu;
 
     for(i=0;i<_pts.get_rows();i++){
-        mu=evaluate(_pts(i)[0]);
+        mu=evaluate(_pts(i));
         _ff.set(i,mu);
     }
     find_il();
@@ -697,7 +697,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
     }
 
-    calculate_gradient(_pts(_il)[0], gradient);
+    calculate_gradient(_pts(_il), gradient);
     gradient.normalize();
     for(i=0;i<_pts.get_cols();i++){
         gradient.multiply_val(i,-1.0);
@@ -721,7 +721,7 @@ void simplex_minimizer::gradient_minimizer(){
                 _pts.add_val(i,j,step*0.5*gradient.get_data(j));
             }
         }
-        mu=evaluate(_pts(i)[0]);
+        mu=evaluate(_pts(i));
         _ff.set(i,mu);
     }
     find_il();
@@ -775,7 +775,7 @@ void simplex_minimizer::expand(){
             }
 
         }
-        mu=evaluate(_pts(i)[0]);
+        mu=evaluate(_pts(i));
         if(i==_il && fabs(mu-_ff.get_data(_il))>1.0e-2){
             printf("WARNING at _il %e %e -- %e\n",mu,_ff.get_data(_il),_temp);
             //exit(1);

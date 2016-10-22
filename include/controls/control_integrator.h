@@ -32,6 +32,12 @@ class iteration_parameters{
             return _current_ct;
         }
 
+        virtual long int get_total_ct(){
+            printf("cannot call default get_total_ct\n");
+            exit(1);
+        }
+
+
         protected:
             long int _current_ct;
 
@@ -86,6 +92,10 @@ class default_iteration_parameters : public iteration_parameters{
             }
         }
 
+        virtual long int get_total_ct(){
+            return _total_ct;
+        }
+
     private:
         array_1d<int> _grid_ct;
         array_1d<double> _min,_max,_dx;
@@ -104,6 +114,14 @@ class control_integrator{
         }
 
         control_integrator(function_wrapper&,array_1d<double>&,array_1d<double>&,array_1d<double>&,char*);
+
+        void set_d_threshold(double dd){
+            _d_threshold=dd;
+        }
+
+        void set_max_chi_lim_freq(double mm){
+            _max_chi_lim_freq=mm;
+        }
 
         void set_chi_lim_freq(double);
 
@@ -128,6 +146,8 @@ class control_integrator{
     protected:
         array_1d<double> _min,_max,_dx;
         double _chi_min;
+        double _d_threshold;
+        double _max_chi_lim_freq;
         function_wrapper *_chisq;
         char _name_root[letters];
 

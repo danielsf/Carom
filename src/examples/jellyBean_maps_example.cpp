@@ -21,6 +21,7 @@ double width=1.0;
 double delta_chisq=-1.0;
 double abs_target=-1.0;
 double confidence_limit=0.95;
+int min_test=0;
 
 char timingname[letters],outname[letters];
 
@@ -89,6 +90,9 @@ for(i=1;i<iargc;i++){
                 }
                 timingname[j]=0;
                 break;
+            case 'm':
+                min_test=1;
+                break;
 
         }
     }
@@ -108,11 +112,13 @@ printf("seed %d\n",seed);
 
 //jellyBeanData chisq(dim,1,width,100,0.4,0.4,0.02,20.0);
 
-jellyBeanData *chisq;
+chisquared *chisq;
 
 if(chisq_dex==0){
     if(dim==4){
         chisq=new gaussianJellyBean4;
+        printf("not going to let you do 4d non-integrable\n");
+        exit(1);
     }
     else if(dim==12){
         chisq=new gaussianJellyBean12;
@@ -126,7 +132,17 @@ if(chisq_dex==0){
     }
 }
 else if(chisq_dex==1){
-    chisq=new integrableJellyBean;
+    if(dim==4){
+        chisq=new integrableJellyBean;
+    }
+    else if(dim>4){
+        printf("creating new class\n");
+        chisq=new integrableJellyBeanXX(dim);
+
+    }
+    else{
+        printf("WARNING do not have integrable jellyBean for dim %d\n",dim);
+    }
 }
 else{
     printf("WARNING do not know what to do with chisq_dex %d\n",chisq_dex);
@@ -135,7 +151,7 @@ else{
 
 printf("done constructing chisq\n");
 
-chisq->print_mins();
+//chisq->print_mins();
 
 //declare APS
 //the '20' below is the number of nearest neighbors to use when seeding the
@@ -181,6 +197,17 @@ for(i=0;i<chisq->get_dim();i++){
     max.set(i,40.0);
 }
 
+/*if(chisq->get_dim()==4){
+    min.set(0,-5.0);
+    max.set(0,16.0);
+    min.set(1,-4.0);
+    max.set(1,17.0);
+    min.set(2,-15.0);
+    max.set(2,-1.0);
+    min.set(3,-20.0);
+    max.set(3,-1.0);
+}*/
+
 /*min.set(1,0.0);
 max.set(1,80.0);
 min.set(2,-15.0);
@@ -200,7 +227,7 @@ carom_test.initialize(init);
 int active_nodes=1;
 printf("ready to search\n");
 carom_test.search(nsamples);
-chisq->print_mins();
+//chisq->print_mins();
 
 array_1d<double> v0,v1;
 chisq->get_basis(0,v0);
@@ -213,6 +240,15 @@ for(i=0;i<chisq->get_dim();i++){
 printf("\nwidths\n");
 for(i=0;i<chisq->get_dim();i++){
     printf("%e\n",chisq->get_width(0,i));
+}
+
+FILE *min_output;
+
+if(min_test==1){
+    min_output=fopen("output/scratch/test_min_pt.sav","a");
+    fprintf(min_output,"%d %d %d %e\n",
+    carom_test.get_dim(),seed,carom_test.get_called(),carom_test.get_chimin());
+    fclose(min_output);
 }
 
 }

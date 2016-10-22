@@ -236,7 +236,7 @@ for(ii=0;ii<xdexes.get_dim();ii++){
        }
 
        printf("rowct %d\n",rowct);
-       sort_and_check(chival,chival_sorted,dexes);
+       sort(chival,chival_sorted,dexes);
        sum=0.0;
        for(i=0;i<xx.get_rows() && sum<0.95*total;i++){
            j=dexes.get_data(i);

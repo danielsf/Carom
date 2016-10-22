@@ -6,9 +6,7 @@
 #include "eigen_wrapper.h"
 #include "chisq_wrapper.h"
 #include "simplex.h"
-#include "gp_lin.h"
-#include "dchi_simplex.h"
-#include "dchi_simplex_gp.h"
+#include "cost_fn.h"
 #include "search_types.h"
 #include "dalex.h"
 #include "maps_initializer.h"
@@ -41,6 +39,7 @@ public:
     void write_pts();
     void write_log();
 
+    int get_dim();
     int get_called();
     double get_chimin();
 
@@ -55,7 +54,6 @@ public:
 private:
 
     chisq_wrapper _chifn;
-    gp_lin _interpolator;
     int _write_every,_last_written;
     int _ct_dalex;
     int _last_wrote_log;

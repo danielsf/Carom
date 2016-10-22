@@ -44,6 +44,10 @@ test_containers: object/containers.o src/tests/test_containers.cpp object/goto_t
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
 
+diagnose_containers: object/containers.o src/tests/diagnose_containers.cpp object/goto_tools.o
+	$(gg) -o bin/diagnose_containers src/tests/diagnose_containers.cpp object/containers.o \
+        object/goto_tools.o $(LIBRARIES)
+
 test_grid: object/containers.o src/tests/test_grid.cpp object/goto_tools.o
 	$(gg) -o bin/test_grid src/tests/test_grid.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
@@ -103,8 +107,8 @@ contours: src/analysis/chisquared_contours.cpp object/kd.o
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
 
-object/dchi_simplex.o: src/carom/dchi_simplex.cpp include/dchi_simplex.h object/chisq_wrapper.o
-	$(gg) -c -o object/dchi_simplex.o src/carom/dchi_simplex.cpp
+object/cost_fn.o: src/carom/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o
+	$(gg) -c -o object/cost_fn.o src/carom/cost_fn.cpp
 
 object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
 	$(gg) -c -o object/jellyBean.o src/utils/jellyBean.cpp
@@ -113,7 +117,7 @@ object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o obje
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
 object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
-object/simplex.o object/dchi_simplex.o include/search_types.h
+object/simplex.o object/cost_fn.o include/search_types.h
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
 object/carom.o: src/carom/carom.cpp include/carom.h \
@@ -132,25 +136,24 @@ object/jellyBean.o include/exampleLikelihoods.h
 	object/simplex.o \
 	$(LIBRARIES)
 
+cartoon_control: object/control_integrator.o src/controls/cartoon_control.cpp \
+object/chisq.o
+	$(gg) -o bin/cartoon_control src/controls/cartoon_control.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/wrappers.o \
+	object/chisq.o object/control_integrator.o object/simplex.o \
+	$(LIBRARIES)
+
 jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o \
 object/jellyBean.o include/exampleLikelihoods.h
 	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/dchi_simplex.o object/node.o object/carom.o object/jellyBean.o \
+	object/cost_fn.o object/node.o object/carom.o object/jellyBean.o \
 	$(LIBRARIES)
 
 object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
 object/wrappers.o
 	$(gg) -c -o object/gp.o src/utils/gp.cpp
-
-
-object/gp_lin.o: src/utils/gp_lin.cpp include/gp_lin.h object/kd.o object/eigen_wrapper.o \
-object/wrappers.o
-	$(gg) -c -o object/gp_lin.o src/utils/gp_lin.cpp
-
-object/dchi_simplex_gp.o: include/dchi_simplex_gp.h src/carom/dchi_simplex_gp.cpp object/gp_lin.o
-	$(gg) -c -o object/dchi_simplex_gp.o src/carom/dchi_simplex_gp.cpp
 
 test_gp: src/tests/test_gp.cpp object/gp.o object/jellyBean.o \
 include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
@@ -162,7 +165,7 @@ include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
 	$(LIBRARIES)
 
 object/explorers.o: src/carom/explorers.cpp include/explorers.h \
-object/chisq_wrapper.o object/dchi_simplex.o
+object/chisq_wrapper.o object/cost_fn.o
 	$(gg) -c -o object/explorers.o src/carom/explorers.cpp
 
 object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
@@ -173,10 +176,17 @@ object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializ
 object/chisq_wrapper.o object/simplex.o
 	$(gg) -c -o object/maps_initializer.o src/carom/maps_initializer.cpp
 
+test_maps_init: src/tests/test_maps_init.cpp object/maps_initializer.o \
+include/exampleLikelihoods.h object/jellyBean.o
+	$(gg) -o bin/test_maps_init src/tests/test_maps_init.cpp \
+	object/containers.o object/goto_tools.o \
+	object/wrappers.o object/maps_initializer.o object/simplex.o \
+	object/chisq_wrapper.o object/kd.o object/jellyBean.o \
+	object/chisq.o
+
 object/maps.o: src/carom/maps.cpp include/maps.h \
-object/simplex.o object/dchi_simplex.o object/eigen_wrapper.o include/search_types.h \
-object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
-object/maps_initializer.o
+object/simplex.o object/cost_fn.o object/eigen_wrapper.o include/search_types.h \
+object/dalex.o object/maps_initializer.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
 test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
@@ -200,24 +210,21 @@ object/simplex.o object/chisq_wrapper.o
 
 
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
-object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
-object/dchi_simplex_gp.o
+object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/dchi_simplex.o object/maps.o object/jellyBean.o \
-        object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
-	object/maps_initializer.o object/explorers.o \
+	object/cost_fn.o object/maps.o object/jellyBean.o \
+        object/dalex.o object/maps_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
 test_opt: src/examples/test_opt.cpp object/maps.o \
-object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o \
-object/dchi_simplex_gp.o
+object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o
 	$(gg) -o bin/test_opt src/examples/test_opt.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/dchi_simplex.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
-        object/kde.o object/gp_lin.o object/dchi_simplex_gp.o object/dalex.o \
+	object/cost_fn.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
+        object/kde.o object/gp_lin.o object/dalex.o \
 	object/maps_initializer.o \
 	$(LIBRARIES)
 
@@ -283,7 +290,7 @@ object/wmap_likelihood_function.o
 	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
 	object/wmap_likelihood_function.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/dchi_simplex.o object/node.o object/carom.o \
+	object/cost_fn.o object/node.o object/carom.o \
 	$(WMAP_LIBRARIES) \
 	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
 

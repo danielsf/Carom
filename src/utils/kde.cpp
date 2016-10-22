@@ -173,7 +173,7 @@ void kde::initialize_density(int ix1_in, double dx1_in,
         dexes.set(i,i);
     }
 
-    sort_and_check(temp_grid_wgt,sorted_wgt,dexes);
+    sort(temp_grid_wgt,sorted_wgt,dexes);
 
     double xx,yy;
 

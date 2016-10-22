@@ -38,13 +38,13 @@ public:
 
 private:
 
-    double evaluate(array_1d<double>&);
-    double evaluate_cost(array_1d<double>&);
+    double evaluate(const array_1d<double>&);
+    double evaluate_cost(const array_1d<double>&);
     void cool_off();
 
     void gradient_minimizer();
     void gradient_cloud();
-    void calculate_gradient(array_1d<double>&, array_1d<double>&);
+    void calculate_gradient(const array_1d<double>&, array_1d<double>&);
     double get_dx(int);
     void expand();
 
