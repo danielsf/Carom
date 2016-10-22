@@ -1439,6 +1439,7 @@ void dalex::iterate_on_minimum(){
     if(chimin()<min_00-2.0){
         _good_points.reset_preserving_room();
         _explorers.reset();
+        _tendril_path.reset_preserving_room();
     }
 
     if(chimin()<min_00-0.01){
