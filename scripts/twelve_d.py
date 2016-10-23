@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161011")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161022")
 
     dim_list = [(6,9), (0,1)]
 
