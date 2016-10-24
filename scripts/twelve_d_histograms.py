@@ -56,7 +56,7 @@ if __name__ == "__main__":
     
     plt.figsize = (30,30)
     for seed, limit, color, title in zip(seed_list, limit_list, color_list, title_list):
-        label = title+'; true $\chi^2_{min}=%.2f$'% running_min[seed][-1]
+        label = title+'; final $\chi^2_{min}=%.2f$'% running_min[seed][-1]
         plt.plot(range(1,len(running_min[seed])+1), running_min[seed], label=label, color=color)
     plt.xlabel('calls to $\chi^2$', fontsize=15)
     plt.ylabel('$\chi^2_{min}$', fontsize=15)
