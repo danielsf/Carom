@@ -956,11 +956,12 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-int dalex::simplex_boundary_search(){
-    return simplex_boundary_search(-1,0);
+int dalex::simplex_boundary_search(int *next_particle){
+    return simplex_boundary_search(-1,0,next_particle);
 }
 
-int dalex::simplex_boundary_search(int specified, int use_median){
+int dalex::simplex_boundary_search(int specified, int use_median,
+                                   int *next_particle){
 
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
@@ -1124,6 +1125,7 @@ int dalex::simplex_boundary_search(int specified, int use_median){
     minpt.set_name("dalex_simplex_search_minpt");
 
     ffmin.find_minimum(seed,minpt);
+    _chifn->evaluate(minpt,&mu,next_particle);
 
     for(i=specified;i<_chifn->get_pts();i++){
         if(i>=0 && _chifn->get_fn(i)<target()){
@@ -1303,11 +1305,10 @@ void dalex::tendril_search(){
 
     double mu;
     int i_found;
+    int i_particle;
 
-    simplex_boundary_search();
+    simplex_boundary_search(&i_particle);
     _update_good_points();
-
-    int i_particle=_good_points.get_data(_good_points.get_dim()-1);
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_particle);
@@ -1357,6 +1358,8 @@ void dalex::tendril_search(){
     int iteration=0;
     int use_median=0;
     int is_a_strike;
+    int i_next_particle;
+    int i_extent;
 
     while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
@@ -1366,9 +1369,11 @@ void dalex::tendril_search(){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        is_a_strike=simplex_boundary_search(i_particle, use_median);
+        is_a_strike=simplex_boundary_search(i_particle, use_median,
+                                            &i_next_particle);
 
-        i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        i_particle=i_next_particle;
+        i_extent=_good_points.get_data(_good_points.get_dim()-1);
 
         if(is_a_strike==1){
             strikes++;
@@ -1379,17 +1384,17 @@ void dalex::tendril_search(){
         }
 
         for(i=0;i<_chifn->get_dim();i++){
-            if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
-                min.set(i,_chifn->get_pt(i_particle,i));
+            if(_chifn->get_pt(i_extent,i)<min.get_data(i)){
+                min.set(i,_chifn->get_pt(i_extent,i));
             }
 
-            if(_chifn->get_pt(i_particle,i)>max.get_data(i)){
-                max.set(i,_chifn->get_pt(i_particle,i));
+            if(_chifn->get_pt(i_extent,i)>max.get_data(i)){
+                max.set(i,_chifn->get_pt(i_extent,i));
             }
 
             mu=0.0;
             for(j=0;j<_chifn->get_dim();j++){
-                mu+=_chifn->get_pt(i_particle,j)*_basis_vectors.get_data(i,j);
+                mu+=_chifn->get_pt(i_extent,j)*_basis_vectors.get_data(i,j);
             }
 
             if(mu<min_p.get_data(i)){

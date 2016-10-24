@@ -52,8 +52,8 @@ class dalex{
         void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
-        int simplex_boundary_search();
-        int simplex_boundary_search(int, int);
+        int simplex_boundary_search(int*);
+        int simplex_boundary_search(int, int, int*);
         void explore();
         void min_explore(int, int);
 
