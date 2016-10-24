@@ -278,7 +278,7 @@ if __name__ == "__main__":
             d_label_list.append('Dale$\chi$; $\chi^2<=116.03$')
 
             text = ('MultiNest: %.2e $\chi^2$ calls\n' % n_mult
-                    + 'Dale$\chi$: %.2e $\chi^2$ calls; %.2f' % (limit, chisq_min))
+                    + 'Dale$\chi$: %.2e $\chi^2$ calls; $\chi^2_{min}=%.2f$' % (limit, chisq_min))
             text_list.append(text)
 
             for xx in (m_x.min(), m_x.max(), d_x.min(), d_x.max()):
