@@ -2,7 +2,17 @@ import numpy as np
 
 __all__ = ["scatter_from_multinest_projection",
            "scatter_from_multinest_marginalized",
-           "scatter_from_carom"]
+           "scatter_from_carom", "make_histogram"]
+
+def make_histogram(xx, dmag, cumulative=True):
+    i_xx = np.round(xx/dmag).astype(int)
+    unique_ixx, ct = np.unique(i_xx, return_counts=True)
+
+    if cumulative:
+        return unique_ixx*dmag, ct.astype(float)/float(ct.sum())
+    else:
+        return unique_ixx*dmag, ct.astype(int)
+
 
 def marginalize(data_x, data_y, density_in, prob=0.95):
 
