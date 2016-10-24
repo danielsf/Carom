@@ -187,7 +187,7 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
 if __name__ == "__main__":
 
     seed_list = [626, 694, 762, 1068, 6475]
-    limit_list = [400000, 400000, 700000, 700000, 400000]
+    limit_list = [400000, 400000, 700000, 400000, 300000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161011")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161022")
 
     dim_list = [(6,9), (0,1)]
 
@@ -273,12 +273,12 @@ if __name__ == "__main__":
             d_h = plt.scatter(d_x, d_y, color='r', s=7, marker='+')
             d_h_forced = plt.scatter(d_x_forced, d_y_forced, color='g', s=7, marker='x')
             d_h_list.append(d_h)
-            d_label_list.append('Dale$\chi$')
+            d_label_list.append('Dale$\chi$; $\chi^2<=\chi^2_{min}+21.03$')
             d_h_list.append(d_h_forced)
-            d_label_list.append('Dale$\chi$ (forced)')
+            d_label_list.append('Dale$\chi$; $\chi^2<=116.03$')
 
             text = ('MultiNest: %.2e $\chi^2$ calls\n' % n_mult
-                    + 'Dale$\chi$: %.2e $\chi^2$ calls; %.2f' % (limit, chisq_min))
+                    + 'Dale$\chi$: %.2e $\chi^2$ calls; $\chi^2_{min}=%.2f$' % (limit, chisq_min))
             text_list.append(text)
 
             for xx in (m_x.min(), m_x.max(), d_x.min(), d_x.max()):

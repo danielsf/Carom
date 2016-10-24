@@ -1,8 +1,43 @@
 import numpy as np
 
-__all__ = ["scatter_from_multinest_projection",
+__all__ = ["load_multinest_data", "load_dalex_data",
+           "scatter_from_multinest_projection",
            "scatter_from_multinest_marginalized",
-           "scatter_from_carom"]
+           "scatter_from_carom", "make_histogram"]
+
+def load_multinest_data(file_name, dim):
+    dt_list = [('degen', np.float), ('chisq', np.float)]
+    for ii in range(dim):
+        dt_list.append(('x%d' % ii, np.float))
+    dtype = dt_list
+    return np.genfromtxt(file_name, dtype=dtype)
+
+
+def load_dalex_data(data_name, dim):
+    dt_list = []
+    for ii in range(dim):
+        dt_list.append(('x%d' % ii, np.float))
+
+    dt_list.append(('chisq', np.float))
+    dt_list.append(('junk1', int))
+    dt_list.append(('junk2', int))
+    dt_list.append(('junk3', int))
+    dtype = np.dtype(dt_list)
+
+    return np.genfromtxt(data_name, dtype=dtype)
+
+def make_histogram(xx_in, dmag, cut_off, cumulative=True):
+    xx = xx_in[np.where(xx_in<=cut_off)]
+    print xx.min(),xx.max()
+    min_val=xx.min()-dmag
+    i_xx = np.round((xx-min_val)/dmag).astype(int)
+    unique_ixx, ct = np.unique(i_xx, return_counts=True)
+
+    if cumulative:
+        return unique_ixx*dmag+min_val, ct.astype(float)/float(len(xx_in))
+    else:
+        return unique_ixx*dmag+min_val, ct.astype(int)
+
 
 def marginalize(data_x, data_y, density_in, prob=0.95):
 
@@ -94,11 +129,7 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
 def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
 
     if data is None:
-        dt_list = [('degen', np.float), ('chisq', np.float)]
-        for ii in range(dim):
-            dt_list.append(('x%d' % ii, np.float))
-        dtype = dt_list
-        ref_data = np.genfromtxt(file_name, dtype=dtype)
+        ref_data = load_multinest_data(file_name, dim)
 
     else:
         ref_data = data
@@ -112,11 +143,7 @@ def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
 def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
 
     if data is None:
-        dt_list = [('degen', np.float), ('chisq', np.float)]
-        for ii in range(dim):
-            dt_list.append(('x%d' % ii, np.float))
-        dtype = dt_list
-        ref_data = np.genfromtxt(file_name, dtype=dtype)
+        ref_data = load_multinest_data(file_name, dim)
 
     else:
         ref_data = data
@@ -130,17 +157,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
 
 def scatter_from_carom(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
     if data is None:
-        dt_list = []
-        for ii in range(dim):
-            dt_list.append(('x%d' % ii, np.float))
-
-        dt_list.append(('chisq', np.float))
-        dt_list.append(('junk1', int))
-        dt_list.append(('junk2', int))
-        dt_list.append(('junk3', int))
-        dtype = np.dtype(dt_list)
-
-        data = np.genfromtxt(data_name, dtype=dtype)
+        data = load_dalex_data(data_name, dim)
 
     if limit is not None:
         data_cut = data[:limit]
