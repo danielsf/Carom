@@ -105,20 +105,21 @@ double cost_fn::operator()(const array_1d<double> &pt){
         return mu;
     }
 
+    double distance=nn_distance(pt);
     double delta=_chifn->target()-_chifn->chimin();
 
-    double distance=nn_distance(pt);
-
-    double exp_term;
+    double exp_term,mu_term;
 
     if(mu>_chifn->target()){
         exp_term=exp((_chifn->target()-mu)/_envelope);
+        mu_term=mu;
     }
     else{
         exp_term=1.0;
+        mu_term=_chifn->target();
     }
 
-    return mu-1.0*delta*distance*exp_term;
+    return mu_term-1.0*delta*distance*exp_term;
 }
 
 
