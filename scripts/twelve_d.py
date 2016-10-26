@@ -187,7 +187,7 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
 if __name__ == "__main__":
 
     seed_list = [626, 694, 762, 1068, 6475]
-    limit_list = [400000, 400000, 700000, 400000, 300000]
+    limit_list = [400000, 400000, 700000, 600000, 300000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161022")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161024")
 
     dim_list = [(6,9), (0,1)]
 
