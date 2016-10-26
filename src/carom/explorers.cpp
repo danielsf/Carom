@@ -108,8 +108,7 @@ void explorers::initialize_particles(){
     while(_particles.get_rows()<_n_particles){
         for(i=0;i<_chifn->get_dim();i++){
             span=max.get_data(i)-min.get_data(i);
-            //sfd this should be 2.0*(double()-0.5)*span
-            trial.set(i,2.0*(_chifn->random_double()-0.5)*span+min.get_data(i));
+            trial.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0)*span+_chifn->get_pt(_chifn->mindex(),i));
         }
         _chifn->evaluate(trial,&mu,&i_found);
         if(i_found>=0){
