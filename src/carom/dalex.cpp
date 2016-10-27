@@ -1019,6 +1019,7 @@ int dalex::simplex_boundary_search(int specified, int use_median,
     }
 
     cost_fn dchifn(_chifn,associates);
+    dchifn.set_envelope(2.0);
     array_2d<double> cost_bases;
     cost_bases.set_name("dalex_simplex_boundary_cost_bases");
     dchifn.copy_bases(cost_bases);
@@ -1253,7 +1254,7 @@ void dalex::explore(){
     }
 
     _explorers.set_associates(associates);
-    _explorers.set_envelope(0.5*(target()-chimin()));
+    _explorers.set_envelope(2.0);
     _explorers.sample(4*_chifn->get_dim());
 
     if(_log!=NULL){
@@ -1287,7 +1288,7 @@ void dalex::min_explore(int n_particles, int n_steps){
     }
 
     _min_explorers.set_associates(associates);
-    _min_explorers.set_envelope(target()-chimin());
+    _min_explorers.set_envelope(2.0);
     _min_explorers.sample(n_steps);
 
     if(_log!=NULL){
