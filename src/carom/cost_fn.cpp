@@ -7,6 +7,9 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
     _norm.set_name("dchi_interior_norm");
+    _centroid.set_name("dchi_interior_centroid");
+    _min.set_name("dchi_interior_min");
+    _max.set_name("dchi_interior_max");
 
     _just_median=0;
     _chifn=cc;
@@ -74,6 +77,27 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         return 0.0;
     }
     double dd_min=2.0*exception_value;
+
+    array_1d<double> projected;
+    projected.set_name("cost_fn_nn_projected");
+    int is_inside=1;
+    for(i=0;i<_chifn->get_dim() && is_inside==1;i++){
+        projected.set(i,0.0);
+        for(j=0;j<_chifn->get_dim();j++){
+            projected.add_val(i,pt.get_data(j)*_bases.get_data(i,j));
+        }
+        if(projected.get_data(i)<_min.get_data(i) || projected.get_data(i)>_max.get_data(i)){
+            is_inside=0;
+        }
+    }
+
+    if(is_inside==1){
+        dd=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            dd+=power((projected.get_data(i)-_centroid.get_data(i))/_scalar_norm,2);
+        }
+        return -1.0/(sqrt(dd)+1.0e-6);
+    }
 
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
@@ -225,6 +249,8 @@ void cost_fn::_random_set_bases(){
 void cost_fn::_set_norm(){
 
     _norm.reset_preserving_room();
+    _min.reset_preserving_room();
+    _max.reset_preserving_room();
 
     double component;
     array_1d<double> cc,cc_sorted;
@@ -247,6 +273,12 @@ void cost_fn::_set_norm(){
             }
             cc.set(i,component);
             cc_dex.set(i,i);
+            if(ix>=_min.get_dim() || component<_min.get_data(ix)){
+               _min.set(ix,component);
+            }
+            if(ix>=_max.get_dim() || component>_max.get_data(ix)){
+                _max.set(ix,component);
+            }
         }
         sort(cc,cc_sorted,cc_dex);
 
@@ -255,6 +287,7 @@ void cost_fn::_set_norm(){
         x1=cc_sorted.get_data(1/6);
         x2=cc_sorted.get_data((5*i)/6);
         _norm.set(ix,0.5*(x2-x1));
+        _centroid.set(ix, 0.5*(x1+x2));
     }
 
 }

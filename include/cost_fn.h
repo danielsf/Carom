@@ -56,7 +56,7 @@ class cost_fn : public function_wrapper{
 
 
         void _set_norm();
-        array_1d<double> _norm;
+        array_1d<double> _norm,_centroid,_min,_max;
 
 };
 
