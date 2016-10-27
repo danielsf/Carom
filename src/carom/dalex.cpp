@@ -1253,6 +1253,7 @@ void dalex::explore(){
     }
 
     _explorers.set_associates(associates);
+    _explorers.set_envelope(target()-chimin());
     _explorers.sample(4*_chifn->get_dim());
 
     if(_log!=NULL){
