@@ -1179,8 +1179,8 @@ int dalex::simplex_boundary_search(int specified, int use_median,
         _chifn->get_fn(i_min),_chifn->get_pt(i_min,6), _chifn->get_pt(i_min,9));
     }
 
-    printf("    adjusted %e from %e\n",
-    dchifn(_chifn->get_pt(i_min)),_chifn->get_fn(i_min));
+    printf("    adjusted %e from %e %d\n",
+    dchifn(_chifn->get_pt(i_min)),_chifn->get_fn(i_min),i_min);
 
     printf("    min is %e target %e\n",chimin(),target());
     if(_chifn->get_dim()>9){
