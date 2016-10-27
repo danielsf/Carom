@@ -1286,6 +1286,7 @@ void dalex::min_explore(int n_particles, int n_steps){
     }
 
     _min_explorers.set_associates(associates);
+    _min_explorers.set_envelope(target()-chimin());
     _min_explorers.sample(n_steps);
 
     if(_log!=NULL){
