@@ -25,6 +25,11 @@ class explorers{
             _req_temp.set_name("explorers_req_temp");
             _accepted.set_name("explorers_accepted");
             _mu_arr.set_name("explorers_mu_arr");
+            _envelope=1.0;
+        }
+
+        void set_envelope(double ee){
+            _envelope=ee;
         }
 
         void set_n_particles(int ii){
@@ -79,6 +84,7 @@ class explorers{
         array_1d<double> _req_temp;
         int _mindex;
         double _mu_min;
+        double _envelope;
         int _n_particles;
         double _temp;
         array_1d<int> _accepted;
