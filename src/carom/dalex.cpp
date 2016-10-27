@@ -1162,6 +1162,9 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     }
 
+    if(i_min<0){
+        return 1;
+    }
 
     int i_good_start;
 
