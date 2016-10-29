@@ -44,6 +44,10 @@ test_containers: object/containers.o src/tests/test_containers.cpp object/goto_t
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
 
+object/ellipse.o: object/goto_tools.o object/containers.o \
+include/ellipse.h src/utils/ellipse.cpp
+	$(gg) -c -o object/ellipse.o src/utils/ellipse.cpp
+
 diagnose_containers: object/containers.o src/tests/diagnose_containers.cpp object/goto_tools.o
 	$(gg) -o bin/diagnose_containers src/tests/diagnose_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
