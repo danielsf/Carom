@@ -150,8 +150,7 @@ void ellipse::_set_radii(array_2d<double> &pts_in){
     array_1d<int> norm_ct_sorted;
     sort(norm_ct,norm_ct_sorted,norm_dex);
     i=norm_dex.get_data(pts_in.get_cols()-1);
-    printf("    adjusting %d -- %d of %d\n",
-    i,norm_ct_sorted.get_data(pts_in.get_cols()-1),bad_dexes.get_dim());
+
     _radii.multiply_val(i,1.1);
 
 }
