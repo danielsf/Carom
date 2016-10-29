@@ -48,7 +48,12 @@ int main(){
     for(i=0;i<n_pts;i++){
         sampler.get_pt(base_pt);
         for(j=0;j<dim;j++){
-            true_pt.set(j,base_pt.get_data(j)*radii.get_data(j)+center.get_data(j));
+            true_pt.set(j,center.get_data(j));
+        }
+        for(j=0;j<dim;j++){
+            for(k=0;k<dim;k++){
+                true_pt.add_val(k,base_pt.get_data(j)*radii.get_data(j)*bases.get_data(j,k));
+            }
         }
         pts.add_row(true_pt);
     }
@@ -128,5 +133,23 @@ int main(){
         }
         printf("\n");
     }
+
+    printf("\nbases\n");
+    for(i=0;i<dim;i++){
+        for(j=0;j<dim;j++){
+            printf("%e ",bases.get_data(i,j));
+        }
+        printf("\n");
+    }
+
+    FILE *output;
+    output=fopen("junk.txt","w");
+    for(i=0;i<n_pts;i++){
+        for(j=0;j<dim;j++){
+            fprintf(output,"%e ",pts.get_data(i,j));
+        }
+        fprintf(output,"\n");
+    }
+    fclose(output);
 
 }
