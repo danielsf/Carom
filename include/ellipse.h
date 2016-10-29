@@ -21,6 +21,7 @@ class ellipse{
         int contains(array_1d<double>&);
         double bases(int i,int j){return _bases.get_data(i,j);}
         double center(int i){return _center.get_data(i);}
+        double radii(int i){return _radii.get_data(i);}
 
     private:
         array_2d<double> _bases;
