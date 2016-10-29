@@ -143,7 +143,7 @@ int main(){
     }
 
     FILE *output;
-    output=fopen("junk.txt","w");
+    output=fopen("test_ellipse_pts.txt","w");
     for(i=0;i<n_pts;i++){
         for(j=0;j<dim;j++){
             fprintf(output,"%e ",pts.get_data(i,j));
