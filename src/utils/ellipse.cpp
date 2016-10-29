@@ -1,6 +1,6 @@
 #include "ellipse.h"
 
-int ellipse::contains(array_1d<double> &pt){
+int ellipse::contains(const array_1d<double> &pt){
     int i,j;
     double sum=0.0;
     double component;
