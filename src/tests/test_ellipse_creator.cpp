@@ -115,4 +115,18 @@ int main(){
                ell.radii(best_pair.get_data(1)));
     }
 
+    printf("\n");
+    printf("brute matching\n");
+    for(i=0;i<dim;i++){
+        for(j=0;j<dim;j++){
+            dot=0.0;
+            for(k=0;k<dim;k++){
+                dot+=bases.get_data(i,k)*ell.bases(j,k);
+            }
+            printf("%d %d -- %e -- %e %e\n",
+            i,j,dot,radii.get_data(i),ell.radii(j));
+        }
+        printf("\n");
+    }
+
 }
