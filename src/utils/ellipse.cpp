@@ -133,7 +133,7 @@ void ellipse::build(array_2d<double> &pts_in){
              while(contains(bad_pt)==0){
                  for(i=0;i<adjust_dexes.get_dim();i++){
                      j=adjust_dexes.get_dim()-1-i;
-                     _radii.multiply_val(j,1.1);
+                     _radii.multiply_val(adjust_dexes.get_data(j),1.1);
                      if(contains(bad_pt)==1){
                          break;
                      }
