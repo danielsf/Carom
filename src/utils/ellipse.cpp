@@ -49,7 +49,7 @@ void ellipse::build(array_2d<double> &pts_in){
             }
         }
     }
-    
+
     for(i=0;i<dim;i++){
         _center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
     }
@@ -90,68 +90,68 @@ void ellipse::build(array_2d<double> &pts_in){
 
     printf("got bases\n");
 
-    array_1d<double> bad_pt,pt,pt_proj,bad_pt_proj;
-    array_1d<double> pt_norm,pt_norm_sorted;
-    array_1d<int> pt_norm_dex,adjust_dexes;
-    double max_remainder,local_remainder;
     int is_valid=0;
 
-    bad_pt.set_name("ell_build_bad_pt");
-    pt.set_name("ell_build_pt");
-    pt_proj.set_name("ell_build_pt_proj");
-    bad_pt_proj.set_name("ell_build_bad_pt_proj");
-    pt_norm.set_name("ell_build_pt_norm");
-    pt_norm_sorted.set_name("ell_build_pt_norm_sorted");
-    pt_norm_dex.set_name("ell_build_pt_norm_dex");
-    adjust_dexes.set_name("ell_build_adjust_dexes");
-
     while(is_valid==0){
+        is_valid=1;
         for(i=0;i<n_pts;i++){
-            local_remainder=0.0;
-            for(j=0;j<dim;j++){
-                component=0.0;
-                for(k=0;k<dim;k++){
-                    component+=(pts_in.get_data(i,k)-_center.get_data(k))*_bases.get_data(j,k);
-                }
-                local_remainder+=power(component/_radii.get_data(j),2);
-                pt.set(j,pts_in.get_data(i,j));
-                pt_proj.set(j,fabs(component));
-            }
-            if(i==0 || local_remainder>max_remainder){
-                max_remainder=local_remainder;
-                for(j=0;j<dim;j++){
-                    bad_pt.set(j,pt.get_data(j));
-                    bad_pt_proj.set(j,pt_proj.get_data(j));
-                }
+            if(contains(pts_in(i))==0){
+                is_valid=0;
+                break;
             }
         }
-        if(max_remainder<=1.0){
-            is_valid=1;
-        }
-        else{
-             adjust_dexes.reset_preserving_room();
-             for(i=0;i<dim;i++){
-                 pt_norm.set(i,bad_pt_proj.get_data(i)/_radii.get_data(i));
-                 pt_norm_dex.set(i,i);
-             }
-             sort(pt_norm, pt_norm_sorted, pt_norm_dex);
-             component=0.0;
-             for(i=0;i<dim;i++){
-                 component+=pt_norm_sorted.get_data(i);
-                 if(component>0.5){
-                     adjust_dexes.add(pt_norm_dex.get_data(i));
-                 }
-             }
-             while(contains(bad_pt)==0){
-                 for(i=0;i<adjust_dexes.get_dim();i++){
-                     j=adjust_dexes.get_dim()-1-i;
-                     _radii.multiply_val(adjust_dexes.get_data(j),1.1);
-                     if(contains(bad_pt)==1){
-                         break;
-                     }
-                 }
-             }
+
+        if(is_valid==0){
+            _set_radii(pts_in);
         }
     }
+
+}
+
+
+void ellipse::_set_radii(array_2d<double> &pts_in){
+
+    array_1d<int> bad_dexes;
+    int i;
+    for(i=0;i<pts_in.get_rows();i++){
+        if(contains(pts_in(i))==0){
+            bad_dexes.add(i);
+        }
+    }
+
+    int ipt;
+    array_1d<double> norm,norm_sorted;
+    array_1d<int> norm_dex,norm_ct;
+    for(i=0;i<pts_in.get_cols();i++){
+        norm_ct.set(i,0);
+    }
+
+    int j,k;
+    double component;
+    for(i=0;i<bad_dexes.get_dim();i++){
+        ipt=bad_dexes.get_data(i);
+        for(j=0;j<pts_in.get_cols();j++){
+            component=0.0;
+            for(k=0;k<pts_in.get_cols();k++){
+                component+=(pts_in.get_data(ipt,k)-_center.get_data(k))*_bases.get_data(j,k);
+            }
+            norm.set(j,fabs(component)/_radii.get_data(j));
+            norm_dex.set(j,j);
+        }
+        sort(norm,norm_sorted,norm_dex);
+        j=norm_dex.get_data(pts_in.get_cols()-1);
+        norm_ct.add_val(j,1);
+    }
+
+    norm_dex.reset_preserving_room();
+    for(i=0;i<pts_in.get_cols();i++){
+        norm_dex.set(i,i);
+    }
+    array_1d<int> norm_ct_sorted;
+    sort(norm_ct,norm_ct_sorted,norm_dex);
+    i=norm_dex.get_data(pts_in.get_cols()-1);
+    printf("    adjusting %d -- %d of %d\n",
+    i,norm_ct_sorted.get_data(pts_in.get_cols()-1),bad_dexes.get_dim());
+    _radii.multiply_val(i,1.1);
 
 }

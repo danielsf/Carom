@@ -27,6 +27,8 @@ class ellipse{
         array_2d<double> _bases;
         array_1d<double> _radii,_center;
 
+        void _set_radii(array_2d<double>&);
+
 };
 
 #endif
