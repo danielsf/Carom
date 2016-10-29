@@ -62,6 +62,13 @@ int main(){
     }
     printf("center distance %e\n",sqrt(dd));
     
+    for(i=0;i<n_pts;i++){
+        if(ell.contains(pts(i))==0){
+            printf("WARNING does not contain a pt\n");
+            exit(1);
+        }
+    }
+
 
     double dot,best_dot,local_best_dot;
     int best_dex;
