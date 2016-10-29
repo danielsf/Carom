@@ -54,6 +54,8 @@ void ellipse::build(array_2d<double> &pts_in){
         _center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
     }
 
+    printf("got center\n");
+
     double component,norm,norm_max;
 
     while(_bases.get_rows()!=dim){
@@ -86,11 +88,22 @@ void ellipse::build(array_2d<double> &pts_in){
         _radii.add(norm_max);
     }
 
+    printf("got bases\n");
+
     array_1d<double> bad_pt,pt,pt_proj,bad_pt_proj;
     array_1d<double> pt_norm,pt_norm_sorted;
     array_1d<int> pt_norm_dex,adjust_dexes;
     double max_remainder,local_remainder;
     int is_valid=0;
+
+    bad_pt.set_name("ell_build_bad_pt");
+    pt.set_name("ell_build_pt");
+    pt_proj.set_name("ell_build_pt_proj");
+    bad_pt_proj.set_name("ell_build_bad_pt_proj");
+    pt_norm.set_name("ell_build_pt_norm");
+    pt_norm_sorted.set_name("ell_build_pt_norm_sorted");
+    pt_norm_dex.set_name("ell_build_pt_norm_dex");
+    adjust_dexes.set_name("ell_build_adjust_dexes");
 
     while(is_valid==0){
         for(i=0;i<n_pts;i++){
@@ -112,7 +125,6 @@ void ellipse::build(array_2d<double> &pts_in){
                 }
             }
         }
-        
         if(max_remainder<=1.0){
             is_valid=1;
         }
