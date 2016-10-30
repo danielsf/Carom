@@ -154,3 +154,21 @@ void ellipse::_set_radii(array_2d<double> &pts_in){
     _radii.multiply_val(i,1.1);
 
 }
+
+void ellipse::copy(ellipse &other){
+    _bases.reset_preserving_room();
+    _center.reset_preserving_room();
+    _radii.reset_preserving_room();
+    int i;
+    for(i=0;i<other.dim();i++){
+        _center.set(i,other.center(i));
+        _radii.set(i,other.radii(i));
+    }
+    _bases.set_dim(other.dim(),other.dim());
+    int j;
+    for(i=0;i<other.dim();i++){
+        for(j=0;j<other.dim();j++){
+            _bases.set(i,j,other.bases(i,j));
+        }
+    }
+}

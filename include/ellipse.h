@@ -22,12 +22,14 @@ class ellipse{
         double bases(int i,int j){return _bases.get_data(i,j);}
         double center(int i){return _center.get_data(i);}
         double radii(int i){return _radii.get_data(i);}
+        int dim(){return _center.get_dim();}
 
     private:
         array_2d<double> _bases;
         array_1d<double> _radii,_center;
 
         void _set_radii(array_2d<double>&);
+        void copy(ellipse&);
 
 };
 
