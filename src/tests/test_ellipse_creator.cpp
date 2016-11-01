@@ -2,19 +2,32 @@
 #include "goto_tools.h"
 #include "ellipse.h"
 
-int main(){
+int main(int iargc, char **argv){
 
-    int dim=4;
+    int dim=12;
     int n_pts=1000;
     int seed1=99;
     int seed2=342;
+
+    int i,j,k;
+
+    for(i=1;i<iargc;i++){
+        if(argv[i][0]=='-'){
+            switch(argv[i][1]){
+                case 'd':
+                    i++;
+                    dim=atoi(argv[i]);
+                    break;
+            }
+        }
+    }
 
     array_1d<double> center;
     array_2d<double> bases;
     array_2d<double> pts;
     Ran dice(seed1);
 
-    int i,j,k;
+
     array_1d<double> dir;
     double component,norm;
     while(bases.get_rows()!=dim){
@@ -121,25 +134,27 @@ int main(){
     }
 
     printf("\n");
-    printf("brute matching\n");
-    for(i=0;i<dim;i++){
-        for(j=0;j<dim;j++){
-            dot=0.0;
-            for(k=0;k<dim;k++){
-                dot+=bases.get_data(i,k)*ell.bases(j,k);
+    if(dim<=6){
+        printf("brute matching\n");
+        for(i=0;i<dim;i++){
+            for(j=0;j<dim;j++){
+                dot=0.0;
+                for(k=0;k<dim;k++){
+                    dot+=bases.get_data(i,k)*ell.bases(j,k);
+                }
+                printf("%d %d -- %e -- %e %e\n",
+                i,j,dot,radii.get_data(i),ell.radii(j));
             }
-            printf("%d %d -- %e -- %e %e\n",
-            i,j,dot,radii.get_data(i),ell.radii(j));
+            printf("\n");
         }
-        printf("\n");
-    }
 
-    printf("\nbases\n");
-    for(i=0;i<dim;i++){
-        for(j=0;j<dim;j++){
-            printf("%e ",bases.get_data(i,j));
+        printf("\nbases\n");
+        for(i=0;i<dim;i++){
+            for(j=0;j<dim;j++){
+                printf("%e ",bases.get_data(i,j));
+            }
+            printf("\n");
         }
-        printf("\n");
     }
 
     FILE *output;
