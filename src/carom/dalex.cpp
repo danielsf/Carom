@@ -1022,55 +1022,7 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
     cost_bases.set_name("dalex_simplex_boundary_cost_bases");
     dchifn.copy_bases(cost_bases);
 
-    double v0,pv0;
-    array_1d<double> pvmin,pvmax,vmin,vmax;
-    vmin.set_name("dalex_bou_vmin");
-    vmax.set_name("dalex_bou_vmax");
-    pvmin.set_name("dalex_bou_pvmin");
-    pvmax.set_name("dalex_bou_pvmax");
-
-    v0=-1.0;
-    pv0=-1.0;
-
-    for(i=0;i<associates.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            mu=_chifn->get_pt(associates.get_data(i),j);
-
-            if(i==0 || mu<vmin.get_data(j)){
-                vmin.set(j,mu);
-            }
-
-            if(i==0 || mu>vmax.get_data(j)){
-                vmax.set(j,mu);
-            }
-
-            mu=0.0;
-            for(k=0;k<_chifn->get_dim();k++){
-                mu+=_chifn->get_pt(associates.get_data(i),k)*cost_bases.get_data(j,k);
-            }
-
-            if(i==0 || mu<pvmin.get_data(j)){
-                pvmin.set(j,mu);
-            }
-
-            if(i==0 || mu>pvmax.get_data(j)){
-                pvmax.set(j,mu);
-            }
-        }
-
-    }
-
-    if(pvmin.get_dim()==_chifn->get_dim()){
-        v0=1.0;
-        pv0=1.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            v0*=(vmax.get_data(i)-vmin.get_data(i));
-            pv0*=(pvmax.get_data(i)-pvmin.get_data(i));
-        }
-    }
-
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
-
 
     if(use_median==1){
         dchifn.use_median();
@@ -1159,7 +1111,6 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
 
     }
 
-
     int i_good_start;
 
     _update_good_points(pt_start);
@@ -1183,34 +1134,14 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
        _chifn->get_pt(mindex(),9));
     }
 
-    printf("    v0 %e pv0 %e\n",v0,pv0);
-
     int is_a_strike=0;
+    if(_chifn->get_fn(i_min)>target()){
+        return 1;
+    }
     for(i=0;i<exclusion_zones.ct() && is_a_strike==0;i++){
         if(exclusion_zones(i)->contains(_chifn->get_pt(i_min))==1){
             is_a_strike=1;
         }
-    }
-
-    ellipse local_ellipse;
-    array_2d<double> found_pts;
-    for(i=pt_start;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
-            found_pts.add_row(_chifn->get_pt(i));
-        }
-    }
-
-    if(found_pts.get_rows()>_chifn->get_dim()){
-        local_ellipse.build(found_pts);
-        exclusion_zones.add(local_ellipse);
-    }
-    else{
-        return 1;
-    }
-
-    double v1,pv1;
-    if(v0<0.0){
-        return 0;
     }
 
     if(is_a_strike==1){
@@ -1219,41 +1150,6 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
     else{
         return 0;
     }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        mu=_chifn->get_pt(i_min,i);
-        if(mu<vmin.get_data(i)){
-            vmin.set(i,mu);
-        }
-        if(mu>vmax.get_data(i)){
-            vmax.set(i,mu);
-        }
-        mu=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            mu+=_chifn->get_pt(i_min,j)*cost_bases.get_data(i,j);
-        }
-        if(mu<pvmin.get_data(i)){
-            pvmin.set(i,mu);
-        }
-        if(mu>pvmax.get_data(i)){
-            pvmax.set(i,mu);
-        }
-    }
-
-    v1=1.0;
-    pv1=1.0;
-    for(i=0;i<_chifn->get_dim();i++){
-        v1*=(vmax.get_data(i)-vmin.get_data(i));
-        pv1*=(pvmax.get_data(i)-pvmin.get_data(i));
-    }
-
-    printf("    v1 %e pv1 %e\n",v1,pv1);
-
-    if(v1>1.1*v0 || pv1>1.1*pv0){
-        return 0;
-    }
-
-    return 1;
 
 }
 
@@ -1334,9 +1230,23 @@ void dalex::tendril_search(){
     double mu;
     int i_found;
 
-    ellipse_list exclusion_zones;
+    int i_exclude;
+    array_2d<double> exclusion_points;
+    ellipse local_ellipse;
+    ellipse_list local_exclusion_zones;
+    for(i=0;i<_exclusion_zones.ct();i++){
+        local_exclusion_zones.add(_exclusion_zones(i)[0]);
+    }
 
-    simplex_boundary_search(exclusion_zones);
+    simplex_boundary_search(local_exclusion_zones);
+    for(i=pt_0;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            exclusion_points.add_row(_chifn->get_pt(i));
+        }
+    }
+    local_ellipse.build(exclusion_points);
+    local_exclusion_zones.add(local_ellipse);
+    i_exclude=_chifn->get_pts();
     _update_good_points();
 
     int i_particle=_good_points.get_data(_good_points.get_dim()-1);
@@ -1345,38 +1255,7 @@ void dalex::tendril_search(){
         _log->add(_log_dchi_simplex,i_particle);
     }
 
-    double volume,p_volume;
-    array_1d<double> min,max,min_p,max_p;
-    min.set_name("dalex_tendril_min");
-    max.set_name("dalex_tendril_max");
-    min_p.set_name("dalex_tendril_min_p");
-    max_p.set_name("dalex_tendril_max_p");
-
     assess_good_points();
-    int ip,ix;
-    ip=mindex();
-    for(i=0;i<_chifn->get_dim();i++){
-        min.set(i,_chifn->get_pt(ip,i));
-        max.set(i,_chifn->get_pt(ip,i));
-
-        mu=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            mu+=_chifn->get_pt(ip,j)*_basis_vectors.get_data(i,j);
-        }
-
-        min_p.set(i,mu);
-        max_p.set(i,mu);
-    }
-
-    double volume_0,p_volume_0;
-    volume_0=1.0;
-    p_volume_0=1.0;
-    for(i=0;i<_chifn->get_dim();i++){
-        volume_0*=(max.get_data(i)-min.get_data(i));
-        p_volume_0*=(max_p.get_data(i)-min_p.get_data(i));
-    }
-
-    printf("    volume %e %e\n",volume_0,p_volume_0);
 
     array_1d<double> dir1,dir2,trial_center;
     dir1.set_name("dalex_simplex_boundary_dir1");
@@ -1389,6 +1268,7 @@ void dalex::tendril_search(){
     int iteration=0;
     int use_median=0;
     int is_a_strike;
+    double volume;
 
     while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
@@ -1398,9 +1278,16 @@ void dalex::tendril_search(){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        is_a_strike=simplex_boundary_search(i_particle, use_median, exclusion_zones);
+        is_a_strike=simplex_boundary_search(i_particle, use_median, local_exclusion_zones);
+        for(i=i_exclude;i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                exclusion_points.add_row(_chifn->get_pt(i));
+            }
+        }
+        i_exclude=_chifn->get_pts();
+        local_exclusion_zones(local_exclusion_zones.ct()-1)->build(exclusion_points);
 
-        printf("    exclusion zones %d\n",exclusion_zones.ct());
+        printf("    exclusion zones %d\n",local_exclusion_zones.ct());
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
 
@@ -1412,44 +1299,22 @@ void dalex::tendril_search(){
             strikes=0;
         }
 
-        for(i=0;i<_chifn->get_dim();i++){
-            if(_chifn->get_pt(i_particle,i)<min.get_data(i)){
-                min.set(i,_chifn->get_pt(i_particle,i));
-            }
-
-            if(_chifn->get_pt(i_particle,i)>max.get_data(i)){
-                max.set(i,_chifn->get_pt(i_particle,i));
-            }
-
-            mu=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                mu+=_chifn->get_pt(i_particle,j)*_basis_vectors.get_data(i,j);
-            }
-
-            if(mu<min_p.get_data(i)){
-                min_p.set(i,mu);
-            }
-
-            if(mu>max_p.get_data(i)){
-                max_p.set(i,mu);
-            }
-        }
-
         volume=1.0;
-        p_volume=1.0;
         for(i=0;i<_chifn->get_dim();i++){
-            volume*=(max.get_data(i)-min.get_data(i));
-            p_volume*=(max_p.get_data(i)-min_p.get_data(i));
+            volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
         }
-
-        if(volume>volume_0*1.1 && p_volume>p_volume_0*1.1){
-            volume_0=volume;
-            p_volume_0=p_volume;
-        }
-        printf("    volume %e %e\n",volume_0,p_volume_0);
+        printf("    volume %e -- %d\n",volume,_exclusion_zones.ct());
 
     }
 
+    for(i=i_exclude;i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                exclusion_points.add_row(_chifn->get_pt(i));
+            }
+    }
+
+    local_ellipse.build(exclusion_points);
+    _exclusion_zones.add(local_ellipse);
 }
 
 void dalex::iterate_on_minimum(){
@@ -1474,6 +1339,7 @@ void dalex::iterate_on_minimum(){
         _good_points.reset_preserving_room();
         _explorers.reset();
         _tendril_path.reset_preserving_room();
+        _exclusion_zones.reset();
     }
 
     if(chimin()<min_00-0.01){
