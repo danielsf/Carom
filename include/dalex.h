@@ -8,6 +8,7 @@
 #include "eigen_wrapper.h"
 #include "search_types.h"
 #include "explorers.h"
+#include "ellipse.h"
 
 class dalex{
 
@@ -52,8 +53,8 @@ class dalex{
         void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
-        int simplex_boundary_search();
-        int simplex_boundary_search(int, int);
+        int simplex_boundary_search(ellipse_list&);
+        int simplex_boundary_search(int, int, ellipse_list&);
         void explore();
         void min_explore(int, int);
 
@@ -184,8 +185,9 @@ class dalex{
         void tendril_search();
         array_2d<int> _tendril_path;
 
-
         int _limit;
+
+        ellipse_list _exclusion_zones;
 };
 
 #endif

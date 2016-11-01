@@ -956,11 +956,11 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-int dalex::simplex_boundary_search(){
-    return simplex_boundary_search(-1,0);
+int dalex::simplex_boundary_search(ellipse_list &exclusion_zones){
+    return simplex_boundary_search(-1,0,exclusion_zones);
 }
 
-int dalex::simplex_boundary_search(int specified, int use_median){
+int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &exclusion_zones){
 
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
@@ -1185,8 +1185,38 @@ int dalex::simplex_boundary_search(int specified, int use_median){
 
     printf("    v0 %e pv0 %e\n",v0,pv0);
 
+    int is_a_strike=0;
+    for(i=0;i<exclusion_zones.ct() && is_a_strike==0;i++){
+        if(exclusion_zones(i)->contains(_chifn->get_pt(i_min))==1){
+            is_a_strike=1;
+        }
+    }
+
+    ellipse local_ellipse;
+    array_2d<double> found_pts;
+    for(i=pt_start;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            found_pts.add_row(_chifn->get_pt(i));
+        }
+    }
+
+    if(found_pts.get_rows()>_chifn->get_dim()){
+        local_ellipse.build(found_pts);
+        exclusion_zones.add(local_ellipse);
+    }
+    else{
+        return 1;
+    }
+
     double v1,pv1;
     if(v0<0.0){
+        return 0;
+    }
+
+    if(is_a_strike==1){
+        return 1;
+    }
+    else{
         return 0;
     }
 
@@ -1304,7 +1334,9 @@ void dalex::tendril_search(){
     double mu;
     int i_found;
 
-    simplex_boundary_search();
+    ellipse_list exclusion_zones;
+
+    simplex_boundary_search(exclusion_zones);
     _update_good_points();
 
     int i_particle=_good_points.get_data(_good_points.get_dim()-1);
@@ -1366,7 +1398,9 @@ void dalex::tendril_search(){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        is_a_strike=simplex_boundary_search(i_particle, use_median);
+        is_a_strike=simplex_boundary_search(i_particle, use_median, exclusion_zones);
+
+        printf("    exclusion zones %d\n",exclusion_zones.ct());
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
 

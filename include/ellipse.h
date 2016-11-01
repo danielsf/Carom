@@ -47,6 +47,7 @@ class ellipse_list{
         }
 
         void add(ellipse&);
+        int ct(){return _ct;}
 
         ellipse* operator()(int ii){
             if(ii<0 || ii>=_ct){
