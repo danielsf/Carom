@@ -17,7 +17,7 @@ int ellipse::contains(const array_1d<double> &pt){
     return 1;
 }
 
-void ellipse::build(array_2d<double> &pts_in){
+void ellipse::build(const array_2d<double> &pts_in){
 
     int n_pts = pts_in.get_rows();
     int dim = pts_in.get_cols();
@@ -109,7 +109,7 @@ void ellipse::build(array_2d<double> &pts_in){
 }
 
 
-void ellipse::_set_radii(array_2d<double> &pts_in){
+void ellipse::_set_radii(const array_2d<double> &pts_in){
 
     array_1d<int> bad_dexes;
     int i;
@@ -171,4 +171,26 @@ void ellipse::copy(ellipse &other){
             _bases.set(i,j,other.bases(i,j));
         }
     }
+}
+
+void ellipse_list::add(ellipse &ell_in){
+    ellipse *buffer;
+    int i;
+    if(_ct>0){
+        buffer=new ellipse[_ct];
+        for(i=0;i<_ct;i++){
+            buffer[i].copy(_ellipse_list[i]);
+        }
+        delete [] _ellipse_list;
+        _ellipse_list=new ellipse[_ct+1];
+        for(i=0;i<_ct;i++){
+            _ellipse_list[i].copy(buffer[i]);
+        }
+        delete [] buffer;
+    }
+    else{
+        _ellipse_list=new ellipse[1];
+    }
+    _ellipse_list[_ct].copy(ell_in);
+    _ct++;
 }

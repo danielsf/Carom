@@ -167,4 +167,143 @@ int main(int iargc, char **argv){
     }
     fclose(output);
 
+    ////////test ellipse list
+    array_2d<double> bases1,bases2,bases3;
+    array_2d<double> pts1,pts2,pts3;
+    array_1d<double> radii1,radii2,radii3;
+    array_1d<double> center1,center2,center3;
+    ellipse ellipse1,ellipse2,ellipse3;
+
+    array_2d<double> *bs_ptr;
+    array_2d<double> *pt_ptr;
+    array_1d<double> *rad_ptr;
+    array_1d<double> *c_ptr;
+    ellipse *ell_ptr;
+
+    ellipse_list ell_list;
+
+    int ip;
+    for(ip=0;ip<3;ip++){
+        if(ip==0){
+            bs_ptr=&bases1;
+            pt_ptr=&pts1;
+            rad_ptr=&radii1;
+            c_ptr=&center1;
+            ell_ptr=&ellipse1;
+        }
+        else if(ip==1){
+            bs_ptr=&bases2;
+            pt_ptr=&pts2;
+            rad_ptr=&radii2;
+            c_ptr=&center2;
+            ell_ptr=&ellipse2;
+        }
+        else if(ip==2){
+            bs_ptr=&bases3;
+            pt_ptr=&pts3;
+            rad_ptr=&radii3;
+            c_ptr=&center3;
+            ell_ptr=&ellipse3;
+        }
+
+        while(bs_ptr->get_rows()!=dim){
+            for(i=0;i<dim;i++){
+                dir.set(i,normal_deviate(&dice,0.0,1.0));
+            }
+            for(j=0;j<bs_ptr->get_rows();j++){
+                component=0.0;
+                for(k=0;k<dim;k++){
+                    component+=dir.get_data(k)*bs_ptr->get_data(j,k);
+                }
+                for(k=0;k<dim;k++){
+                    dir.subtract_val(k,component*bs_ptr->get_data(j,k));
+                }
+            }
+            component=dir.normalize();
+            if(component>1.0e-12){
+                bs_ptr->add_row(dir);
+            }
+        }
+
+        for(i=0;i<dim;i++){
+            rad_ptr->set(i,dice.doub()*2.1);
+            c_ptr->set(i,normal_deviate(&dice,0.0,10.0));
+        }
+
+        for(i=0;i<n_pts;i++){
+            sampler.get_pt(base_pt);
+            for(j=0;j<dim;j++){
+                true_pt.set(j,c_ptr->get_data(j));
+            }
+            for(j=0;j<dim;j++){
+                for(k=0;k<dim;k++){
+                    true_pt.add_val(k,base_pt.get_data(j)*rad_ptr->get_data(j)*bs_ptr->get_data(j,k));
+                }
+            }
+            pt_ptr->add_row(true_pt);
+        }
+        ell_ptr->build(pt_ptr[0]);
+        ell_list.add(ell_ptr[0]);
+    }
+
+    double diff;
+    for(i=0;i<dim;i++){
+        for(j=0;j<dim;j++){
+            diff=fabs(ell_list(0)->bases(i,j)-ellipse1.bases(i,j));
+            if(diff>1.0e-10){
+                printf("WARNING bases %d %d %e\n",i,j,diff);
+                exit(1);
+            }
+        }
+        diff=fabs(ell_list(0)->center(i)-ellipse1.center(i));
+        if(diff>1.0e-10){
+            printf("WARNING center %d %e\n",i,diff);
+            exit(1);
+        }
+        diff=fabs(ell_list(0)->radii(i)-ellipse1.radii(i));
+        if(diff>1.0e-10){
+            printf("WARNING radii %d %e\n",i,diff);
+            exit(1);
+        }
+    }
+
+    for(i=0;i<dim;i++){
+        for(j=0;j<dim;j++){
+            diff=fabs(ell_list(1)->bases(i,j)-ellipse2.bases(i,j));
+            if(diff>1.0e-10){
+                printf("WARNING bases %d %d %e\n",i,j,diff);
+                exit(1);
+            }
+        }
+        diff=fabs(ell_list(1)->center(i)-ellipse2.center(i));
+        if(diff>1.0e-10){
+            printf("WARNING center %d %e\n",i,diff);
+            exit(1);
+        }
+        diff=fabs(ell_list(1)->radii(i)-ellipse2.radii(i));
+        if(diff>1.0e-10){
+            printf("WARNING radii %d %e\n",i,diff);
+            exit(1);
+        }
+    }
+
+    for(i=0;i<dim;i++){
+        for(j=0;j<dim;j++){
+            diff=fabs(ell_list(2)->bases(i,j)-ellipse3.bases(i,j));
+            if(diff>1.0e-10){
+                printf("WARNING bases %d %d %e\n",i,j,diff);
+                exit(1);
+            }
+        }
+        diff=fabs(ell_list(2)->center(i)-ellipse3.center(i));
+        if(diff>1.0e-10){
+            printf("WARNING center %d %e\n",i,diff);
+            exit(1);
+        }
+        diff=fabs(ell_list(2)->radii(i)-ellipse3.radii(i));
+        if(diff>1.0e-10){
+            printf("WARNING radii %d %e\n",i,diff);
+            exit(1);
+        }
+    }
 }

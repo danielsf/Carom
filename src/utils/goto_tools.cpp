@@ -648,6 +648,9 @@ ellipse_sampler::ellipse_sampler(){
 
 void ellipse_sampler::initialize(int dd, int seed){
     _dim=dd;
+    if(_dice!=NULL){
+        delete _dice;
+    }
     _dice=new Ran(seed);
     _cos_n_grid.set_dim(_dim+1,_steps);
     int i,j;

@@ -15,7 +15,7 @@ class ellipse{
         }
 
         ~ellipse(){}
-        void build(array_2d<double>&);
+        void build(const array_2d<double>&);
 
         int get_dim(){return _bases.get_rows();}
         int contains(const array_1d<double>&);
@@ -23,14 +23,42 @@ class ellipse{
         double center(int i){return _center.get_data(i);}
         double radii(int i){return _radii.get_data(i);}
         int dim(){return _center.get_dim();}
+        void copy(ellipse&);
 
     private:
         array_2d<double> _bases;
         array_1d<double> _radii,_center;
 
-        void _set_radii(array_2d<double>&);
-        void copy(ellipse&);
+        void _set_radii(const array_2d<double>&);
+};
 
+
+class ellipse_list{
+    public:
+        ellipse_list(){
+            _ellipse_list=NULL;
+            _ct=0;
+        }
+
+        ~ellipse_list(){
+            if(_ellipse_list!=NULL){
+                delete [] _ellipse_list;
+            }
+        }
+
+        void add(ellipse&);
+
+        ellipse* operator()(int ii){
+            if(ii<0 || ii>=_ct){
+                printf("No such ellipse: %d\n",ii);
+                exit(1);
+            }
+            return &_ellipse_list[ii];
+        }
+
+    private:
+        int _ct;
+        ellipse *_ellipse_list;
 };
 
 #endif
