@@ -48,6 +48,11 @@ class ellipse_list{
 
         void add(ellipse&);
         int ct(){return _ct;}
+        void reset(){
+            _ct=0;
+            delete [] _ellipse_list;
+            _ellipse_list=NULL;
+        }
 
         ellipse* operator()(int ii){
             if(ii<0 || ii>=_ct){
