@@ -54,8 +54,6 @@ void ellipse::build(const array_2d<double> &pts_in){
         _center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
     }
 
-    printf("got center\n");
-
     double component,norm,norm_max;
 
     while(_bases.get_rows()!=dim){
@@ -87,8 +85,6 @@ void ellipse::build(const array_2d<double> &pts_in){
         _bases.add_row(dir_max);
         _radii.add(norm_max);
     }
-
-    printf("got bases\n");
 
     int is_valid=0;
 
