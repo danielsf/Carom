@@ -182,7 +182,7 @@ class dalex{
         void iterate_on_minimum();
 
         //////code related to tendrils
-        void tendril_search();
+        void tendril_search(int);
         array_2d<int> _tendril_path;
 
         int _limit;

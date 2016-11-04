@@ -53,16 +53,48 @@ double dalex::get_norm(int dex){
 
 void dalex::search(){
     safety_check("search");
-    int i;
+    int i,j,i_found;
+    double mu;
     int pts_0=_chifn->get_pts();
+    array_1d<double> pt;
+    array_1d<int> to_use;
     assess_good_points();
 
     int has_explored=0;
 
     iterate_on_minimum();
 
-    explore();
-    tendril_search();
+    int is_outside;
+    while(to_use.get_dim()==0){
+        explore();
+        for(i=0;i<_explorers.get_n_particles();i++){
+            _explorers.get_pt(i,pt);
+            evaluate(pt,&mu,&i_found);
+            if(mu<target()){
+                is_outside=1;
+                for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
+                    if(_exclusion_zones(j)->contains(pt)){
+                        is_outside=0;
+                    }
+                }
+                if(is_outside==1){
+                    to_use.add(i_found);
+                }
+            }
+        }
+    }
+
+    for(i=0;i<to_use.get_dim();i++){
+        is_outside=1;
+        for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
+            if(_exclusion_zones(j)->contains(_chifn->get_pt(to_use.get_data(i)))==1){
+                is_outside=0;
+            }
+        }
+        if(is_outside==1){
+            tendril_search(to_use.get_data(i));
+        }
+    }
     _update_good_points(pts_0);
 
 }
@@ -1056,6 +1088,8 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
         }
     }
     else{
+        printf("calling _explorers.get_seed(); did not expect that\n");
+        exit(1);
         _explorers.get_seed(seed);
     }
 
@@ -1219,7 +1253,7 @@ void dalex::min_explore(int n_particles, int n_steps){
     _update_good_points(pt_0);
 }
 
-void dalex::tendril_search(){
+void dalex::tendril_search(int specified){
 
     int i,j,k;
     int pt_0=_chifn->get_pts();
@@ -1238,7 +1272,7 @@ void dalex::tendril_search(){
         local_exclusion_zones.add(_exclusion_zones(i)[0]);
     }
 
-    simplex_boundary_search(local_exclusion_zones);
+    simplex_boundary_search(specified, 0, local_exclusion_zones);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             exclusion_points.add_row(_chifn->get_pt(i));
