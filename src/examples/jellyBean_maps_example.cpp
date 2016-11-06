@@ -144,6 +144,15 @@ else if(chisq_dex==1){
         printf("WARNING do not have integrable jellyBean for dim %d\n",dim);
     }
 }
+else if(chisq_dex==2){
+    if(dim==8){
+        chisq = new nonGaussianLump8;
+    }
+    else{
+        printf("WARNING do not have chisq_dex 2, dim %d\n",dim);
+        exit(1);
+    }
+}
 else{
     printf("WARNING do not know what to do with chisq_dex %d\n",chisq_dex);
     exit(1);
