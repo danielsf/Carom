@@ -186,8 +186,8 @@ def boundary_from_multinest_projection(file_name, dim, ix, iy, data=None):
 
 if __name__ == "__main__":
 
-    seed_list = [626, 694, 762, 1068, 6475]
-    limit_list = [300000, 300000, 400000, 300000, 300000]
+    seed_list = [66, 694, 762, 1068, 6475]
+    limit_list = [300000, 400000, 400000, 300000, 300000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
