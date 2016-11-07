@@ -7,7 +7,11 @@ import os
 from analyzeCarom import scatter_from_multinest_projection
 from analyzeCarom import scatter_from_carom
 
+import sys
+
 if __name__ == "__main__":
+
+    dim = (int(sys.argv[1]), int(sys.argv[2]))
 
     physics_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
@@ -24,10 +28,9 @@ if __name__ == "__main__":
                                         "nonGaussianLump_d12_s99_n300_t1.00e-03_carom.sav")
 
     plt.figsize = (30,30)
-    time_list = [25000, 50000, 100000, 150000, 200000]
+    time_list = [75000, 100000, 125000, 150000, 200000]
     delta_chisq = 21.03
     full_dim = 12
-    dim = (0, 3)
 
     d_data = None
     m_data = None
@@ -107,7 +110,15 @@ if __name__ == "__main__":
             plt.ylabel('$\\theta_%d$' % dim[1], fontsize=15)
         msg = ('MultiNest $\chi^2_{min}=%.2f$\nDale$\chi$ $\chi^2_{min}=%.2f$\n$\chi^2$ evaluations: %.2e'
                % (mult_min_list[i_fig], dalex_min_list[i_fig], time_list[i_fig]))
-        plt.text(xmin+0.4*dx, ymax-0.25*dy, msg, fontsize=10)
+
+        if dim[0]==0 and dim[1]==3:
+            xorig = xmin+0.4*dx
+            yorig = ymax-0.25*dy
+        else:
+            xorig = xmin+0.01*dx
+            yorig = ymax-0.25*dy
+
+        plt.text(xorig, yorig, msg, fontsize=10)
 
     plt.legend([d_h, m_h, m_true_h],
                ['Dale$\chi$ ($\chi^2<=\chi^2_{min}+%.2f$)' % delta_chisq,
