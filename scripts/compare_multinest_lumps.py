@@ -59,8 +59,8 @@ if __name__ == "__main__":
     plt.xlim((xmin-0.05*dx, xmax+0.05*dx))
     plt.ylim((ymin-0.05*dy, ymax+0.05*dy))
     plt.legend(hh_list, tag_list, fontsize=10, loc=0)
-    plt.xlabel('$\\theta_%d$' % dim[0])
-    plt.ylabel('$\\theta_%d$' % dim[1])
+    plt.xlabel('$\\theta_%d$' % dim[0], fontsize=20)
+    plt.ylabel('$\\theta_%d$' % dim[1], fontsize=20)
     plt.savefig(os.path.join(fig_dir,'lump_mult_compare_%d_%d.png' % (dim[0], dim[1])))
     plt.close()
     
