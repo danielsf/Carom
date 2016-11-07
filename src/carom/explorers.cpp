@@ -70,6 +70,8 @@ void explorers::set_norm(){
 void explorers::reset(){
     _particles.reset_preserving_room();
     _attempted=0;
+    _scalar_acceptance=0;
+    _scalar_steps=0;
     _accepted.reset_preserving_room();
     _req_temp.reset_preserving_room();
     _temp=1.0;
@@ -188,17 +190,7 @@ void explorers::sample(int n_steps){
 
     int has_been_adjusted;
 
-    array_1d<double> acceptance_rate,acceptance_rate_sorted;
-    array_1d<int> acceptance_rate_dex;
-    acceptance_rate.set_name("exp_sample_acceptance_rate");
-    acceptance_rate_sorted.set_name("exp_sample_acceptance_rate_sorted");
-    acceptance_rate_dex.set_name("exp_sample_acceptance_rate_dex");
-
-    double med_acc;
-
     printf("    starting sampling with %e\n",_mu_min);
-
-    int scalar_acceptance=0;
 
     for(i_step=0;i_step<n_steps;i_step++){
 
@@ -228,9 +220,9 @@ void explorers::sample(int n_steps){
             }
 
             _req_temp.add(needed_temp);
-
+            _scalar_steps++;
             if(accept_it==1){
-                scalar_acceptance++;
+                _scalar_acceptance++;
                 _accepted.add_val(ip,1);
                 _mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
@@ -246,15 +238,9 @@ void explorers::sample(int n_steps){
         _attempted++;
 
         if(_attempted>0 && _attempted%(2*_chifn->get_dim())==0){
-            acceptance_rate_dex.reset_preserving_room();
-            acceptance_rate_sorted.reset_preserving_room();
-            for(i=0;i<_accepted.get_dim();i++){
-                acceptance_rate.set(i,double(_accepted.get_data(i))/double(_attempted));
-                acceptance_rate_dex.set(i,i);
-            }
-            sort(acceptance_rate, acceptance_rate_sorted, acceptance_rate_dex);
-            med_acc=acceptance_rate_sorted.get_data(acceptance_rate_dex.get_dim()/2);
-            if(med_acc>0.6 || med_acc<0.4){
+            printf("assessing temp\n");
+            if(_scalar_acceptance>6*_scalar_steps/10 ||
+               _scalar_acceptance<4*_scalar_steps/10){
                 old_temp=_temp;
                 req_temp_sorted.reset_preserving_room();
                 req_temp_dex.reset_preserving_room();
@@ -267,6 +253,8 @@ void explorers::sample(int n_steps){
                     _req_temp.reset();
                     _accepted.zero();
                     _attempted=0;
+                    _scalar_acceptance=0;
+                    _scalar_steps=0;
                 }
             }
         }
@@ -275,7 +263,7 @@ void explorers::sample(int n_steps){
 
     printf("    sampling min %e\n",_mu_min);
     printf("    temp %e\n",_temp);
-    printf("    accepted %d steps %d\n",scalar_acceptance,
-    _n_particles*n_steps);
+    printf("    accepted %d steps %d\n",_scalar_acceptance,
+    _scalar_steps);
     printf("    ct %d\n",_chifn->get_pts());
 }
