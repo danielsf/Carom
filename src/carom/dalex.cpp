@@ -65,7 +65,7 @@ void dalex::search(){
     iterate_on_minimum();
 
     int is_outside;
-    while(to_use.get_dim()==0){
+    while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
         explore();
         for(i=0;i<_explorers.get_n_particles();i++){
             _explorers.get_pt(i,pt);
