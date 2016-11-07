@@ -254,7 +254,7 @@ void explorers::sample(int n_steps){
             }
             sort(acceptance_rate, acceptance_rate_sorted, acceptance_rate_dex);
             med_acc=acceptance_rate_sorted.get_data(acceptance_rate_dex.get_dim()/2);
-            if(med_acc>0.75 || med_acc<0.3333){
+            if(med_acc>0.6 || med_acc<0.4){
                 old_temp=_temp;
                 req_temp_sorted.reset_preserving_room();
                 req_temp_dex.reset_preserving_room();
