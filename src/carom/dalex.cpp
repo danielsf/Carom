@@ -94,6 +94,9 @@ void dalex::search(){
         if(is_outside==1){
             tendril_search(to_use.get_data(i));
         }
+        if(_limit>0 && _chifn->get_pts()>_limit){
+            break;
+        }
     }
     _update_good_points(pts_0);
 
