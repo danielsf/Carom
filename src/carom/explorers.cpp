@@ -276,4 +276,5 @@ void explorers::sample(int n_steps){
     printf("    temp %e\n",_temp);
     printf("    accepted %d steps %d\n",scalar_acceptance,
     _n_particles*n_steps);
+    printf("    ct %d\n",_chifn->get_pts());
 }

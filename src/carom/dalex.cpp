@@ -1311,8 +1311,6 @@ void dalex::tendril_search(int specified){
 
         iteration++;
 
-        printf("    strikes %d use_median %d\n",strikes,use_median);
-
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
         is_a_strike=simplex_boundary_search(i_particle, use_median, local_exclusion_zones);
@@ -1341,6 +1339,7 @@ void dalex::tendril_search(int specified){
             volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
         }
         printf("    volume %e -- %d\n",volume,_exclusion_zones.ct());
+        printf("    strikes %d use_median %d\n",strikes,use_median);
 
     }
 
@@ -1352,6 +1351,8 @@ void dalex::tendril_search(int specified){
 
     local_ellipse.build(exclusion_points);
     _exclusion_zones.add(local_ellipse);
+    printf("\n    strike out (%d strikes; %d pts)\n",
+           strikes,_chifn->get_pts());
 }
 
 void dalex::iterate_on_minimum(){
