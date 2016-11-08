@@ -30,7 +30,7 @@ if __name__ == "__main__":
     ymin = 1.0e30
     ymax = -1.0e30
     full_dim = 12
-    color_list = ['k', 'r', 'b', 'c', 'g']
+    color_list = ['k', 'r', 'c', 'g', 'b']
     hh_list = []
     tag_list = []
     for i_fig in range(len(multinest_carom_name)):
