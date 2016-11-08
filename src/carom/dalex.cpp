@@ -57,7 +57,7 @@ void dalex::search(){
     double mu;
     int pts_0=_chifn->get_pts();
     array_1d<double> pt;
-    array_1d<int> to_use;
+    array_1d<int> to_use,to_kick;
     assess_good_points();
 
     int has_explored=0;
@@ -71,6 +71,7 @@ void dalex::search(){
             _explorers.get_pt(i,pt);
             evaluate(pt,&mu,&i_found);
             if(mu<target()){
+                to_kick.add(i);
                 is_outside=1;
                 for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
                     if(_exclusion_zones(j)->contains(pt)){
@@ -79,10 +80,13 @@ void dalex::search(){
                 }
                 if(is_outside==1){
                     to_use.add(i_found);
-                    _explorers.kick(i);
                 }
             }
         }
+    }
+
+    for(i=0;i<to_kick.get_dim();i++){
+        _explorers.kick(to_kick.get_data(i));
     }
 
     for(i=0;i<to_use.get_dim();i++){
