@@ -93,12 +93,7 @@ void explorers::initialize_particles(){
     double span,mu;
 
     for(i=0;i<_chifn->get_dim();i++){
-        center.set(i,0.0);
-    }
-    for(i=0;i<_chifn->get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            center.add_val(j,0.5*_bases.get_data(i,j)*(_max.get_data(i)+_min.get_data(i)));
-        }
+        center.set(i,_chifn->get_pt(_chifn->mindex(),i));
     }
 
     while(_particles.get_rows()<_n_particles){
