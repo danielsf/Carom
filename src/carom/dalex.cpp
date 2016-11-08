@@ -1310,7 +1310,13 @@ void dalex::tendril_search(int specified){
     int iteration=0;
     int use_median=0;
     int is_a_strike;
-    double volume;
+    double volume,volume_0;
+
+    volume=1.0;
+    for(i=0;i<_chifn->get_dim();i++){
+        volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
+    }
+    volume_0=volume;
 
     while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
@@ -1331,6 +1337,15 @@ void dalex::tendril_search(int specified){
 
         i_particle=_good_points.get_data(_good_points.get_dim()-1);
 
+        volume=1.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
+        }
+        if(volume>volume_0){
+            is_a_strike=0;
+            volume_0=volume;
+        }
+
         if(is_a_strike==1){
             strikes++;
             i_particle=i_origin;
@@ -1339,10 +1354,6 @@ void dalex::tendril_search(int specified){
             strikes=0;
         }
 
-        volume=1.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
-        }
         printf("    volume %e -- %d\n",volume,_exclusion_zones.ct());
         printf("    strikes %d use_median %d\n",strikes,use_median);
 
