@@ -145,6 +145,25 @@ void explorers::bump_particles(){
 }
 
 
+void explorers::kick(int dex){
+     array_1d<double> dir;
+     dir.set_name("explorers_kick_dir");
+     int i;
+     for(i=0;i<_chifn->get_dim();i++){
+         dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+     }
+     dir.normalize();
+     for(i=0;i<_chifn->get_dim();i++){
+         _particles.set(dex,i,_chifn->get_pt(_chifn->mindex(),i));
+     }
+     int j;
+     for(i=0;i<_chifn->get_dim();i++){
+         for(j=0;j<_chifn->get_dim();j++){
+             _particles.add_val(dex,j,1.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
+         }
+     }
+}
+
 void explorers::sample(int n_steps){
 
     cost_fn dchifn(_chifn, _associates);

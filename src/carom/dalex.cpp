@@ -79,6 +79,7 @@ void dalex::search(){
                 }
                 if(is_outside==1){
                     to_use.add(i_found);
+                    _explorers.kick(i);
                 }
             }
         }
