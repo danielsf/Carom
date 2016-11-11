@@ -1058,7 +1058,6 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
     }
 
     cost_fn dchifn(_chifn,associates);
-    dchifn.flatten();
     array_2d<double> cost_bases;
     cost_bases.set_name("dalex_simplex_boundary_cost_bases");
     dchifn.copy_bases(cost_bases);
