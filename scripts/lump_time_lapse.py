@@ -18,7 +18,7 @@ if __name__ == "__main__":
     dalex_dir = os.path.join(physics_dir, "Carom")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161106")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161111")
 
     dalex_name = os.path.join(data_dir, "lump_output.sav")
     multinest_name = os.path.join(multinest_dir,
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     plt.figsize = (30,30)
     time_list = [75000, 100000, 125000, 150000, 200000]
-    delta_chisq = 22.03
+    delta_chisq = 21.03
     full_dim = 12
 
     d_data = None
