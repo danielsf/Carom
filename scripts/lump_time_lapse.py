@@ -28,7 +28,7 @@ if __name__ == "__main__":
                                         "nonGaussianLump_d12_s99_n300_t1.00e-03_carom.sav")
 
     plt.figsize = (30,30)
-    time_list = [100000, 125000, 150000, 200000, 400000]
+    time_list = [75000, 100000, 125000, 150000, 200000]
     delta_chisq = 22.03
     full_dim = 12
 
