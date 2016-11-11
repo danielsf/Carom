@@ -71,7 +71,7 @@ if __name__ == "__main__":
                                       delta_chi=delta_chisq, limit=limit)
 
 
-        #time_list[len(time_list)-1] = len(m_data)
+        time_list[len(time_list)-1] = len(m_data)
         mult_min_list.append(chisq_min_mult)
         dalex_min_list.append(chisq_min_dalex)
 

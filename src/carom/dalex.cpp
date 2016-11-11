@@ -996,11 +996,12 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-int dalex::simplex_boundary_search(ellipse_list &exclusion_zones){
-    return simplex_boundary_search(-1,0,exclusion_zones);
+int dalex::simplex_boundary_search(ellipse_list &exclusion_zones, int *i_next){
+    return simplex_boundary_search(-1,0,exclusion_zones, i_next);
 }
 
-int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &exclusion_zones){
+int dalex::simplex_boundary_search(int specified, int use_median,
+                                   ellipse_list &exclusion_zones, int *i_next){
 
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
@@ -1118,6 +1119,8 @@ int dalex::simplex_boundary_search(int specified, int use_median, ellipse_list &
     minpt.set_name("dalex_simplex_search_minpt");
 
     ffmin.find_minimum(seed,minpt);
+
+    evaluate(minpt, &mu, i_next);
 
     for(i=specified;i<_chifn->get_pts();i++){
         if(i>=0 && _chifn->get_fn(i)<target()){
@@ -1273,6 +1276,7 @@ void dalex::tendril_search(int specified){
     int i_found;
 
     int i_exclude;
+    int i_particle;
     array_2d<double> exclusion_points;
     ellipse local_ellipse;
     ellipse_list local_exclusion_zones;
@@ -1280,7 +1284,7 @@ void dalex::tendril_search(int specified){
         local_exclusion_zones.add(_exclusion_zones(i)[0]);
     }
 
-    simplex_boundary_search(specified, 0, local_exclusion_zones);
+    simplex_boundary_search(specified, 0, local_exclusion_zones, &i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             exclusion_points.add_row(_chifn->get_pt(i));
@@ -1290,8 +1294,6 @@ void dalex::tendril_search(int specified){
     local_exclusion_zones.add(local_ellipse);
     i_exclude=_chifn->get_pts();
     _update_good_points();
-
-    int i_particle=_good_points.get_data(_good_points.get_dim()-1);
 
     if(_log!=NULL){
         _log->add(_log_dchi_simplex,i_particle);
@@ -1310,6 +1312,7 @@ void dalex::tendril_search(int specified){
     int iteration=0;
     int use_median=0;
     int is_a_strike;
+    int i_next;
     double volume,volume_0;
 
     volume=1.0;
@@ -1324,7 +1327,7 @@ void dalex::tendril_search(int specified){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        is_a_strike=simplex_boundary_search(i_particle, use_median, local_exclusion_zones);
+        is_a_strike=simplex_boundary_search(i_particle, use_median, local_exclusion_zones, &i_next);
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
@@ -1335,7 +1338,7 @@ void dalex::tendril_search(int specified){
 
         printf("    exclusion zones %d\n",local_exclusion_zones.ct());
 
-        i_particle=_good_points.get_data(_good_points.get_dim()-1);
+        i_particle=i_next;
 
         volume=1.0;
         for(i=0;i<_chifn->get_dim();i++){
