@@ -1362,6 +1362,12 @@ void dalex::tendril_search(int specified){
             is_a_strike=1;
         }
 
+        if(is_a_strike==0 && in_old_ones==1){
+            printf("WARNING is_a_strike %d; in_old_ones %d; should not happen\n",
+                   is_a_strike, in_old_ones);
+            exit(1);
+        }
+
         if(is_a_strike==1){
             strikes++;
             i_particle=i_origin;
