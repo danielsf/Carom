@@ -1132,14 +1132,20 @@ int dalex::simplex_boundary_search(int specified, int use_median,
     ffmin.find_minimum(seed,minpt);
 
     evaluate(minpt, &mu, i_next);
-
+    int need_to_update=0;
+    if(_chifn->get_fn(i_next[0])>_chifn->target()){
+        need_to_update=1;
+    }
     for(i=specified;i<_chifn->get_pts();i++){
         if(i>=0 && _chifn->get_fn(i)<target()){
             i_min=i;
+            if(need_to_update==1){
+                i_next[0]=i_min;
+            }
         }
     }
 
-    if(i_min<0){
+    if(_chifn->get_fn(i_next[0])>_chifn->target()){
         return 1;
     }
 
@@ -1369,10 +1375,6 @@ void dalex::tendril_search(int specified){
         if(in_old_ones==0 && volume>volume_0){
             is_a_strike=0;
             volume_0=volume;
-        }
-
-        if(_chifn->get_fn(i_next)>target()){
-            is_a_strike=1;
         }
 
         if(is_a_strike==0 && in_old_ones==1){
