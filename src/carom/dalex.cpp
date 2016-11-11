@@ -1279,19 +1279,14 @@ void dalex::tendril_search(int specified){
     int i_particle;
     array_2d<double> exclusion_points;
     ellipse local_ellipse;
-    ellipse_list local_exclusion_zones;
-    for(i=0;i<_exclusion_zones.ct();i++){
-        local_exclusion_zones.add(_exclusion_zones(i)[0]);
-    }
 
-    simplex_boundary_search(specified, 0, local_exclusion_zones, &i_particle);
+    simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             exclusion_points.add_row(_chifn->get_pt(i));
         }
     }
     local_ellipse.build(exclusion_points);
-    local_exclusion_zones.add(local_ellipse);
     i_exclude=_chifn->get_pts();
     _update_good_points();
 
@@ -1317,9 +1312,11 @@ void dalex::tendril_search(int specified){
 
     volume=1.0;
     for(i=0;i<_chifn->get_dim();i++){
-        volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
+        volume*=local_ellipse.radii(i);
     }
     volume_0=volume;
+
+    int in_old_ones;
 
     while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
@@ -1327,24 +1324,32 @@ void dalex::tendril_search(int specified){
 
         i_origin=i_particle;
         ct_last=_chifn->get_pts();
-        is_a_strike=simplex_boundary_search(i_particle, use_median, local_exclusion_zones, &i_next);
+        in_old_ones=simplex_boundary_search(i_particle, use_median, _exclusion_zones, &i_next);
+
+        is_a_strike=in_old_ones;
+
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
             }
         }
         i_exclude=_chifn->get_pts();
-        local_exclusion_zones(local_exclusion_zones.ct()-1)->build(exclusion_points);
 
-        printf("    exclusion zones %d\n",local_exclusion_zones.ct());
+        if(local_ellipse.contains(_chifn->get_pt(i_next))==1){
+            is_a_strike=1;
+        }
+
+        local_ellipse.build(exclusion_points);
+
+        printf("    exclusion zones %d\n",_exclusion_zones.ct());
 
         i_particle=i_next;
 
         volume=1.0;
         for(i=0;i<_chifn->get_dim();i++){
-            volume*=local_exclusion_zones(local_exclusion_zones.ct()-1)->radii(i);
+            volume*=local_ellipse.radii(i);
         }
-        if(volume>volume_0){
+        if(in_old_ones==0 && volume>volume_0){
             is_a_strike=0;
             volume_0=volume;
         }
