@@ -85,6 +85,17 @@ void dalex::search(){
         }
     }
 
+    array_1d<double> dd_min,dd_min_sorted;
+    for(i=0;i<to_use.get_dim();i++){
+        dd_min.set(i,0.0);
+        for(j=0;j<_chifn->get_dim();j++){
+           mu=_chifn->get_pt(to_use.get_data(i),j)-_chifn->get_pt(mindex(),j);
+            dd_min.add_val(i,power(mu/_chifn->get_characteristic_length(j),2));
+        }
+    }
+
+    sort(dd_min, dd_min_sorted, to_use);
+
     for(i=0;i<to_kick.get_dim();i++){
         _explorers.kick(to_kick.get_data(i));
     }
