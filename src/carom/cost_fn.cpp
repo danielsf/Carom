@@ -3,6 +3,7 @@
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
     _called=0;
+    _flatten=0;
 
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
@@ -116,6 +117,9 @@ double cost_fn::operator()(const array_1d<double> &pt){
     }
     else{
         exp_term=1.0;
+        if(_flatten==1){
+            mu=_chifn->target();
+        }
     }
 
     return mu-1.0*delta*distance*exp_term;

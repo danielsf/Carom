@@ -18,6 +18,9 @@ class cost_fn : public function_wrapper{
             _just_median=1;
         }
 
+        void flatten(){
+            _flatten=1;
+        }
 
         void copy_bases(array_2d<double> &out){
             int i;
@@ -57,6 +60,7 @@ class cost_fn : public function_wrapper{
 
         void _set_norm();
         array_1d<double> _norm;
+        int _flatten;
 
 };
 
