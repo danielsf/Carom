@@ -1391,7 +1391,7 @@ void dalex::tendril_search(int specified){
             strikes=0;
         }
 
-        printf("    volume %e from %e-- %d; %e\n",
+        printf("    volume %e from %e-- %d; chifn(i_next) %e\n",
                volume,old_volume,_exclusion_zones.ct(),_chifn->get_fn(i_next));
         printf("    strikes %d use_median %d\n",strikes,use_median);
 
