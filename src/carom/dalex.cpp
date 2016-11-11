@@ -1332,6 +1332,7 @@ void dalex::tendril_search(int specified){
     volume_0=volume;
 
     int in_old_ones;
+    double old_volume;
 
     while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
@@ -1360,6 +1361,7 @@ void dalex::tendril_search(int specified){
 
         i_particle=i_next;
 
+        old_volume=volume_0;
         volume=1.0;
         for(i=0;i<_chifn->get_dim();i++){
             volume*=local_ellipse.radii(i);
@@ -1387,7 +1389,8 @@ void dalex::tendril_search(int specified){
             strikes=0;
         }
 
-        printf("    volume %e -- %d\n",volume,_exclusion_zones.ct());
+        printf("    volume %e from %e-- %d; %e\n",
+               volume,old_volume,_exclusion_zones.ct(),_chifn->get_fn(i_next));
         printf("    strikes %d use_median %d\n",strikes,use_median);
 
     }
