@@ -1128,6 +1128,10 @@ int dalex::simplex_boundary_search(int specified, int use_median,
         }
     }
 
+    if(i_min<0){
+        return 1;
+    }
+
     array_1d<int> path_row;
     path_row.set_name("path_row");
 
@@ -1352,6 +1356,10 @@ void dalex::tendril_search(int specified){
         if(in_old_ones==0 && volume>volume_0){
             is_a_strike=0;
             volume_0=volume;
+        }
+
+        if(_chifn->get_fn(i_next)>target()){
+            is_a_strike=1;
         }
 
         if(is_a_strike==1){
