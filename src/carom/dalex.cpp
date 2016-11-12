@@ -1064,15 +1064,29 @@ int dalex::simplex_boundary_search(int specified, int use_median,
     }
 
     if(associates.get_dim()==0){
-        for(i=0;i<_good_points.get_dim();i++){
-            associates.add(_good_points.get_data(i));
+        associates.add(_chifn->mindex());
+        for(i=0;i<_basis_associates.get_dim();i++){
+            if(_basis_associates.get_data(i)!=_chifn->mindex()){
+                associates.add(_basis_associates.get_data(i));
+            }
         }
+    }
+
+    if(associates.get_dim()<_chifn->get_dim()){
+        printf("WARNING for some reason associates %d less than dim %d\n",
+        associates.get_dim(),_chifn->get_dim());
+        exit(1);
     }
 
     cost_fn dchifn(_chifn,associates);
     array_2d<double> cost_bases;
+    array_1d<double> cost_norm;
     cost_bases.set_name("dalex_simplex_boundary_cost_bases");
+    cost_norm.set_name("dalex_simplex_boundary_cost_norm");
     dchifn.copy_bases(cost_bases);
+    for(i=0;i<_chifn->get_dim();i++){
+        cost_norm.set(i,dchifn.get_norm(i));
+    }
 
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
 
@@ -1102,7 +1116,7 @@ int dalex::simplex_boundary_search(int specified, int use_median,
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
+                trial.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*cost_norm.get_data(i)*0.01);
             }
             seed.add_row(trial);
         }
