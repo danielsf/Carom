@@ -57,10 +57,6 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
 
 double cost_fn::nn_distance(const array_1d<double> &pt){
-    if(_associates.get_dim()==0){
-        return 0.0;
-    }
-
     double dd;
     int i,j;
 
@@ -74,6 +70,9 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         return sqrt(dd);
     }
 
+    if(_associates.get_dim()==0){
+        return 0.0;
+    }
     double dd_min=2.0*exception_value;
 
     for(i=0;i<_associates.get_dim();i++){
@@ -223,9 +222,7 @@ void cost_fn::_random_set_bases(){
 
 
 void cost_fn::_set_norm(){
-    if(_associates.get_dim()<_chifn->get_dim()){
-        return;
-    }
+
     _norm.reset_preserving_room();
 
     double component;
