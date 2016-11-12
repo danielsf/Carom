@@ -1322,7 +1322,7 @@ void dalex::tendril_search(int specified){
     dir2.set_name("dalex_simplex_boundary_dir2");
     trial_center.set_name("dalex_simplex_boundary_trial_center");
 
-    array_1d<double> fall_back;
+    array_1d<int> fall_back;
     fall_back.set_name("dalex_simplex_boundary_fall_back");
     int ct_last;
 
