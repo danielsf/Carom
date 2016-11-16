@@ -256,7 +256,8 @@ void maps::search(int limit){
     double min0=_chifn.chimin();
     printf("before init min %e\n",_chifn.chimin());
     mcmc_init();
-    printf("min now %e -> %e\n",min0,_chifn.chimin());
+    printf("min now %e -> %e; %d %d\n",
+    min0,_chifn.chimin(),_chifn.mindex(),_chifn.get_pts());
     printf("called %d\n",_chifn.get_pts());
 
     _cloud.set_limit(limit);
