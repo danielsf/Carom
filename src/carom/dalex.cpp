@@ -1377,8 +1377,8 @@ void dalex::tendril_search(int specified){
         }
         if(in_old_ones==0 && volume>volume_0){
             is_a_strike=0;
-            volume_0=volume;
         }
+        volume_0=volume;
 
         if(is_a_strike==0 && in_old_ones==1){
             printf("WARNING is_a_strike %d; in_old_ones %d; should not happen\n",
