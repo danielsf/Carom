@@ -147,7 +147,7 @@ class dalex{
 
         double delta_chisq(){
             safety_check("delta_chisq");
-            return target()-_chifn->chimin();
+            return target()-chimin();
         }
 
         double target(){
