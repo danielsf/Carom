@@ -145,6 +145,11 @@ class dalex{
 
         }
 
+        double delta_chisq(){
+            safety_check("delta_chisq");
+            return target()-_chifn->chimin();
+        }
+
         double target(){
             safety_check("target");
             return _target_factor*_chifn->target();
