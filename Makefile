@@ -44,6 +44,14 @@ test_containers: object/containers.o src/tests/test_containers.cpp object/goto_t
 	$(gg) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
 
+object/ellipse.o: object/goto_tools.o object/containers.o \
+include/ellipse.h src/utils/ellipse.cpp
+	$(gg) -c -o object/ellipse.o src/utils/ellipse.cpp
+
+test_ellipse_creator: object/ellipse.o src/tests/test_ellipse_creator.cpp
+	$(gg) -o bin/test_ellipse_creator src/tests/test_ellipse_creator.cpp \
+	object/containers.o object/goto_tools.o object/ellipse.o
+
 diagnose_containers: object/containers.o src/tests/diagnose_containers.cpp object/goto_tools.o
 	$(gg) -o bin/diagnose_containers src/tests/diagnose_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
@@ -169,7 +177,8 @@ object/chisq_wrapper.o object/cost_fn.o
 	$(gg) -c -o object/explorers.o src/carom/explorers.cpp
 
 object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
-object/goto_tools.o object/chisq_wrapper.o object/simplex.o object/explorers.o
+object/goto_tools.o object/chisq_wrapper.o object/simplex.o object/explorers.o \
+object/ellipse.o
 	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
 
 object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializer.h \
@@ -186,7 +195,7 @@ include/exampleLikelihoods.h object/jellyBean.o
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
 object/simplex.o object/cost_fn.o object/eigen_wrapper.o include/search_types.h \
-object/dalex.o object/maps_initializer.o
+object/dalex.o object/maps_initializer.o object/ellipse.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
 test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
@@ -207,14 +216,13 @@ object/simplex.o object/chisq_wrapper.o
 	object/jellyBean.o object/wrappers.o object/simplex.o \
 	object/kd.o object/chisq_wrapper.o
 
-
-
 jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
-object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o
+object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
+object/ellipse.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/maps.o object/jellyBean.o \
+	object/cost_fn.o object/maps.o object/jellyBean.o object/ellipse.o \
         object/dalex.o object/maps_initializer.o object/explorers.o \
 	$(LIBRARIES)
 

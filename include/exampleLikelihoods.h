@@ -140,6 +140,112 @@ class gaussianJellyBean12 : public jellyBeanData{
 };
 
 
+
+class gaussianJellyBean8 : public jellyBeanData{
+
+    public:
+        gaussianJellyBean8() :
+        jellyBeanData(8,1,1.0,100,0.4){
+            Ran constructor_dice(44);
+            int i;
+
+            _widths.set(0,0,100.0);
+            _widths.set(0,1,2.0);
+            _parabola_curvature=0.5;
+
+            for(i=2;i<8;i++){
+                _widths.set(0,i,0.5+3.0*constructor_dice.doub());
+            }
+        }
+};
+
+class nonGaussianLump8 : public gaussianJellyBean8{
+
+    public:
+        nonGaussianLump8(){}
+
+    virtual void convert_params(const array_1d<double> &pt_in, array_1d<double> &out, int ic){
+        array_1d<double> pt;
+        pt.set_name("convert_params_pt");
+        project_to_basis(pt_in,pt);
+
+        int ix;
+        for(ix=0;ix<_dim;ix++){
+            if(ix%4==3){
+                if(pt.get_data(ix)>_centers.get_data(ic,ix)){
+                    out.set(ix,log(1.0+(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
+                }
+                else{
+                    out.set(ix,0.3*(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+                }
+            }
+            else{
+                out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+            }
+        }
+
+        double xx;
+        for(ix=0;ix<_dim;ix++){
+            if(ix%4!=2){
+                out.multiply_val(ix,0.01);
+            }
+            else{
+                xx=out.get_data(ix);
+                if(xx>0.1){
+                    out.set(ix,1.0+0.1*(xx-1.0));
+                }
+            }
+        }
+
+
+    }
+
+};
+
+class nonGaussianLump12 : public gaussianJellyBean12{
+
+    public:
+        nonGaussianLump12(){}
+
+    virtual void convert_params(const array_1d<double> &pt_in, array_1d<double> &out, int ic){
+        array_1d<double> pt;
+        pt.set_name("convert_params_pt");
+        project_to_basis(pt_in,pt);
+
+        int ix;
+        for(ix=0;ix<_dim;ix++){
+            if(ix%4==3){
+                if(pt.get_data(ix)>_centers.get_data(ic,ix)){
+                    out.set(ix,log(1.0+(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix)));
+                }
+                else{
+                    out.set(ix,0.3*(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+                }
+            }
+            else{
+                out.set(ix,(pt.get_data(ix)-_centers.get_data(ic,ix))/_widths.get_data(ic,ix));
+            }
+        }
+
+        double xx;
+        for(ix=0;ix<_dim;ix++){
+            if(ix%4!=2){
+                out.multiply_val(ix,0.01);
+            }
+            else{
+                xx=out.get_data(ix);
+                if(xx>0.1){
+                    out.set(ix,1.0+0.1*(xx-1.0));
+                }
+            }
+        }
+
+
+    }
+
+};
+
+
 class gaussianJellyBean24 : public jellyBeanData{
 
     public:

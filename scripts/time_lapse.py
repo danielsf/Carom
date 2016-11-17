@@ -20,7 +20,7 @@ if __name__ == "__main__":
     
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161022")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161111")
 
     multinest_file_list = []
     multinest_scatter_file_list = []
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
         control_data[dim] = np.genfromtxt(control_file_name, dtype=control_dtype)
 
-    dalex_name = os.path.join(data_dir, "jellyBean_d4_s1068_output.sav")
+    dalex_name = os.path.join(data_dir, "jellyBean_d4_s762_output.sav")
     
     (x_grid, y_grid, dalex_chisq_min, dalex_target,
      dalex_data) = scatter_from_carom(dalex_name, 4, 0, 1, delta_chi=9.49)

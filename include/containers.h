@@ -705,7 +705,7 @@ public:
 
     *myArray2d(i) behaves just like an array_1d
     */
-    inline array_1d<T> operator()(int dex){
+    inline array_1d<T> operator()(int dex) const{
 
         if(dex<0 || dex>=_rows){
             printf("WARNING asked for row %d but only have %d\n",dex,_rows);

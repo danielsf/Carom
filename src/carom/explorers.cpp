@@ -70,6 +70,8 @@ void explorers::set_norm(){
 void explorers::reset(){
     _particles.reset_preserving_room();
     _attempted=0;
+    _scalar_acceptance=0;
+    _scalar_steps=0;
     _accepted.reset_preserving_room();
     _req_temp.reset_preserving_room();
     _temp=1.0;
@@ -82,34 +84,30 @@ void explorers::initialize_particles(){
     _accepted.reset_preserving_room();
     _req_temp.reset_preserving_room();
 
-    array_1d<double> min,max;
-    min.set_name("exp_init_min");
-    max.set_name("exp_init_max");
-
-    int i,j;
-    double xx;
-    for(i=0;i<_associates.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            xx=_chifn->get_pt(_associates.get_data(i),j);
-            if(i==0 || xx<min.get_data(j)){
-                min.set(j,xx);
-            }
-            if(i==0 || xx>max.get_data(j)){
-                max.set(j,xx);
-            }
-        }
-    }
-
+    array_1d<double> center;
+    array_1d<double> dir;
+    int i, j;
     array_1d<double> trial;
     trial.set_name("exp_init_trial");
     int i_found;
     double span,mu;
 
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,_chifn->get_pt(_chifn->mindex(),i));
+    }
+
     while(_particles.get_rows()<_n_particles){
         for(i=0;i<_chifn->get_dim();i++){
-            span=max.get_data(i)-min.get_data(i);
-            //sfd this should be 2.0*(double()-0.5)*span
-            trial.set(i,2.0*(_chifn->random_double()-0.5)*span+min.get_data(i));
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        for(i=0;i<_chifn->get_dim();i++){
+            trial.set(i,center.get_data(i));
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.add_val(j,1.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
+            }
         }
         _chifn->evaluate(trial,&mu,&i_found);
         if(i_found>=0){
@@ -147,15 +145,34 @@ void explorers::bump_particles(){
 }
 
 
-void explorers::sample(int n_steps){
+void explorers::kick(int dex){
+     array_1d<double> dir;
+     dir.set_name("explorers_kick_dir");
+     int i;
+     for(i=0;i<_chifn->get_dim();i++){
+         dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+     }
+     dir.normalize();
+     for(i=0;i<_chifn->get_dim();i++){
+         _particles.set(dex,i,_chifn->get_pt(_chifn->mindex(),i));
+     }
+     int j;
+     for(i=0;i<_chifn->get_dim();i++){
+         for(j=0;j<_chifn->get_dim();j++){
+             _particles.add_val(dex,j,1.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
+         }
+     }
+}
 
-    if(_particles.get_rows()!=_n_particles){
-        initialize_particles();
-    }
+void explorers::sample(int n_steps){
 
     cost_fn dchifn(_chifn, _associates);
     dchifn.copy_bases(_bases);
     set_norm();
+
+    if(_particles.get_rows()!=_n_particles){
+        initialize_particles();
+    }
 
     _mindex=-1;
 
@@ -187,17 +204,7 @@ void explorers::sample(int n_steps){
 
     int has_been_adjusted;
 
-    array_1d<double> acceptance_rate,acceptance_rate_sorted;
-    array_1d<int> acceptance_rate_dex;
-    acceptance_rate.set_name("exp_sample_acceptance_rate");
-    acceptance_rate_sorted.set_name("exp_sample_acceptance_rate_sorted");
-    acceptance_rate_dex.set_name("exp_sample_acceptance_rate_dex");
-
-    double med_acc;
-
     printf("    starting sampling with %e\n",_mu_min);
-
-    int scalar_acceptance=0;
 
     for(i_step=0;i_step<n_steps;i_step++){
 
@@ -227,9 +234,9 @@ void explorers::sample(int n_steps){
             }
 
             _req_temp.add(needed_temp);
-
+            _scalar_steps++;
             if(accept_it==1){
-                scalar_acceptance++;
+                _scalar_acceptance++;
                 _accepted.add_val(ip,1);
                 _mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
@@ -245,15 +252,9 @@ void explorers::sample(int n_steps){
         _attempted++;
 
         if(_attempted>0 && _attempted%(2*_chifn->get_dim())==0){
-            acceptance_rate_dex.reset_preserving_room();
-            acceptance_rate_sorted.reset_preserving_room();
-            for(i=0;i<_accepted.get_dim();i++){
-                acceptance_rate.set(i,double(_accepted.get_data(i))/double(_attempted));
-                acceptance_rate_dex.set(i,i);
-            }
-            sort(acceptance_rate, acceptance_rate_sorted, acceptance_rate_dex);
-            med_acc=acceptance_rate_sorted.get_data(acceptance_rate_dex.get_dim()/2);
-            if(med_acc>0.75 || med_acc<0.3333){
+            printf("assessing temp\n");
+            if(_scalar_acceptance>6*_scalar_steps/10 ||
+               _scalar_acceptance<4*_scalar_steps/10){
                 old_temp=_temp;
                 req_temp_sorted.reset_preserving_room();
                 req_temp_dex.reset_preserving_room();
@@ -266,6 +267,8 @@ void explorers::sample(int n_steps){
                     _req_temp.reset();
                     _accepted.zero();
                     _attempted=0;
+                    _scalar_acceptance=0;
+                    _scalar_steps=0;
                 }
             }
         }
@@ -274,6 +277,7 @@ void explorers::sample(int n_steps){
 
     printf("    sampling min %e\n",_mu_min);
     printf("    temp %e\n",_temp);
-    printf("    accepted %d steps %d\n",scalar_acceptance,
-    _n_particles*n_steps);
+    printf("    accepted %d steps %d\n",_scalar_acceptance,
+    _scalar_steps);
+    printf("    ct %d\n",_chifn->get_pts());
 }

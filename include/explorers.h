@@ -15,6 +15,9 @@ class explorers{
             _chifn=NULL;
             _mindex=-1;
             _temp=1.0;
+            _scalar_acceptance=0;
+            _attempted=0;
+            _scalar_steps=0;
             _associates.set_name("explorers_associates");
             _median_associate.set_name("explorers_mean_associate");
             _particles.set_name("explorers_particles");
@@ -67,6 +70,7 @@ class explorers{
         void reset();
         void initialize_particles();
         void bump_particles();
+        void kick(int);
         void sample(int);
 
     private:
@@ -84,6 +88,8 @@ class explorers{
         array_1d<int> _accepted;
         int _attempted;
         array_2d<double> _particles;
+        int _scalar_acceptance;
+        int _scalar_steps;
 
 
 
