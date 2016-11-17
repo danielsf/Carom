@@ -63,6 +63,7 @@ void dalex::search(){
     int has_explored=0;
 
     iterate_on_minimum();
+    double min_00 = chimin();
 
     int is_outside;
     while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
@@ -100,7 +101,7 @@ void dalex::search(){
         _explorers.kick(to_kick.get_data(i));
     }
 
-    for(i=0;i<to_use.get_dim();i++){
+    for(i=0;i<to_use.get_dim() && chimin()>min_00-delta_chisq();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
             if(_exclusion_zones(j)->contains(_chifn->get_pt(to_use.get_data(i)))==1){
@@ -116,6 +117,12 @@ void dalex::search(){
     }
     _update_good_points(pts_0);
 
+    if(chimin()<min_00-delta_chisq()+1.0){
+        assess_good_points();
+        _explorers.reset();
+        _tendril_path.reset_preserving_room();
+        _exclusion_zones.reset();
+    }
 }
 
 
