@@ -1427,6 +1427,7 @@ void dalex::iterate_on_minimum(){
 
     double min_1=-2.0*exception_value;
     int i,j;
+    int find_new_bases=0;
 
     if(_good_points.get_dim()==0){
         find_bases();
@@ -1443,13 +1444,14 @@ void dalex::iterate_on_minimum(){
         _explorers.reset();
         _tendril_path.reset_preserving_room();
         _exclusion_zones.reset();
+        _min_00=chimin();
+        find_new_bases=1;
     }
 
-    if(chimin()<_min_00-0.01){
+    if(chimin()<_min_00-0.01 || find_new_bases==1){
         find_bases();
     }
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
-    _min_00=chimin();
 
 }
 
