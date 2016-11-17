@@ -18,7 +18,7 @@ if __name__ == "__main__":
     dalex_dir = os.path.join(physics_dir, "Carom")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161111")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161116")
 
     dalex_name = os.path.join(data_dir, "lump_output.sav")
     multinest_name = os.path.join(multinest_dir,
