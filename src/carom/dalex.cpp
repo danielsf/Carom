@@ -96,10 +96,6 @@ void dalex::search(){
 
     sort(dd_min, dd_min_sorted, to_use);
 
-    for(i=0;i<to_kick.get_dim();i++){
-        _explorers.kick(to_kick.get_data(i));
-    }
-
     for(i=0;i<to_use.get_dim() && chimin()>_min_00-_reset_fraction*delta_chisq();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
@@ -115,6 +111,11 @@ void dalex::search(){
         }
     }
     _update_good_points(pts_0);
+
+    for(i=0;i<to_kick.get_dim();i++){
+        _explorers.kick(to_kick.get_data(i));
+    }
+
 }
 
 
