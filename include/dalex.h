@@ -37,6 +37,8 @@ class dalex{
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
             _minimizers.set_name("dalex_minimizers");
+            _min_00=2.0*exception_value;
+            _reset_fraction=0.1;
         };
 
         void build(chisq_wrapper*);
@@ -180,6 +182,8 @@ class dalex{
         explorers _explorers;
         explorers _min_explorers;
         int _last_checked_good;
+        double _min_00;
+        double _reset_fraction;
 
         /////code related to minimizers
         array_1d<int> _minimizers;

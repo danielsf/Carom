@@ -63,7 +63,6 @@ void dalex::search(){
     int has_explored=0;
 
     iterate_on_minimum();
-    double min_00 = chimin();
 
     int is_outside;
     while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
@@ -101,7 +100,7 @@ void dalex::search(){
         _explorers.kick(to_kick.get_data(i));
     }
 
-    for(i=0;i<to_use.get_dim() && chimin()>min_00-0.5*delta_chisq();i++){
+    for(i=0;i<to_use.get_dim() && chimin()>_min_00-_reset_fraction*delta_chisq();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
             if(_exclusion_zones(j)->contains(_chifn->get_pt(to_use.get_data(i)))==1){
@@ -116,13 +115,6 @@ void dalex::search(){
         }
     }
     _update_good_points(pts_0);
-
-    if(chimin()<min_00-0.5*delta_chisq()+1.0){
-        assess_good_points();
-        _explorers.reset();
-        _tendril_path.reset_preserving_room();
-        _exclusion_zones.reset();
-    }
 }
 
 
@@ -1431,7 +1423,6 @@ void dalex::tendril_search(int specified){
 void dalex::iterate_on_minimum(){
     printf("iterating with %e\n",chimin());
     double min_0=chimin();
-    double min_00=min_0;
 
     double min_1=-2.0*exception_value;
     int i,j;
@@ -1446,17 +1437,18 @@ void dalex::iterate_on_minimum(){
         simplex_search(mindex());
         min_1=chimin();
     }
-    if(chimin()<min_00-2.0){
+    if(chimin()<_min_00-_reset_fraction*delta_chisq()){
         _good_points.reset_preserving_room();
         _explorers.reset();
         _tendril_path.reset_preserving_room();
         _exclusion_zones.reset();
     }
 
-    if(chimin()<min_00-0.01){
+    if(chimin()<_min_00-0.01){
         find_bases();
     }
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
+    _min_00=chimin();
 
 }
 
