@@ -88,6 +88,16 @@ class dalex{
            return sqrt(dd);
        }
 
+      double cardinal_distance(int i1, int i2){
+          int i;
+          double dd=0.0;
+          for(i=0;i<_chifn->get_dim();i++){
+              dd+=power((_chifn->get_pt(i1,i)-_chifn->get_pt(i2,i))/
+                         _chifn->get_characteristic_length(i),2);
+          }
+          return sqrt(dd);
+      }
+
        void add_good_point(int ii){
            if(_chifn->get_fn(ii)<target() && _good_points.contains(ii)==0){
                _good_points.add(ii);
