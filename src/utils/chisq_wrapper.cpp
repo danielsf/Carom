@@ -668,6 +668,8 @@ void chisq_wrapper::write_pts(){
     }
     FILE *output;
 
+    int this_batch=get_pts()-_last_written;
+
     int i,j;
     output=fopen(_outname,"w");
     fprintf(output,"# ");
@@ -697,14 +699,15 @@ void chisq_wrapper::write_pts(){
         chimin(),
         target(),
         double(time(NULL))-_time_started,
-        (double(time(NULL))-_time_started)/double(get_pts()),
+        (double(time(NULL))-_time_started)/double(this_batch),
         get_time_spent(),
         get_time_spent()/double(get_pts()),
-        (double(time(NULL))-_time_started-get_time_spent())/double(get_pts()));
+        (double(time(NULL))-_time_started-get_time_spent())/double(this_batch));
 
     fprintf(output,"\n");
     fclose(output);
 
     _last_written=get_pts();
+    _time_started=double(time(NULL));
 
 }
