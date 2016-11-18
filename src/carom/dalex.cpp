@@ -1230,7 +1230,7 @@ void dalex::explore(){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
 
-    if(_explorers.get_n_particles()==0){
+    if(_explorers.get_n_particles()<2*_chifn->get_dim()){
         _explorers.set_n_particles(2*_chifn->get_dim());
     }
     array_1d<int> associates;
