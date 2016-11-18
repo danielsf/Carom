@@ -201,7 +201,7 @@ void explorers::sample(int n_steps){
 
     int has_been_adjusted;
 
-    printf("    starting sampling with %e\n",_mu_min);
+    printf("    starting sampling with %e -- %d\n",_mu_min,_n_particles);
 
     for(i_step=0;i_step<n_steps;i_step++){
 
