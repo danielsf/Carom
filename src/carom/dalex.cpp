@@ -1366,7 +1366,6 @@ void dalex::tendril_search(int specified){
 
         ct_last=_chifn->get_pts();
         in_old_ones=simplex_boundary_search(i_particle, use_median, _exclusion_zones, &i_next);
-        compass_search(local_ellipse);
         end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
