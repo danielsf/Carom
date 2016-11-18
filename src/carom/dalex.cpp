@@ -1438,6 +1438,7 @@ int dalex::tendril_search(int specified){
     int i_start=_chifn->get_pts();
     int new_ct=0;
     evaluate(center,&mu,&i_found);
+    printf("center mu %e (target %e)\n",mu,target());
     if(mu<target()){
         printf("doing compass search\n");
         for(i_dir=0;i_dir<_chifn->get_dim();i_dir++){
