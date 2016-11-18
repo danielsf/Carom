@@ -85,6 +85,8 @@ void dalex::search(){
         }
     }
 
+    tendril_search(mindex());
+
     array_1d<double> dd_min,dd_min_sorted;
     for(i=0;i<to_use.get_dim();i++){
         dd_min.set(i,0.0);
