@@ -1285,7 +1285,7 @@ void dalex::min_explore(int n_particles, int n_steps){
     _update_good_points(pt_0);
 }
 
-void dalex::tendril_search(int specified){
+int dalex::tendril_search(int specified){
 
     int i,j,k;
     int pt_0=_chifn->get_pts();
@@ -1419,6 +1419,8 @@ void dalex::tendril_search(int specified){
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            strikes,_chifn->get_pts());
+
+    return i_next;
 }
 
 void dalex::iterate_on_minimum(){
