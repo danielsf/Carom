@@ -18,6 +18,7 @@ class explorers{
             _scalar_acceptance=0;
             _attempted=0;
             _scalar_steps=0;
+            _n_particles=0;
             _associates.set_name("explorers_associates");
             _median_associate.set_name("explorers_mean_associate");
             _particles.set_name("explorers_particles");

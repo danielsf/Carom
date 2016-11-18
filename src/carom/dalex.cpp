@@ -100,6 +100,8 @@ void dalex::search(){
         _explorers.kick(to_kick.get_data(i));
     }
 
+    int i_end;
+
     for(i=0;i<to_use.get_dim();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
@@ -108,7 +110,8 @@ void dalex::search(){
             }
         }
         if(is_outside==1){
-            tendril_search(to_use.get_data(i));
+            i_end = tendril_search(to_use.get_data(i));
+            _explorers.add_particle(_chifn->get_pt(i_end));
         }
         if(_limit>0 && _chifn->get_pts()>_limit){
             break;
@@ -1223,7 +1226,9 @@ void dalex::explore(){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
 
-    _explorers.set_n_particles(3*(_chifn->get_dim()+1));
+    if(_explorers.get_n_particles()==0){
+        _explorers.set_n_particles(2*_chifn->get_dim());
+    }
     array_1d<int> associates;
     associates.set_name("dalex_explore_associates");
     int skip;
