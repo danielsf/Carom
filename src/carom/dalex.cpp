@@ -1455,7 +1455,7 @@ int dalex::tendril_search(int specified){
                 exclusion_points.add_row(_chifn->get_pt(i));
             }
         }
-        printf("added %d new points\n",new_ct);
+        printf("added %d new points; called %d\n",new_ct,_chifn->get_pts()-i_start);
         local_ellipse.build(exclusion_points);
     }
 
