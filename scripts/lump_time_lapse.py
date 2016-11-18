@@ -18,9 +18,9 @@ if __name__ == "__main__":
     dalex_dir = os.path.join(physics_dir, "Carom")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161111")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161117")
 
-    dalex_name = os.path.join(data_dir, "lump_output.sav")
+    dalex_name = os.path.join(data_dir, "lump_d12_s13_output.sav")
     multinest_name = os.path.join(multinest_dir,
                                  "nonGaussianLump_d12_s99_n300_t1.00e-03.txt")
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
                                       data=m_data,
                                       delta_chi=delta_chisq, limit=limit)
 
-
+        print 'len d_data ',len(d_data)
         #time_list[len(time_list)-1] = len(m_data)
         mult_min_list.append(chisq_min_mult)
         dalex_min_list.append(chisq_min_dalex)
