@@ -1022,6 +1022,11 @@ int dalex::simplex_boundary_search(int specified, int use_median,
     int pt_start=_chifn->get_pts();
     assess_good_points();
 
+    if(_chifn->get_dim()>9 && specified>=0){
+        printf("    starting from %e -- %e %e\n",
+        _chifn->get_fn(specified),_chifn->get_pt(specified,6), _chifn->get_pt(specified,9));
+    }
+
     int i_node,i_pt;
     int i,j,k;
     double xmin,xmax,xx;
