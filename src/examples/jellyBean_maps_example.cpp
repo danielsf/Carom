@@ -195,7 +195,7 @@ carom_test.set_confidence_limit(confidence_limit);
 carom_test.set_chisquared(chisq);
 
 //how often will APS stop and write its output
-carom_test.set_write_every(3000);
+carom_test.set_write_every(50000);
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;

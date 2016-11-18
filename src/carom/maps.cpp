@@ -1,22 +1,18 @@
 #include "maps.h"
 
 maps::maps(){
-    _write_every=3000;
     _last_wrote_log=-1;
-    _last_written=0;
     _ct_dalex=0;
     _last_did_min=0;
     _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
-    _time_started=double(time(NULL));
     _good_points.set_name("maps_good_points");
     _good_points.set_room(100000);
 }
 
 maps::~maps(){
-    write_pts();
-
+    _chifn.write_pts();
 }
 
 double maps::evaluate(array_1d<double> &pt, int *dex){
@@ -96,7 +92,7 @@ void maps::set_target(double tt){
 }
 
 void maps::set_write_every(int ww){
-    _write_every=ww;
+    _chifn.set_write_every(ww);
 }
 
 int maps::get_dim(){
@@ -132,7 +128,6 @@ void maps::initialize(int npts){
     _cloud.build(&_chifn);
     _cloud.set_log(&_log);
     assess_good_points(0);
-    write_pts();
 }
 
 
@@ -198,52 +193,6 @@ void maps::write_log(){
 
 }
 
-
-void maps::write_pts(){
-    FILE *output;
-
-    int i,j;
-    output=fopen(_outname,"w");
-    fprintf(output,"# ");
-    for(i=0;i<_chifn.get_dim();i++){
-        fprintf(output,"p%d ",i);
-    }
-    fprintf(output,"chisq mu sig ling\n");
-    for(i=0;i<_chifn.get_pts();i++){
-        for(j=0;j<_chifn.get_dim();j++){
-            fprintf(output,"%.18e ",_chifn.get_pt(i,j));
-        }
-        fprintf(output,"%.18e 0 0 0\n",_chifn.get_fn(i));
-    }
-    fclose(output);
-
-    if(_last_written==0){
-        output=fopen(_timingname,"w");
-        fprintf(output,"#seed %d\n",_chifn.get_seed());
-    }
-    else{
-        output=fopen(_timingname,"a");
-    }
-
-    fprintf(output,"%d %d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e",
-        _chifn.get_pts(),
-        _chifn.get_called(),
-        _chifn.chimin(),
-        _chifn.target(),
-        double(time(NULL))-_time_started,
-        (double(time(NULL))-_time_started)/double(_chifn.get_pts()),
-        _chifn.get_time_spent(),
-        _chifn.get_time_spent()/double(_chifn.get_pts()),
-        (double(time(NULL))-_time_started-_chifn.get_time_spent())/double(_chifn.get_pts()));
-
-    fprintf(output,"\n");
-    fclose(output);
-
-    write_log();
-    _last_written=_chifn.get_pts();
-
-}
-
 void maps::mcmc_init(){
     maps_initializer initializer;
     initializer.set_chifn(&_chifn);
@@ -254,6 +203,8 @@ void maps::search(int limit){
     int pt_start;
 
     double min0=_chifn.chimin();
+    _chifn.set_outname(_outname);
+    _chifn.set_timingname(_timingname);
     printf("before init min %e\n",_chifn.chimin());
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
@@ -266,10 +217,6 @@ void maps::search(int limit){
         pt_start=_chifn.get_pts();
         _cloud.search();
         _ct_dalex+=_chifn.get_pts()-pt_start;
-
-        if(_chifn.get_pts()-_last_written>_write_every){
-            write_pts();
-        }
     }
 
     int i;
@@ -278,5 +225,5 @@ void maps::search(int limit){
         printf("    %.3e\n",_chifn.get_pt(_chifn.mindex(),i));
     }
     printf("\n\n");
-    write_pts();
+    _chifn.write_pts();
 }
