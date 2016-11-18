@@ -73,42 +73,19 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     if(_associates.get_dim()==0){
         return 0.0;
     }
-
-    int n_dd = _chifn->get_dim();
-    array_1d<double> dd_arr,dd_arr_sorted;
-    array_1d<int> dd_dex;
-    int target_dex;
+    double dd_min=2.0*exception_value;
 
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
             dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
         }
-
-        if(dd_arr.get_dim()<n_dd){
-            dd_arr.add(dd);
-            dd_dex.add(i);
-            if(dd_arr.get_dim()==n_dd){
-                sort(dd_arr, dd_arr_sorted, dd_dex);
-            }
-        }
-        else{
-            if(dd<dd_arr_sorted.get_data(n_dd-1)){
-                for(j=0;j<n_dd-1 && dd_arr_sorted.get_data(j)<dd;j++);
-                target_dex=j;
-                for(j=n_dd-1;j>target_dex;j--){
-                    dd_arr_sorted.set(j,dd_arr_sorted.get_data(j-1));
-                }
-                dd_arr_sorted.set(target_dex, dd);
-            }
+        if(dd<dd_min){
+            dd_min=dd;
         }
     }
 
-    double ans=0.0;
-    for(j=0;j<n_dd;j++){
-        ans+=sqrt(dd_arr_sorted.get_data(j));
-    }
-    return ans/double(n_dd);
+    return sqrt(dd_min);
 }
 
 
