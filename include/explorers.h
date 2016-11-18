@@ -26,7 +26,6 @@ class explorers{
             _min.set_name("explorers_min");
             _max.set_name("explorers_max");
             _req_temp.set_name("explorers_req_temp");
-            _accepted.set_name("explorers_accepted");
             _mu_arr.set_name("explorers_mu_arr");
         }
 
@@ -85,7 +84,6 @@ class explorers{
         double _mu_min;
         int _n_particles;
         double _temp;
-        array_1d<int> _accepted;
         int _attempted;
         array_2d<double> _particles;
         int _scalar_acceptance;
