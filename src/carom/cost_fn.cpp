@@ -7,6 +7,7 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
     _norm.set_name("dchi_interior_norm");
+    _cardinal_norm.set_name("dchi_cardinal_norm");
 
     _just_median=0;
     _chifn=cc;
@@ -18,9 +19,8 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
         _associates.add(aa.get_data(i));
     }
 
-    array_1d<double> norm;
     for(i=0;i<_chifn->get_dim();i++){
-        norm.set(i,_chifn->get_characteristic_length(i));
+        _cardinal_norm.set(i,0.1*_chifn->get_characteristic_length(i));
     }
     array_1d<double> min,max;
     int j;
@@ -35,19 +35,18 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
         }
     }
 
+    double nn;
     if(min.get_dim()>0){
         for(i=0;i<_chifn->get_dim();i++){
-            if(max.get_data(i)-min.get_data(i)<norm.get_data(i)){
-                norm.set(i,max.get_data(i)-min.get_data(i));
+            nn=0.01*(max.get_data(i)-min.get_data(i));
+            if(nn>1.0e-20){
+                _cardinal_norm.set(i,0.1*nn);
             }
         }
     }
 
     for(i=0;i<_chifn->get_dim();i++){
         _median_associate.set(i,0.5*(max.get_data(i)+min.get_data(i)));
-        if(i==0 || norm.get_data(i)<_scalar_norm){
-            _scalar_norm=norm.get_data(i);
-        }
     }
 
     _set_bases();
@@ -65,7 +64,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         exit(1);
         dd=0.0;
         for(i=0;i<_chifn->get_dim();i++){
-            dd+=power((pt.get_data(i)-_median_associate.get_data(i))/_scalar_norm,2);
+            dd+=power((pt.get_data(i)-_median_associate.get_data(i))/_cardinal_norm.get_data(i),2);
         }
         return sqrt(dd);
     }
@@ -78,7 +77,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
-            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
+            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_cardinal_norm.get_data(j),2);
         }
         if(dd<dd_min){
             dd_min=dd;
