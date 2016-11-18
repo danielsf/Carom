@@ -1436,8 +1436,10 @@ int dalex::tendril_search(int specified){
     double sgn;
     int i_dir;
     int i_start=_chifn->get_pts();
+    int new_ct=0;
     evaluate(center,&mu,&i_found);
     if(mu<target()){
+        printf("doing compass search\n");
         for(i_dir=0;i_dir<_chifn->get_dim();i_dir++){
             for(sgn=-1.0;sgn<1.1;sgn+=1.0){
                 for(i=0;i<_chifn->get_dim();i++){
@@ -1448,9 +1450,11 @@ int dalex::tendril_search(int specified){
         }
         for(i=i_start;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
+                new_ct++;
                 exclusion_points.add_row(_chifn->get_pt(i));
             }
         }
+        printf("added %d new points\n",new_ct);
         local_ellipse.build(exclusion_points);
     }
 
