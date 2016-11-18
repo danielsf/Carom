@@ -31,29 +31,13 @@ void ellipse::build(const array_2d<double> &pts_in){
     _bases.reset_preserving_room();
     _radii.reset_preserving_room();
 
-    array_1d<double> dir,dir_max,min,max;
+    _find_center(pts_in);
+
+    array_1d<double> dir,dir_max;
     dir.set_name("ellipse_build_dir");
     dir_max.set_name("ellipse_build_dir_max");
-    min.set_name("ellipse_build_min");
-    max.set_name("ellipse_build_max");
+
     int i,j,k;
-    _center.set_dim(dim);
-    _center.zero();
-    for(i=0;i<n_pts;i++){
-        for(j=0;j<dim;j++){
-            if(j>=min.get_dim() || pts_in.get_data(i,j)<min.get_data(j)){
-                min.set(j,pts_in.get_data(i,j));
-            }
-            if(j>=max.get_dim() || pts_in.get_data(i,j)>max.get_data(j)){
-                max.set(j,pts_in.get_data(i,j));
-            }
-        }
-    }
-
-    for(i=0;i<dim;i++){
-        _center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
-    }
-
     double component,norm,norm_max;
 
     while(_bases.get_rows()!=dim){
@@ -104,6 +88,49 @@ void ellipse::build(const array_2d<double> &pts_in){
 
 }
 
+
+void ellipse::_find_center(const array_2d<double> &pts_in){
+    int n_pts=pts_in.get_rows();
+    int dim=pts_in.get_cols();
+
+    array_1d<double> min,max;
+    min.set_name("ellipse_build_min");
+    max.set_name("ellipse_build_max");
+    int i,j,k;
+    _center.set_dim(dim);
+    _center.zero();
+    for(i=0;i<n_pts;i++){
+        for(j=0;j<dim;j++){
+            if(j>=min.get_dim() || pts_in.get_data(i,j)<min.get_data(j)){
+                min.set(j,pts_in.get_data(i,j));
+            }
+            if(j>=max.get_dim() || pts_in.get_data(i,j)>max.get_data(j)){
+                max.set(j,pts_in.get_data(i,j));
+            }
+        }
+    }
+
+    array_1d<double> geo_center;
+    geo_center.set_name("ellipse_geo_center");
+    for(i=0;i<dim;i++){
+        geo_center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
+    }
+    double dd;
+    double ddmin;
+    for(i=0;i<pts_in.get_rows();i++){
+        dd=0.0;
+        for(j=0;j<dim;j++){
+           dd+=power((pts_in.get_data(i,j)-geo_center.get_data(j))/
+                     (max.get_data(j)-min.get_data(j)),2);
+        }
+        if(i==0 || dd<ddmin){
+            ddmin=dd;
+            for(j=0;j<dim;j++){
+                _center.set(j,pts_in.get_data(i,j));
+            }
+        }
+    }
+}
 
 void ellipse::_set_radii(const array_2d<double> &pts_in){
 
