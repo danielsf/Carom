@@ -63,6 +63,11 @@ class explorers{
             }
         }
 
+        void add_particle(const array_1d<double> &pt){
+            _particles.add_row(pt);
+            _n_particles++;
+        }
+
         void get_seed(array_2d<double>&);
 
         void set_norm();
