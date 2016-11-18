@@ -188,7 +188,7 @@ void dalex::simplex_search(array_1d<int> &specified){
 }
 
 
-int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, double tol){
+int dalex::bisection(int ilow, const array_1d<double> &dir, double local_target, double tol){
     safety_check("bisection(int, arr)");
     array_1d<double> trial_high;
     trial_high.set_name("dalex_bisection_trial_high");
@@ -1421,6 +1421,39 @@ int dalex::tendril_search(int specified){
     }
 
     local_ellipse.build(exclusion_points);
+
+    array_1d<double> center;
+    center.set_name("dalex_tendril_center");
+    array_2d<double> bases;
+    center.set_name("dalex_tendril_bases");
+
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,local_ellipse.center(i));
+    }
+
+    array_1d<double> dir;
+    dir.set_name("dalex_tendril_dir");
+    double sgn;
+    int i_dir;
+    int i_start=_chifn->get_pts();
+    evaluate(center,&mu,&i_found);
+    if(mu<target()){
+        for(i_dir=0;i_dir<_chifn->get_dim();i_dir++){
+            for(sgn=-1.0;sgn<1.1;sgn+=1.0){
+                for(i=0;i<_chifn->get_dim();i++){
+                    dir.set(i,sgn*local_ellipse.bases(i_dir,i));
+                }
+                bisection(i_found,dir,target(),0.01);
+            }
+        }
+        for(i=i_start;i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                exclusion_points.add_row(_chifn->get_pt(i));
+            }
+        }
+        local_ellipse.build(exclusion_points);
+    }
+
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            strikes,_chifn->get_pts());

@@ -59,7 +59,7 @@ class dalex{
         void min_explore(int, int);
 
         int bisection(int, int, double, double);
-        int bisection(int, array_1d<double>&, double, double);
+        int bisection(int, const array_1d<double>&, double, double);
         int bisection(const array_1d<double>&, const array_1d<double>&, double, double);
 
         double get_basis(int i, int j){
