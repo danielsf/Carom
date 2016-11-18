@@ -110,8 +110,7 @@ void dalex::search(){
             }
         }
         if(is_outside==1){
-            i_end = tendril_search(to_use.get_data(i));
-            _explorers.add_particle(_chifn->get_pt(i_end));
+            tendril_search(to_use.get_data(i));
         }
         if(_limit>0 && _chifn->get_pts()>_limit){
             break;
@@ -1295,7 +1294,7 @@ void dalex::min_explore(int n_particles, int n_steps){
     _update_good_points(pt_0);
 }
 
-int dalex::tendril_search(int specified){
+void dalex::tendril_search(int specified){
 
     int i,j,k;
     int pt_0=_chifn->get_pts();
@@ -1308,11 +1307,14 @@ int dalex::tendril_search(int specified){
 
     int i_exclude;
     int i_particle;
+    array_1d<int> end_pts;
+    end_pts.set_name("dalex_tendril_end_pts");
     array_2d<double> exclusion_points;
     array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
     simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
+    end_pts.add(i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             exclusion_points.add_row(_chifn->get_pt(i));
@@ -1362,6 +1364,7 @@ int dalex::tendril_search(int specified){
 
         ct_last=_chifn->get_pts();
         in_old_ones=simplex_boundary_search(i_particle, use_median, _exclusion_zones, &i_next);
+        end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
 
@@ -1492,7 +1495,21 @@ int dalex::tendril_search(int specified){
     printf("\n    strike out (%d strikes; %d pts)\n",
            strikes,_chifn->get_pts());
 
-    return i_next;
+    int i_best;
+    double dd_max;
+    for(i=0;i<end_pts.get_dim();i++){
+        dd=cardinal_distance(mindex(), end_pts.get_data(i));
+        if(i==0 || dd>dd_max){
+            dd_max=dd;
+            i_best=end_pts.get_data(i);
+        }
+    }
+    if(_chifn->get_dim()>9){
+        printf("    putting new explorer at %e %e\n",
+        _chifn->get_pt(i_best,6),_chifn->get_pt(i_best,9));
+    }
+    _explorers.add_particle(_chifn->get_pt(i_best));
+
 }
 
 void dalex::iterate_on_minimum(){
