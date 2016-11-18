@@ -28,7 +28,7 @@ if __name__ == "__main__":
                                         "nonGaussianLump_d12_s99_n300_t1.00e-03_carom.sav")
 
     plt.figsize = (30,30)
-    time_list = [100000, 125000, 150000, 200000, 250000]
+    time_list = [125000, 150000, 200000, 250000, 300000]
     delta_chisq = 21.03
     full_dim = 12
 
@@ -70,7 +70,6 @@ if __name__ == "__main__":
                                       data=m_data,
                                       delta_chi=delta_chisq, limit=limit)
 
-        print 'len d_data ',len(d_data)
         #time_list[len(time_list)-1] = len(m_data)
         mult_min_list.append(chisq_min_mult)
         dalex_min_list.append(chisq_min_dalex)
