@@ -1304,12 +1304,14 @@ int dalex::tendril_search(int specified){
     int i_exclude;
     int i_particle;
     array_2d<double> exclusion_points;
+    array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
     simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             exclusion_points.add_row(_chifn->get_pt(i));
+            exclusion_dex.add(i);
         }
     }
     local_ellipse.build(exclusion_points);
@@ -1361,6 +1363,7 @@ int dalex::tendril_search(int specified){
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
+                exclusion_dex.add(i);
             }
         }
         i_exclude=_chifn->get_pts();
@@ -1417,6 +1420,7 @@ int dalex::tendril_search(int specified){
     for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
+                exclusion_dex.add(i);
             }
     }
 
