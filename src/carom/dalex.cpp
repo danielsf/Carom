@@ -1442,6 +1442,26 @@ int dalex::tendril_search(int specified){
     int i_start=_chifn->get_pts();
     int new_ct=0;
     evaluate(center,&mu,&i_found);
+    double dd,ddmin;
+    if(exclusion_dex.get_dim()!=exclusion_points.get_rows()){
+        printf("WARNING %d exclusion_dex, %d exclusion_points\n",
+        exclusion_dex.get_dim(),exclusion_points.get_rows());
+        exit(1);
+    }
+    if(mu>target()){
+        printf("need to approximate center (%e)\n",mu);
+        for(i=0;i<exclusion_points.get_rows();i++){
+            dd=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                dd += power((center.get_data(j)-exclusion_points.get_data(i,j))/_chifn->get_characteristic_length(j),2);
+            }
+            if(i==0 || dd<ddmin){
+                ddmin=dd;
+                i_found=exclusion_dex.get_data(i);
+                mu=_chifn->get_fn(i_found);
+            }
+        }
+    }
     printf("center mu %e (target %e)\n",mu,target());
     if(mu<target()){
         printf("doing compass search\n");
