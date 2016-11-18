@@ -87,12 +87,12 @@ if __name__ == "__main__":
             if yy<ymin:
                 ymin=yy
 
-        d_h = plt.scatter(d_x, d_y, color='r', s=7)
-
         m_color = 'b'
         if i_fig == len(time_list)-1:
              m_true_h = plt.scatter(m_x_true, m_y_true, color='b', s=7)
              m_color = 'c'
+
+        d_h = plt.scatter(d_x, d_y, color='r', s=7)
 
         _m_h = plt.scatter(m_x, m_y, color=m_color, marker='+', s=20)
         if m_h is None:
