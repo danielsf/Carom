@@ -195,6 +195,8 @@ class dalex{
         void tendril_search(int);
         array_2d<int> _tendril_path;
 
+        void compass_search(ellipse&);
+
         int _limit;
 
         ellipse_list _exclusion_zones;

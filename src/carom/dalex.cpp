@@ -1436,69 +1436,26 @@ void dalex::tendril_search(int specified){
 
     local_ellipse.build(exclusion_points);
 
-    array_1d<double> center;
-    center.set_name("dalex_tendril_center");
-    array_2d<double> bases;
-    center.set_name("dalex_tendril_bases");
-
-    for(i=0;i<_chifn->get_dim();i++){
-        center.set(i,local_ellipse.center(i));
-    }
-
-    array_1d<double> dir;
-    dir.set_name("dalex_tendril_dir");
-    double sgn;
-    int i_dir;
     int i_start=_chifn->get_pts();
     int new_ct=0;
-    evaluate(center,&mu,&i_found);
-    double dd,ddmin;
-    if(exclusion_dex.get_dim()!=exclusion_points.get_rows()){
-        printf("WARNING %d exclusion_dex, %d exclusion_points\n",
-        exclusion_dex.get_dim(),exclusion_points.get_rows());
-        exit(1);
-    }
-    if(mu>target()){
-        printf("need to approximate center (%e)\n",mu);
-        for(i=0;i<exclusion_points.get_rows();i++){
-            dd=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                dd += power((center.get_data(j)-exclusion_points.get_data(i,j))/_chifn->get_characteristic_length(j),2);
-            }
-            if(i==0 || dd<ddmin){
-                ddmin=dd;
-                i_found=exclusion_dex.get_data(i);
-                mu=_chifn->get_fn(i_found);
-            }
+    printf("doing compass search\n");
+    compass_search(local_ellipse);
+    for(i=i_start;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            new_ct++;
+            exclusion_points.add_row(_chifn->get_pt(i));
         }
     }
-    printf("center mu %e (target %e)\n",mu,target());
-    if(mu<target()){
-        printf("doing compass search\n");
-        for(i_dir=0;i_dir<_chifn->get_dim();i_dir++){
-            for(sgn=-1.0;sgn<1.1;sgn+=1.0){
-                for(i=0;i<_chifn->get_dim();i++){
-                    dir.set(i,sgn*local_ellipse.bases(i_dir,i));
-                }
-                bisection(i_found,dir,target(),0.01);
-            }
-        }
-        for(i=i_start;i<_chifn->get_pts();i++){
-            if(_chifn->get_fn(i)<target()){
-                new_ct++;
-                exclusion_points.add_row(_chifn->get_pt(i));
-            }
-        }
-        printf("added %d new points; called %d\n",new_ct,_chifn->get_pts()-i_start);
-        local_ellipse.build(exclusion_points);
-    }
+    printf("added %d new points; called %d\n",new_ct,_chifn->get_pts()-i_start);
+    local_ellipse.build(exclusion_points);
+
 
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            strikes,_chifn->get_pts());
 
     int i_best;
-    double dd_max;
+    double dd,dd_max;
     for(i=0;i<end_pts.get_dim();i++){
         dd=cardinal_distance(mindex(), end_pts.get_data(i));
         if(i==0 || dd>dd_max){
@@ -1634,4 +1591,33 @@ void dalex::refine_minimum(){
 
     printf("    refined to %e %d %d %e\n",chimin(),accepted,rejected,f_min);
 
+}
+
+void dalex::compass_search(ellipse &ee){
+    array_1d<double> center;
+    center.set_name("compass_search_center");
+    array_1d<double> dir;
+    dir.set_name("compass_search_dir");
+    int i_found;
+    double mu;
+    int i;
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,ee.center(i));
+    }
+    evaluate(center,&mu,&i_found);
+    if(mu>target()){
+        printf("   cannot do compass: %e\n",mu);
+        return;
+    }
+
+    int i_dim;
+    double sgn;
+    for(i_dim=0;i_dim<_chifn->get_dim();i_dim++){
+        for(sgn=-1.0;sgn<1.1;sgn+=1.0){
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.set(i,ee.bases(i_dim,i));
+            }
+            bisection(i_found, dir, target(), 0.01);
+        }
+    }
 }
