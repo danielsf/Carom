@@ -119,7 +119,7 @@ private:
 
     char _outname[letters],_timingname[letters];
     int _last_written,_write_every;
-    double _time_started;
+    double _time_started,_last_time_spent;
 
 };
 

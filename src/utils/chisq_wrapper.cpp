@@ -26,6 +26,7 @@ chisq_wrapper::chisq_wrapper(){
     _last_written=0;
     _write_every=50000;
     _time_started=double(time(NULL));
+    _last_time_spent=0.0;
 }
 
 chisq_wrapper::~chisq_wrapper(){
@@ -702,12 +703,13 @@ void chisq_wrapper::write_pts(){
         (double(time(NULL))-_time_started)/double(this_batch),
         get_time_spent(),
         get_time_spent()/double(get_pts()),
-        (double(time(NULL))-_time_started-get_time_spent())/double(this_batch));
+        (double(time(NULL))-_time_started-get_time_spent()+_last_time_spent)/double(this_batch));
 
     fprintf(output,"\n");
     fclose(output);
 
     _last_written=get_pts();
     _time_started=double(time(NULL));
+    _last_time_spent=get_time_spent();
 
 }
