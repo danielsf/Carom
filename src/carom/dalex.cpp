@@ -1466,6 +1466,7 @@ void dalex::tendril_search(int specified){
         _chifn->get_pt(i_best,6),_chifn->get_pt(i_best,9));
     }
     _explorers.add_particle(_chifn->get_pt(i_best));
+    _chifn->write_pts();
 
 }
 
