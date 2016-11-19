@@ -1104,14 +1104,23 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
+    array_1d<double> trial1,trial2;
+    trial1.set_name("dalex_simplex_trial1");
+    trial2.set_name("dalex_simplex_trial2");
 
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
+                trial1.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
+                trial2.set(j,seed.get_data(0,j)-cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
             }
-            seed.add_row(trial);
+            if(dchifn(trial1)<dchifn(trial2)){
+                seed.add_row(trial1);
+            }
+            else{
+                seed.add_row(trial2);
+            }
         }
     }
     else{
