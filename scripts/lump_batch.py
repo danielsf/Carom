@@ -118,11 +118,11 @@ if __name__ == "__main__":
             dx=xmax-xmin
             dy=ymax-ymin
             plt.xlim((xmin-0.05*dx, xmax+0.05*dx))
-            plt.ylim((ymin-0.05*dy, ymax+0.6*dy))
+            plt.ylim((ymin-0.05*dy, ymax+dy))
             if i_seed==0:
                 plt.xlabel('$\\theta_%d$' % dim[0], fontsize=15)
                 plt.ylabel('$\\theta_%d$' % dim[1], fontsize=15)
-            plt.text(xmin, ymax+0.01*dy, text_list[i_seed], fontsize=10)
+            plt.text(xmin, ymax+0.1*dy, text_list[i_seed], fontsize=10)
 
         plt.legend([m_h] + d_h_list,
                    ['MultiNest'] + d_label_list,
