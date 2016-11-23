@@ -3,6 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import os
+import numpy as np
 
 from analyzeCarom import scatter_from_multinest_projection
 from analyzeCarom import scatter_from_carom
@@ -28,7 +29,7 @@ if __name__ == "__main__":
                                         "nonGaussianLump_d12_s99_n300_t1.00e-03_carom.sav")
 
     plt.figsize = (30,30)
-    time_list = [125000, 150000, 200000, 250000, 300000]
+    time_list = np.array([100000, 125000, 150000, 200000, 250000])
     delta_chisq = 21.03
     full_dim = 12
 
@@ -41,24 +42,32 @@ if __name__ == "__main__":
     mult_min_list = []
     dalex_min_list = []
     m_h = None
+
+
+    m_x_true, m_y_true, _data = scatter_from_multinest_projection(multinest_name, full_dim, dim[0], dim[1])
+
+    for xx in (m_x_true.min(), m_x_true.max()):
+        if xx>xmax:
+            xmax=xx
+        if xx<xmin:
+            xmin=xx
+    for yy in (m_y_true.min(), m_y_true.max()):
+        if yy>ymax:
+            ymax=yy
+        if yy<ymin:
+            ymin=yy
+
+    (m_x, m_y, chisq_min_mult, target_mult,
+     m_data) = scatter_from_carom(multinest_carom_name, full_dim, dim[0], dim[1],
+                                  data=m_data, delta_chi=delta_chisq)
+
+
+    t_multinest_converge = len(m_data)
+    convergence_dex = np.argmin(np.abs(time_list-t_multinest_converge))
+    time_list[convergence_dex] = t_multinest_converge
+
     for i_fig, limit in enumerate(time_list):
         plt.subplot(3, 2, i_fig+1)
-
-        if i_fig == len(time_list)-1:
-            m_x_true, m_y_true, _data = scatter_from_multinest_projection(multinest_name,
-                                                                full_dim, dim[0], dim[1])
-
-            for xx in (m_x_true.min(), m_x_true.max()):
-                if xx>xmax:
-                    xmax=xx
-                if xx<xmin:
-                    xmin=xx
-            for yy in (m_y_true.min(), m_y_true.max()):
-                if yy>ymax:
-                    ymax=yy
-                if yy<ymin:
-                    ymin=yy
-
 
         (d_x, d_y, chisq_min_dalex, target_dalex,
          d_data) = scatter_from_carom(dalex_name, full_dim, dim[0], dim[1],
@@ -70,7 +79,6 @@ if __name__ == "__main__":
                                       data=m_data,
                                       delta_chi=delta_chisq, limit=limit)
 
-        #time_list[len(time_list)-1] = len(m_data)
         mult_min_list.append(chisq_min_mult)
         dalex_min_list.append(chisq_min_dalex)
 
@@ -87,7 +95,7 @@ if __name__ == "__main__":
                 ymin=yy
 
         m_color = 'b'
-        if i_fig == len(time_list)-1:
+        if limit>=t_multinest_converge:
              m_true_h = plt.scatter(m_x_true, m_y_true, color='b', s=7)
              m_color = 'c'
 
@@ -127,7 +135,7 @@ if __name__ == "__main__":
                 bbox_to_anchor=(1.05,1),
                 loc=2)
 
-    fig_name = 'lump_%d_%d.png' % (dim[0], dim[1])
+    fig_name = 'lump_time_%d_%d.png' % (dim[0], dim[1])
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, fig_name))
     plt.close()
