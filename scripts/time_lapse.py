@@ -20,7 +20,7 @@ if __name__ == "__main__":
     
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161111")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161117")
 
     multinest_file_list = []
     multinest_scatter_file_list = []
