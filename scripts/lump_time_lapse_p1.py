@@ -32,7 +32,7 @@ if __name__ == "__main__":
                                         "nonGaussianLump_d12_s48_n300_t1.00e-03_carom.sav")
 
     plt.figsize = (30,30)
-    time_list = np.array([75000, 850000, 100000, 150000, 175000])
+    time_list = np.array([75000, 85000, 100000, 150000, 175000])
     delta_chisq = 21.03
     full_dim = 12
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
              m_true_h = plt.scatter(m_x_true, m_y_true, color='b', s=7)
              m_color = 'c'
 
-        print 'limit ',limit,d_x.min(),d2_x.min()
+        print 'limit ',limit,d_x.min(),d2_x.min(),chisq_min_dalex
 
         d2_h = plt.scatter(d2_x, d2_y, color='g', marker='x', s=10)
         d_h = plt.scatter(d_x, d_y, color='r', s=7)
