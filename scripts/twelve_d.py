@@ -13,7 +13,7 @@ from analyzeCarom import scatter_from_multinest_marginalized
 if __name__ == "__main__":
 
     seed_list = [66, 694, 762, 1068, 6475]
-    limit_list = [400000, 300000, 400000, 400000, 400000]
+    limit_list = [350000, 250000, 450000, 350000, 200000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
@@ -50,11 +50,18 @@ if __name__ == "__main__":
             t_start = time.time()
             dalex_name = "jellyBean_d12_s%d_output.sav" % seed
             multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03.txt" % seed
+            #multinest_n100_name = "gaussianJellyBean_d12_s%d_n100_t1.00e-03.txt" % seed
 
             scatter_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03_carom.sav" % seed
             with open(os.path.join(multinest_dir, scatter_name), 'r') as input_file:
                 lines = input_file.readlines()
                 n_mult = len(lines)
+
+            #scatter_name = "gaussianJellyBean_d12_s%d_n100_t1.00e-03_carom.sav" % seed
+            #with open(os.path.join(multinest_dir, scatter_name), 'r') as input_file:
+            #    lines = input_file.readlines()
+            #    n_mult_100 = len(lines)
+
 
             plt.subplot(3,2,i_seed+1)
             plt.title(title, fontsize=7)
@@ -91,9 +98,16 @@ if __name__ == "__main__":
                                  full_dim, dim[0], dim[1],
                                  data=m_data_dict[seed])
 
+            #m100_x, m100_y, m100_data = scatter_from_multinest_projection(
+            #                     os.path.join(multinest_dir, multinest_n100_name),
+            #                     full_dim, dim[0], dim[1],
+            #                     data=m_data_dict[seed])
+
+
             m_data_dict[seed] = m_data
 
             m_h = plt.scatter(m_x, m_y, color='k', s=7)
+            #plt.scatter(m100_x, m100_y, color='c', s=7)
 
 
             d_h = plt.scatter(d_x, d_y, color='r', s=7, marker='+')
