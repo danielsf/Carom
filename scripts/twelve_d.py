@@ -13,7 +13,7 @@ from analyzeCarom import scatter_from_multinest_marginalized
 if __name__ == "__main__":
 
     seed_list = [66, 694, 762, 1068, 6475]
-    limit_list = [350000, 250000, 450000, 350000, 200000]
+    limit_list = [350000, 250000, 450000, 500000, 200000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
