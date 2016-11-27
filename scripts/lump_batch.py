@@ -16,7 +16,7 @@ from analyzeCarom import scatter_from_multinest_marginalized
 if __name__ == "__main__":
 
     seed_list = [83, 13, 48, 33, 62]
-    limit_list = [250000, 300000, 250000, 300000, 300000]
+    limit_list = [250000, 150000, 250000, 250000, 250000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
             m_data_dict[seed] = m_data
 
-            m_h = plt.scatter(m_x, m_y, color='k', s=7)
+            m_h = plt.scatter(m_x, m_y, color='b', s=7)
 
 
             d_h = plt.scatter(d_x, d_y, color='r', s=7, marker='+')
