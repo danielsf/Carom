@@ -70,12 +70,12 @@ if __name__ == "__main__":
 
     plt.figsize = (30, 30)
     for seed, limit, color, title in zip(seed_list, limit_list, color_list, title_list):
-        multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03.txt" % seed
+        multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03_carom.sav" % seed
 
-        data = load_multinest_data(os.path.join(multinest_dir, multinest_name), full_dim)
+        data = load_dalex_data(os.path.join(multinest_dir, multinest_name), full_dim)
 
         xx, dx = make_histogram(data['chisq'], 1.0, 150.0, cumulative=True)
-        plt.plot(xx, dx, color=color, label=title)
+        plt.plot(xx, dx, color=color, label=title+'; $\chi^2_{min}=%.2f$' % data['chisq'].min())
     plt.xlabel('$\chi^2$', fontsize=15)
     plt.ylabel('dN/d$\chi^2$', fontsize=15)
     plt.xlim((90.0, 150.0))
