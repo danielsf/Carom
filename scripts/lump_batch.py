@@ -7,13 +7,16 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import time
 
+import scipy.spatial as spatial
+
 from analyzeCarom import scatter_from_multinest_projection, scatter_from_carom
 from analyzeCarom import scatter_from_multinest_marginalized
 
+
 if __name__ == "__main__":
 
-    seed_list = [66, 694, 762, 1068, 6475]
-    limit_list = [350000, 250000, 450000, 500000, 200000]
+    seed_list = [83, 13, 48, 33, 62]
+    limit_list = [250000, 150000, 250000, 250000, 250000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'y', 'g', 'c']
 
@@ -28,7 +31,7 @@ if __name__ == "__main__":
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
     data_dir = os.path.join(dalex_dir, "output", "draft_161117")
 
-    dim_list = [(6,9), (0,1)]
+    dim_list = [(6,9), (0,3)]
 
     d_data_dict = {}
     m_data_dict = {}
@@ -48,20 +51,13 @@ if __name__ == "__main__":
 
         for i_seed, (title, seed, limit) in enumerate(zip(title_list, seed_list, limit_list)):
             t_start = time.time()
-            dalex_name = "jellyBean_d12_s%d_output.sav" % seed
-            multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03.txt" % seed
-            #multinest_n100_name = "gaussianJellyBean_d12_s%d_n100_t1.00e-03.txt" % seed
+            dalex_name = "lump_d12_s%d_output.sav" % seed
+            multinest_name = "nonGaussianLump_d12_s%d_n300_t1.00e-03.txt" % seed
 
-            scatter_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03_carom.sav" % seed
+            scatter_name = "nonGaussianLump_d12_s%d_n300_t1.00e-03_carom.sav" % seed
             with open(os.path.join(multinest_dir, scatter_name), 'r') as input_file:
                 lines = input_file.readlines()
                 n_mult = len(lines)
-
-            #scatter_name = "gaussianJellyBean_d12_s%d_n100_t1.00e-03_carom.sav" % seed
-            #with open(os.path.join(multinest_dir, scatter_name), 'r') as input_file:
-            #    lines = input_file.readlines()
-            #    n_mult_100 = len(lines)
-
 
             plt.subplot(3,2,i_seed+1)
             plt.title(title, fontsize=7)
@@ -77,13 +73,6 @@ if __name__ == "__main__":
 
             d_data_dict[seed] = d_data
 
-            (d_x_forced, d_y_forced, chisq_min_forced, target_forced,
-             d_data_forced) = scatter_from_carom(os.path.join(data_dir, dalex_name),
-                                          full_dim, dim[0], dim[1], target=116.03,
-                                          data=d_data_dict[seed],
-                                          limit=limit)
-
-
             if xmax is None or d_x.max()>xmax:
                 xmax=d_x.max()
             if xmin is None or d_x.min()<xmin:
@@ -98,24 +87,14 @@ if __name__ == "__main__":
                                  full_dim, dim[0], dim[1],
                                  data=m_data_dict[seed])
 
-            #m100_x, m100_y, m100_data = scatter_from_multinest_projection(
-            #                     os.path.join(multinest_dir, multinest_n100_name),
-            #                     full_dim, dim[0], dim[1],
-            #                     data=m_data_dict[seed])
-
-
             m_data_dict[seed] = m_data
 
-            m_h = plt.scatter(m_x, m_y, color='k', s=7)
-            #plt.scatter(m100_x, m100_y, color='c', s=7)
+            m_h = plt.scatter(m_x, m_y, color='b', s=7)
 
 
             d_h = plt.scatter(d_x, d_y, color='r', s=7, marker='+')
-            d_h_forced = plt.scatter(d_x_forced, d_y_forced, color='g', s=7, marker='x')
             d_h_list.append(d_h)
             d_label_list.append('Dale$\chi$; $\chi^2<=\chi^2_{min}+21.03$')
-            d_h_list.append(d_h_forced)
-            d_label_list.append('Dale$\chi$; $\chi^2<=116.03$')
 
             text = ('MultiNest: %.2e $\chi^2$ calls\n' % n_mult
                     + 'Dale$\chi$: %.2e $\chi^2$ calls; $\chi^2_{min}=%.2f$' % (limit, chisq_min))
@@ -139,11 +118,11 @@ if __name__ == "__main__":
             dx=xmax-xmin
             dy=ymax-ymin
             plt.xlim((xmin-0.05*dx, xmax+0.05*dx))
-            plt.ylim((ymin-0.05*dy, ymax+0.6*dy))
+            plt.ylim((ymin-0.05*dy, ymax+dy))
             if i_seed==0:
                 plt.xlabel('$\\theta_%d$' % dim[0], fontsize=15)
                 plt.ylabel('$\\theta_%d$' % dim[1], fontsize=15)
-            plt.text(xmin, ymax+0.01*dy, text_list[i_seed], fontsize=10)
+            plt.text(xmin, ymax+0.1*dy, text_list[i_seed], fontsize=10)
 
         plt.legend([m_h] + d_h_list,
                    ['MultiNest'] + d_label_list,
@@ -151,7 +130,7 @@ if __name__ == "__main__":
                    bbox_to_anchor=(1.05,1),
                    loc=2)
 
-        fig_name = 'compare_d12_%d_%d.png' % (dim[0], dim[1])
+        fig_name = 'compare_d12_lump_%d_%d.png' % (dim[0], dim[1])
         plt.tight_layout()
         plt.savefig(os.path.join(fig_dir, fig_name))
         plt.close()

@@ -14,7 +14,7 @@ from analyzeCarom import  load_dalex_data, load_multinest_data, make_histogram
 if __name__ == "__main__":
 
     seed_list = [66, 694, 762, 1068, 6475]
-    limit_list = [400000, 400000, 400000, 400000, 400000]
+    limit_list = [350000, 250000, 450000, 500000, 200000]
     title_list = ['(a)', '(b)', '(c)', '(d)', '(e)']
     color_list = ['r', 'b', 'g', 'm', 'k']
 
@@ -33,22 +33,24 @@ if __name__ == "__main__":
 
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161104")
+    data_dir = os.path.join(dalex_dir, "output", "draft_161117")
 
     running_min = {}
 
     plt.figsize = (30, 30)
+    offset = 0.0
     for seed, limit, color, title in zip(seed_list, limit_list, color_list, title_list):
         dalex_name = "jellyBean_d12_s%d_output.sav" % seed
 
         data = load_dalex_data(os.path.join(data_dir, dalex_name), full_dim)
-        data = data[:limit]
         r_min = np.minimum.accumulate(data['chisq'])
         running_min[seed] = r_min
-        xx, dx = make_histogram(data['chisq'], 1.0, 150.0, cumulative=True)
-        plt.plot(xx, dx, color=color, label=title)
+        xx, dx = make_histogram(data['chisq'][:limit], 1.0, 150.0, cumulative=True)
+        plt.plot(xx, dx+offset, color=color, label=title)
+        plt.plot([xx[0],xx[-1]], [offset,offset], color=color, linestyle='--')
+        offset += 0.1
     plt.xlabel('$\chi^2$', fontsize=15)
-    plt.ylabel('dN/d$\chi^2$', fontsize=15)
+    plt.ylabel('dN/d$\chi^2$ (offset for visibility)', fontsize=15)
     plt.xlim((90.0, 150.0))
     plt.legend(fontsize=20, loc=0)
     plt.savefig(os.path.join(fig_dir, 'dalex_histogram.png'))
@@ -68,12 +70,12 @@ if __name__ == "__main__":
 
     plt.figsize = (30, 30)
     for seed, limit, color, title in zip(seed_list, limit_list, color_list, title_list):
-        multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03.txt" % seed
+        multinest_name = "gaussianJellyBean_d12_s%d_n300_t1.00e-03_carom.sav" % seed
 
-        data = load_multinest_data(os.path.join(multinest_dir, multinest_name), full_dim)
+        data = load_dalex_data(os.path.join(multinest_dir, multinest_name), full_dim)
 
         xx, dx = make_histogram(data['chisq'], 1.0, 150.0, cumulative=True)
-        plt.plot(xx, dx, color=color, label=title)
+        plt.plot(xx, dx, color=color, label=title+'; $\chi^2_{min}=%.2f$' % data['chisq'].min())
     plt.xlabel('$\chi^2$', fontsize=15)
     plt.ylabel('dN/d$\chi^2$', fontsize=15)
     plt.xlim((90.0, 150.0))

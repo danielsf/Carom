@@ -21,7 +21,13 @@ chisq_wrapper::chisq_wrapper(){
     _expected_min=-1.0;
     _confidence_limit=-1.0;
     _expected_delta=-1.0;
-
+    _outname[0]=0;
+    _timingname[0]=0;
+    _last_written=0;
+    _write_every=50000;
+    _time_started=double(time(NULL));
+    _time_batch=double(time(NULL));
+    _last_time_spent=0.0;
 }
 
 chisq_wrapper::~chisq_wrapper(){
@@ -363,6 +369,10 @@ void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex
         }
     }
 
+    if(get_pts()-_last_written>_write_every){
+        write_pts();
+    }
+
 }
 
 int chisq_wrapper::get_called(){
@@ -648,5 +658,59 @@ int chisq_wrapper::could_it_go_lower(double chimin){
     }
 
     return 1;
+
+}
+
+void chisq_wrapper::write_pts(){
+    if(_outname[0]==0 || _timingname[0]==0){
+        printf("CANNOT write points, timingname or outname not set\n");
+        printf("outname: %s\n",_outname);
+        printf("timingname: %s\n",_timingname);
+        exit(1);
+    }
+    FILE *output;
+
+    int this_batch=get_pts()-_last_written;
+
+    int i,j;
+    output=fopen(_outname,"w");
+    fprintf(output,"# ");
+    for(i=0;i<get_dim();i++){
+        fprintf(output,"p%d ",i);
+    }
+    fprintf(output,"chisq mu sig ling\n");
+    for(i=0;i<get_pts();i++){
+        for(j=0;j<get_dim();j++){
+            fprintf(output,"%.18e ",get_pt(i,j));
+        }
+        fprintf(output,"%.18e 0 0 0\n",get_fn(i));
+    }
+    fclose(output);
+
+    if(_last_written==0){
+        output=fopen(_timingname,"w");
+        fprintf(output,"#seed %d\n",get_seed());
+    }
+    else{
+        output=fopen(_timingname,"a");
+    }
+
+    fprintf(output,"%d %d min %.4e target %.4e -- timing -- %.4e %.4e -- %.4e %.4e -- overhead %.4e",
+        get_pts(),
+        get_called(),
+        chimin(),
+        target(),
+        double(time(NULL))-_time_started,
+        (double(time(NULL))-_time_batch)/double(this_batch),
+        get_time_spent(),
+        get_time_spent()/double(get_pts()),
+        (double(time(NULL))-_time_batch-get_time_spent()+_last_time_spent)/double(this_batch));
+
+    fprintf(output,"\n");
+    fclose(output);
+
+    _last_written=get_pts();
+    _time_batch=double(time(NULL));
+    _last_time_spent=get_time_spent();
 
 }

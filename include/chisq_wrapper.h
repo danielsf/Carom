@@ -20,6 +20,26 @@ public:
 
     void initialize(int);
 
+    void write_pts();
+    void set_write_every(int ii){
+        _write_every=ii;
+    }
+    void set_outname(char *nn){
+        int i;
+        for(i=0;i<letters-1 && nn[i]!=0;i++){
+            _outname[i]=nn[i];
+        }
+        _outname[i]=0;
+    }
+
+    void set_timingname(char *nn){
+        int i;
+        for(i=0;i<letters-1 && nn[i]!=0;i++){
+            _timingname[i]=nn[i];
+        }
+        _timingname[i]=0;
+    }
+
     void set_chisquared(chisquared*);
 
     void set_target(double);
@@ -96,6 +116,11 @@ private:
     array_1d<int> _valid_neigh;
 
     chisquared_distribution _distribution;
+
+    char _outname[letters],_timingname[letters];
+    int _last_written,_write_every;
+    double _time_started,_last_time_spent,_time_batch;
+
 };
 
 #endif

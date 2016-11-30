@@ -18,6 +18,7 @@ class explorers{
             _scalar_acceptance=0;
             _attempted=0;
             _scalar_steps=0;
+            _n_particles=0;
             _associates.set_name("explorers_associates");
             _median_associate.set_name("explorers_mean_associate");
             _particles.set_name("explorers_particles");
@@ -26,7 +27,6 @@ class explorers{
             _min.set_name("explorers_min");
             _max.set_name("explorers_max");
             _req_temp.set_name("explorers_req_temp");
-            _accepted.set_name("explorers_accepted");
             _mu_arr.set_name("explorers_mu_arr");
         }
 
@@ -64,6 +64,11 @@ class explorers{
             }
         }
 
+        void add_particle(const array_1d<double> &pt){
+            _particles.add_row(pt);
+            _n_particles++;
+        }
+
         void get_seed(array_2d<double>&);
 
         void set_norm();
@@ -85,7 +90,6 @@ class explorers{
         double _mu_min;
         int _n_particles;
         double _temp;
-        array_1d<int> _accepted;
         int _attempted;
         array_2d<double> _particles;
         int _scalar_acceptance;

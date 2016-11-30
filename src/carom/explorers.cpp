@@ -72,7 +72,6 @@ void explorers::reset(){
     _attempted=0;
     _scalar_acceptance=0;
     _scalar_steps=0;
-    _accepted.reset_preserving_room();
     _req_temp.reset_preserving_room();
     _temp=1.0;
 }
@@ -81,7 +80,6 @@ void explorers::initialize_particles(){
 
     _particles.reset_preserving_room();
     _attempted=0;
-    _accepted.reset_preserving_room();
     _req_temp.reset_preserving_room();
 
     array_1d<double> center;
@@ -112,7 +110,6 @@ void explorers::initialize_particles(){
         _chifn->evaluate(trial,&mu,&i_found);
         if(i_found>=0){
             _particles.add_row(trial);
-            _accepted.add(0);
         }
     }
 
@@ -204,7 +201,7 @@ void explorers::sample(int n_steps){
 
     int has_been_adjusted;
 
-    printf("    starting sampling with %e\n",_mu_min);
+    printf("    starting sampling with %e -- %d\n",_mu_min,_n_particles);
 
     for(i_step=0;i_step<n_steps;i_step++){
 
@@ -237,7 +234,6 @@ void explorers::sample(int n_steps){
             _scalar_steps++;
             if(accept_it==1){
                 _scalar_acceptance++;
-                _accepted.add_val(ip,1);
                 _mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
                     _particles.set(ip,i,trial.get_data(i));
@@ -265,7 +261,6 @@ void explorers::sample(int n_steps){
                 _temp=req_temp_sorted.get_data(req_temp_dex.get_dim()/2);
                 if(fabs(1.0-old_temp/_temp)>0.01){
                     _req_temp.reset();
-                    _accepted.zero();
                     _attempted=0;
                     _scalar_acceptance=0;
                     _scalar_steps=0;

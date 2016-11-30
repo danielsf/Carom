@@ -100,6 +100,8 @@ void dalex::search(){
         _explorers.kick(to_kick.get_data(i));
     }
 
+    int i_end;
+
     for(i=0;i<to_use.get_dim();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
@@ -185,7 +187,7 @@ void dalex::simplex_search(array_1d<int> &specified){
 }
 
 
-int dalex::bisection(int ilow, array_1d<double> &dir, double local_target, double tol){
+int dalex::bisection(int ilow, const array_1d<double> &dir, double local_target, double tol){
     safety_check("bisection(int, arr)");
     array_1d<double> trial_high;
     trial_high.set_name("dalex_bisection_trial_high");
@@ -1019,6 +1021,11 @@ int dalex::simplex_boundary_search(int specified, int use_median,
     int pt_start=_chifn->get_pts();
     assess_good_points();
 
+    if(_chifn->get_dim()>9 && specified>=0){
+        printf("    starting from %e -- %e %e\n",
+        _chifn->get_fn(specified),_chifn->get_pt(specified,6), _chifn->get_pt(specified,9));
+    }
+
     int i_node,i_pt;
     int i,j,k;
     double xmin,xmax,xx;
@@ -1097,14 +1104,23 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
+    array_1d<double> trial1,trial2;
+    trial1.set_name("dalex_simplex_trial1");
+    trial2.set_name("dalex_simplex_trial2");
 
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
+                trial1.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
+                trial2.set(j,seed.get_data(0,j)-cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
             }
-            seed.add_row(trial);
+            if(dchifn(trial1)<dchifn(trial2)){
+                seed.add_row(trial1);
+            }
+            else{
+                seed.add_row(trial2);
+            }
         }
     }
     else{
@@ -1223,7 +1239,9 @@ void dalex::explore(){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
 
-    _explorers.set_n_particles(3*(_chifn->get_dim()+1));
+    if(_explorers.get_n_particles()<2*_chifn->get_dim()){
+        _explorers.set_n_particles(2*_chifn->get_dim());
+    }
     array_1d<int> associates;
     associates.set_name("dalex_explore_associates");
     int skip;
@@ -1298,13 +1316,18 @@ void dalex::tendril_search(int specified){
 
     int i_exclude;
     int i_particle;
+    array_1d<int> end_pts;
+    end_pts.set_name("dalex_tendril_end_pts");
     array_2d<double> exclusion_points;
+    array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
     simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
+    end_pts.add(i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             exclusion_points.add_row(_chifn->get_pt(i));
+            exclusion_dex.add(i);
         }
     }
     local_ellipse.build(exclusion_points);
@@ -1350,12 +1373,14 @@ void dalex::tendril_search(int specified){
 
         ct_last=_chifn->get_pts();
         in_old_ones=simplex_boundary_search(i_particle, use_median, _exclusion_zones, &i_next);
+        end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
 
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
+                exclusion_dex.add(i);
             }
         }
         i_exclude=_chifn->get_pts();
@@ -1412,13 +1437,46 @@ void dalex::tendril_search(int specified){
     for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
+                exclusion_dex.add(i);
             }
     }
 
     local_ellipse.build(exclusion_points);
+
+    int i_start=_chifn->get_pts();
+    int new_ct=0;
+    printf("doing compass search\n");
+    compass_search(local_ellipse);
+    for(i=i_start;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            new_ct++;
+            exclusion_points.add_row(_chifn->get_pt(i));
+        }
+    }
+    printf("added %d new points; called %d\n",new_ct,_chifn->get_pts()-i_start);
+    local_ellipse.build(exclusion_points);
+
+
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            strikes,_chifn->get_pts());
+
+    int i_best;
+    double dd,dd_max;
+    for(i=0;i<end_pts.get_dim();i++){
+        dd=cardinal_distance(mindex(), end_pts.get_data(i));
+        if(i==0 || dd>dd_max){
+            dd_max=dd;
+            i_best=end_pts.get_data(i);
+        }
+    }
+    if(_chifn->get_dim()>9){
+        printf("    putting new explorer at %e %e\n",
+        _chifn->get_pt(i_best,6),_chifn->get_pt(i_best,9));
+    }
+    _explorers.add_particle(_chifn->get_pt(i_best));
+    _chifn->write_pts();
+
 }
 
 void dalex::iterate_on_minimum(){
@@ -1541,4 +1599,33 @@ void dalex::refine_minimum(){
 
     printf("    refined to %e %d %d %e\n",chimin(),accepted,rejected,f_min);
 
+}
+
+void dalex::compass_search(ellipse &ee){
+    array_1d<double> center;
+    center.set_name("compass_search_center");
+    array_1d<double> dir;
+    dir.set_name("compass_search_dir");
+    int i_found;
+    double mu;
+    int i;
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,ee.center(i));
+    }
+    evaluate(center,&mu,&i_found);
+    if(mu>target()){
+        printf("   cannot do compass: %e\n",mu);
+        return;
+    }
+
+    int i_dim;
+    double sgn;
+    for(i_dim=0;i_dim<_chifn->get_dim();i_dim++){
+        for(sgn=-1.0;sgn<1.1;sgn+=1.0){
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.set(i,ee.bases(i_dim,i));
+            }
+            bisection(i_found, dir, target(), 0.01);
+        }
+    }
 }

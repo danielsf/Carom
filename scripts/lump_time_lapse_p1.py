@@ -13,6 +13,9 @@ import sys
 if __name__ == "__main__":
 
     dim = (int(sys.argv[1]), int(sys.argv[2]))
+    seed = 13
+    if len(sys.argv)>3:
+        seed = int(sys.argv[3])
 
     physics_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
@@ -21,17 +24,27 @@ if __name__ == "__main__":
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
     data_dir = os.path.join(dalex_dir, "output", "draft_161117")
 
-    dalex_name = os.path.join(data_dir, "lump_d12_s13_output.sav")
+    dalex_name = os.path.join(data_dir, "lump_d12_s%d_output.sav" % seed)
+    control_name = os.path.join(data_dir, "lump_d12_s13_output.sav")
+
     multinest_name = os.path.join(multinest_dir,
-                                 "nonGaussianLump_d12_s99_n300_t1.00e-03.txt")
+                                 "nonGaussianLump_d12_s48_n300_t1.00e-03.txt")
 
     multinest_carom_name = os.path.join(multinest_dir,
-                                        "nonGaussianLump_d12_s99_n300_t1.00e-03_carom.sav")
+                                        "nonGaussianLump_d12_s48_n300_t1.00e-03_carom.sav")
 
     plt.figsize = (30,30)
-    time_list = np.array([100000, 125000, 150000, 200000, 250000])
+    time_list = np.array([75000, 85000, 100000, 150000, 175000])
     delta_chisq = 21.03
     full_dim = 12
+
+
+    (c_x, c_y, chisq_min_control, target_control,
+     c_data) = scatter_from_carom(control_name, full_dim, dim[0], dim[1],
+                                  data=None,
+                                  delta_chi=delta_chisq)
+
+
 
     d_data = None
     m_data = None
@@ -74,6 +87,12 @@ if __name__ == "__main__":
                                       data=d_data,
                                       delta_chi=delta_chisq, limit=limit)
 
+        (d2_x, d2_y, chisq_min_dalex2, target_dalex2,
+         d2_data) = scatter_from_carom(dalex_name, full_dim, dim[0], dim[1],
+                                      data=d_data,
+                                      delta_chi=delta_chisq+1.0, limit=limit)
+
+
         (m_x, m_y, chisq_min_mult, target_mult,
          m_data) = scatter_from_carom(multinest_carom_name, full_dim, dim[0], dim[1],
                                       data=m_data,
@@ -82,23 +101,28 @@ if __name__ == "__main__":
         mult_min_list.append(chisq_min_mult)
         dalex_min_list.append(chisq_min_dalex)
 
-        for xx in (m_x.min(), m_x.max(), d_x.min(), d_x.max()):
+        for xx in (m_x.min(), m_x.max(), d_x.min(), d_x.max(), d2_x.min(), d2_x.max()):
             if xx>xmax:
                 xmax=xx
             if xx<xmin:
                 xmin=xx
 
-        for yy in (m_y.min(), m_y.max(), d_y.min(), d_y.max()):
+        for yy in (m_y.min(), m_y.max(), d_y.min(), d_y.max(), d2_y.min(), d2_y.max()):
             if yy>ymax:
                 ymax=yy
             if yy<ymin:
                 ymin=yy
+
+        c_h = plt.scatter(c_x, c_y, color='y', s=20)
 
         m_color = 'b'
         if limit>=t_multinest_converge:
              m_true_h = plt.scatter(m_x_true, m_y_true, color='b', s=7)
              m_color = 'c'
 
+        print 'limit ',limit,d_x.min(),d2_x.min(),chisq_min_dalex
+
+        d2_h = plt.scatter(d2_x, d2_y, color='g', marker='x', s=10)
         d_h = plt.scatter(d_x, d_y, color='r', s=7)
 
         _m_h = plt.scatter(m_x, m_y, color=m_color, marker='+', s=20)
@@ -127,15 +151,17 @@ if __name__ == "__main__":
 
         plt.text(xorig, yorig, msg, fontsize=10)
 
-    plt.legend([d_h, m_h, m_true_h],
+    plt.legend([d_h,d2_h, m_h, m_true_h, c_h],
                ['Dale$\chi$ ($\chi^2<=\chi^2_{min}+%.2f$)' % delta_chisq,
+                'Dale$\chi$ ($\chi^2<=\chi^2_{min}+%.2f$)' % (delta_chisq+1.0),
                 'MultiNest ($\chi^2<=\chi^2_{min}+%.2f$)' % delta_chisq,
-                'MultiNest (Bayesian, projected)'],
+                'MultiNest (Bayesian, projected)',
+                'Dale$\chi$ ($\chi^2<=\chi^2_{min}+%.2f$) from control' % delta_chisq],
                 fontsize=10,
                 bbox_to_anchor=(1.05,1),
                 loc=2)
 
-    fig_name = 'lump_time_%d_%d.png' % (dim[0], dim[1])
+    fig_name = 'lump_time_%d_%d_s%d.png' % (dim[0], dim[1], seed)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, fig_name))
     plt.close()

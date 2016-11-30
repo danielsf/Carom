@@ -30,6 +30,7 @@ class ellipse{
         array_1d<double> _radii,_center;
 
         void _set_radii(const array_2d<double>&);
+        void _find_center(const array_2d<double>&);
 };
 
 

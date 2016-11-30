@@ -36,7 +36,6 @@ public:
 
     void mcmc_init();
 
-    void write_pts();
     void write_log();
 
     int get_dim();
@@ -54,15 +53,12 @@ public:
 private:
 
     chisq_wrapper _chifn;
-    int _write_every,_last_written;
     int _ct_dalex;
     int _last_wrote_log;
 
     dalex _cloud;
 
     asymm_array_2d<int> _log;
-
-    double _time_started;
 
     char _outname[letters],_timingname[letters];
 
