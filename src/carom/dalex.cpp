@@ -62,8 +62,10 @@ void dalex::search(){
 
     int has_explored=0;
 
+    _chifn->set_search_type(_type_refine);
     iterate_on_minimum();
 
+    _chifn->set_search_type(_type_explore);
     int is_outside;
     while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
         explore();
@@ -102,6 +104,7 @@ void dalex::search(){
 
     int i_end;
 
+    _chifn->set_search_type(_type_tendril);
     for(i=0;i<to_use.get_dim();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){

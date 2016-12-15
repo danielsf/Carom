@@ -11,6 +11,11 @@
 #include "wrappers.h"
 #include "chisq.h"
 
+#define _type_init 0
+#define _type_refine 1
+#define _type_explore 2
+#define _type_tendril 3
+
 class chisq_wrapper : public function_wrapper{
 
 public:
@@ -21,6 +26,16 @@ public:
     void initialize(int);
 
     void write_pts();
+    void set_search_type(int ii){
+        if(ii!=_type_init && ii!=_type_refine &&
+           ii!=_type_explore && ii!=_type_tendril &&
+           ii!=-1){
+
+            printf("WARNING search type %d is not allowed\n", ii);
+            exit(1);
+        }
+        _search_type=ii;
+    }
     void set_write_every(int ii){
         _write_every=ii;
     }
@@ -102,6 +117,8 @@ private:
     double _expected_min,_expected_delta,_confidence_limit;
     int _adaptive_target,_seed,_called,_mindex,_iWhere;
     int _dof;
+    int _search_type;
+    array_1d<int> _search_type_log;
 
     array_1d<double> _characteristic_length,_range_min,_range_max,_fn;
 

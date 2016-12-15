@@ -140,6 +140,7 @@ void maps::search(int limit){
     _chifn.set_outname(_outname);
     _chifn.set_timingname(_timingname);
     printf("before init min %e\n",_chifn.chimin());
+    _chifn.set_search_type(_type_init);
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());

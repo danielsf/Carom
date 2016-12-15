@@ -28,6 +28,8 @@ chisq_wrapper::chisq_wrapper(){
     _time_started=double(time(NULL));
     _time_batch=double(time(NULL));
     _last_time_spent=0.0;
+    _search_type=-1;
+    _search_type_log.set_name("chisq_wrapper_search_type_log");
 }
 
 chisq_wrapper::~chisq_wrapper(){
@@ -203,6 +205,9 @@ void chisq_wrapper::initialize(int npts){
     }
 
     _kptr=new kd_tree(data,temp_min,temp_max);
+    for(i=0;i<_kptr->get_pts();i++){
+        _search_type_log.set(i,_type_init);
+    }
 
     if(_adaptive_target==1){
         if(_deltachi<0.0){
@@ -358,6 +363,7 @@ void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex
     if(mu<exception_value){
         _kptr->add(pt);
         _fn.add(mu);
+        _search_type_log.add(_search_type);
         dex[0]=_kptr->get_pts()-1;
     }
 
@@ -668,6 +674,13 @@ void chisq_wrapper::write_pts(){
         printf("timingname: %s\n",_timingname);
         exit(1);
     }
+
+    if(_search_type_log.get_dim() != get_pts()){
+        printf("WARNING %d pts but %d log\n",
+        get_pts(),_search_type_log.get_dim());
+        exit(1);
+    }
+
     FILE *output;
 
     int this_batch=get_pts()-_last_written;
@@ -678,12 +691,12 @@ void chisq_wrapper::write_pts(){
     for(i=0;i<get_dim();i++){
         fprintf(output,"p%d ",i);
     }
-    fprintf(output,"chisq mu sig ling\n");
+    fprintf(output,"chisq mu sig log\n");
     for(i=0;i<get_pts();i++){
         for(j=0;j<get_dim();j++){
             fprintf(output,"%.18e ",get_pt(i,j));
         }
-        fprintf(output,"%.18e 0 0 0\n",get_fn(i));
+        fprintf(output,"%.18e 0 0 %d\n",get_fn(i),_search_type_log.get_data(i));
     }
     fclose(output);
 
