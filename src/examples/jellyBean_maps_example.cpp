@@ -151,6 +151,9 @@ else if(chisq_dex==2){
     else if(dim==12){
         chisq = new nonGaussianLump12;
     }
+    else if(dim==24){
+        chisq = new nonGaussianLump24;
+    }
     else{
         printf("WARNING do not have chisq_dex 2, dim %d\n",dim);
         exit(1);
