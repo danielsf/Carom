@@ -6,7 +6,6 @@
 #include "chisq_wrapper.h"
 #include "simplex.h"
 #include "eigen_wrapper.h"
-#include "search_types.h"
 #include "explorers.h"
 #include "ellipse.h"
 
@@ -25,7 +24,6 @@ class dalex{
             _target_factor=1.0;
             _last_checked_good=0;
             _simplex_mindex=-1;
-            _log=NULL;
 
             _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
@@ -43,10 +41,6 @@ class dalex{
 
         void set_limit(int ii){
             _limit=ii;
-        }
-
-        void set_log(asymm_array_2d<int> *_ll){
-            _log=_ll;
         }
 
         void search();
@@ -160,7 +154,6 @@ class dalex{
             return _target_factor*_chifn->target();
         }
 
-        asymm_array_2d<int> *_log;
         chisq_wrapper *_chifn;
         double _target_factor;
         int _simplex_mindex;

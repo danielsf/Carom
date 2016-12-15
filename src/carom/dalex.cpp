@@ -1197,10 +1197,6 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     _update_good_points(pt_start);
 
-    if(_log!=NULL){
-        _log->add(_log_dchi_simplex,i_min);
-    }
-
     if(_chifn->get_dim()>9){
         printf("    actually found %e -- %e %e\n",
         _chifn->get_fn(i_min),_chifn->get_pt(i_min,6), _chifn->get_pt(i_min,9));
@@ -1261,12 +1257,6 @@ void dalex::explore(){
     _explorers.set_associates(associates);
     _explorers.sample(4*_chifn->get_dim());
 
-    if(_log!=NULL){
-         for(i=pt_0;i<_chifn->get_pts();i++){
-             _log->add(_log_mcmc, i);
-         }
-    }
-
     _update_good_points(pt_0);
 }
 
@@ -1293,12 +1283,6 @@ void dalex::min_explore(int n_particles, int n_steps){
 
     _min_explorers.set_associates(associates);
     _min_explorers.sample(n_steps);
-
-    if(_log!=NULL){
-         for(i=pt_0;i<_chifn->get_pts();i++){
-             _log->add(_log_mcmc, i);
-         }
-    }
 
     _update_good_points(pt_0);
 }
@@ -1333,10 +1317,6 @@ void dalex::tendril_search(int specified){
     local_ellipse.build(exclusion_points);
     i_exclude=_chifn->get_pts();
     _update_good_points();
-
-    if(_log!=NULL){
-        _log->add(_log_dchi_simplex,i_particle);
-    }
 
     assess_good_points();
 

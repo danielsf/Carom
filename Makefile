@@ -125,11 +125,11 @@ object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o obje
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
 object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
-object/simplex.o object/cost_fn.o include/search_types.h
+object/simplex.o object/cost_fn.o
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
 object/carom.o: src/carom/carom.cpp include/carom.h \
-object/simplex.o object/node.o object/eigen_wrapper.o include/search_types.h
+object/simplex.o object/node.o object/eigen_wrapper.o
 	$(gg) -c -o object/carom.o src/carom/carom.cpp
 
 object/control_integrator.o: src/controls/control_integrator.cpp \
@@ -194,7 +194,7 @@ include/exampleLikelihoods.h object/jellyBean.o
 	object/chisq.o
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
-object/simplex.o object/cost_fn.o object/eigen_wrapper.o include/search_types.h \
+object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/maps_initializer.o object/ellipse.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
