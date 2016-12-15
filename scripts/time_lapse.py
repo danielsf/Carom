@@ -63,10 +63,8 @@ if __name__ == "__main__":
     ymin_dict = {}
     ymax_dict = {}
     plot_labels_dict = {}
-    multinest_min_label_dict = {}
     for dim in dim_list:
         plot_labels_dict[dim] = []
-        multinest_min_label_dict[dim] = []
 
     for i_time, (multinest_file, multinest_scatter) in \
     enumerate(zip(multinest_file_list, multinest_scatter_file_list)):
@@ -80,17 +78,10 @@ if __name__ == "__main__":
             plt.subplot(3,2,i_time+1)
             m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
                                       4, dim[0], dim[1])
-
-            (j_x, j_y, multinest_chisq_min, j_target,
-             j_data) = scatter_from_carom(multinest_scatter, 4, dim[0], dim[1], delta_chi=9.49,
-                                          data=j_data, limit=n_pts)
-
-
+            
             (d_x, d_y, d_chisq_min, d_target,
              d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
                                           data=dalex_data, limit=n_pts)
-
-            print dalex_name,d_chisq_min,multinest_scatter,multinest_chisq_min
 
             hh, = plt.plot(control_data[dim]['x'], control_data[dim]['y'],
                            color='k', linewidth=1)
@@ -140,10 +131,8 @@ if __name__ == "__main__":
 
             label = '$t=%d$ evaluations of $\chi^2$\n$\chi^2_{min}=%.4e$ (Dalex)' % (n_pts, d_chisq_min)
             plot_labels_dict[dim].append(label)
-            label = '$\chi^2_{min}=%.4e$ (MultiNest)' % multinest_chisq_min
-            multinest_min_label_dict[dim].append(label)
-
-
+            
+                
 
     for i_fig, dim in enumerate(dim_list):
         plt.figure(i_fig+1)
@@ -153,14 +142,11 @@ if __name__ == "__main__":
             plt.xlim((xmin_dict[dim]-0.05*dx, xmax_dict[dim]+0.05*dx))
             dy = ymax_dict[dim] - ymin_dict[dim]
             plt.ylim((ymin_dict[dim]-0.05*dy, ymax_dict[dim]+0.4*dy))
-
+            
             plt.text(xmin_dict[dim]+0.05*dx, ymax_dict[dim],
                      plot_labels_dict[dim][i_time-1], fontsize=10)
-
-            plt.text(xmin_dict[dim]+0.05*dx, ymin_dict[dim]+0.05*dy,
-                     multinest_min_label_dict[dim][i_time-1], fontsize=10)
-
-        #plt.subplot(3,2,i_time+1)
+        
+        #plt.subplot(3,2,i_time+1)    
         plt.legend(legend_handles[dim], legend_labels[dim], fontsize=10,
                    bbox_to_anchor=(-0.05,0.0), loc=2)
         plt.tight_layout()
