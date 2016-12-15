@@ -17,7 +17,7 @@ if __name__ == "__main__":
     physics_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
     dalex_dir = os.path.join(physics_dir, "Carom")
-    
+
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
     data_dir = os.path.join(dalex_dir, "output", "draft_161117")
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         multinest_scatter_file_list.append(multinest_file_name)
 
     dim_list = ((0,1), (0,2), (0,3), (1,2), (1,3), (2,3))
-    
+
     control_dtype = np.dtype([('x', float), ('y', float)])
 
     control_data = {}
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         control_data[dim] = np.genfromtxt(control_file_name, dtype=control_dtype)
 
     dalex_name = os.path.join(data_dir, "jellyBean_d4_s762_output.sav")
-    
+
     (x_grid, y_grid, dalex_chisq_min, dalex_target,
      dalex_data) = scatter_from_carom(dalex_name, 4, 0, 1, delta_chi=9.49)
 
@@ -89,46 +89,46 @@ if __name__ == "__main__":
             if label not in legend_labels[dim]:
                 legend_handles[dim].append(hh)
                 legend_labels[dim].append(label)
-            
+
             hh = plt.scatter(m_x, m_y,color='r', s=5)
             label = '95% projected Bayesian limit (MultiNest)'
             if label not in legend_labels[dim]:
                 legend_handles[dim].append(hh)
                 legend_labels[dim].append(label)
-            
+
             hh = plt.scatter(d_x, d_y, color='b', s=10)
             label = '$\chi^2<=\chi^2_{min}+9.49$ contour (Dalex)'
             if label not in legend_labels[dim]:
                 legend_handles[dim].append(hh)
                 legend_labels[dim].append(label)
-            
+
             plt.xlabel('$\\theta_%d$' % dim[0], fontsize=10)
             plt.ylabel('$\\theta_%d$' % dim[1], fontsize=10)
             xmin = control_data[dim]['x'].min()
             xmax = control_data[dim]['x'].max()
-            
+
             ymin = control_data[dim]['y'].min()
             ymax = control_data[dim]['y'].max()
-            
+
             if dim not in xmax_dict:
                 xmax_dict[dim] = xmax
                 xmin_dict[dim] = xmin
                 ymax_dict[dim] = ymax
                 ymin_dict[dim] = ymin
-            
+
             for xc in (xmax, xmin, d_x.min(), d_x.max(), m_x.min(), m_x.max()):
                 if xc < xmin_dict[dim]:
                     xmin_dict[dim] = xc
                 if xc > xmax_dict[dim]:
                     xmax_dict[dim] = xc
-            
+
             for yc in (ymax, ymin, d_y.min(), d_y.max(), m_y.min(), m_y.max()):
                 if yc < ymin_dict[dim]:
                     ymin_dict[dim] = yc
                 if yc > ymax_dict[dim]:
                     ymax_dict[dim] = yc
-            
-            
+
+
             label = '$t=%d$ evaluations of $\chi^2$\n$\chi^2_{min}=%.4e$ (Dalex)' % (n_pts, d_chisq_min)
             plot_labels_dict[dim].append(label)
             
