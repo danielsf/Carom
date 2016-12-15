@@ -70,7 +70,7 @@ void aps_extractor::learn_nparams(){
     char word[letters];
     int ct=0;
     fscanf(input,"%s",word);
-    while(compare_char(word,"ling")==0){
+    while(compare_char(word,"ling")==0 && compare_char(word, "log")==0){
         fscanf(input,"%s",word);
         ct++;
     }
