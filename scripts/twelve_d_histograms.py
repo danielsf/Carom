@@ -62,7 +62,7 @@ if __name__ == "__main__":
         plt.plot(range(1,len(running_min[seed])+1), running_min[seed], label=label, color=color)
     plt.xlabel('calls to $\chi^2$', fontsize=15)
     plt.ylabel('$\chi^2_{min}$', fontsize=15)
-    plt.ylim((90.0, 150.0))
+    plt.ylim((93.0, 110.0))
     plt.xlim((1.0e4, 7.0e5))
     plt.legend(fontsize=15, loc=0)
     plt.savefig(os.path.join(fig_dir, 'dalex_minimums.png'))
