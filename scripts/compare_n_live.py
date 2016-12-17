@@ -18,7 +18,10 @@ plt.figsize = (30,30)
 
 header_list = []
 label_list= []
-for n_live, color in zip(n_live_list, color_list):
+
+
+for i_set, n_live in enumerate(n_live_list):
+    print 'plotting ',i_set
     data = None
     for i_fig, dim in enumerate(((6, 9), (0,1))):
         plt.subplot(2,1,i_fig + 1)
@@ -29,7 +32,8 @@ for n_live, color in zip(n_live_list, color_list):
         xx, yy, data = scatter_from_multinest_projection(file_name, 12, dim[0], dim[1],
                                                         data=data)
 
-        hh = plt.scatter(xx, yy, color=color, s=7)
+        color = plt.cm.gist_ncar(i_set*50)
+        hh = plt.scatter(xx, yy, color=[color]*len(xx), s=7)
         
         if i_fig != 0:
             scatter_name = file_name.replace('.txt', '_carom.sav')
