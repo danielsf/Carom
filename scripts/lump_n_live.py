@@ -31,7 +31,9 @@ xmax = {}
 ymin = {}
 ymax = {}
 
-for n_live, color in zip(n_list, color_list):
+color_map = plt.cm.gist_ncar
+
+for i_set, n_live in enumerate(n_list):
     multinest_name = os.path.join(multinest_dir,
                                   "nonGaussianLump_d12_s99_n%d_t1.00e-03.txt"
                                   % (n_live))
@@ -57,8 +59,8 @@ for n_live, color in zip(n_list, color_list):
             if yy.max()>ymax[dim]:
                 ymax[dim]=yy.max()
 
-
-        hh = plt.scatter(xx, yy, color=color,s=7)
+        color= color_map(i_set*50)
+        hh = plt.scatter(xx, yy, color=color, s=7)
         if i_fig != 0:
             scatter_name = multinest_name.replace('.txt', '_carom.sav')
             with open(scatter_name, 'r') as file_handle:
