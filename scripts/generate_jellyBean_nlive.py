@@ -11,7 +11,7 @@ n_live_list = [20000, 5000, 3000, 2000, 1000]
 color_list = ['k', 'r', 'b', 'y', 'c']
 
 physics_dir = os.path.join("/Users", "danielsf", "physics")
-fig_dir = os.path.join(physics_dir, "Carom", "figures")
+fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
 
 plt.figsize = (30,30)
@@ -46,4 +46,4 @@ for i_set, n_live in enumerate(n_live_list):
 plt.subplot(2,1,2)
 plt.legend(header_list, label_list, fontsize=10, loc=0)
 plt.tight_layout()
-plt.savefig(os.path.join(fig_dir, 'multinest_nlive_comparison.png'))
+plt.savefig(os.path.join(fig_dir, 'jellyBean_nlive_comparison.png'))
