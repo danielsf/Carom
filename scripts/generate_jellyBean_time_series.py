@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
             plt.text(xmin+0.05*dx, ymax-0.3*dy,
                      'Dale$\chi$ calls to $\chi^2$: %.2e\n' % limit
-                     + 'Dale$\chi$ $\chi^2$ min: %.2e' % min_dict[limit],
+                     + 'Dale$\chi$ $\chi^2$ min: %.3e' % min_dict[limit],
                      fontsize=10)
 
             if i_fig==len(time_list)-1:
