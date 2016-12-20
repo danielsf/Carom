@@ -63,8 +63,8 @@ plt.subplot(2,1,2)
 dx = xmax-xmin
 dy = ymax-ymin
 
-plt.xlim((xmin, xmax+0.4*dx))
-plt.ylim((ymin, ymax+0.4*dx))
+plt.xlim((xmin-0.1*dx, xmax+0.4*dx))
+plt.ylim((ymin-0.1*dy, ymax+0.4*dx))
 plt.legend(header_list, label_list, fontsize=10, loc=0)
 plt.tight_layout()
 plt.savefig(os.path.join(fig_dir, 'lump_nlive_comparison.png'))
