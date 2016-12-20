@@ -21,7 +21,15 @@ if __name__ == "__main__":
     delta_chi = 21.03
     full_dim = 12
     nlive = 3000
+    n_dud = 1000
     seed = 6475
+
+    multinest_dud_file = os.path.join(multinest_dir,
+                                      "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % n_dud)
+
+    multinest_dud_scatter = os.path.join(multinest_dir,
+                                         "gaussianJellyBean_d12_s99_n%d_t1.00e-03_carom.sav" % n_dud)
+
 
     multinest_file = os.path.join(multinest_dir,
                                   "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % nlive)
@@ -35,9 +43,15 @@ if __name__ == "__main__":
     n_mult_calls = len(scatter_lines)-1
     del scatter_lines
 
+    with open(multinest_dud_scatter, 'r') as file_handle:
+        scatter_lines = file_handle.readlines()
+    n_mult_dud_calls = len(scatter_lines)-1
+    del scatter_lines
+
     dalex_file = os.path.join(dalex_dir,'jellyBean_d12_s%d_output.sav' % seed)
 
     m_data = None
+    md_data = None
     d_data = None
 
     time_list = [150000, 200000, 250000, 350000]
@@ -46,6 +60,9 @@ if __name__ == "__main__":
 
         m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
                                                              full_dim, ix, iy, data=m_data)
+
+        md_x, md_y, md_data = scatter_from_multinest_projection(multinest_dud_file,
+                                                                full_dim, ix, iy, data=md_data)
 
         xmin = m_x.min()
         xmax = m_x.max()
@@ -60,9 +77,12 @@ if __name__ == "__main__":
 
             plt.subplot(2,2,i_fig+1)
             m_hh = plt.scatter(m_x, m_y, color='k', s=5)
+            m_d_hh = plt.scatter(md_x, md_y, color='c', s=5)
             if i_fig == len(time_list)-1:
                 header_list.append(m_hh)
                 label_list.append('MultiNest; %.2e $\chi^2$ calls' % n_mult_calls)
+                header_list.append(m_d_hh)
+                label_list.append('MultiNest; %.2e $\chi^2$ calls' % n_mult_dud_calls)
 
             (d_x, d_y, d_min,
              d_target, d_data) = scatter_from_carom(dalex_file, full_dim, ix, iy,
@@ -90,7 +110,7 @@ if __name__ == "__main__":
 
         xmin -= 0.2*dx
         xmax += 0.1*dx
-        ymin -= 0.3*dy
+        ymin -= 0.4*dy
         ymax += 0.35*dy
 
         for i_fig, limit in enumerate(time_list):
