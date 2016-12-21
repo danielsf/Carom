@@ -21,7 +21,7 @@ if __name__ == "__main__":
     delta_chi = 21.03
     full_dim = 12
     nlive = 3000
-    n_dud = 1000
+    n_dud = 300
     seed = 6475
 
     multinest_dud_file = os.path.join(multinest_dir,
