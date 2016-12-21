@@ -16,7 +16,7 @@ if __name__ == "__main__":
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    dalex_dir = os.path.join(physics_dir, "Carom", "output", "draft_161117")
+    dalex_dir = os.path.join(physics_dir, "Carom", "output", "draft_161215")
 
     delta_chi = 21.03
     full_dim = 12
