@@ -28,7 +28,7 @@ def load_dalex_data(data_name, dim):
 
 def make_histogram(xx_in, dmag, cut_off, cumulative=True):
     xx = xx_in[np.where(xx_in<=cut_off+dmag)]
-    print xx.min(),xx.max()
+    #print xx.min(),xx.max()
     min_val=xx.min()-dmag
     i_xx = np.round((xx-min_val)/dmag).astype(int)
     unique_ixx, ct = np.unique(i_xx, return_counts=True)
