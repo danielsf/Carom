@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     delta_chi = 21.03
     full_dim = 12
-    nlive = 3000
+    nlive = 50000
     n_dud = 300
     seed = 1068
 
