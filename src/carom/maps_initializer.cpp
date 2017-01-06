@@ -59,7 +59,7 @@ void maps_initializer::search(){
     array_1d<int> c_v_d;
 
     for(ip=0;ip<n_particles;ip++){
-
+        _chifn->set_search_type(-1*(ip+2));
         i_best=-1;
 
         while(i_best<0){
