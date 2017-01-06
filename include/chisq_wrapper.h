@@ -31,8 +31,10 @@ public:
            ii!=_type_explore && ii!=_type_tendril &&
            ii!=-1){
 
-            printf("WARNING search type %d is not allowed\n", ii);
-            exit(1);
+            if(ii>=0){
+                printf("WARNING search type %d is not allowed\n", ii);
+                exit(1);
+            }
         }
         _search_type=ii;
     }
