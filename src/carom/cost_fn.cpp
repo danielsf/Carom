@@ -222,6 +222,7 @@ void cost_fn::_principal_set_bases(){
                 if(fabs(component)>0.001){
                     printf("WARNING dot product between bases %d %d is %e\n",
                     i,j,component);
+                    printf("associates %d\n",_associates.get_dim());
                     exit(1);
                 }
             }
