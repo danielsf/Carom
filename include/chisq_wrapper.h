@@ -26,6 +26,12 @@ public:
     void initialize(int);
 
     void write_pts();
+    int get_search_type_log(int ii){
+        return _search_type_log.get_data(ii);
+    }
+    int get_search_type(){
+        return _search_type;
+    }
     void set_search_type(int ii){
         if(ii!=_type_init && ii!=_type_refine &&
            ii!=_type_explore && ii!=_type_tendril &&
