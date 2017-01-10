@@ -272,6 +272,16 @@ void cost_fn::_set_norm(){
     cc_sorted.set_name("hyper_ellipse_cc_sorted");
     cc_dex.set_name("hyper_ellipse_cc_dex");
 
+    int ix1,ix2;
+    if(_associates.get_dim()<6){
+        ix1=0;
+        ix2=_associates.get_dim()-1;
+    }
+    else{
+        ix1=_associates.get_dim()/6;
+        ix2=(5*_associates.get_dim())/6;
+    }
+
     double x1,x2;
     int ix,i,j;
     for(ix=0;ix<_bases.get_rows();ix++){
@@ -289,10 +299,8 @@ void cost_fn::_set_norm(){
         }
         sort(cc,cc_sorted,cc_dex);
 
-        i=cc_dex.get_dim();
-
-        x1=cc_sorted.get_data(1/6);
-        x2=cc_sorted.get_data((5*i)/6);
+        x1=cc_sorted.get_data(ix1);
+        x2=cc_sorted.get_data(ix2);
         _norm.set(ix,0.5*(x2-x1));
     }
 
