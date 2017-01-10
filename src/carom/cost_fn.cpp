@@ -70,7 +70,9 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         return sqrt(dd);
     }
 
-    if(_associates.get_dim()==0){
+    int n_dd=3;
+
+    if(_associates.get_dim()<n_dd){
         return 0.0;
     }
 
@@ -79,7 +81,6 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     dd_arr.set_name("cost_fn_dd_arr");
     dd_arr_sorted.set_name("cost_fn_dd_arr_sorted");
     dd_dex.set_name("cost_fn_dd_dex");
-    int n_dd=3;
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
