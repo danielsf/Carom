@@ -265,6 +265,21 @@ void cost_fn::_set_norm(){
 
     _norm.reset_preserving_room();
 
+    int i,j;
+    double mu,nn;
+
+    if(_associates.get_dim()<2){
+        for(i=0;i<_chifn->get_dim();i++){
+            nn=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                mu=_chifn->get_characteristic_length(j)*_bases.get_data(i,j);
+                nn+=mu*mu;
+            }
+            _norm.set(i,sqrt(nn));
+        }
+        return;
+    }
+
     double component;
     array_1d<double> cc,cc_sorted;
     array_1d<int> cc_dex;
@@ -283,7 +298,7 @@ void cost_fn::_set_norm(){
     }
 
     double x1,x2;
-    int ix,i,j;
+    int ix;
     for(ix=0;ix<_bases.get_rows();ix++){
         cc.reset_preserving_room();
         cc_sorted.reset_preserving_room();
