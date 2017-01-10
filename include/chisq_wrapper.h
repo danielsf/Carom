@@ -15,6 +15,7 @@
 #define _type_refine 1
 #define _type_explore 2
 #define _type_tendril 3
+#define _type_find_bases 4
 
 class chisq_wrapper : public function_wrapper{
 
@@ -35,7 +36,7 @@ public:
     void set_search_type(int ii){
         if(ii!=_type_init && ii!=_type_refine &&
            ii!=_type_explore && ii!=_type_tendril &&
-           ii!=-1){
+           ii!=_type_find_bases && ii!=-1){
 
             if(ii>=0){
                 printf("WARNING search type %d is not allowed\n", ii);

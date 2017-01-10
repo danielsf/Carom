@@ -463,6 +463,8 @@ void dalex::find_bases(){
     int i_pt;
     double mu;
     int n_0=_basis_associates.get_dim();
+    int old_search_type = _chifn->get_search_type();
+    _chifn->set_search_type(_type_find_bases);
     while(_basis_associates.get_dim()<4*_chifn->get_dim()+n_0){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
@@ -493,7 +495,7 @@ void dalex::find_bases(){
             }
         }
     }
-
+    _chifn->set_search_type(old_search_type);
 
     array_2d<double> trial_bases;
     array_1d<double> trial_model,dx;
