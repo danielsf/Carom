@@ -1264,7 +1264,7 @@ void dalex::explore(){
 }
 
 void dalex::min_explore(int n_particles, int n_steps){
-    printf("\nexploring\n");
+    printf("\nmin exploring\n");
     int pt_0=_chifn->get_pts();
 
     _min_explorers.set_n_particles(n_particles);
