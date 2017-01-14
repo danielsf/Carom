@@ -9,6 +9,12 @@ int ellipse::contains(const array_1d<double> &pt){
         for(j=0;j<_bases.get_rows();j++){
             component+=(pt.get_data(j)-_center.get_data(j))*_bases.get_data(i,j);
         }
+        if(i<_max.get_dim() && component>_max.get_data(i)){
+            return 0;
+        }
+        if(i<_min.get_dim() && component<_min.get_data(i)){
+            return 0;
+        }
         sum+=power(component/_radii.get_data(i),2);
         if(sum>1.0){
             return 0;
@@ -18,6 +24,9 @@ int ellipse::contains(const array_1d<double> &pt){
 }
 
 void ellipse::build(const array_2d<double> &pts_in){
+
+    _min.reset_preserving_room();
+    _max.reset_preserving_room();
 
     int n_pts = pts_in.get_rows();
     int dim = pts_in.get_cols();
@@ -83,6 +92,26 @@ void ellipse::build(const array_2d<double> &pts_in){
 
         if(is_valid==0){
             _set_radii(pts_in);
+        }
+    }
+
+    //set extremities
+    for(i=0;i<n_pts;i++){
+        for(j=0;j<dim;j++){
+            dir.set(j,pts_in.get_data(i,j)-_center.get_data(j));
+        }
+
+        for(j=0;j<dim;j++){
+            component=0.0;
+            for(k=0;k<dim;k++){
+                component+=dir.get_data(k)*_bases.get_data(j,k);
+            }
+            if(j>=_min.get_dim() || component<_min.get_data(j)){
+                _min.set(j,component);
+            }
+            if(j>=_max.get_dim() || component>_max.get_data(j)){
+                _max.set(j,component);
+            }
         }
     }
 
@@ -182,6 +211,8 @@ void ellipse::copy(ellipse &other){
     _bases.reset_preserving_room();
     _center.reset_preserving_room();
     _radii.reset_preserving_room();
+    _min.reset_preserving_room();
+    _max.reset_preserving_room();
     int i;
     for(i=0;i<other.dim();i++){
         _center.set(i,other.center(i));
@@ -193,6 +224,13 @@ void ellipse::copy(ellipse &other){
         for(j=0;j<other.dim();j++){
             _bases.set(i,j,other.bases(i,j));
         }
+    }
+
+    for(i=0;i<other._min.get_dim();i++){
+        _min.set(i,other._min.get_data(i));
+    }
+    for(i=0;i<other._max.get_dim();i++){
+        _max.set(i,other._max.get_data(i));
     }
 }
 
