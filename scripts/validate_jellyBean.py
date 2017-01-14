@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 plt.subplot(3,2,i_fig+1)
                 plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
                 plt.scatter(d_x, d_y, marker='x', color='r')
-                plt.title('%d' % seed)
+                plt.title('%d; %.2f' % (seed d_min))
             
             plt.tight_layout()
             plt.savefig(os.path.join(physics_dir, 'Carom', 'figures',
