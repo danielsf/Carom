@@ -7,4 +7,5 @@ python scripts/generate_lump_time_series.py
 python scripts/generate_slow_jellyBean_time_series.py
 python scripts/generate_lump_slow_time_series.py
 python scripts/generate_jellyBean_histogram.py
-python scripts/generate_jellyBean_multinest_histogram.py
+python scripts/generate_jellyBean_multinest_histograms.py
+python scripts/generate_time_lapes_4d.py
