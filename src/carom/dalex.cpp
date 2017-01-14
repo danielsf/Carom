@@ -1077,9 +1077,7 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     if(associates.get_dim()==0){
         for(i=0;i<_good_points.get_dim();i++){
-            if(_chifn->get_search_type_log(_good_points.get_data(i))>_type_refine){
-                associates.add(_good_points.get_data(i));
-            }
+            associates.add(_good_points.get_data(i));
         }
     }
 
