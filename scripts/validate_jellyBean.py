@@ -34,7 +34,7 @@ if __name__ == "__main__":
         m_y_dict[dim] = m_y
 
     seed_list = [66, 694, 762, 1068, 6475, 626]
-    time_list = [100000, 200000, 300000, 400000, 600000]
+    time_list = [600000, 400000, 300000, 200000, 100000]
     
     data_dict = {}
     for seed in seed_list:
@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 plt.subplot(3,2,i_fig+1)
                 plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
                 plt.scatter(d_x, d_y, marker='x', color='r')
-                plt.title('%d; %.2f' % (seed d_min))
+                plt.title('%d; %.2f' % (seed, d_min))
             
             plt.tight_layout()
             plt.savefig(os.path.join(physics_dir, 'Carom', 'figures',
