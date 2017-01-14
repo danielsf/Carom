@@ -1,14 +1,14 @@
-#make jellyBean_maps
+make jellyBean_maps
 #make analysis
 
 # seeds 99 66 125 6475
 
 for ss in 626 694 762 1068 6475 66 125
 do
-    out_name=output/draft_161117/jellyBean_d4_s${ss}_output.sav
+    out_name=output/draft_170110/jellyBean_d4_s${ss}_output.sav
     
     ./bin/jellyBean_maps -d 4 -x 1 -c 9.49 -p 0.95 -n 40000 -s ${ss} \
-    -t output/draft_161117/jellyBean_d4_s${ss}_timing.sav \
+    -t output/draft_170110/jellyBean_d4_s${ss}_timing.sav \
     -o ${out_name} -i 8
     
     #./bin/analysis -i ${out_name} -o output/scratch/jellyBean_d12_s${ss}_processed \

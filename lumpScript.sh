@@ -7,10 +7,10 @@ make jellyBean_maps
 #for ss in 66 694 6475 762 1068 125 626
 for ss in 83 13 48 33 62
 do
-    out_name=output/draft_161117/lump_d12_s${ss}_output.sav
+    out_name=output/draft_170110/lump_d12_s${ss}_output.sav
     
     ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 250000 -s ${ss} \
-    -t output/draft_161117/lump_d12_s${ss}_timing.sav \
+    -t output/draft_170110/lump_d12_s${ss}_timing.sav \
     -o ${out_name} -i 24 -x 2
     
     #./bin/analysis -i ${out_name} -o output/scratch/jellyBean_d12_s${ss}_processed \
