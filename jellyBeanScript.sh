@@ -1,16 +1,18 @@
 make jellyBean_maps
 #make analysis
 
+out_dir=output/workspace/
+
 # seeds 99 66 125 6475
 
 #for ss in 626 694 762 1068 6475 66 125
 #for ss in 66 694 6475 762 1068 125 626
 for ss in 66 694 762 1068 6475 626
 do
-    out_name=output/draft_170110/jellyBean_d12_s${ss}_output.sav
+    out_name=${out_dir}jellyBean_d12_s${ss}_output.sav
     
     ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 500000 -s ${ss} \
-    -t output/draft_170110/jellyBean_d12_s${ss}_timing.sav \
+    -t ${out_dir}jellyBean_d12_s${ss}_timing.sav \
     -o ${out_name} -i 24
     
     #./bin/analysis -i ${out_name} -o output/scratch/jellyBean_d12_s${ss}_processed \
