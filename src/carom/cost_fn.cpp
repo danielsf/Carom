@@ -275,7 +275,7 @@ void cost_fn::_set_norm(){
 
     int ix1,ix2;
     ix1=0;
-    ix2=_associates.get_dim()-1;
+    ix2=(5*_associates.get_dim())/6;
 
     double x1,x2;
     int ix,i,j;
