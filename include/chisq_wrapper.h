@@ -12,11 +12,10 @@
 #include "chisq.h"
 
 #define _type_init 0
-#define _type_first_refine 1
-#define _type_refine 2
-#define _type_explore 3
-#define _type_tendril 4
-#define _type_find_bases 5
+#define _type_refine 1
+#define _type_explore 2
+#define _type_tendril 3
+#define _type_find_bases 4
 
 class chisq_wrapper : public function_wrapper{
 
@@ -35,7 +34,7 @@ public:
         return _search_type;
     }
     void set_search_type(int ii){
-        if(ii!=_type_init && ii!=_type_first_refine && ii!=_type_refine &&
+        if(ii!=_type_init && ii!=_type_refine &&
            ii!=_type_explore && ii!=_type_tendril &&
            ii!=_type_find_bases && ii!=-1){
 

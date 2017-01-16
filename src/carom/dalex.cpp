@@ -62,12 +62,7 @@ void dalex::search(){
 
     int has_explored=0;
 
-    if(_ct_refine==0){
-        _chifn->set_search_type(_type_first_refine);
-    }
-    else{
-        _chifn->set_search_type(_type_refine);
-    }
+    _chifn->set_search_type(_type_refine);
     iterate_on_minimum();
 
     _chifn->set_search_type(_type_explore);
@@ -1082,9 +1077,7 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     if(associates.get_dim()==0){
         for(i=0;i<_good_points.get_dim();i++){
-            if(_chifn->get_search_type_log(_good_points.get_data(i))>_type_first_refine){
-               associates.add(_good_points.get_data(i));
-            }
+            associates.add(_good_points.get_data(i));
         }
     }
 
@@ -1507,7 +1500,6 @@ void dalex::refine_minimum(){
 
     printf("    refining minimum %e\n",chimin());
 
-    _ct_refine++;
     int n_particles=2*_chifn->get_dim();
     int n_steps=5*_chifn->get_dim();
     int accepted=0;

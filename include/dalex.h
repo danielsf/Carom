@@ -24,7 +24,6 @@ class dalex{
             _target_factor=1.0;
             _last_checked_good=0;
             _simplex_mindex=-1;
-            _ct_refine=0;
 
             _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
@@ -192,7 +191,6 @@ class dalex{
         void compass_search(ellipse&);
 
         int _limit;
-        int _ct_refine;
 
         ellipse_list _exclusion_zones;
 };
