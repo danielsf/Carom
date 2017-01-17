@@ -15,6 +15,7 @@ class dalex{
         ~dalex(){};
         dalex(){
             _chifn=NULL;
+            _strikes=0;
             _limit=-1;
             _good_points.set_name("dalex_good_points");
             _good_points.set_room(100000);
@@ -191,6 +192,7 @@ class dalex{
         void compass_search(ellipse&);
 
         int _limit;
+        int _strikes;
 
         ellipse_list _exclusion_zones;
 };

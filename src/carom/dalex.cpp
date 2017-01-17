@@ -1334,7 +1334,7 @@ void dalex::tendril_search(int specified){
     fall_back.set_name("dalex_simplex_boundary_fall_back");
     int ct_last;
 
-    int strikes=0;
+    _strikes=0;
     int iteration=0;
     int use_median=0;
     int is_a_strike;
@@ -1352,7 +1352,7 @@ void dalex::tendril_search(int specified){
 
     fall_back.set(0,i_particle);
 
-    while(strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
+    while(_strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
         iteration++;
 
@@ -1397,10 +1397,10 @@ void dalex::tendril_search(int specified){
         }
 
         if(is_a_strike==1){
-            strikes++;
-            if(strikes<3){
+            _strikes++;
+            if(_strikes<3){
                 if(fall_back.get_dim()==2){
-                    i_particle=fall_back.get_data(strikes-1);
+                    i_particle=fall_back.get_data(_strikes-1);
                 }
                 else{
                     i_particle=fall_back.get_data(0);
@@ -1408,14 +1408,14 @@ void dalex::tendril_search(int specified){
             }
         }
         else{
-            strikes=0;
+            _strikes=0;
             fall_back.set(1,fall_back.get_data(0));
             fall_back.set(0,i_particle);
         }
 
         printf("    volume %e from %e-- %d; chifn(i_next) %e\n",
                volume,old_volume,_exclusion_zones.ct(),_chifn->get_fn(i_next));
-        printf("    strikes %d use_median %d\n",strikes,use_median);
+        printf("    strikes %d use_median %d\n",_strikes,use_median);
 
     }
 
@@ -1444,7 +1444,7 @@ void dalex::tendril_search(int specified){
 
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
-           strikes,_chifn->get_pts());
+           _strikes,_chifn->get_pts());
 
     int i_best;
     double dd,dd_max;
