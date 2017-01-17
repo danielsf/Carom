@@ -1109,13 +1109,9 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
-    array_1d<double> trial1,trial2,trial3;
+    array_1d<double> trial1,trial2;
     trial1.set_name("dalex_simplex_trial1");
     trial2.set_name("dalex_simplex_trial2");
-    trial3.set_name("dalex_simplex_trial3");
-
-    double epsilon;
-    double mu1,mu2,mu3;
 
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
@@ -1123,27 +1119,12 @@ int dalex::simplex_boundary_search(int specified, int use_median,
             for(j=0;j<_chifn->get_dim();j++){
                 trial1.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
                 trial2.set(j,seed.get_data(0,j)-cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01);
-                trial3.set(j,seed.get_data(0,j));
             }
-            for(j=0;j<_chifn->get_dim();j++){
-                epsilon=0.02*(1.0-2.0*_chifn->random_double())/sqrt(double(_chifn->get_dim()));
-                for(k=0;k<_chifn->get_dim();k++){
-                    trial3.add_val(k,epsilon*dchifn.get_norm(j)*cost_bases.get_data(j,k));
-                }
-            }
-
-            mu1=dchifn(trial1);
-            mu2=dchifn(trial2);
-            mu3=dchifn(trial3);
-
-            if(mu1<mu2 && mu1<mu3){
+            if(dchifn(trial1)<dchifn(trial2)){
                 seed.add_row(trial1);
             }
-            else if(mu2<mu3){
-                seed.add_row(trial2);
-            }
             else{
-                seed.add_row(trial3);
+                seed.add_row(trial2);
             }
         }
     }
