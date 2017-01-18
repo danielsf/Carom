@@ -98,10 +98,6 @@ void dalex::search(){
 
     sort(dd_min, dd_min_sorted, to_use);
 
-    for(i=0;i<to_kick.get_dim();i++){
-        _explorers.kick(to_kick.get_data(i));
-    }
-
     int i_end;
 
     _chifn->set_search_type(_type_tendril);
