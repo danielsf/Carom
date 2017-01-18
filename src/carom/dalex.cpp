@@ -76,7 +76,7 @@ void dalex::search(){
                 to_kick.add(i);
                 is_outside=1;
                 for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
-                    if(_exclusion_zones(j)->contains(pt)){
+                    if(_exclusion_zones(j)->contains(pt)==1){
                         is_outside=0;
                     }
                 }
