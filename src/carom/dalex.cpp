@@ -91,7 +91,7 @@ void dalex::search(){
     for(i=0;i<to_use.get_dim();i++){
         dd_min.set(i,0.0);
         for(j=0;j<_chifn->get_dim();j++){
-           mu=_chifn->get_pt(to_use.get_data(i),j)-_chifn->get_pt(mindex(),j);
+            mu=_chifn->get_pt(to_use.get_data(i),j)-_chifn->get_pt(mindex(),j);
             dd_min.add_val(i,power(mu/_chifn->get_characteristic_length(j),2));
         }
     }
