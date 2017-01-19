@@ -15,7 +15,7 @@ class dalex{
         ~dalex(){};
         dalex(){
             _chifn=NULL;
-            _reset_threshold=2.0;
+            _reset_threshold=0.5;
             _reset_chimin=2.0*exception_value;
             _strikes=0;
             _limit=-1;
