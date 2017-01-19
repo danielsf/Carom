@@ -1463,6 +1463,10 @@ void dalex::iterate_on_minimum(){
     double min_1=-2.0*exception_value;
     int i,j;
 
+    if(_reset_chimin>exception_value){
+        _reset_chimin=chimin();
+    }
+
     if(_good_points.get_dim()==0){
         find_bases();
     }
@@ -1473,16 +1477,19 @@ void dalex::iterate_on_minimum(){
         simplex_search(mindex());
         min_1=chimin();
     }
-    if(chimin()<min_00-2.0){
+
+    if(chimin()<_reset_chimin-_reset_threshold){
+        _reset_chimin=chimin();
         _good_points.reset_preserving_room();
         _explorers.reset();
         _tendril_path.reset_preserving_room();
         _exclusion_zones.reset();
-    }
-
-    if(chimin()<min_00-0.01){
         find_bases();
     }
+    else if(chimin()<min_00-0.01){
+        find_bases();
+    }
+
     printf("done iterating %e %d\n",chimin(),_chifn->get_called());
 
 }

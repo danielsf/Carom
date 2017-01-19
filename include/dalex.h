@@ -15,6 +15,8 @@ class dalex{
         ~dalex(){};
         dalex(){
             _chifn=NULL;
+            _reset_threshold=2.0;
+            _reset_chimin=2.0*exception_value;
             _strikes=0;
             _limit=-1;
             _good_points.set_name("dalex_good_points");
@@ -157,6 +159,7 @@ class dalex{
 
         chisq_wrapper *_chifn;
         double _target_factor;
+        double _reset_threshold,_reset_chimin;
         int _simplex_mindex;
         array_1d<int> _good_points;
 
