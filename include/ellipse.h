@@ -12,6 +12,8 @@ class ellipse{
             _bases.set_name("ellipse_bases");
             _radii.set_name("ellipse_radii");
             _center.set_name("ellipse_center");
+            _min.set_name("ellipse_min");
+            _max.set_name("ellipse_max");
         }
 
         ~ellipse(){}
@@ -27,7 +29,7 @@ class ellipse{
 
     private:
         array_2d<double> _bases;
-        array_1d<double> _radii,_center;
+        array_1d<double> _radii,_center,_min,_max;
 
         void _set_radii(const array_2d<double>&);
         void _find_center(const array_2d<double>&);
