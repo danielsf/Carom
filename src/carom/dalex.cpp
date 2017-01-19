@@ -1361,7 +1361,7 @@ void dalex::tendril_search(int specified){
         }
         i_exclude=_chifn->get_pts();
 
-        if(local_ellipse.contains(_chifn->get_pt(i_next))==1){
+        if(local_ellipse.contains(_chifn->get_pt(i_next), 1)==1){
             is_a_strike=1;
         }
 
