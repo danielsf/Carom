@@ -1,6 +1,10 @@
 #include "ellipse.h"
 
 int ellipse::contains(const array_1d<double> &pt){
+    return contains(pt, 0);
+}
+
+int ellipse::contains(const array_1d<double> &pt, const int use_extreme){
     int i,j;
     double sum=0.0;
     double component,threshold;
@@ -12,10 +16,10 @@ int ellipse::contains(const array_1d<double> &pt){
         for(j=0;j<_bases.get_rows();j++){
             component+=(pt.get_data(j)-_center.get_data(j))*_bases.get_data(i,j);
         }
-        if(i<_max.get_dim() && component-_max.get_data(i)>threshold){
+        if(use_extreme==1 && i<_max.get_dim() && component-_max.get_data(i)>threshold){
             return 0;
         }
-        if(i<_min.get_dim() && _min.get_data(i)-component>threshold){
+        if(use_extreme==1 && i<_min.get_dim() && _min.get_data(i)-component>threshold){
             return 0;
         }
         sum+=power(component/_radii.get_data(i),2);

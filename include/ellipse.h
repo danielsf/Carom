@@ -20,6 +20,7 @@ class ellipse{
         void build(const array_2d<double>&);
 
         int get_dim(){return _bases.get_rows();}
+        int contains(const array_1d<double>&, const int);
         int contains(const array_1d<double>&);
         double bases(int i,int j){return _bases.get_data(i,j);}
         double center(int i){return _center.get_data(i);}
