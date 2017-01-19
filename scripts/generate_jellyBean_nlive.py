@@ -7,7 +7,7 @@ import os
 
 from analyzeCarom import scatter_from_multinest_projection
 
-n_live_list = [20000, 5000, 3000, 2000, 1000]
+n_live_list = [50000, 20000, 5000, 3000, 2000]
 color_list = ['k', 'r', 'b', 'y', 'c']
 
 physics_dir = os.path.join("/Users", "danielsf", "physics")
