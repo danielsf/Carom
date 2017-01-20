@@ -12,7 +12,27 @@
 class dalex{
 
     public:
-        ~dalex(){};
+        ~dalex(){
+            FILE *ellipse_file;
+            ellipse_file=fopen("ellipse_corners.txt", "w");
+            int i,j,zone;
+            double sign;
+            double component;
+            for(zone=0;zone<_exclusion_zones.ct();zone++){
+                for(i=0;i<_chifn->get_dim();i++){
+                    for(sign=-1.0;sign<1.5;sign+=2.0){
+                        for(j=0;j<_chifn->get_dim();j++){
+                            component=_exclusion_zones(zone)->center(j) +
+                                      sign*_exclusion_zones(zone)->radii(i)*_exclusion_zones(zone)->bases(i,j);
+                            fprintf(ellipse_file,"%e ",component);
+                        }
+                        fprintf(ellipse_file,"\n");
+                    }
+                }
+            }
+            fclose(ellipse_file);
+        };
+
         dalex(){
             _chifn=NULL;
             _reset_threshold=0.5;
