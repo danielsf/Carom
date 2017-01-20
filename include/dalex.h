@@ -14,7 +14,9 @@ class dalex{
     public:
         ~dalex(){
             FILE *ellipse_file;
-            ellipse_file=fopen("ellipse_corners.txt", "w");
+            char out_name[500];
+            sprintf(out_name,"ellipse_corners_%d.txt",_chifn->get_seed());
+            ellipse_file=fopen(out_name, "w");
             int i,j,zone;
             double sign;
             double component;
