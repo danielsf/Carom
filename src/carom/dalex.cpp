@@ -1433,19 +1433,6 @@ void dalex::tendril_search(int specified){
     local_ellipse.build(exclusion_points);
 
 
-    //sample points at the "corners" of the local ellipse
-    array_1d<double> trial,dir;
-    double sign;
-    for(sign=-1.0;sign<1.5;sign+=2.0){
-        for(i=0;i<_chifn->get_dim();i++){
-            for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,local_ellipse.center(j)+
-                            sign*local_ellipse.radii(i)*local_ellipse.bases(i,j));
-            }
-            evaluate(trial,&mu,&j);
-        }
-    }
-
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
