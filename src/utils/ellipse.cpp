@@ -149,11 +149,7 @@ void ellipse::_find_center(const array_2d<double> &pts_in){
     array_1d<double> geo_center;
     geo_center.set_name("ellipse_geo_center");
     for(i=0;i<dim;i++){
-        geo_center.set(i,0.0);
-        for(j=0;j<pts_in.get_rows();j++){
-            geo_center.add_val(i,pts_in.get_data(j,i));
-        }
-        geo_center.divide_val(i,double(pts_in.get_rows()));
+        geo_center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
     }
     double dd;
     double ddmin;
