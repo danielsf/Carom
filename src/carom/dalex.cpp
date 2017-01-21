@@ -1437,20 +1437,6 @@ void dalex::tendril_search(int specified){
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
 
-    int i_best;
-    double dd,dd_max;
-    for(i=0;i<end_pts.get_dim();i++){
-        dd=cardinal_distance(mindex(), end_pts.get_data(i));
-        if(i==0 || dd>dd_max){
-            dd_max=dd;
-            i_best=end_pts.get_data(i);
-        }
-    }
-    if(_chifn->get_dim()>9){
-        printf("    putting new explorer at %e %e\n",
-        _chifn->get_pt(i_best,6),_chifn->get_pt(i_best,9));
-    }
-    _explorers.add_particle(_chifn->get_pt(i_best));
     _chifn->write_pts();
 
 }
