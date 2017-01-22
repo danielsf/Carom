@@ -33,6 +33,9 @@ class dalex{
                 }
             }
             fclose(ellipse_file);
+            printf("\ncorners %d\n",_total_corners);
+            printf("good corners %d\n",_good_corners);
+            printf("really good corners %d\n",_really_good_corners);
         };
 
         dalex(){
@@ -60,6 +63,10 @@ class dalex{
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
             _minimizers.set_name("dalex_minimizers");
+
+            _good_corners=0;
+            _really_good_corners=0;
+            _total_corners=0;
         };
 
         void build(chisq_wrapper*);
@@ -220,6 +227,10 @@ class dalex{
         int _strikes;
 
         ellipse_list _exclusion_zones;
+
+        int _good_corners;
+        int _really_good_corners;
+        int _total_corners;
 };
 
 #endif

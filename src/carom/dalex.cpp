@@ -1436,6 +1436,7 @@ void dalex::tendril_search(int specified){
     //sample points at the "corners" of the local ellipse
     array_1d<double> trial,dir;
     double sign;
+    FILE *really_good;
     for(sign=-1.0;sign<1.5;sign+=2.0){
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
@@ -1443,6 +1444,19 @@ void dalex::tendril_search(int specified){
                             sign*local_ellipse.radii(i)*local_ellipse.bases(i,j));
             }
             evaluate(trial,&mu,&j);
+            _total_corners++;
+            if(mu<target()){
+                _good_corners++;
+            }
+            if(mu<chimin()+0.9*(target()-chimin())){
+                _really_good_corners++;
+                really_good=fopen("really_good_corners.txt", "a");
+                for(j=0;j<_chifn->get_dim();j++){
+                    fprintf(really_good,"%e ",trial.get_data(j));
+                }
+                fprintf(really_good,"\n");
+                fclose(really_good);
+            }
         }
     }
 
