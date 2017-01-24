@@ -246,7 +246,7 @@ void ellipse::copy(ellipse &other){
 void ellipse_list::add(ellipse &ell_in){
     ellipse *buffer;
     int i;
-    if(_ct>0){
+    if(_room>0 && _room==_ct){
         buffer=new ellipse[_ct];
         for(i=0;i<_ct;i++){
             buffer[i].copy(_ellipse_list[i]);
@@ -257,10 +257,24 @@ void ellipse_list::add(ellipse &ell_in){
             _ellipse_list[i].copy(buffer[i]);
         }
         delete [] buffer;
+        _room++;
     }
-    else{
+    else if(_room==0){
         _ellipse_list=new ellipse[1];
+        _room=1;
     }
     _ellipse_list[_ct].copy(ell_in);
     _ct++;
+}
+
+void ellipse_list::remove(int dex){
+    int i;
+    if(dex>=_ct){
+        printf("CANNOT remove %d from ellipse_list; only have %d\n",
+        dex,_ct);
+    }
+    for(i=dex;i<_ct-1;i++){
+        _ellipse_list[i].copy(_ellipse_list[i+1]);
+    }
+    _ct--;
 }

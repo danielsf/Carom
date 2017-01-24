@@ -52,9 +52,11 @@ class ellipse_list{
         }
 
         void add(ellipse&);
+        void remove(int);
         int ct(){return _ct;}
         void reset(){
             _ct=0;
+            _room=0;
             delete [] _ellipse_list;
             _ellipse_list=NULL;
         }
@@ -68,7 +70,7 @@ class ellipse_list{
         }
 
     private:
-        int _ct;
+        int _ct,_room;
         ellipse *_ellipse_list;
 };
 
