@@ -43,6 +43,7 @@ class ellipse_list{
         ellipse_list(){
             _ellipse_list=NULL;
             _ct=0;
+            _room=0;
         }
 
         ~ellipse_list(){
