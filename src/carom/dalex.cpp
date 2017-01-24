@@ -1428,47 +1428,6 @@ void dalex::tendril_search(int specified){
 
     local_ellipse.build(exclusion_points);
 
-    int i_start=_chifn->get_pts();
-    int new_ct=0;
-    printf("doing compass search\n");
-    compass_search(local_ellipse);
-    for(i=i_start;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
-            new_ct++;
-            exclusion_points.add_row(_chifn->get_pt(i));
-        }
-    }
-    printf("added %d new points; called %d\n",new_ct,_chifn->get_pts()-i_start);
-    local_ellipse.build(exclusion_points);
-
-
-    //sample points at the "corners" of the local ellipse
-    array_1d<double> trial,dir;
-    double sign;
-    FILE *really_good;
-    for(sign=-1.0;sign<1.5;sign+=2.0){
-        for(i=0;i<_chifn->get_dim();i++){
-            for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,local_ellipse.center(j)+
-                            sign*local_ellipse.radii(i)*local_ellipse.bases(i,j));
-            }
-            evaluate(trial,&mu,&j);
-            _total_corners++;
-            if(mu<target()){
-                _good_corners++;
-            }
-            if(mu<chimin()+0.9*(target()-chimin())){
-                _really_good_corners++;
-                really_good=fopen("really_good_corners.txt", "a");
-                for(j=0;j<_chifn->get_dim();j++){
-                    fprintf(really_good,"%e ",trial.get_data(j));
-                }
-                fprintf(really_good,"\n");
-                fclose(really_good);
-            }
-        }
-    }
-
     _extend_exclusion(exclusion_points, start_pts);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
