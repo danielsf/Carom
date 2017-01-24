@@ -74,7 +74,7 @@ void ellipse::build(const array_2d<double> &pts_in, const int istart, const int 
                 }
             }
             norm=dir.normalize();
-            if(i==0 || norm>norm_max){
+            if(i==istart || norm>norm_max){
                 norm_max=norm;
                 for(j=0;j<dim;j++){
                     dir_max.set(j,dir.get_data(j));
