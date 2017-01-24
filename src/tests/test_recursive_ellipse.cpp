@@ -1,74 +1,75 @@
 #include "ellipse.h"
+#include "time.h"
 
+double t_build=0.0;
 
-void recursive_ellipse(array_2d<double> &pts_in, ellipse_list &list_out){
+void recursive_ellipse(array_2d<double> &pts_in, const int istart, const int n_pts,
+                       ellipse_list &list_out){
+
+    printf("recurse: %d %d\n",istart,n_pts);
+    double t_start;
 
     ellipse singleton;
-    singleton.build(pts_in);
+    t_start=double(time(NULL));
+    singleton.build(pts_in, istart, n_pts);
+    t_build+=double(time(NULL))-t_start;
 
-    if(pts_in.get_rows()<2*pts_in.get_cols()){
+    if(n_pts<2*pts_in.get_cols()){
         list_out.add(singleton);
         return;
     }
 
-    array_2d<double> first_half,second_half;
-    first_half.set_name("first_half");
-    second_half.set_name("second_half");
-
     int i;
-    for(i=0;i<pts_in.get_rows()/2;i++){
-        first_half.add_row(pts_in(i));
-    }
-
-    for(;i<pts_in.get_rows();i++){
-        second_half.add_row(pts_in(i));
+    double vol_0=1.0;
+    for(i=0;i<pts_in.get_cols();i++){
+        vol_0*=singleton.radii(i);
     }
 
     ellipse first_ellipse;
     ellipse second_ellipse;
 
-    first_ellipse.build(first_half);
-    second_ellipse.build(second_half);
-
-    double vol_0,vol_1,vol_2;
-    vol_0=1.0;
-    vol_1=1.0;
-    vol_2=1.0;
-    for(i=0;i<pts_in.get_cols();i++){
-        vol_0*=singleton.radii(i);
-        vol_1*=first_ellipse.radii(i);
-        vol_2*=second_ellipse.radii(i);
-    }
-
-    printf("volumes %e %e %e %e\n",vol_0,vol_1,vol_2,vol_1+vol_2);
-
-    double n_pts=double(pts_in.get_rows());
+    double vol_1, vol_2;
+    double bic_0, bic_1;
     double dim = double(pts_in.get_cols());
 
-    double bic_0=log(vol_0);
-    double bic_1=log(vol_1+vol_2)+(2)*log(dim);
 
-    printf("bic %e %e -- %e %e %e\n",bic_0,bic_1,log(vol_1+vol_2), log(n_pts), log(vol_0));
+    int n_pts_1;
+    int i_cut;
+    for(n_pts_1=2*pts_in.get_cols();n_pts_1<n_pts-2*pts_in.get_cols();n_pts_1++){
+        t_start=double(time(NULL));
+        i_cut = istart+n_pts_1;
+        first_ellipse.build(pts_in,istart,n_pts_1);
+        second_ellipse.build(pts_in,i_cut,n_pts-n_pts_1);
+        t_build+=double(time(NULL))-t_start;
 
-    if(bic_0<bic_1){
+        vol_1=1.0;
+        vol_2=1.0;
+        for(i=0;i<pts_in.get_cols();i++){
+            vol_1*=first_ellipse.radii(i);
+            vol_2*=second_ellipse.radii(i);
+        }
+
+
+        bic_0=log(vol_0)+log(dim);
+        bic_1=log(vol_1+vol_2)+(2)*log(dim);
+        //printf("%d %e %e -- %e %e %e %e\n",i_cut,bic_0,bic_1,vol_0,vol_1,vol_2,vol_1+vol_2);
+        if(bic_1<bic_0){
+            break;
+        }
+
+    }
+
+    //printf("volume %e %e %e %e\n",vol_0,vol_1,vol_2,vol_1+vol_2);
+    //printf("bic %e %e -- %e %e %e\n",bic_0,bic_1,log(vol_1+vol_2), log(n_pts), log(vol_0));
+
+    if(bic_1>=bic_0){
         list_out.add(singleton);
+        printf("    accepting %d %d\n",istart,n_pts);
         return;
     }
 
-    first_half.reset();
-    second_half.reset();
-
-    for(i=0;i<pts_in.get_rows()/2;i++){
-        first_half.add_row(pts_in(i));
-    }
-    recursive_ellipse(first_half, list_out);
-
-    first_half.reset();
-
-    for(;i<pts_in.get_rows();i++){
-        first_half.add_row(pts_in(i));
-    }
-    recursive_ellipse(first_half, list_out);
+    recursive_ellipse(pts_in, istart, n_pts_1, list_out);
+    recursive_ellipse(pts_in, i_cut, n_pts-n_pts_1, list_out);
 
 }
 
@@ -99,7 +100,7 @@ int main(int iargc, char **argv){
     
     int j;
     for(i=0;i<1000;i++){
-        if(i==250){
+        if(i==500){
             for(j=0;j<dim;j++){
                 dir.set(j,normal_deviate(&dice,0.0,1.0));
             }
@@ -110,7 +111,7 @@ int main(int iargc, char **argv){
         }
         epsilon.normalize();
         for(j=0;j<dim;j++){
-            trial.set(j,mean.get_data(j)+1.0*epsilon.get_data(j));
+            trial.set(j,mean.get_data(j)+2.0*epsilon.get_data(j));
         }
         pts.add_row(trial);
         for(j=0;j<dim;j++){
@@ -129,7 +130,7 @@ int main(int iargc, char **argv){
     fclose(output);
     ellipse_list e_list;
 
-    recursive_ellipse(pts, e_list);
+    recursive_ellipse(pts, 0, pts.get_rows(), e_list);
     printf("ellipses: %d\n",e_list.ct());
 
     double component;
@@ -150,5 +151,7 @@ int main(int iargc, char **argv){
         
         fclose(output);
     }
+
+    printf("t_build %e\n",t_build);
 
 }
