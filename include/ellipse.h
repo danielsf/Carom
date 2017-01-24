@@ -18,6 +18,7 @@ class ellipse{
 
         ~ellipse(){}
         void build(const array_2d<double>&);
+        void build(const array_2d<double>&, const int, const int);
 
         int get_dim(){return _bases.get_rows();}
         int contains(const array_1d<double>&, const int);
@@ -32,8 +33,8 @@ class ellipse{
         array_2d<double> _bases;
         array_1d<double> _radii,_center,_min,_max;
 
-        void _set_radii(const array_2d<double>&);
-        void _find_center(const array_2d<double>&);
+        void _set_radii(const array_2d<double>&, const int, const int);
+        void _find_center(const array_2d<double>&, const int, const int);
 };
 
 
