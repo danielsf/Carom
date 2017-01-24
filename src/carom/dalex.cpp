@@ -1487,83 +1487,90 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
     double vol_1,vol_2,vol_3,vol_12,vol_23,vol_123;
     double bic_0,bic_12,bic_23,bic_123;
     int iteration=0;
-    for(ix=1;ix<start_pts.get_dim()-1;ix++){
-        iteration++;
-        if(start_pts.get_dim()!=n_pts.get_dim() || start_pts.get_dim()!=trial_zones.ct()){
-            printf("in _extend_exclusion\n");
-            printf("WARNING %d start pts %d npts %d trial_zones\n",
-            start_pts.get_dim(),n_pts.get_dim(),trial_zones.ct());
-            exit(1);
-        }
-        n_sum=0;
-        for(i=0;i<n_pts.get_dim();i++){
-            n_sum+=n_pts.get_data(i);
-        }
-        if(n_sum!=pts_in.get_rows()){
-            printf("in _extend_exclusion (iteration %d)\n",iteration);
-            printf("WARNING n_sum %d rows %d\n",
-            n_sum,pts_in.get_rows());
-            exit(1);
-        }
-        i1=start_pts.get_data(ix-1);
-        i2=start_pts.get_data(ix);
-        i3=start_pts.get_data(ix+1);
-        n1=n_pts.get_data(ix-1);
-        n2=n_pts.get_data(ix);
-        n3=n_pts.get_data(ix+1);
+    int n_mergers=1;
+    while(n_mergers>0){
+        n_mergers=0;
+        for(ix=1;ix<start_pts.get_dim()-1;ix++){
+            iteration++;
+            if(start_pts.get_dim()!=n_pts.get_dim() || start_pts.get_dim()!=trial_zones.ct()){
+                printf("in _extend_exclusion\n");
+                printf("WARNING %d start pts %d npts %d trial_zones\n",
+                start_pts.get_dim(),n_pts.get_dim(),trial_zones.ct());
+                exit(1);
+            }
+            n_sum=0;
+            for(i=0;i<n_pts.get_dim();i++){
+                n_sum+=n_pts.get_data(i);
+            }
+            if(n_sum!=pts_in.get_rows()){
+                printf("in _extend_exclusion (iteration %d)\n",iteration);
+                printf("WARNING n_sum %d rows %d\n",
+                n_sum,pts_in.get_rows());
+                exit(1);
+            }
+            i1=start_pts.get_data(ix-1);
+            i2=start_pts.get_data(ix);
+            i3=start_pts.get_data(ix+1);
+            n1=n_pts.get_data(ix-1);
+            n2=n_pts.get_data(ix);
+            n3=n_pts.get_data(ix+1);
 
-        ellipse_12.build(pts_in,i1,n1+n2);
-        ellipse_23.build(pts_in,i2,n2+n3);
-        ellipse_123.build(pts_in,i1,n1+n2+n3);
+            ellipse_12.build(pts_in,i1,n1+n2);
+            ellipse_23.build(pts_in,i2,n2+n3);
+            ellipse_123.build(pts_in,i1,n1+n2+n3);
 
-        vol_1=1.0;
-        vol_2=1.0;
-        vol_3=1.0;
-        vol_12=1.0;
-        vol_23=1.0;
-        vol_123=1.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            vol_1*=trial_zones(ix-1)->radii(i);
-            vol_2*=trial_zones(ix)->radii(i);
-            vol_3*=trial_zones(ix+1)->radii(i);
-            vol_12*=ellipse_12.radii(i);
-            vol_23*=ellipse_23.radii(i);
-            vol_123*=ellipse_123.radii(i);
-        }
+            vol_1=1.0;
+            vol_2=1.0;
+            vol_3=1.0;
+            vol_12=1.0;
+            vol_23=1.0;
+            vol_123=1.0;
+            for(i=0;i<_chifn->get_dim();i++){
+                vol_1*=trial_zones(ix-1)->radii(i);
+                vol_2*=trial_zones(ix)->radii(i);
+                vol_3*=trial_zones(ix+1)->radii(i);
+                vol_12*=ellipse_12.radii(i);
+                vol_23*=ellipse_23.radii(i);
+                vol_123*=ellipse_123.radii(i);
+            }
 
-        bic_0=log(vol_1+vol_2+vol_3)+3*log(dim);
-        bic_12=log(vol_12+vol_3)+2*log(dim);
-        bic_23=log(vol_1+vol_23)+2*log(dim);
-        bic_123=log(vol_123)+log(dim);
+            bic_0=log(vol_1+vol_2+vol_3)+3*log(dim);
+            bic_12=log(vol_12+vol_3)+2*log(dim);
+            bic_23=log(vol_1+vol_23)+2*log(dim);
+            bic_123=log(vol_123)+log(dim);
 
-        if(bic_123<bic_12 && bic_123<bic_23 && bic_123<bic_0){
-            trial_zones(ix-1)->copy(ellipse_123);
-            trial_zones.remove(ix);
-            trial_zones.remove(ix);
-            n_pts.set(ix-1, n1+n2+n3);
-            n_pts.remove(ix);
-            n_pts.remove(ix);
-            start_pts.remove(ix);
-            start_pts.remove(ix);
-            ix=0;
-        }
-        else if(bic_12<bic_123 && bic_12<bic_23 && bic_12<bic_0){
-            trial_zones(ix-1)->copy(ellipse_12);
-            trial_zones.remove(ix);
-            n_pts.set(ix-1,n1+n2);
-            n_pts.remove(ix);
-            start_pts.remove(ix);
-            ix=0;
-        }
-        else if(bic_23<bic_123 && bic_23<bic_12 && bic_23<bic_0){
-            trial_zones(ix)->copy(ellipse_23);
-            trial_zones.remove(ix);
-            n_pts.set(ix,n2+n3);
-            n_pts.remove(ix+1);
-            start_pts.remove(ix+1);
-            ix=0;
-        }
+            if(bic_123<bic_12 && bic_123<bic_23 && bic_123<bic_0){
+                trial_zones(ix-1)->copy(ellipse_123);
+                trial_zones.remove(ix);
+                trial_zones.remove(ix);
+                n_pts.set(ix-1, n1+n2+n3);
+                n_pts.remove(ix);
+                n_pts.remove(ix);
+                start_pts.remove(ix);
+                start_pts.remove(ix);
+                n_mergers++;
+                ix++;
+            }
+            else if(bic_12<bic_123 && bic_12<bic_23 && bic_12<bic_0){
+                trial_zones(ix-1)->copy(ellipse_12);
+                trial_zones.remove(ix);
+                n_pts.set(ix-1,n1+n2);
+                n_pts.remove(ix);
+                start_pts.remove(ix);
+                n_mergers++;
+                ix++;
+            }
+            else if(bic_23<bic_123 && bic_23<bic_12 && bic_23<bic_0){
+                trial_zones(ix)->copy(ellipse_23);
+                trial_zones.remove(ix);
+                n_pts.set(ix,n2+n3);
+                n_pts.remove(ix+1);
+                start_pts.remove(ix+1);
+                n_mergers++;
+                ix++;
+            }
 
+        }
     }
 
     printf("adding %d zones of %d possible\n",
