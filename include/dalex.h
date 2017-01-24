@@ -219,6 +219,7 @@ class dalex{
 
         //////code related to tendrils
         void tendril_search(int);
+        void _extend_exclusion(const array_2d<double>&, const array_1d<int>&);
         array_2d<int> _tendril_path;
 
         void compass_search(ellipse&);

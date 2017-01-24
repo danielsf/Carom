@@ -1296,16 +1296,18 @@ void dalex::tendril_search(int specified){
 
     int i_exclude;
     int i_particle;
-    array_1d<int> end_pts;
-    end_pts.set_name("dalex_tendril_end_pts");
+    array_1d<int> start_pts;  // will be the index in exclusion_points
+    start_pts.set_name("dalex_tendril_start_pts");
     array_2d<double> exclusion_points;
     array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
     simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
-    end_pts.add(i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
+            if(start_pts.get_dim()==0){
+                start_pts.add(exclusion_points.get_rows());
+            }
             exclusion_points.add_row(_chifn->get_pt(i));
             exclusion_dex.add(i);
         }
@@ -1340,6 +1342,7 @@ void dalex::tendril_search(int specified){
 
     int in_old_ones;
     double old_volume;
+    int added_to_start_pts;
 
     fall_back.set(0,i_particle);
 
@@ -1349,12 +1352,18 @@ void dalex::tendril_search(int specified){
 
         ct_last=_chifn->get_pts();
         in_old_ones=simplex_boundary_search(i_particle, use_median, _exclusion_zones, &i_next);
-        end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
 
+        added_to_start_pts=0;
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
+                if(added_to_start_pts==0){
+                   added_to_start_pts=1;
+                   if(exclusion_points.get_rows()-start_pts.get_data(start_pts.get_dim()-1)>2*_chifn->get_dim()){
+                       start_pts.add(exclusion_points.get_rows());
+                   }
+                }
                 exclusion_points.add_row(_chifn->get_pt(i));
                 exclusion_dex.add(i);
             }
@@ -1460,11 +1469,150 @@ void dalex::tendril_search(int specified){
         }
     }
 
-    _exclusion_zones.add(local_ellipse);
+    _extend_exclusion(exclusion_points, start_pts);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
 
     _chifn->write_pts();
+
+}
+
+void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int> &start_pts_in){
+
+    printf("in extend exclusion\n");
+
+    if(start_pts_in.get_dim()==0){
+        printf("WARNING did not pass any start points to _extend_exclusion\n");
+        exit(1);
+    }
+
+    ellipse_list trial_zones;
+    ellipse trial_ellipse;
+    array_1d<int> start_pts,n_pts;
+    start_pts.set_name("dalex_extend_exclusion_start_pts");
+    n_pts.set_name("dalex_extend_exclusion_n_pts");
+    int i,i_start,i_n_pts;
+    for(i=0;i<start_pts_in.get_dim();i++){
+        i_start=start_pts_in.get_data(i);
+        if(i<start_pts_in.get_dim()-1){
+            i_n_pts=start_pts_in.get_data(i+1)-start_pts_in.get_data(i);
+        }
+        else{
+            i_n_pts=pts_in.get_rows()-start_pts_in.get_data(i);
+        }
+        trial_ellipse.build(pts_in,i_start,i_n_pts);
+        trial_zones.add(trial_ellipse);
+        start_pts.add(i_start);
+        n_pts.add(i_n_pts);
+    }
+
+    int ix,n_sum;
+    n_sum=0;
+    for(i=0;i<n_pts.get_dim();i++){
+        n_sum+=n_pts.get_data(i);
+    }
+    if(n_sum!=pts_in.get_rows()){
+        printf("WARNING, before iteration in _extend_exclusion\n");
+        printf("n_sum %d rows %d\n",n_sum,pts_in.get_rows());
+        for(i=0;i<start_pts_in.get_dim();i++){
+            printf("%d %d\n",start_pts_in.get_data(i),n_pts.get_data(i));
+        }
+        exit(1);
+    }
+
+    ellipse ellipse_12,ellipse_23,ellipse_123;
+
+    double dim=double(_chifn->get_dim());
+
+    int i1,i2,i3,n1,n2,n3;
+    double vol_1,vol_2,vol_3,vol_12,vol_23,vol_123;
+    double bic_0,bic_12,bic_23,bic_123;
+    int iteration=0;
+    for(ix=1;ix<start_pts.get_dim()-1;ix++){
+        iteration++;
+        if(start_pts.get_dim()!=n_pts.get_dim() || start_pts.get_dim()!=trial_zones.ct()){
+            printf("in _extend_exclusion\n");
+            printf("WARNING %d start pts %d npts %d trial_zones\n",
+            start_pts.get_dim(),n_pts.get_dim(),trial_zones.ct());
+            exit(1);
+        }
+        n_sum=0;
+        for(i=0;i<n_pts.get_dim();i++){
+            n_sum+=n_pts.get_data(i);
+        }
+        if(n_sum!=pts_in.get_rows()){
+            printf("in _extend_exclusion (iteration %d)\n",iteration);
+            printf("WARNING n_sum %d rows %d\n",
+            n_sum,pts_in.get_rows());
+            exit(1);
+        }
+        i1=start_pts.get_data(ix-1);
+        i2=start_pts.get_data(ix);
+        i3=start_pts.get_data(ix+1);
+        n1=n_pts.get_data(ix-1);
+        n2=n_pts.get_data(ix);
+        n3=n_pts.get_data(ix+1);
+
+        ellipse_12.build(pts_in,i1,n1+n2);
+        ellipse_23.build(pts_in,i2,n2+n3);
+        ellipse_123.build(pts_in,i1,n1+n2+n3);
+
+        vol_1=1.0;
+        vol_2=1.0;
+        vol_3=1.0;
+        vol_12=1.0;
+        vol_23=1.0;
+        vol_123=1.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            vol_1*=trial_zones(ix-1)->radii(i);
+            vol_2*=trial_zones(ix)->radii(i);
+            vol_3*=trial_zones(ix+1)->radii(i);
+            vol_12*=ellipse_12.radii(i);
+            vol_23*=ellipse_23.radii(i);
+            vol_123*=ellipse_123.radii(i);
+        }
+
+        bic_0=log(vol_1+vol_2+vol_3)+3*log(dim);
+        bic_12=log(vol_12+vol_3)+2*log(dim);
+        bic_23=log(vol_1+vol_23)+2*log(dim);
+        bic_123=log(vol_123)+log(dim);
+
+        if(bic_123<bic_12 && bic_123<bic_23 && bic_123<bic_0){
+            trial_zones(ix-1)->copy(ellipse_123);
+            trial_zones.remove(ix);
+            trial_zones.remove(ix);
+            n_pts.set(ix-1, n1+n2+n3);
+            n_pts.remove(ix);
+            n_pts.remove(ix);
+            start_pts.remove(ix);
+            start_pts.remove(ix);
+            ix=0;
+        }
+        else if(bic_12<bic_123 && bic_12<bic_23 && bic_12<bic_0){
+            trial_zones(ix-1)->copy(ellipse_12);
+            trial_zones.remove(ix);
+            n_pts.set(ix-1,n1+n2);
+            n_pts.remove(ix);
+            start_pts.remove(ix);
+            ix=0;
+        }
+        else if(bic_23<bic_123 && bic_23<bic_12 && bic_23<bic_0){
+            trial_zones(ix)->copy(ellipse_23);
+            trial_zones.remove(ix);
+            n_pts.set(ix,n2+n3);
+            n_pts.remove(ix+1);
+            start_pts.remove(ix+1);
+            ix=0;
+        }
+
+    }
+
+    printf("adding %d zones of %d possible\n",
+    trial_zones.ct(),start_pts_in.get_dim());
+
+    for(i=0;i<trial_zones.ct();i++){
+        _exclusion_zones.add(trial_zones(i)[0]);
+    }
 
 }
 
