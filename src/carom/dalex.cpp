@@ -1716,26 +1716,26 @@ void dalex::compass_search(ellipse &ee){
     center.set_name("compass_search_center");
     array_1d<double> dir;
     dir.set_name("compass_search_dir");
-    int i_found;
+    int i_center;
     double mu;
     int i;
     for(i=0;i<_chifn->get_dim();i++){
         center.set(i,ee.center(i));
     }
-    evaluate(center,&mu,&i_found);
+    evaluate(center,&mu,&i_center);
     if(mu>target()){
         printf("   cannot do compass: %e\n",mu);
         return;
     }
 
     int i_dim;
-    double sgn;
+    double sign;
     for(i_dim=0;i_dim<_chifn->get_dim();i_dim++){
-        for(sgn=-1.0;sgn<1.1;sgn+=1.0){
+        for(sign=-1.0;sign<1.1;sign+=2.0){
             for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,ee.bases(i_dim,i));
+                dir.set(i,sign*ee.bases(i_dim,i));
             }
-            bisection(i_found, dir, target(), 0.01);
+            bisection(i_center, dir, target(), 0.01);
         }
     }
 }
