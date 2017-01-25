@@ -1263,16 +1263,10 @@ void dalex::min_explore(int n_particles, int n_steps){
     _min_explorers.set_n_particles(n_particles);
     array_1d<int> associates;
     associates.set_name("dalex_explore_associates");
-    int skip;
-    if(_good_points.get_dim()<5000){
-        skip=-1;
-    }
-    else{
-        skip=5;
-    }
+
     int i;
     for(i=0;i<_good_points.get_dim();i++){
-        if(skip<0 || i%skip==0){
+        if(_chifn->get_search_type_log(_good_points.get_data(i))==_type_refine){
             associates.add(_good_points.get_data(i));
         }
     }
