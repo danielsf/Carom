@@ -1568,12 +1568,12 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
                 vol_123*=ellipse_123.radii(i);
             }
 
-            bic_0=log(vol_1+vol_2+vol_3)+3*log(dim);
-            bic_12=log(vol_12+vol_3)+2*log(dim);
-            bic_23=log(vol_1+vol_23)+2*log(dim);
-            bic_123=log(vol_123)+log(dim);
+            bic_0=vol_1+vol_2+vol_3;
+            bic_12=vol_12+vol_3;
+            bic_23=vol_1+vol_23;
+            bic_123=vol_123;
 
-            if(bic_123<bic_12 && bic_123<bic_23 && bic_123<bic_0){
+            if(bic_123<bic_12 && bic_123<bic_23 && bic_123<0.11*bic_0){
                 trial_zones(ix-1)->copy(ellipse_123);
                 trial_zones.remove(ix);
                 trial_zones.remove(ix);
@@ -1585,7 +1585,7 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
                 n_mergers++;
                 ix++;
             }
-            else if(bic_12<bic_123 && bic_12<bic_23 && bic_12<bic_0){
+            else if(bic_12<bic_123 && bic_12<bic_23 && bic_12<0.11*bic_0){
                 trial_zones(ix-1)->copy(ellipse_12);
                 trial_zones.remove(ix);
                 n_pts.set(ix-1,n1+n2);
@@ -1594,7 +1594,7 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
                 n_mergers++;
                 ix++;
             }
-            else if(bic_23<bic_123 && bic_23<bic_12 && bic_23<bic_0){
+            else if(bic_23<bic_123 && bic_23<bic_12 && bic_23<0.11*bic_0){
                 trial_zones(ix)->copy(ellipse_23);
                 trial_zones.remove(ix);
                 n_pts.set(ix,n2+n3);
@@ -1621,9 +1621,9 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
             vol_2*=trial_zones(1)->radii(i);
             vol_12*=ellipse_12.radii(i);
         }
-        bic_0=log(vol_1+vol_2)+2*log(dim);
-        bic_12=log(vol_12)+log(dim);
-        if(bic_12<bic_0){
+        bic_0=vol_1+vol_2;
+        bic_12=vol_12;
+        if(bic_12<0.11*bic_0){
             trial_zones(0)->copy(ellipse_12);
             trial_zones.remove(1);
         }
