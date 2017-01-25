@@ -1462,7 +1462,8 @@ void dalex::tendril_search(int specified){
         }
     }
 
-    _extend_exclusion(exclusion_points, start_pts);
+    local_ellipse.build(exclusion_points);
+    _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
 
