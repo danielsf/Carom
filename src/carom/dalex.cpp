@@ -1522,6 +1522,7 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
     double bic_0,bic_12,bic_23,bic_123;
     int iteration=0;
     int n_mergers=1;
+    double cutoff=power(0.5,_chifn->get_dim()/2);
     while(n_mergers>0){
         n_mergers=0;
         for(ix=1;ix<start_pts.get_dim()-1;ix++){
@@ -1573,7 +1574,30 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
             bic_23=vol_1+vol_23;
             bic_123=vol_123;
 
-            if(bic_123<bic_12 && bic_123<bic_23 && bic_123<0.11*bic_0){
+            printf("volumes %d %d %.3e %.3e %.3e\n",
+            ix,trial_zones.ct(),bic_0/bic_123,bic_12/bic_123,bic_23/bic_123);
+            if(bic_0<cutoff*bic_123 && bic_0<bic_12 && bic_0<bic_23){
+                continue;
+            }
+            else if(bic_12<cutoff*bic_123 && bic_12<bic_23 && bic_12<bic_0){
+                trial_zones(ix-1)->copy(ellipse_12);
+                trial_zones.remove(ix);
+                n_pts.set(ix-1,n1+n2);
+                n_pts.remove(ix);
+                start_pts.remove(ix);
+                n_mergers++;
+                ix++;
+            }
+            else if(bic_23<cutoff*bic_123 && bic_23<bic_12 && bic_23<bic_0){
+                trial_zones(ix)->copy(ellipse_23);
+                trial_zones.remove(ix);
+                n_pts.set(ix,n2+n3);
+                n_pts.remove(ix+1);
+                start_pts.remove(ix+1);
+                n_mergers++;
+                ix++;
+            }
+            else{
                 trial_zones(ix-1)->copy(ellipse_123);
                 trial_zones.remove(ix);
                 trial_zones.remove(ix);
@@ -1585,27 +1609,10 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
                 n_mergers++;
                 ix++;
             }
-            else if(bic_12<bic_123 && bic_12<bic_23 && bic_12<0.11*bic_0){
-                trial_zones(ix-1)->copy(ellipse_12);
-                trial_zones.remove(ix);
-                n_pts.set(ix-1,n1+n2);
-                n_pts.remove(ix);
-                start_pts.remove(ix);
-                n_mergers++;
-                ix++;
-            }
-            else if(bic_23<bic_123 && bic_23<bic_12 && bic_23<0.11*bic_0){
-                trial_zones(ix)->copy(ellipse_23);
-                trial_zones.remove(ix);
-                n_pts.set(ix,n2+n3);
-                n_pts.remove(ix+1);
-                start_pts.remove(ix+1);
-                n_mergers++;
-                ix++;
-            }
-
         }
     }
+
+    printf("out of first loop %d\n",trial_zones.ct());
 
     if(trial_zones.ct()==2){
         i1=start_pts.get_data(0);
@@ -1623,7 +1630,7 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
         }
         bic_0=vol_1+vol_2;
         bic_12=vol_12;
-        if(bic_12<0.11*bic_0){
+        if(bic_0>cutoff*bic_12){
             trial_zones(0)->copy(ellipse_12);
             trial_zones.remove(1);
         }
