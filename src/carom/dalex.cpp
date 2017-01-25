@@ -1607,6 +1607,29 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
         }
     }
 
+    if(trial_zones.ct()==2){
+        i1=start_pts.get_data(0);
+        i2=start_pts.get_data(1);
+        n1=n_pts.get_data(0);
+        n2=n_pts.get_data(1);
+        ellipse_12.build(pts_in,i1,n1+n2);
+        vol_1=1.0;
+        vol_2=1.0;
+        vol_12=1.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            vol_1*=trial_zones(0)->radii(i);
+            vol_2*=trial_zones(1)->radii(i);
+            vol_12*=ellipse_12.radii(i);
+        }
+        bic_0=log(vol_1+vol_2)+2*log(dim);
+        bic_12=log(vol_12)+log(dim);
+        if(bic_12<bic_0){
+            trial_zones(0)->copy(ellipse_12);
+            trial_zones.remove(1);
+        }
+
+    }
+
     printf("adding %d zones of %d possible\n",
     trial_zones.ct(),start_pts_in.get_dim());
 
