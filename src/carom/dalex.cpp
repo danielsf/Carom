@@ -1441,6 +1441,27 @@ void dalex::tendril_search(int specified){
 
     local_ellipse.build(exclusion_points);
 
+    //filter start_pts to make sure they delineate
+    //groups of at least 2*D points (so that ellipses
+    //can be built out of them)
+    for(i=0;i<start_pts.get_dim();i++){
+        if(i<start_pts.get_dim()-1){
+            j=start_pts.get_data(i+1)-start_pts.get_data(i);
+        }
+        else{
+            j=exclusion_points.get_rows()-start_pts.get_data(i);
+        }
+        if(j<2*_chifn->get_dim()){
+            if(i==0){
+                start_pts.remove(1);
+            }
+            else{
+                start_pts.remove(i);
+            }
+            i--;
+        }
+    }
+
     _extend_exclusion(exclusion_points, start_pts);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
