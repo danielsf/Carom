@@ -1522,7 +1522,7 @@ void dalex::_extend_exclusion(const array_2d<double> &pts_in, const array_1d<int
     double bic_0,bic_12,bic_23,bic_123;
     int iteration=0;
     int n_mergers=1;
-    double cutoff=power(0.5,_chifn->get_dim()/2);
+    double cutoff=0.1;
     while(n_mergers>0){
         n_mergers=0;
         for(ix=1;ix<start_pts.get_dim()-1;ix++){
