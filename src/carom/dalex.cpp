@@ -1346,6 +1346,9 @@ void dalex::tendril_search(int specified){
 
     fall_back.set(0,i_particle);
 
+    ellipse dummy_ellipse;
+    int dummy_start,n_dummy;
+
     while(_strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
         iteration++;
@@ -1356,6 +1359,8 @@ void dalex::tendril_search(int specified){
         is_a_strike=in_old_ones;
 
         added_to_start_pts=0;
+        dummy_start=exclusion_points.get_rows();
+        n_dummy=0;
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 if(added_to_start_pts==0){
@@ -1366,9 +1371,24 @@ void dalex::tendril_search(int specified){
                 }
                 exclusion_points.add_row(_chifn->get_pt(i));
                 exclusion_dex.add(i);
+                n_dummy++;
             }
         }
         i_exclude=_chifn->get_pts();
+
+        if(n_dummy>2*_chifn->get_dim()){
+            dummy_ellipse.build(exclusion_points,dummy_start,n_dummy);
+            compass_search(dummy_ellipse);
+
+            for(i=i_exclude;i<_chifn->get_pts();i++){
+                if(_chifn->get_fn(i)<target()){
+                    exclusion_points.add_row(_chifn->get_pt(i));
+                    exclusion_dex.add(i);
+                }
+            }
+            i_exclude=_chifn->get_pts();
+        }
+
 
         if(local_ellipse.contains(_chifn->get_pt(i_next), 1)==1){
             is_a_strike=1;
