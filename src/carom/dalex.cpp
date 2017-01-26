@@ -1073,7 +1073,9 @@ int dalex::simplex_boundary_search(int specified, int use_median,
 
     if(associates.get_dim()==0){
         for(i=0;i<_good_points.get_dim();i++){
-            associates.add(_good_points.get_data(i));
+            if(_chifn->get_search_type_log(_good_points.get_data(i))!=_type_compass){
+                associates.add(_good_points.get_data(i));
+            }
         }
     }
 
@@ -1740,6 +1742,8 @@ void dalex::refine_minimum(){
 }
 
 void dalex::compass_search(ellipse &ee){
+    int old_type=_chifn->get_search_type();
+    _chifn->set_search_type(_type_compass);
     array_1d<double> center;
     center.set_name("compass_search_center");
     array_1d<double> dir;
@@ -1753,6 +1757,7 @@ void dalex::compass_search(ellipse &ee){
     evaluate(center,&mu,&i_center);
     if(mu>target()){
         printf("   cannot do compass: %e\n",mu);
+        _chifn->set_search_type(old_type);
         return;
     }
 
@@ -1766,4 +1771,6 @@ void dalex::compass_search(ellipse &ee){
             bisection(i_center, dir, target(), 0.01);
         }
     }
+
+    _chifn->set_search_type(old_type);
 }
