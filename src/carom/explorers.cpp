@@ -164,6 +164,7 @@ void explorers::kick(int dex){
 void explorers::sample(int n_steps){
 
     cost_fn dchifn(_chifn, _associates);
+    dchifn.dampen(10.0);
     dchifn.copy_bases(_bases);
     set_norm();
 
