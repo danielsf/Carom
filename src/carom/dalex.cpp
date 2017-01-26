@@ -1359,12 +1359,6 @@ void dalex::tendril_search(int specified){
         if(n_dummy>2*_chifn->get_dim()){
             dummy_ellipse.build(exclusion_points,dummy_start,n_dummy);
             compass_search(dummy_ellipse);
-
-            for(i=i_exclude;i<_chifn->get_pts();i++){
-                if(_chifn->get_fn(i)<target()){
-                    exclusion_points.add_row(_chifn->get_pt(i));
-                }
-            }
             i_exclude=_chifn->get_pts();
         }
 
