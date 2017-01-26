@@ -1417,11 +1417,17 @@ void dalex::tendril_search(int specified){
             }
     }
 
+    i_exclude=_chifn->get_pts();
     local_ellipse.build(exclusion_points);
+    compass_search(local_ellipse);
 
+    for(i=i_exclude;i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                exclusion_points.add_row(_chifn->get_pt(i));
             }
     }
     local_ellipse.build(exclusion_points);
+
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
