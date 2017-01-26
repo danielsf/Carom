@@ -1290,17 +1290,12 @@ void dalex::tendril_search(int specified){
 
     int i_exclude;
     int i_particle;
-    array_1d<int> start_pts;  // will be the index in exclusion_points
-    start_pts.set_name("dalex_tendril_start_pts");
     array_2d<double> exclusion_points;
     ellipse local_ellipse;
 
     simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            if(start_pts.get_dim()==0){
-                start_pts.add(exclusion_points.get_rows());
-            }
             exclusion_points.add_row(_chifn->get_pt(i));
         }
     }
@@ -1334,7 +1329,6 @@ void dalex::tendril_search(int specified){
 
     int in_old_ones;
     double old_volume;
-    int added_to_start_pts;
 
     fall_back.set(0,i_particle);
 
@@ -1350,17 +1344,10 @@ void dalex::tendril_search(int specified){
 
         is_a_strike=in_old_ones;
 
-        added_to_start_pts=0;
         dummy_start=exclusion_points.get_rows();
         n_dummy=0;
         for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
-                if(added_to_start_pts==0){
-                   added_to_start_pts=1;
-                   if(exclusion_points.get_rows()-start_pts.get_data(start_pts.get_dim()-1)>2*_chifn->get_dim()){
-                       start_pts.add(exclusion_points.get_rows());
-                   }
-                }
                 exclusion_points.add_row(_chifn->get_pt(i));
                 n_dummy++;
             }
@@ -1436,27 +1423,8 @@ void dalex::tendril_search(int specified){
 
     local_ellipse.build(exclusion_points);
 
-    //filter start_pts to make sure they delineate
-    //groups of at least 2*D points (so that ellipses
-    //can be built out of them)
-    for(i=0;i<start_pts.get_dim();i++){
-        if(i<start_pts.get_dim()-1){
-            j=start_pts.get_data(i+1)-start_pts.get_data(i);
-        }
-        else{
-            j=exclusion_points.get_rows()-start_pts.get_data(i);
-        }
-        if(j<2*_chifn->get_dim()){
-            if(i==0){
-                start_pts.remove(1);
             }
-            else{
-                start_pts.remove(i);
-            }
-            i--;
-        }
     }
-
     local_ellipse.build(exclusion_points);
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
