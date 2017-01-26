@@ -27,6 +27,10 @@ class cost_fn : public function_wrapper{
             }
         }
 
+        void dampen(double dd){
+            _scalar_norm*=dd;
+        }
+
         double get_norm(int ii){
             return _norm.get_data(ii);
         }
