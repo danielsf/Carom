@@ -1293,7 +1293,6 @@ void dalex::tendril_search(int specified){
     array_1d<int> start_pts;  // will be the index in exclusion_points
     start_pts.set_name("dalex_tendril_start_pts");
     array_2d<double> exclusion_points;
-    array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
     simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
@@ -1303,7 +1302,6 @@ void dalex::tendril_search(int specified){
                 start_pts.add(exclusion_points.get_rows());
             }
             exclusion_points.add_row(_chifn->get_pt(i));
-            exclusion_dex.add(i);
         }
     }
     local_ellipse.build(exclusion_points);
@@ -1364,7 +1362,6 @@ void dalex::tendril_search(int specified){
                    }
                 }
                 exclusion_points.add_row(_chifn->get_pt(i));
-                exclusion_dex.add(i);
                 n_dummy++;
             }
         }
@@ -1377,7 +1374,6 @@ void dalex::tendril_search(int specified){
             for(i=i_exclude;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target()){
                     exclusion_points.add_row(_chifn->get_pt(i));
-                    exclusion_dex.add(i);
                 }
             }
             i_exclude=_chifn->get_pts();
@@ -1435,7 +1431,6 @@ void dalex::tendril_search(int specified){
     for(i=i_exclude;i<_chifn->get_pts();i++){
             if(_chifn->get_fn(i)<target()){
                 exclusion_points.add_row(_chifn->get_pt(i));
-                exclusion_dex.add(i);
             }
     }
 
