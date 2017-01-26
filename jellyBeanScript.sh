@@ -13,7 +13,7 @@ do
     
     ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 600000 -s ${ss} \
     -t ${out_dir}jellyBean_d12_s${ss}_timing.sav \
-    -o ${out_name} -i 24
+    -o ${out_name} -i 24 >& ${out_dir}jellyBean_s${ss}_stdout.txt
     
     #./bin/analysis -i ${out_name} -o output/scratch/jellyBean_d12_s${ss}_processed \
     #-d 12 -c 21.0 -x 0 1 -x 6 9
