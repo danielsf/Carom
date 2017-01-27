@@ -1014,7 +1014,7 @@ int dalex::simplex_boundary_search(ellipse_list &exclusion_zones, int *i_next){
     return simplex_boundary_search(-1,0,exclusion_zones, i_next);
 }
 
-int dalex::simplex_boundary_search(int specified, int use_median,
+int dalex::simplex_boundary_search(const int specified, int use_median,
                                    ellipse_list &exclusion_zones, int *i_next){
 
     safety_check("simplex_boundary_search");
