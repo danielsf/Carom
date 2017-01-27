@@ -1010,10 +1010,6 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-int dalex::simplex_boundary_search(ellipse_list &exclusion_zones, int *i_next){
-    return simplex_boundary_search(-1,exclusion_zones, i_next);
-}
-
 int dalex::simplex_boundary_search(const int specified,
                                    ellipse_list &exclusion_zones, int *i_next){
 
