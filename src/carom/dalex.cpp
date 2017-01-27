@@ -1590,9 +1590,9 @@ void dalex::compass_search(ellipse &ee){
     int i_dim;
     double sgn;
     for(i_dim=0;i_dim<_chifn->get_dim();i_dim++){
-        for(sgn=-1.0;sgn<1.1;sgn+=1.0){
+        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
             for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,ee.bases(i_dim,i));
+                dir.set(i,sgn*ee.bases(i_dim,i));
             }
             bisection(i_found, dir, target(), 0.01);
         }
