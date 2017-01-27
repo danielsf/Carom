@@ -1011,10 +1011,10 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 }
 
 int dalex::simplex_boundary_search(ellipse_list &exclusion_zones, int *i_next){
-    return simplex_boundary_search(-1,0,exclusion_zones, i_next);
+    return simplex_boundary_search(-1,exclusion_zones, i_next);
 }
 
-int dalex::simplex_boundary_search(const int specified, int use_median,
+int dalex::simplex_boundary_search(const int specified,
                                    ellipse_list &exclusion_zones, int *i_next){
 
     safety_check("simplex_boundary_search");
@@ -1083,10 +1083,6 @@ int dalex::simplex_boundary_search(const int specified, int use_median,
     dchifn.copy_bases(cost_bases);
 
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
-
-    if(use_median==1){
-        dchifn.use_median();
-    }
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -1367,7 +1363,7 @@ void dalex::tendril_search(int specified){
     array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
-    simplex_boundary_search(specified, 0, _exclusion_zones, &i_particle);
+    simplex_boundary_search(specified, _exclusion_zones, &i_particle);
     end_pts.add(i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
@@ -1392,7 +1388,6 @@ void dalex::tendril_search(int specified){
 
     _strikes=0;
     int iteration=0;
-    int use_median=0;
     int is_a_strike;
     int i_next;
     double volume,volume_0;
@@ -1413,7 +1408,7 @@ void dalex::tendril_search(int specified){
         iteration++;
 
         ct_last=_chifn->get_pts();
-        in_old_ones=simplex_boundary_search(i_particle, use_median, _exclusion_zones, &i_next);
+        in_old_ones=simplex_boundary_search(i_particle, _exclusion_zones, &i_next);
         end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
@@ -1471,7 +1466,7 @@ void dalex::tendril_search(int specified){
 
         printf("    volume %e from %e-- %d; chifn(i_next) %e\n",
                volume,old_volume,_exclusion_zones.ct(),_chifn->get_fn(i_next));
-        printf("    strikes %d use_median %d\n",_strikes,use_median);
+        printf("    strikes %d\n",_strikes);
 
     }
 

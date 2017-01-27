@@ -14,11 +14,6 @@ class cost_fn : public function_wrapper{
             _envelope=dd;
         }
 
-        void use_median(){
-            _just_median=1;
-        }
-
-
         void copy_bases(array_2d<double> &out){
             int i;
             out.reset_preserving_room();
@@ -37,7 +32,6 @@ class cost_fn : public function_wrapper{
         double _scalar_norm;
         chisq_wrapper *_chifn;
         int _called;
-        int _just_median;
         double _envelope;
 
         array_2d<double> _bases;

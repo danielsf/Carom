@@ -8,7 +8,6 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _bases.set_name("dchi_interior_bases");
     _norm.set_name("dchi_interior_norm");
 
-    _just_median=0;
     _chifn=cc;
     _envelope=1.0;
 
@@ -59,16 +58,6 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j,k;
-
-    if(_just_median==1){
-        printf("cannot use median distance\n");
-        exit(1);
-        dd=0.0;
-        for(i=0;i<_chifn->get_dim();i++){
-            dd+=power((pt.get_data(i)-_median_associate.get_data(i))/_scalar_norm,2);
-        }
-        return sqrt(dd);
-    }
 
     int n_dd=3;
 
