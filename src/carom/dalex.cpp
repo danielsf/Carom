@@ -1010,7 +1010,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-int dalex::simplex_boundary_search(const int specified,
+int dalex::simplex_boundary_search(const int specified, const int i_origin,
                                    ellipse_list &exclusion_zones, int *i_next){
 
     safety_check("simplex_boundary_search");
@@ -1103,12 +1103,98 @@ int dalex::simplex_boundary_search(const int specified,
 
     int d_step = _strikes+1;
 
+    double component,sgn;
+    array_1d<double> orig_dir;
+    orig_dir.set_name("dalex_simplex_boundary_orig_dir");
+    for(i=0;i<_chifn->get_dim();i++){
+        orig_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
+    }
+    orig_dir.normalize();
+    array_2d<double> seed_dir;
+    seed_dir.set_name("dalex_simplex_boundary_seed_dir");
+    array_1d<double> trial_dir;
+    trial_dir.set_name("dalex_simplex_boundary_trial_dir");
+    while(seed_dir.get_rows()<_chifn->get_dim()-1){
+        for(i=0;i<_chifn->get_dim();i++){
+            trial_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        component=0.0;
+        for(i=0;i<_chifn->get_dim();i++){
+            component+=trial_dir.get_data(i)*orig_dir.get_data(i);
+        }
+        for(i=0;i<_chifn->get_dim();i++){
+            trial_dir.subtract_val(i,component*orig_dir.get_data(i));
+        }
+        for(i=0;i<seed_dir.get_rows();i++){
+            component=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                component+=trial_dir.get_data(j)*seed_dir.get_data(i,j);
+            }
+            for(j=0;j<_chifn->get_dim();j++){
+                trial_dir.subtract_val(j,component*seed_dir.get_data(i,j));
+            }
+        }
+        component=trial_dir.normalize();
+        if(component>1.0e-20){
+            seed_dir.add_row(trial_dir);
+        }
+    }
+
+    double seed_orig_norm;
+    array_1d<double> seed_norm;
+    seed_norm.set_name("dalex_simplex_boundary_seed_norm");
+
+    array_1d<double> seed_comp,seed_comp_sorted;
+    array_1d<int> seed_comp_dex;
+    seed_comp.set_name("dalex_simplex_boundary_seed_comp");
+    seed_comp_sorted.set_name("dalex_simplex_boundary_seed_comp_sorted");
+    seed_comp_dex.set_name("dalex_simplex_boundary_seed_comp_dex");
+    for(i=0;i<associates.get_dim();i++){
+        component=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            component+=(_chifn->get_pt(associates.get_data(i),j)-
+                        _chifn->get_pt(specified,j))*orig_dir.get_data(j);
+        }
+        component=fabs(component);
+        if(component>1.0e-20){
+            seed_comp.add(component);
+            seed_comp_dex.add(i);
+        }
+    }
+    sort(seed_comp, seed_comp_sorted, seed_comp_dex);
+    seed_orig_norm=seed_comp_sorted.get_data(seed_comp_dex.get_dim()/2);
+
+    for(i=0;i<seed_dir.get_rows();i++){
+        seed_comp.reset_preserving_room();
+        seed_comp_sorted.reset_preserving_room();
+        seed_comp_dex.reset_preserving_room();
+        for(j=0;j<associates.get_dim();j++){
+            component=0.0;
+            for(k=0;k<_chifn->get_dim();k++){
+                component+=(_chifn->get_pt(associates.get_data(j),k)-
+                            _chifn->get_pt(specified,k))*seed_dir.get_data(i,k);
+            }
+            component=fabs(component);
+            if(component>1.0e-20){
+                seed_comp.add(component);
+                seed_comp_dex.add(j);
+            }
+        }
+        sort(seed_comp, seed_comp_sorted, seed_comp_dex);
+        seed_norm.set(i,seed_comp_sorted.get_data(seed_comp_dex.get_dim()/2));
+    }
+
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
+            trial1.set(i,seed.get_data(0,i)+orig_dir.get_data(i)*seed_orig_norm*0.1*d_step);
+        }
+        seed.add_row(trial1);
+        printf("first seed %e\n",dchifn(trial1));
+        for(i=0;i<seed_dir.get_rows();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial1.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01*d_step);
-                trial2.set(j,seed.get_data(0,j)-cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01*d_step);
+                trial1.set(j,seed.get_data(0,j)+seed_dir.get_data(i,j)*seed_norm.get_data(i)*0.1*d_step);
+                trial2.set(j,seed.get_data(0,j)-seed_dir.get_data(i,j)*seed_norm.get_data(i)*0.1*d_step);
             }
             if(dchifn(trial1)<dchifn(trial2)){
                 seed.add_row(trial1);
@@ -1171,14 +1257,13 @@ int dalex::simplex_boundary_search(const int specified,
         start_path=pt_start;
     }
 
-    array_1d<double> base_dir,trial_dir;
+    trial_dir.reset_preserving_room();
+    array_1d<double> base_dir;
     base_dir.set_name("dalex_boundary_base_dir");
-    trial_dir.set_name("dalex_boundary_trial_dir");
     array_2d<double> perp_dir;
     perp_dir.set_name("dalex_boundary_perp_dir");
     array_1d<int> good_dexes;
     good_dexes.set_name("dalex_boundary_good_dexes");
-    double component,sgn;
     int i_midst;
     int pre_midpt=_chifn->get_pts();
     if(i_next[0]!=specified){
@@ -1353,13 +1438,16 @@ void dalex::tendril_search(int specified){
 
     int i_exclude;
     int i_particle;
+    int i_origin;
     array_1d<int> end_pts;
     end_pts.set_name("dalex_tendril_end_pts");
     array_2d<double> exclusion_points;
     array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
-    simplex_boundary_search(specified, _exclusion_zones, &i_particle);
+    i_origin=mindex();
+    simplex_boundary_search(specified, i_origin, _exclusion_zones, &i_particle);
+    i_origin=specified;
     end_pts.add(i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
@@ -1378,8 +1466,9 @@ void dalex::tendril_search(int specified){
     dir2.set_name("dalex_simplex_boundary_dir2");
     trial_center.set_name("dalex_simplex_boundary_trial_center");
 
-    array_1d<int> fall_back;
+    array_1d<int> fall_back,fall_back_origin;
     fall_back.set_name("dalex_simplex_boundary_fall_back");
+    fall_back_origin.set_name("dalex_simplex_boundary_fall_back_origin");
     int ct_last;
 
     _strikes=0;
@@ -1398,13 +1487,14 @@ void dalex::tendril_search(int specified){
     double old_volume;
 
     fall_back.set(0,i_particle);
+    fall_back_origin.set(0,specified);
 
     while(_strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
         iteration++;
 
         ct_last=_chifn->get_pts();
-        in_old_ones=simplex_boundary_search(i_particle, _exclusion_zones, &i_next);
+        in_old_ones=simplex_boundary_search(i_particle, i_origin, _exclusion_zones, &i_next);
         end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
@@ -1425,6 +1515,7 @@ void dalex::tendril_search(int specified){
 
         printf("    exclusion zones %d\n",_exclusion_zones.ct());
 
+        i_origin=i_particle;
         i_particle=i_next;
 
         old_volume=volume_0;
@@ -1448,9 +1539,11 @@ void dalex::tendril_search(int specified){
             if(_strikes<3){
                 if(fall_back.get_dim()==2){
                     i_particle=fall_back.get_data(_strikes-1);
+                    i_origin=fall_back_origin.get_data(_strikes-1);
                 }
                 else{
                     i_particle=fall_back.get_data(0);
+                    i_origin=fall_back_origin.get_data(0);
                 }
             }
         }
@@ -1458,6 +1551,8 @@ void dalex::tendril_search(int specified){
             _strikes=0;
             fall_back.set(1,fall_back.get_data(0));
             fall_back.set(0,i_particle);
+            fall_back_origin.set(1,fall_back_origin.get_data(0));
+            fall_back_origin.set(0,i_origin);
         }
 
         printf("    volume %e from %e-- %d; chifn(i_next) %e\n",
