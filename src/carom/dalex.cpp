@@ -1184,10 +1184,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         seed_norm.set(i,seed_comp_sorted.get_data(seed_comp_dex.get_dim()/2));
     }
 
-    array_1d<double> grad;
+    array_1d<double> grad,reflected_dir;
     grad.set_name("dalex_simplex_boundary_grad");
+    reflected_dir.set_name("dalex_simplex_boundary_reflected");
     for(i=0;i<_chifn->get_dim();i++){
         grad.set(i,0.0);
+        reflected_dir.set(i,orig_dir.get_data(i));
     }
     double mu1,mu2;
     for(i=0;i<_chifn->get_dim();i++){
@@ -1214,21 +1216,24 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     grad.normalize();
     component=0.0;
     for(i=0;i<_chifn->get_dim();i++){
-        component+=orig_dir.get_data(i)*grad.get_data(i);
+        component+=reflected_dir.get_data(i)*grad.get_data(i);
     }
     for(i=0;i<_chifn->get_dim();i++){
-        orig_dir.subtract_val(i,2.0*component*grad.get_data(i));
+        reflected_dir.subtract_val(i,2.0*component*grad.get_data(i));
     }
     orig_dir.normalize();
 
-    int i_bisect=bisection(specified, orig_dir, target(), 0.01);
+    int i_bisect=bisection(specified, reflected_dir, target(), 0.01);
 
     if(specified>=0){
-        seed.add_row(_chifn->get_pt(specified));
+        for(i=0;i<_chifn->get_dim();i++){
+            trial1.set(i,_chifn->get_pt(specified,i)+orig_dir.get_data(i)*seed_orig_norm*0.1*d_step);
+        }
+        seed.add_row(trial1);
         if(i_bisect==specified){
             printf("bisection failed\n");
             for(i=0;i<_chifn->get_dim();i++){
-                trial1.set(i,seed.get_data(0,i)+orig_dir.get_data(i)*seed_orig_norm*0.1*d_step);
+                trial1.set(i,seed.get_data(0,i)+reflected_dir.get_data(i)*seed_orig_norm*0.1*d_step);
             }
             seed.add_row(trial1);
         }
