@@ -1221,13 +1221,22 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
     orig_dir.normalize();
 
+    int i_bisect=bisection(specified, orig_dir, target(), 0.01);
+
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
-        for(i=0;i<_chifn->get_dim();i++){
-            trial1.set(i,seed.get_data(0,i)+orig_dir.get_data(i)*seed_orig_norm*0.1*d_step);
+        if(i_bisect==specified){
+            printf("bisection failed\n");
+            for(i=0;i<_chifn->get_dim();i++){
+                trial1.set(i,seed.get_data(0,i)+orig_dir.get_data(i)*seed_orig_norm*0.1*d_step);
+            }
+            seed.add_row(trial1);
         }
-        seed.add_row(trial1);
-        printf("first seed %e\n",dchifn(trial1));
+        else{
+            printf("bisection succeeded\n");
+            seed.add_row(_chifn->get_pt(i_bisect));
+        }
+        printf("first seed %e\n",dchifn(seed(1)));
         for(i=0;i<seed_dir.get_rows();i++){
             for(j=0;j<_chifn->get_dim();j++){
                 trial1.set(j,seed.get_data(0,j)+seed_dir.get_data(i,j)*seed_norm.get_data(i)*0.1*d_step);
