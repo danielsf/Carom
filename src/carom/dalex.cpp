@@ -1184,6 +1184,43 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         seed_norm.set(i,seed_comp_sorted.get_data(seed_comp_dex.get_dim()/2));
     }
 
+    array_1d<double> grad;
+    grad.set_name("dalex_simplex_boundary_grad");
+    for(i=0;i<_chifn->get_dim();i++){
+        grad.set(i,0.0);
+    }
+    double mu1,mu2;
+    for(i=0;i<_chifn->get_dim();i++){
+        trial1.set(i,_chifn->get_pt(specified,i)+0.05*seed_orig_norm*orig_dir.get_data(i));
+        trial2.set(i,_chifn->get_pt(specified,i)-0.05*seed_orig_norm*orig_dir.get_data(i));
+    }
+    evaluate(trial1,&mu1,&i);
+    evaluate(trial2,&mu2,&i);
+    for(i=0;i<_chifn->get_dim();i++){
+        grad.add_val(i,(mu1-mu2)*orig_dir.get_data(i)/(0.1*seed_orig_norm));
+    }
+
+    for(i=0;i<seed_dir.get_rows();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            trial1.set(j,_chifn->get_pt(specified,j)+0.05*seed_norm.get_data(i)*seed_dir.get_data(i,j));
+            trial2.set(j,_chifn->get_pt(specified,j)-0.05*seed_norm.get_data(i)*seed_dir.get_data(i,j));
+        }
+        evaluate(trial1,&mu1,&j);
+        evaluate(trial2,&mu2,&j);
+        for(j=0;j<_chifn->get_dim();j++){
+            grad.add_val(j,(mu1-mu2)*seed_dir.get_data(i,j)/(0.1*seed_norm.get_data(i)));
+        }
+    }
+    grad.normalize();
+    component=0.0;
+    for(i=0;i<_chifn->get_dim();i++){
+        component+=orig_dir.get_data(i)*grad.get_data(i);
+    }
+    for(i=0;i<_chifn->get_dim();i++){
+        orig_dir.subtract_val(i,2.0*component*grad.get_data(i));
+    }
+    orig_dir.normalize();
+
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
