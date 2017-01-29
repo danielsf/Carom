@@ -1149,16 +1149,20 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     seed_comp.set_name("dalex_simplex_boundary_seed_comp");
     seed_comp_sorted.set_name("dalex_simplex_boundary_seed_comp_sorted");
     seed_comp_dex.set_name("dalex_simplex_boundary_seed_comp_dex");
-    for(i=0;i<associates.get_dim();i++){
-        component=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            component+=(_chifn->get_pt(associates.get_data(i),j)-
-                        _chifn->get_pt(specified,j))*orig_dir.get_data(j);
-        }
-        component=fabs(component);
-        if(component>1.0e-20){
-            seed_comp.add(component);
-            seed_comp_dex.add(i);
+    for(i=i_origin;i<specified;i++){
+        if(_chifn->get_fn(i)<target()){
+            component=0.0;
+            if(_chifn->get_fn(i)<target()){
+                for(j=0;j<_chifn->get_dim();j++){
+                    component+=(_chifn->get_pt(i,j)-
+                                _chifn->get_pt(specified,j))*orig_dir.get_data(j);
+                }
+                component=fabs(component);
+                if(component>1.0e-20){
+                    seed_comp.add(component);
+                    seed_comp_dex.add(i);
+                }
+            }
         }
     }
     sort(seed_comp, seed_comp_sorted, seed_comp_dex);
@@ -1168,10 +1172,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         seed_comp.reset_preserving_room();
         seed_comp_sorted.reset_preserving_room();
         seed_comp_dex.reset_preserving_room();
-        for(j=0;j<associates.get_dim();j++){
+        for(j=i_origin;j<specified;j++){
             component=0.0;
             for(k=0;k<_chifn->get_dim();k++){
-                component+=(_chifn->get_pt(associates.get_data(j),k)-
+                component+=(_chifn->get_pt(j,k)-
                             _chifn->get_pt(specified,k))*seed_dir.get_data(i,k);
             }
             component=fabs(component);
