@@ -1074,9 +1074,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     cost_fn dchifn(_chifn,associates);
-    array_2d<double> cost_bases;
-    cost_bases.set_name("dalex_simplex_boundary_cost_bases");
-    dchifn.copy_bases(cost_bases);
 
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
 
