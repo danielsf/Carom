@@ -1124,8 +1124,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial1.set(j,seed.get_data(0,j)+dummy_ellipse.bases(i,j)*dummy_ellipse.radii(i)*0.01*d_step);
-                trial2.set(j,seed.get_data(0,j)-dummy_ellipse.bases(i,j)*dummy_ellipse.radii(i)*0.01*d_step);
+                trial1.set(j,seed.get_data(0,j)+dummy_ellipse.bases(i,j)*dummy_ellipse.radii(i)*0.1*d_step);
+                trial2.set(j,seed.get_data(0,j)-dummy_ellipse.bases(i,j)*dummy_ellipse.radii(i)*0.1*d_step);
             }
             if(dchifn(trial1)<dchifn(trial2)){
                 seed.add_row(trial1);
