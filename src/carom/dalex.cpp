@@ -1010,7 +1010,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-int dalex::simplex_boundary_search(const int specified,
+int dalex::simplex_boundary_search(const int specified, const int i_origin,
                                    ellipse_list &exclusion_zones, int *i_next){
 
     safety_check("simplex_boundary_search");
@@ -1359,7 +1359,10 @@ void dalex::tendril_search(int specified){
     array_1d<int> exclusion_dex;
     ellipse local_ellipse;
 
-    simplex_boundary_search(specified, _exclusion_zones, &i_particle);
+    int i_origin=0;
+
+    simplex_boundary_search(specified, i_origin, _exclusion_zones, &i_particle);
+    i_origin=specified;
     end_pts.add(i_particle);
     for(i=pt_0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
@@ -1379,7 +1382,9 @@ void dalex::tendril_search(int specified){
     trial_center.set_name("dalex_simplex_boundary_trial_center");
 
     array_1d<int> fall_back;
+    array_1d<int> fall_back_origin;
     fall_back.set_name("dalex_simplex_boundary_fall_back");
+    fall_back_origin.set_name("dalex_simplex_boundary_fall_back_origin");
     int ct_last;
 
     _strikes=0;
@@ -1398,13 +1403,14 @@ void dalex::tendril_search(int specified){
     double old_volume;
 
     fall_back.set(0,i_particle);
+    fall_back_origin.set(0,specified);
 
     while(_strikes<3 && (_limit<0 || _chifn->get_pts()<_limit)){
 
         iteration++;
 
         ct_last=_chifn->get_pts();
-        in_old_ones=simplex_boundary_search(i_particle, _exclusion_zones, &i_next);
+        in_old_ones=simplex_boundary_search(i_particle, i_origin, _exclusion_zones, &i_next);
         end_pts.add(i_next);
 
         is_a_strike=in_old_ones;
@@ -1425,6 +1431,7 @@ void dalex::tendril_search(int specified){
 
         printf("    exclusion zones %d\n",_exclusion_zones.ct());
 
+        i_origin=i_particle;
         i_particle=i_next;
 
         old_volume=volume_0;
@@ -1448,9 +1455,11 @@ void dalex::tendril_search(int specified){
             if(_strikes<3){
                 if(fall_back.get_dim()==2){
                     i_particle=fall_back.get_data(_strikes-1);
+                    i_origin=fall_back_origin.get_data(_strikes-1);
                 }
                 else{
                     i_particle=fall_back.get_data(0);
+                    i_origin=fall_back_origin.get_data(0);
                 }
             }
         }
@@ -1458,6 +1467,8 @@ void dalex::tendril_search(int specified){
             _strikes=0;
             fall_back.set(1,fall_back.get_data(0));
             fall_back.set(0,i_particle);
+            fall_back_origin.set(1,fall_back_origin.get_data(0));
+            fall_back_origin.set(0,i_origin);
         }
 
         printf("    volume %e from %e-- %d; chifn(i_next) %e\n",
