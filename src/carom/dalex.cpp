@@ -1103,12 +1103,32 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     int d_step = _strikes+1;
 
+    array_2d<double> ellipse_pts;
+    ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
+    ellipse dummy_ellipse;
+
+    for(i=i_origin;i<specified;i++){
+        if(_chifn->get_fn(i)<target()){
+            ellipse_pts.add_row(_chifn->get_pt(i));
+        }
+    }
+
+    i=i_origin;
+    while(ellipse_pts.get_rows()<2*_chifn->get_dim() && i>0){
+        i--;
+        if(_chifn->get_fn(i)<target()){
+            ellipse_pts.add_row(_chifn->get_pt(i));
+        }
+    }
+
+    dummy_ellipse.build(ellipse_pts);
+
     if(specified>=0){
         seed.add_row(_chifn->get_pt(specified));
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial1.set(j,seed.get_data(0,j)+cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01*d_step);
-                trial2.set(j,seed.get_data(0,j)-cost_bases.get_data(i,j)*dchifn.get_norm(i)*0.01*d_step);
+                trial1.set(j,seed.get_data(0,j)+dummy_ellipse.bases(i,j)*dummy_ellipse.radii(i)*0.01*d_step);
+                trial2.set(j,seed.get_data(0,j)-dummy_ellipse.bases(i,j)*dummy_ellipse.radii(i)*0.01*d_step);
             }
             if(dchifn(trial1)<dchifn(trial2)){
                 seed.add_row(trial1);
