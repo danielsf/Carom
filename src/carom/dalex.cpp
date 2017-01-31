@@ -1162,7 +1162,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                     sgn=-1.0;
                 }
                 for(j=0;j<_chifn->get_dim();j++){
-                    bisect_dir.set(j,dummy_ellipse.bases(i,j)*sgn);
+                    bisect_dir.set(j,dummy_ellipse.bases(i,j)*sgn+0.5*base_dir.get_data(j));
                 }
                 i_bisect=bisection(i_anchor,bisect_dir,target(),0.001);
                 if(i_bisect!=i_anchor){
@@ -1171,7 +1171,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 else{
                     sgn*=-1.0;
                     for(j=0;j<_chifn->get_dim();j++){
-                        bisect_dir.set(j,dummy_ellipse.bases(i,j)*sgn);
+                        bisect_dir.set(j,dummy_ellipse.bases(i,j)*sgn+0.5*base_dir.get_data(j));
                     }
                     i_bisect=bisection(i_anchor,bisect_dir,target(),0.001);
                     if(i_bisect!=i_anchor){
