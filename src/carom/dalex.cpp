@@ -1101,8 +1101,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int d_step = _strikes+1;
 
     int i_anchor;
-    array_1d<int> path_dex;
-    path_dex.set_name("dalex_simplex_boundary_path_dex");
     array_1d<double> base_dir;
     base_dir.set_name("dalex_simplex_boundary_base_dir");
     for(i=0;i<_chifn->get_dim();i++){
@@ -1110,35 +1108,15 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
     base_dir.normalize();
 
-    double anchor_min=2.0*exception_value;
-    int i_anchor_min;
-    for(i=i_origin;i<specified;i++){
+    i_anchor=specified;
+    for(i=specified;i>0 && target()-_chifn->get_fn(i_anchor)<0.1*(target()-chimin());i--){
         if(_chifn->get_fn(i)<target()){
-            path_dex.add(i);
-            if(_chifn->get_fn(i)<anchor_min){
-                anchor_min=_chifn->get_fn(i);
-                i_anchor_min=i;
-            }
+            i_anchor=i;
         }
     }
 
-    i_anchor=path_dex.get_data(3*path_dex.get_dim()/4);
-    i=i_anchor;
-    j=1;
-    printf("adjusting anchor %e %e\n",_chifn->get_fn(i_anchor),target());
-    while(target()-_chifn->get_fn(i_anchor)<0.001){
-        if(i+j<_chifn->get_pts()){
-            if(_chifn->get_fn(i+j)<_chifn->get_fn(i_anchor)){
-                i_anchor=i+j;
-            }
-        }
-        if(_chifn->get_fn(i-j)<_chifn->get_fn(i_anchor)){
-            i_anchor=i-j;
-        }
-        j++;
-
-    }
-    printf("fn anchor %e\n",_chifn->get_fn(i_anchor));
+    printf("fn anchor %e; %d %d %d\n",
+    _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
 
     array_1d<double> anchor;
     anchor.set_name("simplex_boundary_anchor");
@@ -1171,8 +1149,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 seed.add_row(_chifn->get_pt(i_bisect));
             }
             else{
-                printf("i_bisect is i_anchor %e; %e; %d; %e\n",
-                target()-_chifn->get_fn(i_anchor),rat,seed.get_rows(),anchor_min);
+                printf("i_bisect is i_anchor %e; %e; %d\n",
+                target()-_chifn->get_fn(i_anchor),rat,seed.get_rows());
             }
         }
     }
