@@ -1100,8 +1100,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     int d_step = _strikes+1;
 
-    array_2d<double> ellipse_pts;
-    ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
+    int i_anchor;
+    array_1d<int> path_dex;
+    path_dex.set_name("dalex_simplex_boundary_path_dex");
     array_1d<double> base_dir;
     base_dir.set_name("dalex_simplex_boundary_base_dir");
     for(i=0;i<_chifn->get_dim();i++){
@@ -1109,54 +1110,49 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
     base_dir.normalize();
 
+    double anchor_min=2.0*exception_value;
+    int i_anchor_min;
     for(i=i_origin;i<specified;i++){
         if(_chifn->get_fn(i)<target()){
-            ellipse_pts.add_row(_chifn->get_pt(i));
+            path_dex.add(i);
+            if(_chifn->get_fn(i)<anchor_min){
+                anchor_min=_chifn->get_fn(i);
+                i_anchor_min=i;
+            }
         }
     }
 
-    i=i_origin;
-    while(ellipse_pts.get_rows()<2*_chifn->get_dim() && i>0){
-        i--;
-        if(_chifn->get_fn(i)<target()){
-            ellipse_pts.add_row(_chifn->get_pt(i));
+    i_anchor=path_dex.get_data(3*path_dex.get_dim()/4);
+    i=i_anchor;
+    j=1;
+    printf("adjusting anchor %e %e\n",_chifn->get_fn(i_anchor),target());
+    while(target()-_chifn->get_fn(i_anchor)<0.001){
+        if(i+j<_chifn->get_pts()){
+            if(_chifn->get_fn(i+j)<_chifn->get_fn(i_anchor)){
+                i_anchor=i+j;
+            }
         }
-    }
-
-    array_1d<double> base_comp,base_comp_sorted;
-    base_comp.set_name("simplex_boundary_base_comp");
-    base_comp_sorted.set_name("simplex_boundary_base_comp");
-    array_1d<int> base_comp_dex;
-    base_comp_dex.set_name("simplex_boundary_base_comp_dex");
-    double component;
-    for(i=0;i<ellipse_pts.get_rows();i++){
-        component=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            component+=base_dir.get_data(j)*(ellipse_pts.get_data(i,j)-_chifn->get_pt(specified,j));
+        if(_chifn->get_fn(i-j)<_chifn->get_fn(i_anchor)){
+            i_anchor=i-j;
         }
-        base_comp.add(fabs(component));
-        base_comp_dex.add(i);
-    }
-    sort(base_comp, base_comp_sorted, base_comp_dex);
-    double norm;
-    int norm_dex=base_comp_dex.get_data(base_comp_dex.get_dim()/2);
-    int anchor_dex=3*ellipse_pts.get_rows()/4;
+        j++;
 
-    norm=base_comp.get_data(norm_dex);
+    }
+    printf("fn anchor %e\n",_chifn->get_fn(i_anchor));
+
     array_1d<double> anchor;
     anchor.set_name("simplex_boundary_anchor");
     for(i=0;i<_chifn->get_dim();i++){
-        anchor.set(i,ellipse_pts.get_data(anchor_dex,i));
+        anchor.set(i,_chifn->get_pt(i_anchor,i));
     }
-    array_1d<double> epsilon;
+    array_1d<double> epsilon,bisect_dir;
     epsilon.set_name("simplex_boundary_epsilon");
+    bisect_dir.set_name("simplex_boundary_bisect_dir");
+    int i_bisect;
+    double component,rat;
 
     if(specified>=0){
-        for(i=0;i<_chifn->get_dim();i++){
-            trial1.set(i,anchor.get_data(i)+norm*base_dir.get_data(i));
-        }
-        seed.add_row(trial1);
-        for(i=0;i<_chifn->get_dim();i++){
+        while(seed.get_rows()!=_chifn->get_dim()+1){
             component=0.0;
             for(j=0;j<_chifn->get_dim();j++){
                 epsilon.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
@@ -1166,11 +1162,18 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 epsilon.subtract_val(j,component*base_dir.get_data(j));
             }
             epsilon.normalize();
-
+            rat=_chifn->random_double()*0.5;
             for(j=0;j<_chifn->get_dim();j++){
-                trial1.set(j,anchor.get_data(j)+norm*base_dir.get_data(j)+0.5*norm*epsilon.get_data(j));
+               bisect_dir.set(j,base_dir.get_data(j)+rat*epsilon.get_data(j));
             }
-            seed.add_row(trial1);
+            i_bisect=bisection(i_anchor,bisect_dir,target(),0.001);
+            if(i_bisect!=i_anchor){
+                seed.add_row(_chifn->get_pt(i_bisect));
+            }
+            else{
+                printf("i_bisect is i_anchor %e; %e; %d; %e\n",
+                target()-_chifn->get_fn(i_anchor),rat,seed.get_rows(),anchor_min);
+            }
         }
     }
     else{
