@@ -1100,6 +1100,23 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     int d_step = _strikes+1;
 
+    array_2d<double> ellipse_pts;
+    ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
+    ellipse dummy_ellipse;
+    for(i=i_origin;i<specified;i++){
+        if(_chifn->get_fn(i)<target()){
+            ellipse_pts.add_row(_chifn->get_pt(i));
+        }
+    }
+
+    for(i=i_origin-1;i>0 && ellipse_pts.get_rows()<2*_chifn->get_dim();i--){
+        if(_chifn->get_fn(i)<target()){
+            ellipse_pts.add_row(_chifn->get_pt(i));
+        }
+    }
+
+    dummy_ellipse.build(ellipse_pts);
+
     int i_anchor;
     array_1d<double> base_dir;
     base_dir.set_name("dalex_simplex_boundary_base_dir");
@@ -1123,34 +1140,43 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     for(i=0;i<_chifn->get_dim();i++){
         anchor.set(i,_chifn->get_pt(i_anchor,i));
     }
-    array_1d<double> epsilon,bisect_dir;
-    epsilon.set_name("simplex_boundary_epsilon");
+    array_1d<double> bisect_dir,epsilon;
     bisect_dir.set_name("simplex_boundary_bisect_dir");
+    epsilon.set_name("simplex_boundary_bisect_dir");
     int i_bisect;
-    double component,rat;
+    double component,rat,sgn;
 
     if(specified>=0){
-        while(seed.get_rows()!=_chifn->get_dim()+1){
-            component=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                epsilon.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
-                component+=epsilon.get_data(j)*base_dir.get_data(j);
+        seed.add_row(_chifn->get_pt(i_anchor));
+        for(i=0;i<_chifn->get_dim();i++){
+            j=_chifn->random_int();
+            if(j%2==0){
+                sgn=1.0;
+            }
+            else{
+                sgn=-1.0;
             }
             for(j=0;j<_chifn->get_dim();j++){
-                epsilon.subtract_val(j,component*base_dir.get_data(j));
-            }
-            epsilon.normalize();
-            rat=_chifn->random_double()*0.5;
-            for(j=0;j<_chifn->get_dim();j++){
-               bisect_dir.set(j,base_dir.get_data(j)+rat*epsilon.get_data(j));
+               bisect_dir.set(j,sgn*dummy_ellipse.bases(i,j));
             }
             i_bisect=bisection(i_anchor,bisect_dir,target(),0.001);
             if(i_bisect!=i_anchor){
                 seed.add_row(_chifn->get_pt(i_bisect));
             }
             else{
-                printf("i_bisect is i_anchor %e; %e; %d\n",
-                target()-_chifn->get_fn(i_anchor),rat,seed.get_rows());
+                while(i_bisect==i_anchor){
+                     for(j=0;j<_chifn->get_dim();j++){
+                         epsilon.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
+                     }
+                     epsilon.normalize();
+                     for(j=0;j<_chifn->get_dim();j++){
+                         bisect_dir.set(j,sgn*dummy_ellipse.bases(i,j)+0.1*epsilon.get_data(j));
+                     }
+                     i_bisect=bisection(i_anchor,bisect_dir,target(),0.001);
+                     if(i_bisect!=i_anchor){
+                         seed.add_row(_chifn->get_pt(i_bisect));
+                     }
+                }
             }
         }
     }
@@ -1218,7 +1244,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     perp_dir.set_name("dalex_boundary_perp_dir");
     array_1d<int> good_dexes;
     good_dexes.set_name("dalex_boundary_good_dexes");
-    double sgn;
     int i_midst;
     int pre_midpt=_chifn->get_pts();
     if(i_next[0]!=specified){
