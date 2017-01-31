@@ -1092,6 +1092,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     ffmin.set_minmax(min,max);
     ffmin.use_gradient();
 
+    int old_type=_chifn->get_search_type();
+    _chifn->set_search_type(_type_tendril_seed);
+
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
     array_1d<double> trial1,trial2;
@@ -1191,6 +1194,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         exit(1);
         _explorers.get_seed(seed);
     }
+
+    _chifn->set_search_type(old_type);
 
     int i_min=-1;
     double mu_min;
@@ -1311,7 +1316,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         if(_tendril_path.get_rows()==0){
             _tendril_path.set_cols(2);
         }
-        if(_chifn->get_fn(i)<_chifn->target()){
+        if(_chifn->get_fn(i)<_chifn->target() &&
+           _chifn->get_search_type_log(i)==_type_tendril){
             path_row.set(0,i);
             if(distance(i,i_min)<distance(i,i_start_min)){
                 path_row.set(1,i_min);
