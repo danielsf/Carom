@@ -1146,7 +1146,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         i_anchor=specified;
         while(seed.get_rows()!=_chifn->get_dim()+1){
             for(j=0;j<_chifn->get_dim();j++){
-                bisect_dir.set(j,_chifn->get_pt(i_anchor,j)-_chifn->get_pt(mindex(),j));
+                bisect_dir.set(j,_chifn->get_pt(i_anchor,j)-_chifn->get_pt(i_origin,j));
             }
             i_bisect1=bisection(i_anchor,bisect_dir,target(),0.001);
             for(j=0;j<_chifn->get_dim();j++){
@@ -1184,7 +1184,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 }
                 else{
                     i_anchor--;
-                    while(_chifn->get_fn(i_anchor)>target()){
+                    while(_chifn->get_fn(i_anchor)>target() || i_anchor==i_origin){
                         i_anchor--;
                     }
                     seed.reset_preserving_room();
