@@ -1019,7 +1019,7 @@ void dalex::get_negative_gradient(int i_origin, cost_fn &cost, ellipse &dummy_el
     for(i=0;i<_chifn->get_dim();i++){
         out_dir.set(i,0.0);
     }
-    double rat=0.1;
+    double rat=0.02;
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
             trial.set(j,_chifn->get_pt(i_origin,j)+rat*dummy_ellipse.radii(i)*dummy_ellipse.bases(i,j));
