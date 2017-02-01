@@ -1153,7 +1153,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     if(specified>=0){
         i_anchor=specified;
         while(seed.get_rows()!=_chifn->get_dim()+1){
-            seed.add_row(_chifn->get_pt(i_anchor));
+            for(j=0;j<_chifn->get_dim();j++){
+                bisect_dir.set(j,_chifn->get_pt(i_anchor,j)-_chifn->get_pt(mindex(),j));
+            }
+            i_bisect1=bisection(i_anchor,bisect_dir,target(),0.001);
+            //printf("first seed %d anchor %d -- %e\n",i_bisect1,i_anchor,dchifn(_chifn->get_pt(i_bisect1)));
+            seed.add_row(_chifn->get_pt(i_bisect1));
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,dummy_ellipse.bases(i,j)+0.5*base_dir.get_data(j));
