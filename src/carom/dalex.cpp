@@ -1218,7 +1218,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             }
 
             if(seed.get_rows()==_chifn->get_dim()){
-                get_negative_gradient(i_anchor,grad_delta,dchifn,dummy_ellipse,gradient);
+                get_negative_gradient(i_anchor,dchifn,dummy_ellipse,gradient);
                 i_bisect1=bisection(i_anchor,gradient,target(),0.001);
                 i_grad=i_bisect1;
                 for(j=0;j<_chifn->get_dim();j++){
