@@ -1069,9 +1069,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     if(associates.get_dim()==0){
         for(i=0;i<_good_points.get_dim();i++){
-            if(_chifn->get_search_type_log(_good_points.get_data(i))==_type_refine){
-                associates.add(_good_points.get_data(i));
-            }
+            associates.add(_good_points.get_data(i));
         }
     }
 
@@ -1420,8 +1418,6 @@ void dalex::min_explore(int n_particles, int n_steps){
 }
 
 void dalex::tendril_search(int specified){
-
-    _tendril_path.reset_preserving_room();
 
     int i,j,k;
     int pt_0=_chifn->get_pts();
