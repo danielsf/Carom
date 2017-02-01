@@ -34,7 +34,7 @@ if __name__ == "__main__":
         m_y_dict[dim] = m_y
 
     seed_list = [66, 694, 762, 1068, 6475, 626]
-    time_list = [350000, 300000, 250000]
+    time_list = [600000, 500000, 400000, 350000, 300000, 250000]
     
     data_dict = {}
     for seed in seed_list:
