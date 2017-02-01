@@ -1010,7 +1010,7 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
-void dalex::get_negative_gradient(int i_origin, cost_fn &cost, ellipse &dummy_ellipse, array_1d<double> &out_dir){
+void dalex::get_negative_gradient(int i_origin, array_1d<double> &delta, cost_fn &cost, ellipse &dummy_ellipse, array_1d<double> &out_dir){
     double mu_pos, mu_neg;
     array_1d<double> trial;
     trial.set_name("get_neg_grad_trial");
@@ -1019,18 +1019,18 @@ void dalex::get_negative_gradient(int i_origin, cost_fn &cost, ellipse &dummy_el
     for(i=0;i<_chifn->get_dim();i++){
         out_dir.set(i,0.0);
     }
-    double rat=0.02;
+
     for(i=0;i<_chifn->get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,_chifn->get_pt(i_origin,j)+rat*dummy_ellipse.radii(i)*dummy_ellipse.bases(i,j));
+            trial.set(j,_chifn->get_pt(i_origin,j)+delta.get_data(i)*dummy_ellipse.bases(i,j));
         }
         mu_pos=cost(trial);
         for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,_chifn->get_pt(i_origin,j)-rat*dummy_ellipse.radii(i)*dummy_ellipse.bases(i,j));
+            trial.set(j,_chifn->get_pt(i_origin,j)-delta.get_data(i)*dummy_ellipse.bases(i,j));
         }
         mu_neg=cost(trial);
         for(j=0;j<_chifn->get_dim();j++){
-            out_dir.add_val(j,(mu_neg-mu_pos)*dummy_ellipse.bases(i,j)/(2.0*rat*dummy_ellipse.radii(i)));
+            out_dir.add_val(j,(mu_neg-mu_pos)*dummy_ellipse.bases(i,j)/(2.0*delta.get_data(i)));
         }
     }
 }
@@ -1166,13 +1166,36 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int i_bisect1,i_bisect2,i_chosen,i_grad;
     double mu1,mu2;
     double component,rat;
-    array_1d<double> gradient;
+    array_1d<double> gradient,grad_delta;
     gradient.set_name("simplex_boundary_gradient");
+    grad_delta.set_name("simplex_boundary_grad_delta");
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            bisect_dir.set(j,dummy_ellipse.bases(i,j));
+        }
+        i_bisect1=bisection(i_anchor,bisect_dir,target()+0.1*(target()-chimin()),0.001);
+        for(j=0;j<_chifn->get_dim();j++){
+            bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j));
+        }
+        i_bisect2=bisection(i_anchor,bisect_dir,target()+0.1*(target()-chimin()),0.001);
+
+        mu1=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            mu1+=power(_chifn->get_pt(i_bisect1,j)-_chifn->get_pt(i_bisect2,j),2);
+        }
+        mu1=0.1*sqrt(mu1);
+        grad_delta.set(i,mu1);
+        if(mu1<1.0e-20){
+            printf("WARNING grad delta %e\n",mu1);
+            exit(1);
+        }
+
+    }
 
     if(specified>=0){
         i_anchor=specified;
         while(seed.get_rows()!=_chifn->get_dim()+1){
-            get_negative_gradient(i_anchor,dchifn,dummy_ellipse,gradient);
+            get_negative_gradient(i_anchor,grad_delta,dchifn,dummy_ellipse,gradient);
             i_bisect1=bisection(i_anchor,gradient,target(),0.001);
             i_grad=i_bisect1;
             for(j=0;j<_chifn->get_dim();j++){
