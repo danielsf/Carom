@@ -1138,7 +1138,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> bisect_dir,epsilon;
     bisect_dir.set_name("simplex_boundary_bisect_dir");
     epsilon.set_name("simplex_boundary_bisect_dir");
-    int i_bisect1,i_bisect2;
+    int i_bisect1,i_bisect2,i_chosen;
     double mu1,mu2;
     double component,rat;
 
@@ -1149,8 +1149,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 bisect_dir.set(j,_chifn->get_pt(i_anchor,j)-_chifn->get_pt(mindex(),j));
             }
             i_bisect1=bisection(i_anchor,bisect_dir,target(),0.001);
+            for(j=0;j<_chifn->get_dim();j++){
+                bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_bisect1,j)));
+            }
+            evaluate(bisect_dir,&mu1,&j);
             //printf("first seed %d anchor %d -- %e\n",i_bisect1,i_anchor,dchifn(_chifn->get_pt(i_bisect1)));
-            seed.add_row(_chifn->get_pt(i_bisect1));
+            seed.add_row(bisect_dir);
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,dummy_ellipse.bases(i,j)+0.5*base_dir.get_data(j));
@@ -1163,18 +1167,19 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 mu1=dchifn(_chifn->get_pt(i_bisect1));
                 mu2=dchifn(_chifn->get_pt(i_bisect2));
 
+                i_chosen=-1;
                 if(i_bisect1==i_anchor && i_bisect2!=i_anchor){
-                    seed.add_row(_chifn->get_pt(i_bisect2));
+                    i_chosen=i_bisect2;
                 }
                 else if(i_bisect1!=i_anchor && i_bisect2==i_anchor){
-                    seed.add_row(_chifn->get_pt(i_bisect1));
+                    i_chosen=i_bisect1;
                 }
                 else if(i_bisect1!=i_anchor && i_bisect2!=i_anchor){
                     if(mu1<mu2){
-                        seed.add_row(_chifn->get_pt(i_bisect1));
+                        i_chosen=i_bisect1;
                     }
                     else{
-                        seed.add_row(_chifn->get_pt(i_bisect2));
+                        i_chosen=i_bisect2;
                     }
                 }
                 else{
@@ -1184,6 +1189,14 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                     }
                     seed.reset_preserving_room();
                     break;
+                }
+
+                if(i_chosen>=0){
+                    for(j=0;j<_chifn->get_dim();j++){
+                        bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_chosen,j)));
+                    }
+                    evaluate(bisect_dir,&mu1,&j);
+                    seed.add_row(bisect_dir);
                 }
             }
         }
