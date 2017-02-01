@@ -1010,6 +1010,31 @@ void dalex::find_covariance_matrix(int iCenter, array_2d<double> &covar){
 
 }
 
+void dalex::get_negative_gradient(int i_origin, cost_fn &cost, ellipse &dummy_ellipse, array_1d<double> &out_dir){
+    double mu_pos, mu_neg;
+    array_1d<double> trial;
+    trial.set_name("get_neg_grad_trial");
+    int i,j;
+    out_dir.reset_preserving_room();
+    for(i=0;i<_chifn->get_dim();i++){
+        out_dir.set(i,0.0);
+    }
+    double rat=0.1;
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            trial.set(j,_chifn->get_pt(i_origin,j)+rat*dummy_ellipse.radii(i)*dummy_ellipse.bases(i,j));
+        }
+        mu_pos=cost(trial);
+        for(j=0;j<_chifn->get_dim();j++){
+            trial.set(j,_chifn->get_pt(i_origin,j)-rat*dummy_ellipse.radii(i)*dummy_ellipse.bases(i,j));
+        }
+        mu_neg=cost(trial);
+        for(j=0;j<_chifn->get_dim();j++){
+            out_dir.add_val(j,(mu_neg-mu_pos)*dummy_ellipse.bases(i,j)/(2.0*rat*dummy_ellipse.radii(i)));
+        }
+    }
+}
+
 int dalex::simplex_boundary_search(const int specified, const int i_origin,
                                    ellipse_list &exclusion_zones, int *i_next){
 
@@ -1138,17 +1163,18 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> bisect_dir,epsilon;
     bisect_dir.set_name("simplex_boundary_bisect_dir");
     epsilon.set_name("simplex_boundary_bisect_dir");
-    int i_bisect1,i_bisect2,i_chosen;
+    int i_bisect1,i_bisect2,i_chosen,i_grad;
     double mu1,mu2;
     double component,rat;
+    array_1d<double> gradient;
+    gradient.set_name("simplex_boundary_gradient");
 
     if(specified>=0){
         i_anchor=specified;
         while(seed.get_rows()!=_chifn->get_dim()+1){
-            for(j=0;j<_chifn->get_dim();j++){
-                bisect_dir.set(j,_chifn->get_pt(i_anchor,j)-_chifn->get_pt(i_origin,j));
-            }
-            i_bisect1=bisection(i_anchor,bisect_dir,target(),0.001);
+            get_negative_gradient(i_anchor,dchifn,dummy_ellipse,gradient);
+            i_bisect1=bisection(i_anchor,gradient,target(),0.001);
+            i_grad=i_bisect1;
             for(j=0;j<_chifn->get_dim();j++){
                 bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_bisect1,j)));
             }
@@ -1209,6 +1235,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     printf("fn anchor %e; %d %d %d\n",
     _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
+    printf("i_grad-i_anchor %d\n",i_grad-i_anchor);
 
     _chifn->set_search_type(old_type);
 
