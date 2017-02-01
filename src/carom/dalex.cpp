@@ -1169,41 +1169,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> gradient,grad_delta;
     gradient.set_name("simplex_boundary_gradient");
     grad_delta.set_name("simplex_boundary_grad_delta");
-    for(i=0;i<_chifn->get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            bisect_dir.set(j,dummy_ellipse.bases(i,j));
-        }
-        i_bisect1=bisection(i_anchor,bisect_dir,target()+0.1*(target()-chimin()),0.001);
-        for(j=0;j<_chifn->get_dim();j++){
-            bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j));
-        }
-        i_bisect2=bisection(i_anchor,bisect_dir,target()+0.1*(target()-chimin()),0.001);
 
-        mu1=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            mu1+=power(_chifn->get_pt(i_bisect1,j)-_chifn->get_pt(i_bisect2,j),2);
-        }
-        mu1=0.1*sqrt(mu1);
-        grad_delta.set(i,mu1);
-        if(mu1<1.0e-20){
-            printf("WARNING grad delta %e\n",mu1);
-            exit(1);
-        }
-
-    }
 
     if(specified>=0){
         i_anchor=specified;
         while(seed.get_rows()!=_chifn->get_dim()+1){
-            get_negative_gradient(i_anchor,grad_delta,dchifn,dummy_ellipse,gradient);
-            i_bisect1=bisection(i_anchor,gradient,target(),0.001);
-            i_grad=i_bisect1;
-            for(j=0;j<_chifn->get_dim();j++){
-                bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_bisect1,j)));
-            }
-            evaluate(bisect_dir,&mu1,&j);
-            //printf("first seed %d anchor %d -- %e\n",i_bisect1,i_anchor,dchifn(_chifn->get_pt(i_bisect1)));
-            seed.add_row(bisect_dir);
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,dummy_ellipse.bases(i,j)+0.5*base_dir.get_data(j));
@@ -1247,6 +1217,18 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                     evaluate(bisect_dir,&mu1,&j);
                     seed.add_row(bisect_dir);
                 }
+            }
+
+            if(seed.get_rows()==_chifn->get_dim()){
+                get_negative_gradient(i_anchor,grad_delta,dchifn,dummy_ellipse,gradient);
+                i_bisect1=bisection(i_anchor,gradient,target(),0.001);
+                i_grad=i_bisect1;
+                for(j=0;j<_chifn->get_dim();j++){
+                    bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_bisect1,j)));
+                }
+                evaluate(bisect_dir,&mu1,&j);
+                //printf("first seed %d anchor %d -- %e\n",i_bisect1,i_anchor,dchifn(_chifn->get_pt(i_bisect1)));
+                seed.add_row(bisect_dir);
             }
         }
     }
