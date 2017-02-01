@@ -1129,11 +1129,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     base_dir.normalize();
 
     i_anchor=specified;
-    for(i=specified;i>0 && target()-_chifn->get_fn(i_anchor)<0.1*(target()-chimin());i--){
-        if(_chifn->get_fn(i)<target()){
-            i_anchor=i;
-        }
-    }
 
     printf("fn anchor %e; %d %d %d\n",
     _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
