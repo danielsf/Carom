@@ -1130,9 +1130,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     i_anchor=specified;
 
-    printf("fn anchor %e; %d %d %d\n",
-    _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
-
     array_1d<double> anchor;
     anchor.set_name("simplex_boundary_anchor");
     for(i=0;i<_chifn->get_dim();i++){
@@ -1197,6 +1194,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         _explorers.get_seed(seed);
     }
 
+    printf("fn anchor %e; %d %d %d\n",
+    _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
+
     _chifn->set_search_type(old_type);
 
     int i_min=-1;
@@ -1213,7 +1213,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             start_max=mu;
         }
     }
-    printf("    starting from %e; %e\n",start_min,start_max);
+    printf("    starting from (delta) %e; %e\n",start_min-target(),start_max-target());
 
     array_1d<double> minpt;
     minpt.set_name("dalex_simplex_search_minpt");
