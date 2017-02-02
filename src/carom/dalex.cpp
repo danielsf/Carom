@@ -1461,6 +1461,7 @@ void dalex::explore(int with_kick){
     }
 
     _explorers.set_associates(associates);
+    _explorers.set_envelope(4.0);
     _explorers.sample(4*_chifn->get_dim(),with_kick);
 
     _update_good_points(pt_0);

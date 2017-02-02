@@ -168,6 +168,7 @@ void explorers::sample(int n_steps){
 void explorers::sample(int n_steps, int with_kick){
 
     cost_fn dchifn(_chifn, _associates);
+    dchifn.set_envelope(_envelope);
     dchifn.copy_bases(_bases);
     set_norm();
 

@@ -28,6 +28,11 @@ class explorers{
             _max.set_name("explorers_max");
             _req_temp.set_name("explorers_req_temp");
             _mu_arr.set_name("explorers_mu_arr");
+            _envelope=1.0;
+        }
+
+        void set_envelope(double dd){
+            _envelope=dd;
         }
 
         void set_n_particles(int ii){
@@ -95,6 +100,7 @@ class explorers{
         array_2d<double> _particles;
         int _scalar_acceptance;
         int _scalar_steps;
+        double _envelope;
 
 
 
