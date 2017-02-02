@@ -1170,7 +1170,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> bisect_dir,epsilon;
     bisect_dir.set_name("simplex_boundary_bisect_dir");
     epsilon.set_name("simplex_boundary_bisect_dir");
-    int i_bisect1,i_bisect2,i_chosen,i_grad;
+    int i_bisect1,i_bisect2,i_chosen;
     double mu1,mu2;
     double component,rat;
     array_1d<int> kept_dex;
@@ -1253,7 +1253,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     printf("fn anchor %e; %d %d %d\n",
     _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
-    printf("i_grad-i_anchor %d\n",i_grad-i_anchor);
 
     _chifn->set_search_type(old_type);
 
