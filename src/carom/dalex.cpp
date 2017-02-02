@@ -1185,11 +1185,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         while(seed.get_rows()!=_chifn->get_dim()+1){
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
-                    bisect_dir.set(j,dummy_ellipse.bases(i,j)+0.5*base_dir.get_data(j));
+                    bisect_dir.set(j,dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
                 i_bisect1=bisection(i_anchor,bisect_dir,target(),0.001);
                 for(j=0;j<_chifn->get_dim();j++){
-                    bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+0.5*base_dir.get_data(j));
+                    bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
                 i_bisect2=bisection(i_anchor,bisect_dir,target(),0.001);
                 mu1=dchifn(_chifn->get_pt(i_bisect1));
