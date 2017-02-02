@@ -1243,8 +1243,15 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     double mu_min;
     double start_min,start_max;
     int i_start_min;
+    array_1d<double> start_vals,start_vals_sorted;
+    array_1d<int> start_vals_dex;
+    start_vals.set_name("simplex_boundary_start_vals");
+    start_vals_sorted.set_name("simplex_boundary_start_vals_sorted");
+    start_vals_dex.set_name("simplex_boundary_start_vals_dex");
     for(i=0;i<seed.get_rows();i++){
         mu=dchifn(seed(i));
+        start_vals.add(mu);
+        start_vals_dex.add(i);
         if(i==0 || mu<start_min){
             start_min=mu;
             _chifn->evaluate(seed(i),&mu,&i_start_min);
@@ -1253,7 +1260,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             start_max=mu;
         }
     }
-    printf("    starting from (delta) %e; %e\n",start_min-target(),start_max-target());
+    sort(start_vals,start_vals_sorted,start_vals_dex);
+    mu=start_vals_sorted.get_data(start_vals_dex.get_dim()/2);
+    printf("    starting from (delta) %e; %e; %e\n",start_min-target(),mu,start_max-target());
 
     array_1d<double> minpt;
     minpt.set_name("dalex_simplex_search_minpt");
