@@ -1173,6 +1173,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int i_bisect1,i_bisect2,i_chosen,i_grad;
     double mu1,mu2;
     double component,rat;
+    array_1d<int> kept_dex;
+    kept_dex.set_name("simplex_boundary_kept_dex");
+    array_1d<double> avg_pt;
+    avg_pt.set_name("simplex_boundary_avg_pt");
 
     if(specified>=0){
         i_anchor=specified;
@@ -1210,6 +1214,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                         i_anchor--;
                     }
                     seed.reset_preserving_room();
+                    kept_dex.reset_preserving_room();
                     break;
                 }
 
@@ -1219,11 +1224,24 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                     }
                     evaluate(bisect_dir,&mu1,&j);
                     seed.add_row(bisect_dir);
+                    kept_dex.add(i_chosen);
                 }
             }
 
             if(seed.get_rows()==_chifn->get_dim()){
-                seed.add_row(_chifn->get_pt(i_anchor));
+                for(i=0;i<_chifn->get_dim();i++){
+                    avg_pt.set(i,0.0);
+                }
+                for(i=0;i<kept_dex.get_dim();i++){
+                   for(j=0;j<_chifn->get_dim();j++){
+                       avg_pt.add_val(j,_chifn->get_pt(kept_dex.get_data(i),j));
+                   }
+                }
+                for(i=0;i<_chifn->get_dim();i++){
+                    avg_pt.divide_val(i,double(kept_dex.get_dim()));
+                }
+                evaluate(avg_pt,&mu1,&i);
+                seed.add_row(avg_pt);
             }
         }
     }
