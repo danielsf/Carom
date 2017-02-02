@@ -76,6 +76,7 @@ class explorers{
         void initialize_particles();
         void bump_particles();
         void kick(int);
+        void sample(int,int);
         void sample(int);
 
     private:

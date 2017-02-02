@@ -67,8 +67,10 @@ void dalex::search(){
 
     _chifn->set_search_type(_type_explore);
     int is_outside;
+    int need_kick=1;
     while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
-        explore();
+        explore(need_kick);
+        need_kick=0;
         for(i=0;i<_explorers.get_n_particles();i++){
             _explorers.get_pt(i,pt);
             evaluate(pt,&mu,&i_found);
@@ -1439,6 +1441,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 }
 
 void dalex::explore(){
+    explore(0);
+}
+
+void dalex::explore(int with_kick){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
 
@@ -1455,7 +1461,7 @@ void dalex::explore(){
     }
 
     _explorers.set_associates(associates);
-    _explorers.sample(4*_chifn->get_dim());
+    _explorers.sample(4*_chifn->get_dim(),with_kick);
 
     _update_good_points(pt_0);
 }

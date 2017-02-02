@@ -162,13 +162,25 @@ void explorers::kick(int dex){
 }
 
 void explorers::sample(int n_steps){
+    sample(n_steps, 0);
+}
+
+void explorers::sample(int n_steps, int with_kick){
 
     cost_fn dchifn(_chifn, _associates);
     dchifn.copy_bases(_bases);
     set_norm();
 
+    int i;
+
     if(_particles.get_rows()!=_n_particles){
         initialize_particles();
+    }
+    else if(with_kick==1){
+        printf("\nkicking explorers\n");
+        for(i=0;i<_n_particles;i++){
+            kick(i);
+        }
     }
 
     _mindex=-1;
@@ -176,7 +188,6 @@ void explorers::sample(int n_steps){
     double mu;
     int i_step;
     int i_dim,ip;
-    int i;
     int accept_it;
     double rr,roll,ratio;
     array_1d<double> trial;
