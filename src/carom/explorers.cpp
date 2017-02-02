@@ -156,7 +156,7 @@ void explorers::kick(int dex){
      int j;
      for(i=0;i<_chifn->get_dim();i++){
          for(j=0;j<_chifn->get_dim();j++){
-             _particles.add_val(dex,j,1.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
+             _particles.add_val(dex,j,0.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
          }
      }
 }
