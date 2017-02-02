@@ -1455,9 +1455,7 @@ void dalex::explore(int with_kick){
     associates.set_name("dalex_explore_associates");
     int i;
     for(i=0;i<_good_points.get_dim();i++){
-        if(_chifn->get_search_type_log(_good_points.get_data(i))<_type_tendril){
-            associates.add(_good_points.get_data(i));
-        }
+        associates.add(_good_points.get_data(i));
     }
 
     _explorers.set_associates(associates);
