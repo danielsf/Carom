@@ -59,12 +59,16 @@ if __name__ == "__main__":
             data = np.genfromtxt(dalex_name, dtype=dtype)
             ex_dex = np.where(data['log']==2)
             data = data[ex_dex]
+            good_dex = np.where(data['chisq']<data['chisq'].min()+21.03)
+            good_explorers = data[good_dex]
 
             data_dict[seed] = data
 
             plt.subplot(3,2,i_fig+1)
             plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
             plt.scatter(data['p%d' % dim[0]], data['p%d' % dim[1]], marker='x', color='r')
+            plt.scatter(good_explorers['p%d' % dim[0]], good_explorers['p%d' % dim[1]], marker='x', color='c')
+
             plt.title('seed = %d' % (seed),
                       fontsize=10)
 
