@@ -1280,7 +1280,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
     sort(start_vals,start_vals_sorted,start_vals_dex);
     mu=start_vals_sorted.get_data(start_vals_dex.get_dim()/2);
-    printf("    starting from (delta) %e; %e; %e\n",start_min-target(),mu,start_max-target());
+    printf("    starting from %e; %e; %e\n",start_min,mu,start_max);
+    printf("    starting from (delta) %e; %e; %e\n",start_min-target(),mu-target(),start_max-target());
 
     array_1d<double> minpt;
     minpt.set_name("dalex_simplex_search_minpt");
