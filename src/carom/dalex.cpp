@@ -1173,8 +1173,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int i_bisect1,i_bisect2,i_chosen,i_grad;
     double mu1,mu2;
     double component,rat;
-    array_1d<double> gradient;
-    gradient.set_name("simplex_boundary_gradient");
 
     if(specified>=0){
         i_anchor=specified;
@@ -1225,15 +1223,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             }
 
             if(seed.get_rows()==_chifn->get_dim()){
-                get_negative_gradient(i_anchor,dchifn,dummy_ellipse,gradient);
-                i_bisect1=bisection(i_anchor,gradient,target(),0.001);
-                i_grad=i_bisect1;
-                for(j=0;j<_chifn->get_dim();j++){
-                    bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_bisect1,j)));
-                }
-                evaluate(bisect_dir,&mu1,&j);
-                //printf("first seed %d anchor %d -- %e\n",i_bisect1,i_anchor,dchifn(_chifn->get_pt(i_bisect1)));
-                seed.add_row(bisect_dir);
+                seed.add_row(_chifn->get_pt(i_anchor));
             }
         }
     }
