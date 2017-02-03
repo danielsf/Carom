@@ -62,6 +62,10 @@ class explorers{
             return _n_particles;
         }
 
+        double get_mu(int dex){
+            return _mu_arr.get_data(dex);
+        }
+
         void get_pt(int dex, array_1d<double> &pp){
             int i;
             for(i=0;i<_chifn->get_dim();i++){

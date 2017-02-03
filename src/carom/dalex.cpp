@@ -152,19 +152,24 @@ void dalex::simplex_search(array_1d<int> &specified){
         max.set(i,_chifn->get_characteristic_length(i));
     }
 
-    array_1d<int> chosen_seed;
-
     for(i=0;i<specified.get_dim();i++){
         seed.add_row(_chifn->get_pt(specified.get_data(i)));
     }
 
-    while(seed.get_rows()<_chifn->get_dim()+1){
-        i=_chifn->random_int()%_min_explorers.get_n_particles();
-        if(chosen_seed.contains(i)==0){
-            _min_explorers.get_pt(i,trial);
-            seed.add_row(trial);
-            chosen_seed.add(i);
-        }
+    array_1d<double> mu_arr,mu_arr_sorted;
+    array_1d<int> mu_arr_dex;
+    mu_arr.set_name("dalex_simplex_mu_arr");
+    mu_arr_sorted.set_name("dalex_simplex_mu_arr_sorted");
+    mu_arr_dex.set_name("dalex_simplex_mu_arr_dex");
+    for(i=0;i<_min_explorers.get_n_particles();i++){
+        mu_arr.set(i,_min_explorers.get_mu(i));
+        mu_arr_dex.set(i,i);
+    }
+    sort(mu_arr, mu_arr_sorted, mu_arr_dex);
+
+    for(i=0;seed.get_rows()<_chifn->get_dim()+1;i++){
+        _min_explorers.get_pt(mu_arr_dex.get_data(i),trial);
+        seed.add_row(trial);
     }
 
     simplex_minimizer ffmin;
