@@ -126,6 +126,9 @@ if(chisq_dex==0){
     else if(dim==24){
         chisq=new gaussianJellyBean24;
     }
+    else if(dim==16){
+        chisq=new gaussianJellyBean16;
+    }
     else{
         printf("WARNING do not know what to do with dim %d\n",dim);
         exit(1);
