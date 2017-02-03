@@ -156,13 +156,16 @@ void dalex::simplex_search(array_1d<int> &specified){
         seed.add_row(_chifn->get_pt(specified.get_data(i)));
     }
 
+    double xx;
     array_1d<double> mu_arr,mu_arr_sorted;
     array_1d<int> mu_arr_dex;
     mu_arr.set_name("dalex_simplex_mu_arr");
     mu_arr_sorted.set_name("dalex_simplex_mu_arr_sorted");
     mu_arr_dex.set_name("dalex_simplex_mu_arr_dex");
     for(i=0;i<_min_explorers.get_n_particles();i++){
-        mu_arr.set(i,_min_explorers.get_mu(i));
+        _min_explorers.get_pt(i,trial);
+        evaluate(trial,&xx,&j);
+        mu_arr.set(i,xx);
         mu_arr_dex.set(i,i);
     }
     sort(mu_arr, mu_arr_sorted, mu_arr_dex);
