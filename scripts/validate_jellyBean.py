@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 plt.subplot(3,2,i_fig+1)
                 plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
                 plt.scatter(d_x, d_y, marker='x', color='r')
-                plt.title('seed = %d; $\chi^2_{min} = %.2f; n_calls = %.3f' % (seed, d_min, time),
+                plt.title('seed = %d; $\chi^2_{min}$ = %.2f; n_calls = %.3e' % (seed, d_min, time),
                           fontsize=10)
             
             plt.tight_layout()
