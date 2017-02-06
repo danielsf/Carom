@@ -148,12 +148,12 @@ class gaussianJellyBean16 : public jellyBeanData{
             Ran constructor_dice(44);
             int i;
 
-            _widths.set(0,0,100.0);
+            _widths.set(0,0,20.0);
             _widths.set(0,1,2.0);
-            _parabola_curvature=0.5;
+            _parabola_curvature=0.1;
 
             for(i=2;i<16;i++){
-                _widths.set(0,i,0.5+3.0*constructor_dice.doub());
+                _widths.set(0,i,3.5+3.0*constructor_dice.doub());
             }
         }
 };
