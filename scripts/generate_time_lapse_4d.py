@@ -102,8 +102,8 @@ if __name__ == "__main__":
                 legend_handles[dim].append(hh)
                 legend_labels[dim].append(label)
 
-            plt.xlabel('$\\theta_%d$' % dim[0], fontsize=10)
-            plt.ylabel('$\\theta_%d$' % dim[1], fontsize=10)
+            plt.xlabel('$\\theta_%d$' % dim[0], fontsize=15)
+            plt.ylabel('$\\theta_%d$' % dim[1], fontsize=15)
             xmin = control_data[dim]['x'].min()
             xmax = control_data[dim]['x'].max()
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         
         #plt.subplot(3,2,i_time+1)    
         plt.legend(legend_handles[dim], legend_labels[dim], fontsize=10,
-                   bbox_to_anchor=(-0.05,0.0), loc=2)
+                   bbox_to_anchor=(-0.1,-0.4), loc=2)
         plt.tight_layout()
         file_name = os.path.join(fig_dir, "time_lapse_%d_%d.png" % (dim[0], dim[1]))
         plt.savefig(file_name)
