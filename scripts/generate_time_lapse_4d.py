@@ -150,5 +150,5 @@ if __name__ == "__main__":
         plt.legend(legend_handles[dim], legend_labels[dim], fontsize=10,
                    bbox_to_anchor=(-0.1,-0.4), loc=2)
         plt.tight_layout()
-        file_name = os.path.join(fig_dir, "time_lapse_%d_%d.png" % (dim[0], dim[1]))
+        file_name = os.path.join(fig_dir, "time_lapse_%d_%d.eps" % (dim[0], dim[1]))
         plt.savefig(file_name)

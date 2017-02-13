@@ -161,7 +161,7 @@ if __name__ == "__main__":
     plt.legend(legend_handles, legend_labels, fontsize=10,
                bbox_to_anchor=(1.05, 1), loc=2)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "truth_contours.png"))
+    plt.savefig(os.path.join(output_dir, "truth_contours.eps"))
     plt.close()
 
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     plt.legend(legend_handles, legend_labels, fontsize=10,
                bbox_to_anchor=(1.05, 1), loc=2)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "truth_contours_0_1.png"))
+    plt.savefig(os.path.join(output_dir, "truth_contours_0_1.eps"))
     plt.close()
 
 
