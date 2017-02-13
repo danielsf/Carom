@@ -127,7 +127,36 @@ if __name__ == "__main__":
                         
             data = np.genfromtxt(os.path.join(control_dir, file_name),
                                  dtype=dtype)
-                
+
+            dist = [0]
+            dist += [np.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
+                     for (x1, x2, y1, y2) in zip(data['x'][:-1], data['x'][1:],
+                                                 data['y'][:-1], data['y'][1:])]
+
+            dist = np.array(dist)
+            mean_dist = np.mean(dist)
+            mean_std = np.std(dist)
+            bad_dex_list = np.where(dist-mean_dist > 5.0*mean_std)[0]
+            bad_dex_list = list(np.sort(bad_dex_list))
+            bad_dex_list.reverse()
+            for bad_dex in bad_dex_list:
+                bad_x = data['x'][bad_dex]
+                bad_y = data['y'][bad_dex]
+                nearest_dex = np.argsort(np.sqrt(np.power(data['x']-data['x'][bad_dex],2)
+                                                          + np.power(data['y']-data['y'][bad_dex],2)))
+                new_dex = nearest_dex[1]
+                if new_dex < bad_dex:
+                    for ir in range(bad_dex, new_dex, -1):
+                        data['x'][ir] = data['x'][ir-1]
+                        data['y'][ir] = data['y'][ir-1]
+                else:
+                    for ir in range(bad_dex, new_dex):
+                        data['x'][ir] = data['x'][ir+1]
+                        data['y'][ir] = data['y'][ir+1]
+
+                data['x'][new_dex] = bad_x
+                data['y'][new_dex] = bad_y
+
             label = legend_dict[suffix][pct]
             if pct>0.7:
                 linewidth=2
