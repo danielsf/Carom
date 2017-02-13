@@ -83,32 +83,32 @@ if __name__ == "__main__":
     '$\chi^2 <= \chi^2_{min} + 9.49 \, (4.70)$'
     legend_dict['frequentistFullDrelative'][0.68] = \
     '$\chi^2 <= \chi^2_{min} + 4.70$'
-    
+
     legend_dict['frequentistFullD'] = {}
     legend_dict['frequentistFullD'][0.95] = \
     '$\chi^2 <= 124.35$'
     legend_dict['frequentistFullD'][0.68] = \
     '$\chi^2 <= 106.07$'
-    
+
     legend_dict['frequentist2Deff'] = {}
     legend_dict['frequentist2Deff'][0.95] = \
     '$\chi^2_{eff} <= \chi^2_{eff, min} + 6.0 \, (2.28)$' # this is not quite correct
     legend_dict['frequentist2Deff'][0.68] = \
     '$\chi^2_{eff} <= \chi^2_{eff, min} + 2.28$' # this is not quite correct
-    
+
     legend_dict['frequentist2D'] = {}
     legend_dict['frequentist2D'][0.95] = \
     '$\chi^2 <= \chi^2_{min} + 6.0 \, (2.28)$' # this is not quite correct
     legend_dict['frequentist2D'][0.68] = \
     '$\chi^2 <= \chi^2_{min} + 2.28$' # this is not quite correct
-    
-    
+
+
     legend_dict['bayesianFullD'] = {}
     legend_dict['bayesianFullD'][0.95] = \
     '95% (68%) of Bayesian posterior (proj.)'
     legend_dict['bayesianFullD'][0.68] = \
     '68% of Bayesian posterior (proj.)'
-    
+
     legend_dict['bayesian2D'] = {}
     legend_dict['bayesian2D'][0.95] = \
     '95% (68%) of Bayesian posterior (marg.)'
@@ -127,26 +127,26 @@ if __name__ == "__main__":
             if ix<iy and iy!=1:
                 i_fig += 1
                 plt.subplot(n_rows, n_cols, i_fig)
-                
+
                 for suffix, color in zip(('bayesian2D', 'frequentist2D',
                                           'bayesianFullD', 'frequentistFullDrelative'
                                           ),
                                           ('r', 'g', 'b', 'm')):
-                
+
                     for pct in (0.68, 0.95):
-                    
+
                         file_name = '%s_%.2f_%d_%d_%s.txt' % \
                         (control_root, pct, ix, iy, suffix)
-                        
+
                         data = np.genfromtxt(os.path.join(control_dir, file_name),
                                              dtype=dtype)
-                
+
                         label = legend_dict[suffix][pct]
                         if pct>0.7:
                             linewidth=2
                         else:
                             linewidth=0.5
-                        
+
                         #print suffix,linestyle,file_name,len(data)
                         hh, = plt.plot(data['x'], data['y'], color=color, linewidth=linewidth)
                         plt.xlabel('$\\theta_%d$' % ix)
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                             legend_handles.append(hh)
                             legend_labels.append(legend_dict[suffix][pct])
 
-                    
+
 
     plt.legend(legend_handles, legend_labels, fontsize=10,
                bbox_to_anchor=(1.05, 1), loc=2)
@@ -174,23 +174,23 @@ if __name__ == "__main__":
     plt.subplot(2,2,1)
     for suffix, color in zip(('bayesianFullD', 'frequentistFullDrelative'),
                              ('b', 'm')):
-                
+
         for pct in (0.68, 0.95):
-                    
+
             file_name = '%s_%.2f_%d_%d_%s.txt' % \
             (control_root, pct, ix, iy, suffix)
-                        
+
             data = np.genfromtxt(os.path.join(control_dir, file_name),
                                  dtype=dtype)
 
             ordered_x, ordered_y = order_x_y(data['x'], data['y'])
-                
+
             label = legend_dict[suffix][pct]
             if pct>0.7:
                 linewidth=2
             else:
                 linewidth=0.5
-                        
+
             hh, = plt.plot(ordered_x, ordered_y, color=color, linewidth=linewidth)
             plt.xlabel('$\\theta_%d$' % ix)
             plt.ylabel('$\\theta_%d$' % iy)
@@ -208,23 +208,23 @@ if __name__ == "__main__":
     plt.subplot(2,2,3)
     for suffix, color in zip(('bayesian2D', 'frequentist2D'),
                              ('r', 'g')):
-                
+
         for pct in (0.68, 0.95):
-                    
+
             file_name = '%s_%.2f_%d_%d_%s.txt' % \
             (control_root, pct, ix, iy, suffix)
-                        
+
             data = np.genfromtxt(os.path.join(control_dir, file_name),
                                  dtype=dtype)
 
             ordered_x, ordered_y = order_x_y(data['x'], data['y'])
-                
+
             label = legend_dict[suffix][pct]
             if pct>0.7:
                 linewidth=2
             else:
                 linewidth=0.5
-                        
+
             hh, = plt.plot(ordered_x, ordered_y, color=color, linewidth=linewidth)
             plt.xlabel('$\\theta_%d$' % ix)
             plt.ylabel('$\\theta_%d$' % iy)
