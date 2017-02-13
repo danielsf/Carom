@@ -6,6 +6,61 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
+
+def order_x_y(x_in, y_in):
+    available = range(len(x_in))
+    available.pop(0)
+
+    x_out = np.zeros(len(x_in))
+    y_out = np.zeros(len(y_in))
+
+    x_out[0] = x_in[0]
+    y_out[0] = y_in[0]
+
+    steps = np.zeros(len(x_in))
+    n_chosen = 1
+
+    while n_chosen != len(x_in):
+        distance = [(x_out[n_chosen-1]-x_in[ii])**2 +
+                    (y_out[n_chosen-1]-y_in[ii])**2
+                    for ii in available]
+
+        distance = np.array(distance)
+        chosen_dex = np.argmin(distance)
+        chosen_distance = distance[chosen_dex]
+
+        if n_chosen>2:
+            mean_step = np.mean(steps[:len(x_out)])
+            std_step = np.std(steps[:len(x_out)])
+
+        if n_chosen<=2 or chosen_distance<1.0:
+            steps[n_chosen] = chosen_distance
+            x_out[n_chosen] = x_in[available[chosen_dex]]
+            y_out[n_chosen] = y_in[available[chosen_dex]]
+
+        else:
+            distance = (np.power(x_out[:n_chosen]-x_in[available[chosen_dex]],2) +
+                        np.power(y_out[:n_chosen]-y_in[available[chosen_dex]],2))
+
+            insert_dex = np.argmin(distance)
+            for ii in range(n_chosen, insert_dex+1, -1):
+                x_out[ii] = x_out[ii-1]
+                y_out[ii] = y_out[ii-1]
+
+            x_out[insert_dex+1] = x_in[available[chosen_dex]]
+            y_out[insert_dex+1] = y_in[available[chosen_dex]]
+
+            steps[0] = 0.0
+            for ii in range(1, n_chosen):
+                steps[ii] = (np.power(x_out[ii]-x_out[ii-1],2) +
+                             np.power(y_out[ii]-y_out[ii-1],2))
+
+        n_chosen += 1
+        available.pop(chosen_dex)
+
+    return x_out, y_out
+
+
 if __name__ == "__main__":
 
     control_dir = os.path.join("/Users", "danielsf", "physics",
@@ -127,6 +182,8 @@ if __name__ == "__main__":
                         
             data = np.genfromtxt(os.path.join(control_dir, file_name),
                                  dtype=dtype)
+
+            ordered_x, ordered_y = order_x_y(data['x'], data['y'])
                 
             label = legend_dict[suffix][pct]
             if pct>0.7:
@@ -134,7 +191,7 @@ if __name__ == "__main__":
             else:
                 linewidth=0.5
                         
-            hh, = plt.plot(data['x'], data['y'], color=color, linewidth=linewidth)
+            hh, = plt.plot(ordered_x, ordered_y, color=color, linewidth=linewidth)
             plt.xlabel('$\\theta_%d$' % ix)
             plt.ylabel('$\\theta_%d$' % iy)
             if pct>0.7:
@@ -159,6 +216,8 @@ if __name__ == "__main__":
                         
             data = np.genfromtxt(os.path.join(control_dir, file_name),
                                  dtype=dtype)
+
+            ordered_x, ordered_y = order_x_y(data['x'], data['y'])
                 
             label = legend_dict[suffix][pct]
             if pct>0.7:
@@ -166,7 +225,7 @@ if __name__ == "__main__":
             else:
                 linewidth=0.5
                         
-            hh, = plt.plot(data['x'], data['y'], color=color, linewidth=linewidth)
+            hh, = plt.plot(ordered_x, ordered_y, color=color, linewidth=linewidth)
             plt.xlabel('$\\theta_%d$' % ix)
             plt.ylabel('$\\theta_%d$' % iy)
             if pct>0.7:
