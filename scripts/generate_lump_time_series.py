@@ -16,7 +16,7 @@ if __name__ == "__main__":
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    dalex_dir = os.path.join(physics_dir, "Carom", "output", "draft_161215")
+    dalex_dir = os.path.join(physics_dir, "Carom", "output", "workspace")
 
     delta_chi = 21.03
     full_dim = 12
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     m_d_data = None
     d_data = None
 
-    time_list = [100000, 125000, 150000, 200000]
+    time_list = [100000, 125000, 150000, 250000]
 
     for ix, iy in zip((0, 6), (3, 9)):
 
