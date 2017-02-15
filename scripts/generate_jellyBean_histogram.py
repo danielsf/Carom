@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     physics_dir = os.path.join("/Users", "danielsf", "physics")
     dalex_dir = os.path.join(physics_dir, "Carom", "output",
-                            "draft_161215")
+                            "workspace")
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     seed_list = [6475, 1068]
@@ -60,9 +60,9 @@ if __name__ == "__main__":
         header_list.reverse()
         label_list.reverse()
         plt.legend(header_list, label_list, fontsize=10, loc=0)
-        plt.title(title)
-        plt.xlabel('$\chi^2$', fontsize=10)
-        plt.ylabel('$dN/d\chi^2$', fontsize=10)
+        #plt.title(title)
+        plt.xlabel('$\chi^2$', fontsize=20)
+        plt.ylabel('$dN/d\chi^2$', fontsize=20)
         plt.xlim(data['chisq'].min(),chi_cutoff)
         plt.ylim(0, ymax*1.6)
         print 'ymax ',ymax
