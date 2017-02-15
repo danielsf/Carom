@@ -77,7 +77,7 @@ if __name__ == "__main__":
             plt.figure(i_fig+1)
             plt.subplot(3,2,i_time+1)
             m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
-                                      4, dim[0], dim[1])
+                                      4, dim[0], dim[1], downsample=True)
             
             (d_x, d_y, d_chisq_min, d_target,
              d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,

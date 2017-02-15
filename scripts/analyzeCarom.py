@@ -153,7 +153,8 @@ def _downsample_grid(xx, yy):
     return x_out[:n_chosen], y_out[:n_chosen]
 
 
-def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
+def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None,
+                                      downsample=False):
 
     if data is None:
         ref_data = load_multinest_data(file_name, dim)
@@ -164,6 +165,9 @@ def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
     ref_x, ref_y = raw_bayes(ref_data['x%d' % ix],
                                ref_data['x%d' % iy],
                                ref_data['degen'])
+
+    if not downsample:
+        return ref_x, ref_y, ref_data
 
     ds_x, ds_y = _downsample_grid(ref_x, ref_y)
 
