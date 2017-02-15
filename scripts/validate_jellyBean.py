@@ -13,7 +13,7 @@ if __name__ == "__main__":
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    dalex_dir = os.path.join(physics_dir, "Carom", "output", "workspace")
+    dalex_dir = os.path.join(physics_dir, "Carom", "output", "workspace_baseline_170215")
 
     delta_chi = 21.03
     nlive = 50000
@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 plt.subplot(3,2,i_fig+1)
                 plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
                 plt.scatter(d_x, d_y, marker='x', color='r')
-                plt.title('$\chi^2_{min} = %.2f$; n_calls = %.2e' % (d_min, time),
+                plt.title('$\chi^2_{min} = %.2f$; n_calls = %.2e\nseed %d' % (d_min, time, seed),
                           fontsize=15)
             
             plt.tight_layout()
