@@ -641,6 +641,7 @@ ellipse_sampler::ellipse_sampler(){
     _dice=NULL;
     _steps=1000;
     _dx=1.0/double(_steps);
+    _initialized=0;
 
     _cos_n_grid.set_name("ellipse_n_cos_grid");
     _dim_record.set_name("ellipse_dim_record");
@@ -661,6 +662,8 @@ void ellipse_sampler::initialize(int dd, int seed){
             _cos_n_grid.set(i,j,integrate_cos_n(0.0,theta,i));
         }
     }
+
+    _initialized=1;
 }
 
 void ellipse_sampler::get_pt(array_1d<double> &out){

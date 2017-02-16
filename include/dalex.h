@@ -221,6 +221,7 @@ class dalex{
         int _strikes;
 
         ellipse_list _exclusion_zones;
+        ellipse_sampler _ellipse_sampler;
 };
 
 #endif

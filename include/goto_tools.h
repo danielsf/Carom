@@ -230,10 +230,13 @@ class ellipse_sampler{
             }
         }
 
+        int is_initialized(){return _initialized;}
+
         void initialize(int, int);
         void get_pt(array_1d<double>&);
 
     private:
+        int _initialized;
         int _dim;
         int _steps;
         double _dx;
