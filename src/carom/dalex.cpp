@@ -1330,12 +1330,17 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         _ellipse_sampler.initialize(_chifn->get_dim(), _chifn->random_int()%1000000+1);
     }
 
-    array_1d<double> ell_pt;
+    array_1d<double> ell_pt,center;
     ell_pt.set_name("dalex_simplex_boundary_ell_pt");
+    center.set_name("dalex_simplex_boundary_center");
     trial.reset_preserving_room();
     int n_fill=(_chifn->get_pts()-specified)/10;
     int n_good=0;
-    for(i=0;i<n_fill;i++){
+    int n_bisect=0;
+    array_1d<int> new_good;
+    new_good.set_name("dalex_simplex_new_good");
+    int i_fill_start=_chifn->get_pts();
+    while(_chifn->get_pts()-i_fill_start<n_fill){
         _ellipse_sampler.get_pt(ell_pt);
         for(j=0;j<_chifn->get_dim();j++){
             trial.set(j,dummy_ellipse.center(j));
@@ -1349,8 +1354,18 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         if(mu<target()){
             n_good++;
         }
+        else{
+            for(i=0;i<_chifn->get_dim();i++){
+                center.set(i,dummy_ellipse.center(i));
+            }
+            i=bisection(center,trial,target(),0.001);
+            if(new_good.contains(i)==0){
+                n_bisect++;
+                new_good.add(i);
+            }
+        }
     }
-    printf("    n_fill %d n_good %d\n",n_fill,n_good);
+    printf("    n_fill %d n_good %d n_bisect %d -- %d\n",n_fill,n_good,n_bisect,new_good.get_dim());
 
     for(i=start_path;i<_chifn->get_pts();i++){
         if(_tendril_path.get_rows()==0){
