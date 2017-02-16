@@ -1318,7 +1318,39 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         start_path=pt_start;
     }
 
+    ellipse_pts.reset_preserving_room();
+    for(i=specified;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            ellipse_pts.add_row(_chifn->get_pt(i));
+        }
+    }
 
+    dummy_ellipse.build(ellipse_pts);
+    if(_ellipse_sampler.is_initialized()==0){
+        _ellipse_sampler.initialize(_chifn->get_dim(), _chifn->random_int()%1000000+1);
+    }
+
+    array_1d<double> ell_pt;
+    ell_pt.set_name("dalex_simplex_boundary_ell_pt");
+    trial.reset_preserving_room();
+    int n_fill=(_chifn->get_pts()-specified)/10;
+    int n_good=0;
+    for(i=0;i<n_fill;i++){
+        _ellipse_sampler.get_pt(ell_pt);
+        for(j=0;j<_chifn->get_dim();j++){
+            trial.set(j,dummy_ellipse.center(j));
+        }
+        for(j=0;j<_chifn->get_dim();j++){
+            for(k=0;k<_chifn->get_dim();k++){
+                trial.add_val(k,ell_pt.get_data(j)*dummy_ellipse.radii(j)*dummy_ellipse.bases(j,k));
+            }
+        }
+        evaluate(trial,&mu,&j);
+        if(mu<target()){
+            n_good++;
+        }
+    }
+    printf("    n_fill %d n_good %d\n",n_fill,n_good);
 
     for(i=start_path;i<_chifn->get_pts();i++){
         if(_tendril_path.get_rows()==0){
