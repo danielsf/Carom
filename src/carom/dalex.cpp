@@ -1258,7 +1258,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     _chifn->set_search_type(old_type);
 
-    int i_min=-1;
     double mu_min;
     double start_min,start_max;
     int i_start_min;
@@ -1288,24 +1287,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     minpt.set_name("dalex_simplex_search_minpt");
 
     ffmin.find_minimum(seed,minpt);
-
-    evaluate(minpt, &mu, i_next);
-    int need_to_update=0;
-    if(_chifn->get_fn(i_next[0])>_chifn->target()){
-        need_to_update=1;
-    }
-    for(i=specified;i<_chifn->get_pts();i++){
-        if(i>=0 && _chifn->get_fn(i)<target()){
-            i_min=i;
-            if(need_to_update==1){
-                i_next[0]=i_min;
-            }
-        }
-    }
-
-    if(_chifn->get_fn(i_next[0])>_chifn->target()){
-        return 1;
-    }
 
     array_1d<int> path_row;
     path_row.set_name("path_row");
@@ -1367,6 +1348,38 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
     printf("    n_fill %d n_good %d n_bisect %d -- %d\n",n_fill,n_good,n_bisect,new_good.get_dim());
 
+    int i_good_start;
+
+    _update_good_points(pt_start);
+
+    double cost_min=2.0*exception_value;
+    for(i=specified;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            mu=dchifn(_chifn->get_pt(i));
+            if(mu<cost_min){
+                i_next[0]=i;
+                cost_min=mu;
+            }
+        }
+    }
+
+    if(_chifn->get_dim()>9){
+        printf("    actually found %e -- %.3e %.3e; %.3e %.3e\n",
+        _chifn->get_fn(i_next[0]),_chifn->get_pt(i_next[0],6), _chifn->get_pt(i_next[0],9),
+        _chifn->get_pt(i_next[0],0), _chifn->get_pt(i_next[0], 1));
+    }
+
+    printf("    adjusted %e from %e\n",
+    dchifn(_chifn->get_pt(i_next[0])),_chifn->get_fn(i_next[0]));
+
+    printf("    min is %e target %e\n",chimin(),target());
+    if(_chifn->get_dim()>9){
+       printf("    minpt at %e %e\n",
+       _chifn->get_pt(mindex(),6),
+       _chifn->get_pt(mindex(),9));
+    }
+
+
     for(i=start_path;i<_chifn->get_pts();i++){
         if(_tendril_path.get_rows()==0){
             _tendril_path.set_cols(2);
@@ -1374,8 +1387,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         if(_chifn->get_fn(i)<_chifn->target() &&
            _chifn->get_search_type_log(i)==_type_tendril){
             path_row.set(0,i);
-            if(distance(i,i_min)<distance(i,i_start_min)){
-                path_row.set(1,i_min);
+            if(distance(i,i_next[0])<distance(i,i_start_min)){
+                path_row.set(1,i_next[0]);
             }
             else{
                 path_row.set(1,i_start_min);
@@ -1385,32 +1398,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     }
 
-    int i_good_start;
-
-    _update_good_points(pt_start);
-
-    if(_chifn->get_dim()>9){
-        printf("    actually found %e -- %.3e %.3e; %.3e %.3e\n",
-        _chifn->get_fn(i_min),_chifn->get_pt(i_min,6), _chifn->get_pt(i_min,9),
-        _chifn->get_pt(i_min,0), _chifn->get_pt(i_min, 1));
-    }
-
-    printf("    adjusted %e from %e\n",
-    dchifn(_chifn->get_pt(i_min)),_chifn->get_fn(i_min));
-
-    printf("    min is %e target %e\n",chimin(),target());
-    if(_chifn->get_dim()>9){
-       printf("    minpt at %e %e\n",
-       _chifn->get_pt(mindex(),6),
-       _chifn->get_pt(mindex(),9));
-    }
-
     int is_a_strike=0;
-    if(_chifn->get_fn(i_min)>target()){
+    if(_chifn->get_fn(i_next[0])>target()){
         return 1;
     }
     for(i=0;i<exclusion_zones.ct() && is_a_strike==0;i++){
-        if(exclusion_zones(i)->contains(_chifn->get_pt(i_min))==1){
+        if(exclusion_zones(i)->contains(_chifn->get_pt(i_next[0]))==1){
             is_a_strike=1;
         }
     }
