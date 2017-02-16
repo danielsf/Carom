@@ -1299,15 +1299,20 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         start_path=pt_start;
     }
 
-    double cost_min=2.0*exception_value;
-    for(i=specified;i<_chifn->get_pts();i++){
+    i_next[0]=-1;
+    double dist_max=-2.0*exception_value;
+    for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            mu=dchifn(_chifn->get_pt(i));
-            if(mu<cost_min){
+            mu=distance(specified,i);
+            if(mu>dist_max){
                 i_next[0]=i;
-                cost_min=mu;
+                dist_max=mu;
             }
         }
+    }
+    if(i_next[0]<0){
+        printf("WARNING; could not find i_next>=0\n");
+        exit(1);
     }
 
     // *** do bisection along directions perpendicular to ***
@@ -1432,13 +1437,13 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     _update_good_points(pt_start);
 
-    cost_min=2.0*exception_value;
-    for(i=specified;i<_chifn->get_pts();i++){
+    dist_max=-2.0*exception_value;
+    for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            mu=dchifn(_chifn->get_pt(i));
-            if(mu<cost_min){
+            mu=distance(specified,i);
+            if(mu>dist_max){
                 i_next[0]=i;
-                cost_min=mu;
+                dist_max=mu;
             }
         }
     }
