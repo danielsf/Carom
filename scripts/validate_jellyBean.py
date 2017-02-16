@@ -13,7 +13,8 @@ if __name__ == "__main__":
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    dalex_dir = os.path.join(physics_dir, "Carom", "output", "workspace_baseline_170215")
+    dalex_dir = os.path.join(physics_dir, "Carom", "output",
+                             "workspace_baseline_170215")
 
     delta_chi = 21.03
     nlive = 50000
@@ -62,5 +63,5 @@ if __name__ == "__main__":
             
             plt.tight_layout()
             plt.savefig(os.path.join(physics_dir, 'Carom', 'figures',
-                                     'dalex_validation_%d_%d_%d.png' % (time,dim[0],dim[1])))
+                                     'dalex_baseline_%d_%d_%d.png' % (time,dim[0],dim[1])))
             plt.close()
