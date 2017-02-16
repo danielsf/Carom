@@ -1300,20 +1300,26 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     i_next[0]=-1;
-    double cost_min=2.0*exception_value;
-    for(i=pt_start;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
-            mu=dchifn(_chifn->get_pt(i));
-            if(mu<cost_min){
+
+    int i_min;
+    evaluate(minpt,&mu,&i_min);
+    double cost_next=dchifn(minpt);
+    i_next[0]=i_min;
+
+    if(mu>target()){
+        for(i=i_min;i>=0 && _chifn->get_fn(i_next[0])>target();i--){
+            if(_chifn->get_fn(i)<target()){
                 i_next[0]=i;
-                cost_min=mu;
             }
         }
+        if(i_next[0]<0){
+            printf("WARNING; could not find i_next>=0\n");
+            exit(1);
+        }
+        cost_next=dchifn(_chifn->get_pt(i_next[0]));
     }
-    if(i_next[0]<0){
-        printf("WARNING; could not find i_next>=0\n");
-        exit(1);
-    }
+
+    int pre_fill=_chifn->get_pts();
 
     // *** do bisection along directions perpendicular to ***
     // *** i_next - specified ***
@@ -1383,7 +1389,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                _chifn->get_pts()-pre_midpt,j);
     }
 
-    int pre_fill=_chifn->get_pts();
     // *** try to fill in the local ellipse ***
     ellipse_pts.reset_preserving_room();
     for(i=specified;i<_chifn->get_pts();i++){
@@ -1441,9 +1446,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     for(i=pre_fill;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             mu=dchifn(_chifn->get_pt(i));
-            if(mu<cost_min){
+            if(mu<cost_next){
                 i_next[0]=i;
-                cost_min=mu;
+                cost_next=mu;
             }
         }
     }
