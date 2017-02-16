@@ -1318,71 +1318,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         start_path=pt_start;
     }
 
-    base_dir.reset_preserving_room();
-    array_1d<double> trial_dir;
-    base_dir.set_name("dalex_boundary_base_dir");
-    trial_dir.set_name("dalex_boundary_trial_dir");
-    array_2d<double> perp_dir;
-    perp_dir.set_name("dalex_boundary_perp_dir");
-    array_1d<int> good_dexes;
-    good_dexes.set_name("dalex_boundary_good_dexes");
-    int i_midst;
-    int pre_midpt=_chifn->get_pts();
-    double sgn;
-    if(i_next[0]!=specified){
-        for(i=0;i<_chifn->get_dim();i++){
-            base_dir.set(i,_chifn->get_pt(i_next[0],i)-_chifn->get_pt(specified,i));
-        }
-        base_dir.normalize();
-        while(perp_dir.get_rows()<_chifn->get_dim()-1){
-            for(i=0;i<_chifn->get_dim();i++){
-                trial_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-            }
-            component=0.0;
-            for(i=0;i<_chifn->get_dim();i++){
-                component+=trial_dir.get_data(i)*base_dir.get_data(i);
-            }
-            for(i=0;i<_chifn->get_dim();i++){
-                trial_dir.subtract_val(i,component*base_dir.get_data(i));
-            }
-            for(i=0;i<perp_dir.get_rows();i++){
-                component=0.0;
-                for(j=0;j<_chifn->get_dim();j++){
-                    component+=trial_dir.get_data(j)*perp_dir.get_data(i,j);
-                }
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial_dir.subtract_val(j,component*perp_dir.get_data(i,j));
-                }
-            }
-            component=trial_dir.normalize();
-            if(component>1.0e-20){
-                perp_dir.add_row(trial_dir);
-            }
-        }
 
-        for(i=specified;i<i_next[0];i++){
-            if(_chifn->get_fn(i)<target()){
-                good_dexes.add(i);
-            }
-        }
-        i_midst=good_dexes.get_data(good_dexes.get_dim()/2);
-        for(i=0;i<perp_dir.get_rows();i++){
-            for(sgn=-1.0;sgn<1.1;sgn+=2.0){
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial_dir.set(j,sgn*perp_dir.get_data(i,j));
-                }
-                bisection(i_midst,trial_dir,target(),0.01);
-            }
-        }
-        j=0;
-        for(i=pre_midpt;i<_chifn->get_pts();i++){
-            if(_chifn->get_fn(i)<target()){
-                j++;
-            }
-        }
-        printf("bisection sampled %d good %d\n",
-               _chifn->get_pts()-pre_midpt,j);
-    }
 
     for(i=start_path;i<_chifn->get_pts();i++){
         if(_tendril_path.get_rows()==0){
