@@ -1432,17 +1432,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     _update_good_points(pt_start);
 
-    cost_min=2.0*exception_value;
-    for(i=specified;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
-            mu=dchifn(_chifn->get_pt(i));
-            if(mu<cost_min){
-                i_next[0]=i;
-                cost_min=mu;
-            }
-        }
-    }
-
     if(_chifn->get_dim()>9){
         printf("    actually found %e -- %.3e %.3e; %.3e %.3e\n",
         _chifn->get_fn(i_next[0]),_chifn->get_pt(i_next[0],6), _chifn->get_pt(i_next[0],9),
