@@ -1631,37 +1631,6 @@ void dalex::tendril_search(int specified){
 
     local_ellipse.build(exclusion_points);
 
-    int old_type = _chifn->get_search_type();
-    _chifn->set_search_type(_type_tendril_fill);
-
-    int n_fill = (_chifn->get_pts()-pt_0)/10;
-    int n_fill_good = 0;
-    array_1d<double> trial,ell_pt;
-    trial.set_name("dalex_tendril_trial");
-    ell_pt.set_name("dalex_tendril_ell_pt");
-    if(_ellipse_sampler.is_initialized()==0){
-        _ellipse_sampler.initialize(_chifn->get_dim(), _chifn->random_int());
-    }
-
-    for(i=0;i<n_fill;i++){
-        _ellipse_sampler.get_pt(ell_pt);
-        for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,local_ellipse.center(j));
-        }
-        for(j=0;j<_chifn->get_dim();j++){
-            for(k=0;k<_chifn->get_dim();k++){
-                trial.add_val(k,ell_pt.get_data(j)*local_ellipse.radii(j)*local_ellipse.bases(j,k));
-            }
-        }
-        evaluate(trial,&mu,&j);
-        if(mu<target()){
-            n_fill_good++;
-        }
-    }
-    printf("    n_fill %d good %d\n",n_fill,n_fill_good);
-
-    _chifn->set_search_type(old_type);
-
     _exclusion_zones.add(local_ellipse);
     printf("\n    strike out (%d strikes; %d pts)\n",
            _strikes,_chifn->get_pts());
