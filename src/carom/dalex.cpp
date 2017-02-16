@@ -1300,13 +1300,13 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     i_next[0]=-1;
-    double dist_max=-2.0*exception_value;
+    double cost_min=2.0*exception_value;
     for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            mu=distance(specified,i);
-            if(mu>dist_max){
+            mu=dchifn(_chifn->get_pt(i));
+            if(mu<cost_min){
                 i_next[0]=i;
-                dist_max=mu;
+                cost_min=mu;
             }
         }
     }
@@ -1383,6 +1383,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                _chifn->get_pts()-pre_midpt,j);
     }
 
+    int pre_fill=_chifn->get_pts();
     // *** try to fill in the local ellipse ***
     ellipse_pts.reset_preserving_room();
     for(i=specified;i<_chifn->get_pts();i++){
@@ -1437,13 +1438,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     _update_good_points(pt_start);
 
-    dist_max=-2.0*exception_value;
-    for(i=pt_start;i<_chifn->get_pts();i++){
+    for(i=pre_fill;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            mu=distance(specified,i);
-            if(mu>dist_max){
+            mu=dchifn(_chifn->get_pt(i));
+            if(mu<cost_min){
                 i_next[0]=i;
-                dist_max=mu;
+                cost_min=mu;
             }
         }
     }
