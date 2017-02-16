@@ -1180,18 +1180,26 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> avg_pt;
     avg_pt.set_name("simplex_boundary_avg_pt");
 
+    double local_target;
+
     if(specified>=0){
         i_anchor=specified;
+        if(_chifn->get_fn(i_anchor)<target()){
+            local_target=target();
+        }
+        else{
+            local_target=_chifn->get_fn(i_anchor)+0.5*(target()-chimin());
+        }
         while(seed.get_rows()!=_chifn->get_dim()+1){
             for(i=0;i<_chifn->get_dim();i++){
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
-                i_bisect1=bisection(i_anchor,bisect_dir,target(),0.001);
+                i_bisect1=bisection(i_anchor,bisect_dir,local_target,0.001);
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
-                i_bisect2=bisection(i_anchor,bisect_dir,target(),0.001);
+                i_bisect2=bisection(i_anchor,bisect_dir,local_target,0.001);
                 mu1=dchifn(_chifn->get_pt(i_bisect1));
                 mu2=dchifn(_chifn->get_pt(i_bisect2));
 
@@ -1305,19 +1313,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     evaluate(minpt,&mu,&i_min);
     double cost_next=dchifn(minpt);
     i_next[0]=i_min;
-
-    if(mu>target()){
-        for(i=i_min;i>=0 && _chifn->get_fn(i_next[0])>target();i--){
-            if(_chifn->get_fn(i)<target()){
-                i_next[0]=i;
-            }
-        }
-        if(i_next[0]<0){
-            printf("WARNING; could not find i_next>=0\n");
-            exit(1);
-        }
-        cost_next=dchifn(_chifn->get_pt(i_next[0]));
-    }
 
     int pre_fill=_chifn->get_pts();
 
@@ -1489,9 +1484,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     int is_a_strike=0;
-    if(_chifn->get_fn(i_next[0])>target()){
-        return 1;
-    }
+
     for(i=0;i<exclusion_zones.ct() && is_a_strike==0;i++){
         if(exclusion_zones(i)->contains(_chifn->get_pt(i_next[0]))==1){
             is_a_strike=1;
