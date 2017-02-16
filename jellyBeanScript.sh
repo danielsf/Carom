@@ -7,11 +7,11 @@ out_dir=output/workspace/
 
 #for ss in 626 694 762 1068 6475 66 125
 #for ss in 66 694 6475 762 1068 125 626
-for ss in 66 694 762 1068 6475 626
+for ss in 66 694 762 1068 626 6475
 do
     out_name=${out_dir}jellyBean_d12_s${ss}_output.sav
     
-    ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 700000 -s ${ss} \
+    ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 600000 -s ${ss} \
     -t ${out_dir}jellyBean_d12_s${ss}_timing.sav \
     -o ${out_name} -i 24 >& ${out_dir}jellyBean_s${ss}_stdout.txt
     
