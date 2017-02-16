@@ -1086,7 +1086,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         ip=_tendril_path.get_data(i,0);
         io=_tendril_path.get_data(i,1);
         if(n_thin<0 || i%n_thin==0){
-            if(specified<=0){
+            if(specified<=0 || _has_struck==0){
                 associates.add(ip);
             }
             else{
@@ -1553,6 +1553,8 @@ void dalex::min_explore(int n_particles, int n_steps){
 
 void dalex::tendril_search(int specified){
 
+    _has_struck=0;
+
     int i,j,k;
     int pt_0=_chifn->get_pts();
     assess_good_points();
@@ -1661,6 +1663,7 @@ void dalex::tendril_search(int specified){
 
         if(is_a_strike==1){
             _strikes++;
+            _has_struck=1;
             if(_strikes<3){
                 i_particle=fall_back;
                 i_origin=fall_back_origin;
@@ -1674,7 +1677,7 @@ void dalex::tendril_search(int specified){
 
         printf("    volume %e from %e-- %d; chifn(i_next) %e\n",
                volume,old_volume,_exclusion_zones.ct(),_chifn->get_fn(i_next));
-        printf("    strikes %d\n",_strikes);
+        printf("    strikes %d has struck %d\n",_strikes,_has_struck);
 
     }
 
