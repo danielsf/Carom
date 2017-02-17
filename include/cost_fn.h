@@ -31,7 +31,6 @@ class cost_fn : public function_wrapper{
             int i;
             for(i=0;i<_pt_cache.get_dim();i++){
                 if(_pt_cache.get_data(i)==dex){
-                    chisq[0]=_chisq_cache.get_data(i);
                     fn[0]=_fn_cache.get_data(i);
                     return 1;
                 }
