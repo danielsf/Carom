@@ -78,6 +78,8 @@ void explorers::reset(){
 
 void explorers::initialize_particles(){
 
+    printf("initializing particles with rate %e\n",_scatter_rate);
+
     _particles.reset_preserving_room();
     _attempted=0;
     _req_temp.reset_preserving_room();
