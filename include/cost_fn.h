@@ -27,7 +27,7 @@ class cost_fn : public function_wrapper{
         }
 
         int get_cached_values(const int dex,
-                              double *fn, double *chisq, const double tol){
+                              double *fn, double *chisq){
 
             int i;
             for(i=0;i<_pt_cache.get_dim();i++){
