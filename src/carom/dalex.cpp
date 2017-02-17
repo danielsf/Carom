@@ -1250,7 +1250,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 }
                 avg_dd/=double(_chifn->get_dim());
                 for(i=0;i<_chifn->get_dim();i++){
-                    avg_pt.set(i,_chifn->get_pt(i_anchor,i)+avg_dd*base_dir.get_data(i));
+                    avg_pt.set(i,_chifn->get_pt(specified,i)+avg_dd*base_dir.get_data(i));
                 }
                 evaluate(avg_pt,&mu1,&i);
                 printf("    fn_avg %e\n",dchifn(avg_pt));
