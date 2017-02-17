@@ -7,7 +7,8 @@ out_dir=output/workspace/
 
 #for ss in 626 694 762 1068 6475 66 125
 #for ss in 66 694 6475 762 1068 125 626
-for ss in 66 694 762 1068 626 6475
+#for ss in 66 694 762 1068 626 6475
+for ss in 762 1068 626
 do
     out_name=${out_dir}jellyBean_d12_s${ss}_output.sav
     
