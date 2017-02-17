@@ -30,10 +30,15 @@ class explorers{
             _mu_arr.set_name("explorers_mu_arr");
             _envelope=1.0;
             _target_rate=0.5;
+            _scatter_rate=1.5;
         }
 
         void set_target_rate(double dd){
             _target_rate=dd;
+        }
+
+        void set_scatter_rate(double dd){
+            _scatter_rate=dd;
         }
 
         void set_envelope(double dd){
@@ -130,6 +135,7 @@ class explorers{
         double _scalar_steps;
         double _envelope;
         double _target_rate;
+        double _scatter_rate;
 
 
 

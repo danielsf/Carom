@@ -104,7 +104,7 @@ void explorers::initialize_particles(){
         }
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.add_val(j,1.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
+                trial.add_val(j,_scatter_rate*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
             }
         }
         _chifn->evaluate(trial,&mu,&i_found);
