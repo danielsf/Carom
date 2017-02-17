@@ -1423,7 +1423,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     ell_pt.set_name("dalex_simplex_boundary_ell_pt");
     center.set_name("dalex_simplex_boundary_center");
     trial.reset_preserving_room();
-    int n_fill=(_chifn->get_pts()-specified)/10;
+    int n_fill=(_chifn->get_pts()-pt_start)/10;
     int n_good=0;
     int n_bisect=0;
     array_1d<int> new_good;
