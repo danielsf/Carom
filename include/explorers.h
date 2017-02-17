@@ -39,6 +39,17 @@ class explorers{
             _n_particles=ii;
         }
 
+        void set_particle(int dex, array_1d<double> &pp){
+            if(dex>=_particles.get_rows()){
+                printf("WARNING no %d particle\n",dex);
+                exit(1);
+            }
+            int i;
+            for(i=0;i<pp.get_dim();i++){
+                _particles.set(dex,i,pp.get_data(i));
+            }
+        }
+
         void set_chifn(chisq_wrapper *cc){
             _chifn=cc;
         }
@@ -60,6 +71,14 @@ class explorers{
 
         int get_n_particles(){
             return _n_particles;
+        }
+
+        const array_1d<double> get_pt(int dex){
+            return _particles(dex);
+        }
+
+        double get_pt(int dex, int i){
+            return _particles.get_data(dex,i);
         }
 
         void get_pt(int dex, array_1d<double> &pp){
