@@ -1313,11 +1313,22 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     i_next[0]=-1;
-
-    int i_min;
-    evaluate(minpt,&mu,&i_min);
-    double cost_next=dchifn(minpt);
-    i_next[0]=i_min;
+    double fn,cost_min;
+    int valid_cache;
+    cost_min=2.0*exception_value;
+    for(i=pt_start;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            valid_cache=dchifn.get_cached_values(i,&mu,&fn);
+            if(valid_cache==1 && fn<cost_min){
+                i_next[0]=i;
+                cost_min=fn;
+            }
+        }
+    }
+    if(i_next[0]<0){
+        printf("WARNING could not set i_next\n");
+        exit(1);
+    }
 
     int pre_fill=_chifn->get_pts();
 
@@ -1445,12 +1456,16 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     for(i=pre_fill;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            mu=dchifn(_chifn->get_pt(i));
-            if(mu<cost_next){
+            valid_cache=dchifn.get_cached_values(i,&mu,&fn);
+            if(valid_cache==1 && fn<cost_min){
                 i_next[0]=i;
-                cost_next=mu;
+                cost_min=fn;
             }
         }
+    }
+    if(i_next[0]<0){
+        printf("WARNING could not set i_next\n");
+        exit(1);
     }
 
     if(_chifn->get_dim()>9){
