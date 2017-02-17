@@ -1549,7 +1549,6 @@ void dalex::explore(){
 void dalex::explore(int with_kick){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
-    _explorers.set_target_rate(0.75);
 
     if(_explorers.get_n_particles()<2*_chifn->get_dim()){
         _explorers.set_n_particles(2*_chifn->get_dim());
