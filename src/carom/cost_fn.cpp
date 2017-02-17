@@ -147,7 +147,13 @@ double cost_fn::operator()(const array_1d<double> &pt){
         exp_term=1.0;
     }
 
-    return mu-1.0*delta*distance*exp_term;
+
+    double val;
+    val = mu-1.0*delta*distance*exp_term;
+    _pt_cache.add(i_found);
+    _chisq_cache.add(mu);
+    _fn_cache.add(val);
+    return val;
 }
 
 

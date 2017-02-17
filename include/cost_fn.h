@@ -26,6 +26,22 @@ class cost_fn : public function_wrapper{
             return _norm.get_data(ii);
         }
 
+        int get_cached_values(const int dex,
+                              double *fn, double *chisq, const double tol){
+
+            int i;
+            for(i=0;i<_pt_cache.get_dim();i++){
+                if(_pt_cache.get_data(i)==dex){
+                    chisq[0]=_chisq_cache.get_data(i);
+                    fn[0]=_fn_cache.get_data(i);
+                    return 1;
+                }
+            }
+
+            return 0;
+
+        }
+
     private:
         array_1d<int> _associates;
         array_1d<double> _median_associate;
@@ -51,6 +67,9 @@ class cost_fn : public function_wrapper{
 
         void _set_norm();
         array_1d<double> _norm;
+
+        array_1d<int> _pt_cache;
+        array_1d<double> _fn_cache,_chisq_cache;
 
 };
 
