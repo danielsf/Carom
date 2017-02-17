@@ -57,7 +57,7 @@ void dalex::search(){
     double mu;
     int pts_0=_chifn->get_pts();
     array_1d<double> pt;
-    array_1d<int> to_use,to_kick;
+    array_1d<int> to_use,explorer_dex;
     assess_good_points();
 
     int has_explored=0;
@@ -67,15 +67,12 @@ void dalex::search(){
 
     _chifn->set_search_type(_type_explore);
     int is_outside;
-    int need_kick=1;
     while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
-        explore(need_kick);
-        need_kick=0;
+        explore();
         for(i=0;i<_explorers.get_n_particles();i++){
             _explorers.get_pt(i,pt);
             evaluate(pt,&mu,&i_found);
             if(mu<target()){
-                to_kick.add(i);
                 is_outside=1;
                 for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
                     if(_exclusion_zones(j)->contains(pt)==1){
@@ -83,7 +80,7 @@ void dalex::search(){
                     }
                 }
                 if(is_outside==1){
-                    to_use.add(i_found);
+                    to_use.add(i);
                 }
             }
         }
@@ -93,7 +90,7 @@ void dalex::search(){
     for(i=0;i<to_use.get_dim();i++){
         dd_min.set(i,0.0);
         for(j=0;j<_chifn->get_dim();j++){
-            mu=_chifn->get_pt(to_use.get_data(i),j)-_chifn->get_pt(mindex(),j);
+            mu=_explorers.get_pt(to_use.get_data(i),j)-_chifn->get_pt(mindex(),j);
             dd_min.add_val(i,power(mu/_chifn->get_characteristic_length(j),2));
         }
     }
@@ -102,16 +99,28 @@ void dalex::search(){
 
     int i_end;
 
+    array_1d<double> reflection_dir,new_pt;
+    reflection_dir.set_name("reflection_dir");
+    new_pt.set_name("new_pt");
+
     _chifn->set_search_type(_type_tendril);
     for(i=0;i<to_use.get_dim();i++){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
-            if(_exclusion_zones(j)->contains(_chifn->get_pt(to_use.get_data(i)))==1){
+            if(_exclusion_zones(j)->contains(_explorers.get_pt(to_use.get_data(i)))==1){
                 is_outside=0;
             }
         }
         if(is_outside==1){
-            tendril_search(to_use.get_data(i));
+            evaluate(_explorers.get_pt(to_use.get_data(i)), &mu, &i_found);
+            tendril_search(i_found);
+            for(j=0;j<_chifn->get_dim();j++){
+                reflection_dir.set(j,_chifn->get_pt(i_found,j)-_chifn->get_pt(mindex(),j));
+            }
+            for(j=0;j<_chifn->get_dim();j++){
+                new_pt.set(j,_chifn->get_pt(mindex(),j)-reflection_dir.get_data(j));
+            }
+            _explorers.set_particle(to_use.get_data(i),new_pt);
         }
         if(_limit>0 && _chifn->get_pts()>_limit){
             break;
