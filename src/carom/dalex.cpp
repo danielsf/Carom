@@ -1181,6 +1181,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     avg_pt.set_name("simplex_boundary_avg_pt");
 
     double local_target;
+    double dd,avg_dd;
 
     if(specified>=0){
         i_anchor=specified;
@@ -1239,18 +1240,20 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             }
 
             if(seed.get_rows()==_chifn->get_dim()){
+                avg_dd=0.0;
                 for(i=0;i<_chifn->get_dim();i++){
-                    avg_pt.set(i,0.0);
+                    dd=0.0;
+                    for(j=0;j<_chifn->get_dim();j++){
+                        dd+=power(_chifn->get_pt(i_anchor,j)-seed.get_data(i,j),2);
+                    }
+                    avg_dd+=sqrt(dd);
                 }
-                for(i=0;i<kept_dex.get_dim();i++){
-                   for(j=0;j<_chifn->get_dim();j++){
-                       avg_pt.add_val(j,_chifn->get_pt(kept_dex.get_data(i),j));
-                   }
-                }
+                avg_dd/=double(_chifn->get_dim());
                 for(i=0;i<_chifn->get_dim();i++){
-                    avg_pt.divide_val(i,double(kept_dex.get_dim()));
+                    avg_pt.set(i,_chifn->get_pt(i_anchor,i)+avg_dd*base_dir.get_data(i));
                 }
                 evaluate(avg_pt,&mu1,&i);
+                printf("    fn_avg %e\n",dchifn(avg_pt));
                 seed.add_row(avg_pt);
             }
         }
