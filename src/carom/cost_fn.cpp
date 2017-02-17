@@ -7,6 +7,8 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _median_associate.set_name("dchi_interior_median");
     _bases.set_name("dchi_interior_bases");
     _norm.set_name("dchi_interior_norm");
+    _pt_cache.set_name("dchi_interior_pt_cache");
+    _fn_cache.set_name("dchi_interior_fn_cache");
 
     _chifn=cc;
     _envelope=1.0;
@@ -151,7 +153,6 @@ double cost_fn::operator()(const array_1d<double> &pt){
     double val;
     val = mu-1.0*delta*distance*exp_term;
     _pt_cache.add(i_found);
-    _chisq_cache.add(mu);
     _fn_cache.add(val);
     return val;
 }

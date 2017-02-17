@@ -26,8 +26,7 @@ class cost_fn : public function_wrapper{
             return _norm.get_data(ii);
         }
 
-        int get_cached_values(const int dex,
-                              double *fn, double *chisq){
+        int get_cached_values(const int dex, double *fn){
 
             int i;
             for(i=0;i<_pt_cache.get_dim();i++){
@@ -37,7 +36,6 @@ class cost_fn : public function_wrapper{
                     return 1;
                 }
             }
-
             return 0;
 
         }
@@ -69,7 +67,7 @@ class cost_fn : public function_wrapper{
         array_1d<double> _norm;
 
         array_1d<int> _pt_cache;
-        array_1d<double> _fn_cache,_chisq_cache;
+        array_1d<double> _fn_cache;
 
 };
 

@@ -1294,6 +1294,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> minpt;
     minpt.set_name("dalex_simplex_search_minpt");
 
+    for(i=pt_start;i<_chifn->get_pts();i++){
+        mu=dchifn(_chifn->get_pt(i));
+    }
+
     ffmin.find_minimum(seed,minpt);
 
     array_1d<int> path_row;
@@ -1313,7 +1317,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     cost_min=2.0*exception_value;
     for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            valid_cache=dchifn.get_cached_values(i,&mu,&fn);
+            valid_cache=dchifn.get_cached_values(i,&fn);
+            if(valid_cache==0){
+                printf("bad cache %d %d\n",i,pt_start);
+                exit(1);
+            }
             if(valid_cache==1 && fn<cost_min){
                 i_next[0]=i;
                 cost_min=fn;
