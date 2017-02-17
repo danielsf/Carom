@@ -46,10 +46,15 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
     for(i=0;i<_chifn->get_dim();i++){
         _median_associate.set(i,0.5*(max.get_data(i)+min.get_data(i)));
-        if(i==0 || norm.get_data(i)<_scalar_norm){
-            _scalar_norm=norm.get_data(i);
-        }
     }
+
+    array_1d<double> norm_sorted;
+    array_1d<int> norm_dex;
+    for(i=0;i<norm.get_dim();i++){
+        norm_dex.add(i);
+    }
+    sort(norm, norm_sorted, norm_dex);
+    _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
 
     _set_bases();
     _set_norm();
