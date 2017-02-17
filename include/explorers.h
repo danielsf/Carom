@@ -73,6 +73,10 @@ class explorers{
             return _n_particles;
         }
 
+        double get_mu(int dex){
+            return _mu_arr.get_data(dex);
+        }
+
         const array_1d<double> get_pt(int dex){
             return _particles(dex);
         }
