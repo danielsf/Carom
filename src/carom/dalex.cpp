@@ -1157,8 +1157,15 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int i_anchor;
     array_1d<double> base_dir;
     base_dir.set_name("dalex_simplex_boundary_base_dir");
-    for(i=0;i<_chifn->get_dim();i++){
-        base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
+    if(i_origin>0){
+        for(i=0;i<_chifn->get_dim();i++){
+            base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
+        }
+    }
+    else{
+        for(i=0;i<_chifn->get_dim();i++){
+            base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(mindex(),i));
+        }
     }
     base_dir.normalize();
 
