@@ -70,13 +70,15 @@ void explorers::set_norm(){
 void explorers::reset(){
     _particles.reset_preserving_room();
     _attempted=0;
-    _scalar_acceptance=0;
-    _scalar_steps=0;
+    _scalar_acceptance=0.0;
+    _scalar_steps=0.0;
     _req_temp.reset_preserving_room();
     _temp=1.0;
 }
 
 void explorers::initialize_particles(){
+
+    printf("initializing particles with rate %e\n",_scatter_rate);
 
     _particles.reset_preserving_room();
     _attempted=0;
@@ -104,7 +106,7 @@ void explorers::initialize_particles(){
         }
         for(i=0;i<_chifn->get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
-                trial.add_val(j,1.5*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
+                trial.add_val(j,_scatter_rate*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
             }
         }
         _chifn->evaluate(trial,&mu,&i_found);
@@ -243,9 +245,9 @@ void explorers::sample(int n_steps, int with_kick){
             }
 
             _req_temp.add(needed_temp);
-            _scalar_steps++;
+            _scalar_steps+=1.0;
             if(accept_it==1){
-                _scalar_acceptance++;
+                _scalar_acceptance+=1.0;
                 _mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
                     _particles.set(ip,i,trial.get_data(i));
@@ -261,8 +263,8 @@ void explorers::sample(int n_steps, int with_kick){
 
         if(_attempted>0 && _attempted%(2*_chifn->get_dim())==0){
             printf("assessing temp\n");
-            if(_scalar_acceptance>6*_scalar_steps/10 ||
-               _scalar_acceptance<4*_scalar_steps/10){
+            if(_scalar_acceptance>(_target_rate+0.1)*_scalar_steps ||
+               _scalar_acceptance<(_target_rate-0.1)*_scalar_steps){
                 old_temp=_temp;
                 req_temp_sorted.reset_preserving_room();
                 req_temp_dex.reset_preserving_room();
@@ -271,11 +273,22 @@ void explorers::sample(int n_steps, int with_kick){
                 }
                 sort(_req_temp, req_temp_sorted, req_temp_dex);
                 _temp=req_temp_sorted.get_data(req_temp_dex.get_dim()/2);
+                if(fabs(1.0-old_temp/_temp)<0.01){
+                    if(_scalar_acceptance>(_target_rate+0.1)*_scalar_steps){
+                        _temp*=0.8;
+                    }
+                    else{
+                        _temp*=1.25;
+                    }
+                    if(_temp<1.0){
+                         _temp=1.0;
+                    }
+                }
                 if(fabs(1.0-old_temp/_temp)>0.01){
                     _req_temp.reset();
                     _attempted=0;
-                    _scalar_acceptance=0;
-                    _scalar_steps=0;
+                    _scalar_acceptance=0.0;
+                    _scalar_steps=0.0;
                 }
             }
         }
@@ -284,7 +297,7 @@ void explorers::sample(int n_steps, int with_kick){
 
     printf("    sampling min %e\n",_mu_min);
     printf("    temp %e\n",_temp);
-    printf("    accepted %d steps %d\n",_scalar_acceptance,
+    printf("    accepted %.1f steps %.1f\n",_scalar_acceptance,
     _scalar_steps);
     printf("    ct %d\n",_chifn->get_pts());
 }

@@ -66,6 +66,12 @@ void dalex::search(){
     iterate_on_minimum();
 
     _chifn->set_search_type(_type_explore);
+    if(_tendril_path.get_rows()==0){
+        for(i=0;i<4;i++){
+            explore();
+        }
+    }
+
     int is_outside;
     while(to_use.get_dim()==0 && (_limit<0 || _chifn->get_pts()<_limit)){
         explore();
