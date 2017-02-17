@@ -1456,8 +1456,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     for(i=pre_fill;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            valid_cache=dchifn.get_cached_values(i,&mu,&fn);
-            if(valid_cache==1 && fn<cost_min){
+            fn=dchifn(_chifn->get_pt(i));
+            if(fn<cost_min){
                 i_next[0]=i;
                 cost_min=fn;
             }
