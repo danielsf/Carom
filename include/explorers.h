@@ -29,6 +29,11 @@ class explorers{
             _req_temp.set_name("explorers_req_temp");
             _mu_arr.set_name("explorers_mu_arr");
             _envelope=1.0;
+            _target_rate=0.5;
+        }
+
+        void set_target_rate(double dd){
+            _target_rate=dd;
         }
 
         void set_envelope(double dd){
@@ -121,9 +126,10 @@ class explorers{
         double _temp;
         int _attempted;
         array_2d<double> _particles;
-        int _scalar_acceptance;
-        int _scalar_steps;
+        double _scalar_acceptance;
+        double _scalar_steps;
         double _envelope;
+        double _target_rate;
 
 
 
