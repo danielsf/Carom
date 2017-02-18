@@ -1551,7 +1551,97 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
 }
 
+int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
+
+    array_2d<double> associate_pts;
+    associate_pts.set_name("dalex_exp_simp_associate_pts");
+    int i;
+    for(i=0;i<associates.get_dim();i++){
+        associate_pts.add_row(_chifn->get_pt(associates.get_data(i)));
+    }
+    cost_fn dchifn(_chifn, associates);
+
+    array_2d<double> seed;
+    seed.set_name("dalex_exp_sim_seed");
+    array_1d<double> min,max;
+    min.set_name("dalex_exp_simp_min");
+    max.set_name("dalex_exp_simp_max");
+
+    array_1d<double> dir;
+    dir.set_name("dalex_exp_sim_dir");
+    array_2d<double> dir_log;
+    dir_log.set_name("dalex_exp_sim_dir_log");
+    for(i=0;i<_chifn->get_dim();i++){
+        dir.set(i,_chifn->get_pt(i1,i)-_chifn->get_pt(i0,i));
+    }
+    double dir_norm;
+    dir_norm=dir.normalize();
+    array_1d<double> newpt,midpt;
+    newpt.set_name("dalex_exp_simp_newpt");
+    midpt.set_name("dalex_exp_simp_midpt");
+    for(i=0;i<_chifn->get_dim();i++){
+        newpt.set(i,_chifn->get_pt(i1,i)+0.1*dir_norm*dir.get_data(i));
+        midpt.set(i,0.5*(_chifn->get_pt(i1,i)+_chifn->get_pt(i0,i)));
+    }
+    seed.add_row(newpt);
+    dir_log.add_row(dir);
+    double component;
+    int j;
+    while(seed.get_rows()<_chifn->get_dim()){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        for(i=0;i<dir_log.get_rows();i++){
+            component=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                component+=dir.get_data(j)*dir_log.get_data(i,j);
+            }
+            for(j=0;j<_chifn->get_dim();j++){
+                dir.subtract_val(j,component*dir_log.get_data(i,j));
+            }
+        }
+        component=dir.normalize();
+        if(component>1.0e-20){
+            for(i=0;i<_chifn->get_dim();i++){
+                newpt.set(i,midpt.get_data(i)+0.1*dir_norm*dir.get_data(i));
+            }
+            seed.add_row(newpt);
+        }
+    }
+    for(i=0;i<_chifn->get_dim();i++){
+        newpt.set(i,0.0);
+    }
+    for(i=0;i<seed.get_rows();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            newpt.add_val(j,seed.get_data(i,j));
+        }
+    }
+    for(i=0;i<_chifn->get_dim();i++){
+        newpt.divide_val(i,double(seed.get_rows()));
+    }
+    seed.add_row(newpt);
+
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,0.0);
+        max.set(i,_chifn->get_characteristic_length(i));
+    }
+
+    simplex_minimizer ffmin;
+    ffmin.set_chisquared(&dchifn);
+    ffmin.set_dice(_chifn->get_dice());
+    ffmin.set_minmax(min,max);
+    ffmin.use_gradient();
+    ffmin.find_minimum(seed,newpt);
+    double mu;
+    int i_found;
+    evaluate(newpt,&mu,&i_found);
+    printf("exp simplex found %e\n",mu);
+    return i_found;
+
+}
+
 void dalex::initialize_exploration(){
+    int pt_start=_chifn->get_pts();
     _explorers.initialize();
     array_1d<double> dir,midpt;
     int i_found,i_next;
@@ -1561,13 +1651,19 @@ void dalex::initialize_exploration(){
     array_1d<int> origins,particles;
     origins.set_name("initialize_exploration_origins");
     particles.set_name("initialize_exploration_particles");
-    array_2d<int> tendril_path_cache;
-    tendril_path_cache.set_name("initialize_exp_tendril_path_cache");
     int i,j;
-    ellipse_list dummy_list;
-    for(i=0;i<_tendril_path.get_rows();i++){
-        tendril_path_cache.add_row(_tendril_path(i));
+
+    array_1d<int> associates;
+    associates.set_name("initialize_exploration_associates");
+    for(i=0;i<pt_start;i++){
+        if(_chifn->get_fn(i)<target() &&
+           _chifn->get_search_type_log(i)<_type_tendril){
+
+            associates.add(i);
+
+        }
     }
+
     while(_explorers.get_n_particles()<_chifn->get_dim()){
         for(j=0;j<_chifn->get_dim();j++){
             dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
@@ -1579,7 +1675,13 @@ void dalex::initialize_exploration(){
                midpt.set(j,0.5*(_chifn->get_pt(mindex(),j)+_chifn->get_pt(i_found,j)));
             }
             evaluate(midpt,&mu,&i_found);
-            simplex_boundary_search(i_found, mindex(),dummy_list,&i_next);
+            for(i=pt_start;i<_chifn->get_pts();i++){
+                if(_chifn->get_fn(i)<target()){
+                    associates.add(i);
+                }
+            }
+            pt_start=_chifn->get_pts();
+            i_next=_exploration_simplex(i_found,mindex(),associates);
             if(i_found!=i_next){
                 origins.add(i_found);
                 particles.add(i_next);
@@ -1590,19 +1692,19 @@ void dalex::initialize_exploration(){
     }
 
     for(i=0;i<origins.get_dim();i++){
-        simplex_boundary_search(particles.get_data(i),origins.get_data(i),dummy_list,
-                                &i_next);
+        for(j=pt_start;j<_chifn->get_pts();j++){
+            if(_chifn->get_fn(j)<target()){
+                associates.add(j);
+            }
+        }
+        pt_start=_chifn->get_pts();
+        i_next=_exploration_simplex(particles.get_data(i),origins.get_data(i),associates);
 
         if(i_next!=particles.get_data(i)){
             _explorers.add_particle(_chifn->get_pt(i_next));
         }
         printf("\n    %d explorers\n",_explorers.get_n_particles());
 
-    }
-
-    _tendril_path.reset_preserving_room();
-    for(i=0;i<tendril_path_cache.get_rows();i++){
-        _tendril_path.add_row(tendril_path_cache(i));
     }
 
 }

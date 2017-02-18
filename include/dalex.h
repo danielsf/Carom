@@ -76,6 +76,7 @@ class dalex{
         int simplex_boundary_search(const int, const int, ellipse_list&, int*);
         void explore(int);
         void explore();
+        int _exploration_simplex(int,int,array_1d<int>&);
         void initialize_exploration();
         void min_explore(int, int);
         void initialize_min_exploration();
