@@ -1578,12 +1578,11 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
     }
     double dir_norm;
     dir_norm=dir.normalize();
-    array_1d<double> newpt,midpt;
+    array_1d<double> newpt,newdir;
     newpt.set_name("dalex_exp_simp_newpt");
-    midpt.set_name("dalex_exp_simp_midpt");
+    newdir.set_name("dalex_exp_simp_newdir");
     for(i=0;i<_chifn->get_dim();i++){
         newpt.set(i,_chifn->get_pt(i1,i)+0.1*dir_norm*dir.get_data(i));
-        midpt.set(i,0.5*(_chifn->get_pt(i1,i)+_chifn->get_pt(i0,i)));
     }
     seed.add_row(newpt);
     dir_log.add_row(dir);
@@ -1605,7 +1604,11 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
         component=dir.normalize();
         if(component>1.0e-20){
             for(i=0;i<_chifn->get_dim();i++){
-                newpt.set(i,midpt.get_data(i)+0.1*dir_norm*dir.get_data(i));
+                newdir.set(i,dir.get_data(i)+dir_log.get_data(0,i));
+            }
+            newdir.normalize();
+            for(i=0;i<_chifn->get_dim();i++){
+                newpt.set(i,_chifn->get_pt(i1,i)+0.1*dir_norm*newdir.get_data(i));
             }
             seed.add_row(newpt);
             dir_log.add_row(dir);
