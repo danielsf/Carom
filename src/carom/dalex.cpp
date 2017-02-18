@@ -1606,6 +1606,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
                 newpt.set(i,midpt.get_data(i)+0.1*dir_norm*dir.get_data(i));
             }
             seed.add_row(newpt);
+            dir_log.add_row(dir);
         }
     }
     for(i=0;i<_chifn->get_dim();i++){
