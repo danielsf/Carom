@@ -76,7 +76,9 @@ class dalex{
         int simplex_boundary_search(const int, const int, ellipse_list&, int*);
         void explore(int);
         void explore();
+        void initialize_exploration();
         void min_explore(int, int);
+        void initialize_min_exploration();
 
         int bisection(int, int, double, double);
         int bisection(int, const array_1d<double>&, double, double);

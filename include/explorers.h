@@ -18,7 +18,6 @@ class explorers{
             _scalar_acceptance=0;
             _attempted=0;
             _scalar_steps=0;
-            _n_particles=0;
             _associates.set_name("explorers_associates");
             _median_associate.set_name("explorers_mean_associate");
             _particles.set_name("explorers_particles");
@@ -30,23 +29,14 @@ class explorers{
             _mu_arr.set_name("explorers_mu_arr");
             _envelope=1.0;
             _target_rate=0.5;
-            _scatter_rate=1.5;
         }
 
         void set_target_rate(double dd){
             _target_rate=dd;
         }
 
-        void set_scatter_rate(double dd){
-            _scatter_rate=dd;
-        }
-
         void set_envelope(double dd){
             _envelope=dd;
-        }
-
-        void set_n_particles(int ii){
-            _n_particles=ii;
         }
 
         void set_particle(int dex, array_1d<double> &pp){
@@ -80,7 +70,7 @@ class explorers{
         }
 
         int get_n_particles(){
-            return _n_particles;
+            return _particles.get_rows();
         }
 
         double get_mu(int dex){
@@ -104,14 +94,13 @@ class explorers{
 
         void add_particle(const array_1d<double> &pt){
             _particles.add_row(pt);
-            _n_particles++;
         }
 
         void get_seed(array_2d<double>&);
 
         void set_norm();
         void reset();
-        void initialize_particles();
+        void initialize();
         void bump_particles();
         void kick(int);
         void sample(int,int);
@@ -127,7 +116,6 @@ class explorers{
         array_1d<double> _req_temp;
         int _mindex;
         double _mu_min;
-        int _n_particles;
         double _temp;
         int _attempted;
         array_2d<double> _particles;
@@ -135,10 +123,6 @@ class explorers{
         double _scalar_steps;
         double _envelope;
         double _target_rate;
-        double _scatter_rate;
-
-
-
 };
 
 #endif

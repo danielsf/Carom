@@ -1551,6 +1551,62 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
 }
 
+void dalex::initialize_exploration(){
+    _explorers.initialize();
+    array_1d<double> dir,midpt;
+    int i_found,i_next;
+    double mu;
+    dir.set_name("initialize_exploration_dir");
+    midpt.set_name("initialize_exploration_mid_pt");
+    array_1d<int> origins,particles;
+    origins.set_name("initialize_exploration_origins");
+    particles.set_name("initialize_exploration_particles");
+    array_2d<int> tendril_path_cache;
+    tendril_path_cache.set_name("initialize_exp_tendril_path_cache");
+    int i,j;
+    ellipse_list dummy_list;
+    for(i=0;i<_tendril_path.get_rows();i++){
+        tendril_path_cache.add_row(_tendril_path(i));
+    }
+    while(_explorers.get_n_particles()<_chifn->get_dim()){
+        for(j=0;j<_chifn->get_dim();j++){
+            dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        dir.normalize();
+        i_found=bisection(mindex(),dir,target(),0.001);
+        if(i_found!=mindex()){
+            for(j=0;j<_chifn->get_dim();j++){
+               midpt.set(j,0.5*(_chifn->get_pt(mindex(),j)+_chifn->get_pt(i_found,j)));
+            }
+            evaluate(midpt,&mu,&i_found);
+            simplex_boundary_search(i_found, mindex(),dummy_list,&i_next);
+            if(i_found!=i_next){
+                origins.add(i_found);
+                particles.add(i_next);
+                _explorers.add_particle(_chifn->get_pt(i_next));
+            }
+        }
+        printf("\n    %d explorers\n",_explorers.get_n_particles());
+    }
+
+    for(i=0;i<origins.get_dim();i++){
+        simplex_boundary_search(particles.get_data(i),origins.get_data(i),dummy_list,
+                                &i_next);
+
+        if(i_next!=particles.get_data(i)){
+            _explorers.add_particle(_chifn->get_pt(i_next));
+        }
+        printf("\n    %d explorers\n",_explorers.get_n_particles());
+
+    }
+
+    _tendril_path.reset_preserving_room();
+    for(i=0;i<tendril_path_cache.get_rows();i++){
+        _tendril_path.add_row(tendril_path_cache(i));
+    }
+
+}
+
 void dalex::explore(){
     explore(0);
 }
@@ -1559,9 +1615,10 @@ void dalex::explore(int with_kick){
     printf("\nexploring\n");
     int pt_0=_chifn->get_pts();
 
-    if(_explorers.get_n_particles()<2*_chifn->get_dim()){
-        _explorers.set_n_particles(2*_chifn->get_dim());
+    if(_explorers.get_n_particles()==0){
+        initialize_exploration();
     }
+
     array_1d<int> associates;
     associates.set_name("dalex_explore_associates");
     int i;
@@ -1578,11 +1635,41 @@ void dalex::explore(int with_kick){
     _update_good_points(pt_0);
 }
 
+void dalex::initialize_min_exploration(){
+    _min_explorers.initialize();
+    array_1d<double> dir,midpt;
+    dir.set_name("dalex_init_min_exp_dir");
+    midpt.set_name("dalex_init_min_exp_midpt");
+    double mu;
+    int i_found;
+    int i,j;
+    while(_min_explorers.get_n_particles()<2*_chifn->get_dim()){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(), 0.0, 1.0));
+        }
+        dir.normalize();
+        i_found=bisection(mindex(),dir,target(),0.001);
+        if(i_found!=mindex()){
+            for(i=0;i<_chifn->get_dim();i++){
+                midpt.set(i,0.5*(_chifn->get_pt(mindex(),i)+_chifn->get_pt(i_found,i)));
+            }
+            evaluate(midpt,&mu,&i_found);
+            if(i_found!=mindex()){
+                _min_explorers.add_particle(_chifn->get_pt(i_found));
+            }
+        }
+    }
+
+}
+
 void dalex::min_explore(int n_particles, int n_steps){
     printf("\nmin exploring\n");
     int pt_0=_chifn->get_pts();
 
-    _min_explorers.set_n_particles(n_particles);
+    if(_min_explorers.get_n_particles()==0){
+        initialize_min_exploration();
+    }
+
     array_1d<int> associates;
     associates.set_name("dalex_explore_associates");
     int skip;

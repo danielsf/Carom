@@ -76,45 +76,10 @@ void explorers::reset(){
     _temp=1.0;
 }
 
-void explorers::initialize_particles(){
-
-    printf("initializing particles with rate %e\n",_scatter_rate);
-
+void explorers::initialize(){
     _particles.reset_preserving_room();
     _attempted=0;
     _req_temp.reset_preserving_room();
-
-    array_1d<double> center;
-    array_1d<double> dir;
-    int i, j;
-    array_1d<double> trial;
-    trial.set_name("exp_init_trial");
-    int i_found;
-    double span,mu;
-
-    for(i=0;i<_chifn->get_dim();i++){
-        center.set(i,_chifn->get_pt(_chifn->mindex(),i));
-    }
-
-    while(_particles.get_rows()<_n_particles){
-        for(i=0;i<_chifn->get_dim();i++){
-            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-        }
-        dir.normalize();
-        for(i=0;i<_chifn->get_dim();i++){
-            trial.set(i,center.get_data(i));
-        }
-        for(i=0;i<_chifn->get_dim();i++){
-            for(j=0;j<_chifn->get_dim();j++){
-                trial.add_val(j,_scatter_rate*dir.get_data(i)*_bases.get_data(i,j)*(_max.get_data(i)-_min.get_data(i)));
-            }
-        }
-        _chifn->evaluate(trial,&mu,&i_found);
-        if(i_found>=0){
-            _particles.add_row(trial);
-        }
-    }
-
 }
 
 
@@ -125,7 +90,7 @@ void explorers::bump_particles(){
     _particles.reset_preserving_room();
 
     int i,j;
-    while(_particles.get_rows()<_n_particles){
+    while(_particles.get_rows()<get_n_particles()){
         for(i=0;i<_chifn->get_dim();i++){
             dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
         }
@@ -176,12 +141,9 @@ void explorers::sample(int n_steps, int with_kick){
 
     int i;
 
-    if(_particles.get_rows()!=_n_particles){
-        initialize_particles();
-    }
-    else if(with_kick==1){
+    if(with_kick==1){
         printf("\nkicking explorers\n");
-        for(i=0;i<_n_particles;i++){
+        for(i=0;i<get_n_particles();i++){
             kick(i);
         }
     }
@@ -196,7 +158,7 @@ void explorers::sample(int n_steps, int with_kick){
     array_1d<double> trial;
     trial.set_name("exp_sample_trial");
 
-    for(ip=0;ip<_n_particles;ip++){
+    for(ip=0;ip<get_n_particles();ip++){
         mu=dchifn(_particles(ip));
         if(ip==0 || mu<_mu_min){
             _mindex=ip;
@@ -215,11 +177,11 @@ void explorers::sample(int n_steps, int with_kick){
 
     int has_been_adjusted;
 
-    printf("    starting sampling with %e -- %d\n",_mu_min,_n_particles);
+    printf("    starting sampling with %e -- %d\n",_mu_min,get_n_particles());
 
     for(i_step=0;i_step<n_steps;i_step++){
 
-        for(ip=0;ip<_n_particles;ip++){
+        for(ip=0;ip<get_n_particles();ip++){
             i_dim=_chifn->random_int()%_chifn->get_dim();
             rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
             for(i=0;i<_chifn->get_dim();i++){
