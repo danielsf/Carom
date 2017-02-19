@@ -112,7 +112,7 @@ void dalex::search(){
     new_pt.set_name("new_pt");
 
     _chifn->set_search_type(_type_tendril);
-    for(i=0;i<to_use.get_dim();i++){
+    for(i=to_use.get_dim()-1;i>=0;i--){
         is_outside=1;
         for(j=0;j<_exclusion_zones.ct() && is_outside==1;j++){
             if(_exclusion_zones(j)->contains(_explorers.get_pt(to_use.get_data(i)))==1){
@@ -1518,6 +1518,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
 
+    printf("going to try to add to path %d %d\n",start_path,_chifn->get_pts());
     for(i=start_path;i<_chifn->get_pts();i++){
         if(_tendril_path.get_rows()==0){
             _tendril_path.set_cols(2);
@@ -1648,6 +1649,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::initialize_exploration(){
     int pt_start=_chifn->get_pts();
+    int pt_prime=_chifn->get_pts();
     _explorers.initialize();
     array_1d<double> dir,midpt;
     int i_found,i_next;
@@ -1659,6 +1661,8 @@ void dalex::initialize_exploration(){
     particles.set_name("initialize_exploration_particles");
     int i,j;
 
+    _chifn->set_search_type(_type_tendril);
+
     array_1d<int> associates;
     associates.set_name("initialize_exploration_associates");
     for(i=0;i<pt_start;i++){
@@ -1669,6 +1673,9 @@ void dalex::initialize_exploration(){
 
         }
     }
+
+    ellipse_list dummy_list;
+
 
     while(_explorers.get_n_particles()<_chifn->get_dim()){
         for(j=0;j<_chifn->get_dim();j++){
@@ -1687,31 +1694,40 @@ void dalex::initialize_exploration(){
                 }
             }
             pt_start=_chifn->get_pts();
-            i_next=_exploration_simplex(i_found,mindex(),associates);
+            //i_next=_exploration_simplex(i_found,mindex(),associates);
+            simplex_boundary_search(i_found,mindex(),dummy_list,&i_next);
             if(i_found!=i_next){
                 origins.add(i_found);
                 particles.add(i_next);
                 _explorers.add_particle(_chifn->get_pt(i_next));
             }
         }
-        printf("\n    %d explorers\n",_explorers.get_n_particles());
+        printf("\n    %d explorers limit %d\n",_explorers.get_n_particles(),_limit);
     }
 
-    for(i=0;i<origins.get_dim();i++){
-        for(j=pt_start;j<_chifn->get_pts();j++){
-            if(_chifn->get_fn(j)<target()){
-                associates.add(j);
-            }
-        }
-        pt_start=_chifn->get_pts();
-        i_next=_exploration_simplex(particles.get_data(i),origins.get_data(i),associates);
+    int n_thin;
+    int max_assoc=10000;
 
-        if(i_next!=particles.get_data(i)){
+    while(_chifn->get_pts()<_limit){
+    for(i=0;i<origins.get_dim();i++){
+
+        pt_start=_chifn->get_pts();
+        //i_next=_exploration_simplex(particles.get_data(i),origins.get_data(i),associates);
+        simplex_boundary_search(particles.get_data(i),origins.get_data(i),dummy_list,&i_next);
+        origins.set(i,particles.get_data(i));
+        particles.set(i,i_next);
+
+        printf("pts %d lim %d assoc %d\n",_chifn->get_pts(),_limit,associates.get_dim());
+        printf("got to %e %e\n",_chifn->get_pt(i_next,6),_chifn->get_pt(i_next,9));
+        printf("\n");
+        /*if(i_next!=particles.get_data(i)){
             _explorers.add_particle(_chifn->get_pt(i_next));
         }
-        printf("\n    %d explorers\n",_explorers.get_n_particles());
+        printf("\n    %d explorers\n",_explorers.get_n_particles());*/
 
     }
+    }
+    _chifn->write_pts();
 
 }
 
