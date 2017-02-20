@@ -1300,8 +1300,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
     if(i_next[0]<0){
-        printf("WARNING could not set i_next\n");
-        exit(1);
+        evaluate(minpt,&mu,i_next);
     }
 
     int pre_fill=_chifn->get_pts();
@@ -1319,7 +1318,14 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int i_midst;
     int pre_midpt=_chifn->get_pts();
     double sgn;
-    if(i_next[0]!=specified){
+
+    for(i=specified;i<i_next[0];i++){
+        if(_chifn->get_fn(i)<target()){
+            good_dexes.add(i);
+        }
+    }
+
+    if(i_next[0]!=specified && good_dexes.get_dim()>1){
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(i_next[0],i)-_chifn->get_pt(specified,i));
         }
@@ -1350,11 +1356,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             }
         }
 
-        for(i=specified;i<i_next[0];i++){
-            if(_chifn->get_fn(i)<target()){
-                good_dexes.add(i);
-            }
-        }
         i_midst=good_dexes.get_data(good_dexes.get_dim()/2);
         for(i=0;i<perp_dir.get_rows();i++){
             for(sgn=-1.0;sgn<1.1;sgn+=2.0){
@@ -1382,7 +1383,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    dummy_ellipse.build(ellipse_pts);
+    if(ellipse_pts.get_rows()<2*_chifn->get_dim()){
+        dummy_ellipse.build(ellipse_pts);
+    }
     if(_ellipse_sampler.is_initialized()==0){
         _ellipse_sampler.initialize(_chifn->get_dim(), _chifn->random_int()%1000000+1);
     }
@@ -1397,7 +1400,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<int> new_good;
     new_good.set_name("dalex_simplex_new_good");
     int i_fill_start=_chifn->get_pts();
-    while(_chifn->get_pts()-i_fill_start<n_fill){
+    while(_chifn->get_pts()-i_fill_start<n_fill && ellipse_pts.get_rows()>2*_chifn->get_dim()){
         _ellipse_sampler.get_pt(ell_pt);
         for(j=0;j<_chifn->get_dim();j++){
             trial.set(j,dummy_ellipse.center(j));
