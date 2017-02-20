@@ -1163,7 +1163,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 tt=local_target;
                 while(i_bisect1==i_anchor){
                     i_bisect1=bisection(i_anchor,bisect_dir,tt,0.001);
-                    local_target+=0.5*(target()-chimin());
+                    tt+=0.5*(target()-chimin());
                 }
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
