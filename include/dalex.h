@@ -60,6 +60,10 @@ class dalex{
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
+            _particles.set_name("dalex_particles");
+            _origins.set_name("dalex_origins");
+            _strikes_arr.set_name("dalex_strikes_arr");
+
             _minimizers.set_name("dalex_minimizers");
         };
 
@@ -77,7 +81,7 @@ class dalex{
         void explore(int);
         void explore();
         int _exploration_simplex(int,int,array_1d<int>&);
-        void initialize_exploration();
+        void octopus_search();
         void min_explore(int, int);
         void initialize_min_exploration();
 
@@ -218,6 +222,9 @@ class dalex{
         void tendril_search(int);
         void get_negative_gradient(int, cost_fn&, ellipse&, array_1d<double>&);
         array_2d<int> _tendril_path;
+
+        array_1d<int> _particles,_origins;
+        array_1d<int> _strikes_arr;
 
         void compass_search(ellipse&);
 
