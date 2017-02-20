@@ -1143,7 +1143,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> avg_pt;
     avg_pt.set_name("simplex_boundary_avg_pt");
 
-    double local_target;
+    double local_target,tt;
     double dd,avg_dd;
 
     if(specified>=0){
@@ -1159,11 +1159,21 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
-                i_bisect1=bisection(i_anchor,bisect_dir,local_target,0.001);
+                i_bisect1=i_anchor;
+                tt=local_target;
+                while(i_bisect1==i_anchor){
+                    i_bisect1=bisection(i_anchor,bisect_dir,tt,0.001);
+                    local_target+=0.5*(target()-chimin());
+                }
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
-                i_bisect2=bisection(i_anchor,bisect_dir,local_target,0.001);
+                i_bisect2=i_anchor;
+                tt=local_target;
+                while(i_bisect1==i_anchor){
+                    i_bisect2=bisection(i_anchor,bisect_dir,tt,0.001);
+                    tt+=0.5*(target()-chimin());
+                }
                 mu1=dchifn(_chifn->get_pt(i_bisect1));
                 mu2=dchifn(_chifn->get_pt(i_bisect2));
 
@@ -1183,15 +1193,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                     }
                 }
                 else{
-                    i_anchor--;
-                    printf("setting i_anchor to %d\n",i_anchor);
-                    while(_chifn->get_fn(i_anchor)>target() || i_anchor==i_origin){
-                        i_anchor--;
-                        printf("setting i_anchor to %d\n",i_anchor);
-                    }
-                    seed.reset_preserving_room();
-                    kept_dex.reset_preserving_room();
-                    break;
+                    printf("could not find good i_bisect\n");
+                    exit(1);
                 }
 
                 if(i_chosen>=0){
