@@ -40,6 +40,7 @@ class dalex{
             _reset_threshold=0.5;
             _reset_chimin=2.0*exception_value;
             _strikes=0;
+            _strikeouts=0;
             _has_struck=0;
             _limit=-1;
             _good_points.set_name("dalex_good_points");
@@ -229,7 +230,7 @@ class dalex{
         void compass_search(ellipse&);
 
         int _limit;
-        int _strikes;
+        int _strikes,_strikeouts;
         int _has_struck;
 
         ellipse_list _exclusion_zones;

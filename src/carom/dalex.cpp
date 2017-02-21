@@ -1677,6 +1677,7 @@ void dalex::octopus_search(){
         printf("\n    %d explorers\n",_explorers.get_n_particles());*/
 
         if(_strikes_arr.get_data(i)==3){
+            _strikeouts++;
             j=i;
             while(j==i || _strikes_arr.get_data(j)==0){
                 j=_chifn->random_int()%_origins.get_dim();
@@ -1688,6 +1689,7 @@ void dalex::octopus_search(){
 
         printf("\n    tendrils %d zones %d pts %d limit %d\n",
         _particles.get_dim(),_exclusion_zones.ct(),_chifn->get_pts(),_limit);
+        printf("    strikeouts %d\n",_strikeouts);
     }
     _chifn->write_pts();
     _update_good_points();
