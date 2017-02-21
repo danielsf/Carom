@@ -1685,7 +1685,7 @@ void dalex::octopus_search(){
             _strikes_arr.set(i,0);
         }
 
-        printf("\n    tendrils %d zones %d pt s%d limit %d\n",
+        printf("\n    tendrils %d zones %d pts %d limit %d\n",
         _particles.get_dim(),_exclusion_zones.ct(),_chifn->get_pts(),_limit);
     }
     _chifn->write_pts();
