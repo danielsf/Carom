@@ -1669,6 +1669,7 @@ void dalex::octopus_search(){
 
         printf("pts %d lim %d\n",_chifn->get_pts(),_limit);
         printf("got to %e %e\n",_chifn->get_pt(i_next,6),_chifn->get_pt(i_next,9));
+        printf("is a strike: %d; strikes %d\n",is_a_strike,_strikes_arr.get_data(i));
         printf("\n");
         /*if(i_next!=particles.get_data(i)){
             _explorers.add_particle(_chifn->get_pt(i_next));
