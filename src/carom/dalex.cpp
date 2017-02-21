@@ -1658,7 +1658,7 @@ void dalex::find_new_tendrils(int n_needed,
     seed.set_name("find_tendrils_seed");
 
     int idim,jdim;
-    double sgn;
+    double sgn,cost;
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
             seed.reset_preserving_room();
@@ -1677,8 +1677,9 @@ void dalex::find_new_tendrils(int n_needed,
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
             particles.add(i_found);
-            mu=dchifn(minpt);
-            fn_val.add(mu);
+            cost=dchifn(minpt);
+            fn_val.add(cost);
+            printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
         }
     }
     for(i=0;i<fn_val.get_dim();i++){
