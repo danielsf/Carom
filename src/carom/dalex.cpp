@@ -1608,7 +1608,8 @@ void dalex::octopus_search(){
     int is_a_strike;
 
     if(_particles.get_dim()==0){
-        while(_particles.get_dim()<_chifn->get_dim()){
+        while(_particles.get_dim()<_chifn->get_dim() &&
+              (_limit<0 || _chifn->get_pts()<_limit)){
             for(j=0;j<_chifn->get_dim();j++){
                 dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
             }
@@ -1643,7 +1644,7 @@ void dalex::octopus_search(){
         }
     }
 
-    for(i=0;i<_origins.get_dim();i++){
+    for(i=0;i<_origins.get_dim() && (_limit<0 || _chifn->get_pts()<_limit);i++){
 
         pt_start=_chifn->get_pts();
         is_a_strike=simplex_boundary_search(_particles.get_data(i),_origins.get_data(i),_exclusion_zones,&i_next);
@@ -1684,8 +1685,8 @@ void dalex::octopus_search(){
             _strikes_arr.set(i,0);
         }
 
-        printf("\n    tendrils %d zones %d limit %d\n",
-        _particles.get_dim(),_exclusion_zones.ct(),_limit);
+        printf("\n    tendrils %d zones %d pt s%d limit %d\n",
+        _particles.get_dim(),_exclusion_zones.ct(),_chifn->get_pts(),_limit);
     }
     _chifn->write_pts();
     _update_good_points();
