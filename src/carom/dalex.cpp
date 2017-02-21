@@ -1713,40 +1713,15 @@ void dalex::octopus_search(){
     ellipse local_ellipse;
     int is_a_strike;
 
+    array_1d<int> new_particles,new_origins;
+    new_particles.set_name("octopus new_particles");
+    new_origins.set_name("new_origins");
+
     if(_particles.get_dim()==0){
-        while(_particles.get_dim()<_chifn->get_dim() &&
-              (_limit<0 || _chifn->get_pts()<_limit)){
-            for(j=0;j<_chifn->get_dim();j++){
-                dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
-            }
-            dir.normalize();
-            i_found=bisection(mindex(),dir,target(),0.001);
-            if(i_found!=mindex()){
-                for(j=0;j<_chifn->get_dim();j++){
-                   midpt.set(j,0.5*(_chifn->get_pt(mindex(),j)+_chifn->get_pt(i_found,j)));
-                }
-                evaluate(midpt,&mu,&i_found);
-                pt_start=_chifn->get_pts();
-                //i_next=_exploration_simplex(i_found,mindex(),associates);
-                is_a_strike=simplex_boundary_search(i_found,mindex(),_exclusion_zones,&i_next);
-                if(i_found!=i_next){
-                    _origins.add(i_found);
-                    _particles.add(i_next);
-                    _strikes_arr.add(0);
-                    ellipse_pts.reset_preserving_room();
-                    for(i=pt_start;i<_chifn->get_pts();i++){
-                        if(_chifn->get_fn(i)<target()){
-                            ellipse_pts.add_row(_chifn->get_pt(i));
-                        }
-                    }
-                    if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
-                        local_ellipse.build(ellipse_pts);
-                        _exclusion_zones.add(local_ellipse);
-                    }
-                }
-            }
-            printf("\n    tendrils %d zones %d limit %d\n",
-            _particles.get_dim(),_exclusion_zones.ct(),_limit);
+        find_new_tendrils(_chifn->get_dim()/2,new_particles,new_origins);
+        for(i=0;i<new_particles.get_dim();i++){
+            _particles.set(i,new_particles.get_data(i));
+            _origins.set(i,new_origins.get_data(i));
         }
     }
 
