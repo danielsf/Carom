@@ -66,6 +66,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j,k;
     double dd_avg;
+    double ct=0.0;
     dd_avg=0.0;
 
     for(i=0;i<_associates.get_dim();i++){
@@ -73,10 +74,16 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         for(j=0;j<_chifn->get_dim();j++){
             dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
         }
-        dd_avg += sqrt(dd);
+        if(dd>1.0e-20){
+            dd_avg += 1.0/sqrt(dd);
+            ct+=1.0;
+        }
     }
-    dd_avg = dd_avg/double(_associates.get_dim());
-    return dd_avg;
+    if(ct>0.0){
+        dd_avg = dd_avg/ct;
+        return 1.0/dd_avg;
+    }
+    return 0.0;
 }
 
 
