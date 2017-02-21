@@ -143,7 +143,7 @@ double cost_fn::operator()(const array_1d<double> &pt){
 
     double delta=_chifn->target()-_chifn->chimin();
 
-    double distance=nn_distance(pt);
+    double distance;
 
     double exp_term;
 
@@ -154,6 +154,12 @@ double cost_fn::operator()(const array_1d<double> &pt){
         exp_term=1.0;
     }
 
+    if(exp_term>1.0e-7){
+        distance=nn_distance(pt);
+    }
+    else{
+        distance=0.0;
+    }
 
     double val;
     val = mu-1.0*delta*distance*exp_term;
