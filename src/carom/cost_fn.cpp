@@ -65,63 +65,18 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j,k;
+    double dd_avg;
+    dd_avg=0.0;
 
-    int n_dd=3;
-
-    if(_associates.get_dim()<n_dd){
-        return 0.0;
-    }
-
-    array_1d<double> dd_arr,dd_arr_sorted;
-    array_1d<int> dd_dex;
-    dd_arr.set_name("cost_fn_dd_arr");
-    dd_arr_sorted.set_name("cost_fn_dd_arr_sorted");
-    dd_dex.set_name("cost_fn_dd_dex");
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
             dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
         }
-        if(dd_arr.get_dim()<n_dd){
-            dd_arr.add(dd);
-            dd_dex.add(_associates.get_data(i));
-            if(dd_arr.get_dim()==n_dd){
-                sort(dd_arr, dd_arr_sorted, dd_dex);
-            }
-        }
-        else{
-            if(dd<dd_arr_sorted.get_data(n_dd-1)){
-                for(j=0;j<n_dd-1 && dd>dd_arr_sorted.get_data(j);j++);
-                for(k=n_dd-1;k>j;k--){
-                    dd_arr_sorted.set(k,dd_arr_sorted.get_data(k-1));
-                    dd_dex.set(k,dd_dex.get_data(k-1));
-                }
-                dd_arr_sorted.set(j,dd);
-                dd_dex.set(j,_associates.get_data(i));
-            }
-        }
+        dd_avg += sqrt(dd);
     }
-
-    array_1d<double> avg_pt;
-    avg_pt.set_name("cost_fn_avg_pt");
-    for(i=0;i<_chifn->get_dim();i++){
-        avg_pt.set(i,0.0);
-    }
-    for(i=0;i<n_dd;i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            avg_pt.add_val(j,_chifn->get_pt(dd_dex.get_data(i),j));
-        }
-    }
-    for(i=0;i<_chifn->get_dim();i++){
-        avg_pt.divide_val(i,double(n_dd));
-    }
-    double ans=0.0;
-    for(i=0;i<_chifn->get_dim();i++){
-        ans+=power((pt.get_data(i)-avg_pt.get_data(i))/_scalar_norm,2);
-    }
-    ans=sqrt(ans);
-
-    return ans;
+    dd_avg = dd_avg/double(_associates.get_dim());
+    return dd_avg;
 }
 
 
