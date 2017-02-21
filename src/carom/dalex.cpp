@@ -1592,8 +1592,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 }
 
 
-void dalex::find_new_tendrils(int n_needed,
-                              array_1d<int> &p_out, array_1d<int> &o_out){
+void dalex::find_tendril_candidates(){
 
     array_1d<int> associates;
     associates.set_name("find_tendrils_associates");
@@ -1689,10 +1688,28 @@ void dalex::find_new_tendrils(int n_needed,
     fn_val_sorted.set_name("find_tendrils_fn_val_sorted");
     sort(fn_val,fn_val_sorted,fn_val_dex);
 
-    for(i=0;i<n_needed;i++){
-        p_out.set(i,particles.get_data(fn_val_dex.get_data(i)));
-        o_out.set(i,origins.get_data(fn_val_dex.get_data(i)));
-        printf("    assigning %e\n",fn_val_sorted.get_data(i));
+    for(i=0;i<particles.get_dim();i++){
+        _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
+        _origin_candidates.set(i,origins.get_data(fn_val_dex.get_data(i)));
+    }
+}
+
+
+void dalex::get_new_tendril(int *particle, int *origin){
+    particle[0]=-1;
+    origin[0]=-1;
+    int i;
+    while(particle[0]<0){
+        for(i=0;i<_particle_candidates.get_dim();i++){
+            if(_particle_candidates.get_data(i)>=0){
+                particle[0]=_particle_candidates.get_data(i);
+                origin[0]=_origin_candidates.get_data(i);
+                _particle_candidates.set(i,-1);
+                _origin_candidates.set(i,-1);
+                return;
+            }
+        }
+        find_tendril_candidates();
     }
 }
 
@@ -1717,11 +1734,14 @@ void dalex::octopus_search(){
     new_particles.set_name("octopus new_particles");
     new_origins.set_name("new_origins");
 
+    int new_p,new_o;
+
     if(_particles.get_dim()==0){
-        find_new_tendrils(_chifn->get_dim()/2,new_particles,new_origins);
-        for(i=0;i<new_particles.get_dim();i++){
-            _particles.set(i,new_particles.get_data(i));
-            _origins.set(i,new_origins.get_data(i));
+        for(i=0;i<_chifn->get_dim()/2;i++){
+            get_new_tendril(&new_p,&new_o);
+            _particles.add(new_p);
+            _origins.add(new_o);
+            _strikes_arr.add(0);
         }
     }
 
@@ -1759,12 +1779,9 @@ void dalex::octopus_search(){
 
         if(_strikes_arr.get_data(i)==3){
             _strikeouts++;
-            j=i;
-            while(j==i || _strikes_arr.get_data(j)==0){
-                j=_chifn->random_int()%_origins.get_dim();
-            }
-            _particles.set(i,_particles.get_data(j));
-            _origins.set(i,_origins.get_data(j));
+            get_new_tendril(&new_p,&new_o);
+            _particles.set(i,new_p);
+            _origins.set(i,new_o);
             _strikes_arr.set(i,0);
         }
 

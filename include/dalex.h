@@ -63,6 +63,8 @@ class dalex{
 
             _particles.set_name("dalex_particles");
             _origins.set_name("dalex_origins");
+            _particle_candidates.set_name("dalex_particle_candidates");
+            _origin_candidates.set_name("dalex_origin_candidates");
             _strikes_arr.set_name("dalex_strikes_arr");
 
             _minimizers.set_name("dalex_minimizers");
@@ -83,7 +85,8 @@ class dalex{
         void explore();
         int _exploration_simplex(int,int,array_1d<int>&);
         void octopus_search();
-        void find_new_tendrils(int, array_1d<int>&, array_1d<int>&);
+        void find_tendril_candidates();
+        void get_new_tendril(int*,int*);
         void min_explore(int, int);
         void initialize_min_exploration();
 
@@ -226,6 +229,7 @@ class dalex{
         array_2d<int> _tendril_path;
 
         array_1d<int> _particles,_origins;
+        array_1d<int> _particle_candidates,_origin_candidates;
         array_1d<int> _strikes_arr;
 
         void compass_search(ellipse&);
