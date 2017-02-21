@@ -1591,6 +1591,111 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 }
 
+
+void dalex::find_new_tendrils(int n_needed,
+                              array_1d<int> &p_out, array_1d<int> &o_out){
+
+    array_1d<int> associates;
+    associates.set_name("find_tendrils_associates");
+    array_2d<double> ellipse_pts;
+    ellipse_pts.set_name("find_tendrils_ellipse_pts");
+    array_1d<double> center;
+    center.set_name("find_tendrils_center");
+    int i,j;
+    for(i=0;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            ellipse_pts.add_row(_chifn->get_pt(i));
+            associates.add(i);
+        }
+    }
+    if(ellipse_pts.get_rows()==0){
+        printf("CANNOT find tendrils; not good points\n");
+        exit(1);
+    }
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,_chifn->get_pt(mindex(),i));
+    }
+
+    ellipse good_ellipse;
+    good_ellipse.build(center,ellipse_pts);
+
+    cost_fn dchifn(_chifn,associates);
+    double envelope=0.25*(target()-chimin());
+    if(envelope<2.0){
+        envelope=2.0;
+    }
+    dchifn.set_envelope(envelope);
+
+    array_1d<double> min,max;
+    min.set_name("find_tendrils_min");
+    max.set_name("find_tendrils_max");
+    for(i=0;i<_chifn->get_dim();i++){
+        min.set(i,0.0);
+        max.set(i,_chifn->get_characteristic_length(i));
+    }
+
+    simplex_minimizer ffmin;
+    ffmin.set_minmax(min,max);
+    ffmin.set_dice(_chifn->get_dice());
+    ffmin.set_chisquared(&dchifn);
+    ffmin.use_gradient();
+
+    array_1d<double> trial,minpt;
+    trial.set_name("find_tendrils_trial");
+    minpt.set_name("find_tendrils_minpt");
+    double mu;
+    int i_found;
+
+    array_1d<int> particles,origins;
+    particles.set_name("find_tendrils_particles");
+    origins.set_name("find_tendrils_origins");
+    array_1d<double> fn_val;
+    fn_val.set_name("find_tendrils_fn_val");
+    array_1d<int> fn_val_dex;
+    fn_val_dex.set_name("find_tendrils_fn_val_dex");
+
+    array_2d<double> seed;
+    seed.set_name("find_tendrils_seed");
+
+    int idim,jdim;
+    double sgn;
+    for(idim=0;idim<_chifn->get_dim();idim++){
+        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            seed.reset_preserving_room();
+            for(i=0;i<_chifn->get_dim();i++){
+                trial.set(i,center.get_data(i)+5.0*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
+            }
+            evaluate(trial,&mu,&i_found);
+            origins.add(i_found);
+            seed.add_row(trial);
+            for(jdim=0;jdim<_chifn->get_dim();jdim++){
+                for(i=0;i<_chifn->get_dim();i++){
+                   trial.set(i,seed.get_data(0,i)+0.1*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
+                }
+                seed.add_row(trial);
+            }
+            ffmin.find_minimum(seed,minpt);
+            evaluate(minpt,&mu,&i_found);
+            particles.add(i_found);
+            mu=dchifn(minpt);
+            fn_val.add(mu);
+        }
+    }
+    for(i=0;i<fn_val.get_dim();i++){
+        fn_val_dex.add(i);
+    }
+    array_1d<double> fn_val_sorted;
+    fn_val_sorted.set_name("find_tendrils_fn_val_sorted");
+    sort(fn_val,fn_val_sorted,fn_val_dex);
+
+    for(i=0;i<n_needed;i++){
+        p_out.set(i,particles.get_data(fn_val_dex.get_data(i)));
+        o_out.set(i,origins.get_data(fn_val_dex.get_data(i)));
+        printf("    assigning %e\n",fn_val_sorted.get_data(i));
+    }
+}
+
+
 void dalex::octopus_search(){
     int pt_start=_chifn->get_pts();
     int pt_prime=_chifn->get_pts();

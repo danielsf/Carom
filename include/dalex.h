@@ -83,6 +83,7 @@ class dalex{
         void explore();
         int _exploration_simplex(int,int,array_1d<int>&);
         void octopus_search();
+        void find_new_tendrils(int, array_1d<int>&, array_1d<int>&);
         void min_explore(int, int);
         void initialize_min_exploration();
 
