@@ -1623,7 +1623,7 @@ void dalex::octopus_search(){
                 pt_start=_chifn->get_pts();
                 //i_next=_exploration_simplex(i_found,mindex(),associates);
                 is_a_strike=simplex_boundary_search(i_found,mindex(),_exclusion_zones,&i_next);
-                if(i_found!=i_next && is_a_strike==0){
+                if(i_found!=i_next){
                     _origins.add(i_found);
                     _particles.add(i_next);
                     _strikes_arr.add(0);
