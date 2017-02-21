@@ -32,6 +32,14 @@ int ellipse::contains(const array_1d<double> &pt, const int use_extreme){
 
 void ellipse::build(const array_2d<double> &pts_in){
 
+    array_1d<double> dummy_center;
+    build(dummy_center, pts_in);
+
+}
+
+void ellipse::build(const array_1d<double> &center_in,
+                    const array_2d<double> &pts_in){
+
     _min.reset_preserving_room();
     _max.reset_preserving_room();
 
@@ -47,13 +55,21 @@ void ellipse::build(const array_2d<double> &pts_in){
     _bases.reset_preserving_room();
     _radii.reset_preserving_room();
 
-    _find_center(pts_in);
+    int i;
+    if(center_in.get_dim()!=pts_in.get_cols()){
+        _find_center(pts_in);
+    }
+    else{
+        for(i=0;i<center_in.get_dim();i++){
+            _center.set(i,center_in.get_data(i));
+        }
+    }
 
     array_1d<double> dir,dir_max;
     dir.set_name("ellipse_build_dir");
     dir_max.set_name("ellipse_build_dir_max");
 
-    int i,j,k;
+    int j,k;
     double component,norm,norm_max;
 
     while(_bases.get_rows()!=dim){

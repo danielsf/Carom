@@ -17,6 +17,7 @@ class ellipse{
         }
 
         ~ellipse(){}
+        void build(const array_1d<double>&, const array_2d<double>&);
         void build(const array_2d<double>&);
 
         int get_dim(){return _bases.get_rows();}
