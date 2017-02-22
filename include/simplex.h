@@ -63,6 +63,7 @@ private:
     int _last_cooled_off;
     int _is_a_model;
     int _limit;
+    int _n_gradients;
     array_1d<double> _transform, _origin,_ff,_pstar,_pstarstar,_min_pt;
     array_1d<double> _last_improved_ff;
     array_1d<double> _min,_max;
