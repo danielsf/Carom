@@ -1110,9 +1110,21 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    for(i=i_origin-1;i>0 && ellipse_pts.get_rows()<2*_chifn->get_dim();i--){
-        if(_chifn->get_fn(i)<target()){
-            ellipse_pts.add_row(_chifn->get_pt(i));
+    array_1d<double> distances,distances_sorted;
+    array_1d<int> distances_dex;
+    distances.set_name("simp_bou_dist");
+    distances_sorted.set_name("simp_bou_dist_sorted");
+    distances_dex.set_name("simp_bou_dist_dex");
+    if(ellipse_pts.get_rows()<2*_chifn->get_dim()){
+        printf("    need to build ellipse out of nearest good points\n");
+        for(i=0;i<_good_points.get_dim();i++){
+            distances.add(cardinal_distance(specified,_good_points.get_data(i)));
+            distances_dex.add(_good_points.get_data(i));
+        }
+        sort(distances,distances_sorted,distances_dex);
+        ellipse_pts.reset_preserving_room();
+        for(i=0;i<2*_chifn->get_dim();i++){
+            ellipse_pts.add_row(_chifn->get_pt(distances_dex.get_data(i)));
         }
     }
 
