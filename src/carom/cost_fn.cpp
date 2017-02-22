@@ -1,6 +1,10 @@
 #include "cost_fn.h"
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
+    build(cc,aa);
+}
+
+void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
 
     _called=0;
 
@@ -9,6 +13,12 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _norm.set_name("dchi_interior_norm");
     _pt_cache.set_name("dchi_interior_pt_cache");
     _fn_cache.set_name("dchi_interior_fn_cache");
+
+    _fn_cache.reset_preserving_room();
+    _pt_cache.reset_preserving_room();
+    _bases.reset_preserving_room();
+    _norm.reset_preserving_room();
+    _median_associate.reset_preserving_room();
 
     _chifn=cc;
     _envelope=1.0;

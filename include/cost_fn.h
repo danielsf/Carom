@@ -7,6 +7,7 @@ class cost_fn : public function_wrapper{
     public:
         cost_fn(chisq_wrapper*, array_1d<int>&);
         ~cost_fn(){};
+        void build(chisq_wrapper*, array_1d<int>&);
         virtual double operator()(const array_1d<double>&);
         virtual int get_called();
         double nn_distance(const array_1d<double>&);
