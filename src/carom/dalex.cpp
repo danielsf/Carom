@@ -1658,8 +1658,10 @@ void dalex::find_tendril_candidates(){
 
     int idim,jdim;
     double sgn,cost;
+    int pt_start;
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
             for(i=0;i<_chifn->get_dim();i++){
                 trial.set(i,center.get_data(i)+5.0*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
@@ -1680,6 +1682,16 @@ void dalex::find_tendril_candidates(){
             fn_val.add(cost);
             if(_chifn->get_dim()>9){
                 printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
+            }
+
+            j=associates.get_dim();
+            for(i=pt_start;i<_chifn->get_pts();i++){
+                if(_chifn->get_fn(i)<target()){
+                    associates.add(i);
+                }
+            }
+            if(j!=associates.get_dim()){
+                dchifn.build(_chifn,associates);
             }
 
             if(_limit>0 && _chifn->get_pts()>_limit){
