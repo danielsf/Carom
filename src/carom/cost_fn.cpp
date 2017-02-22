@@ -6,6 +6,7 @@ cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
 
 void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
 
+    printf("building cost_fn with %d associates\n",aa.get_dim());
     _called=0;
 
     _median_associate.set_name("dchi_interior_median");
