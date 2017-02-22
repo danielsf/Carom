@@ -1104,9 +1104,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
     ellipse dummy_ellipse;
-    for(i=i_origin;i<specified;i++){
-        if(_chifn->get_fn(i)<target()){
-            ellipse_pts.add_row(_chifn->get_pt(i));
+    if(i_origin>=0){
+        for(i=i_origin;i<specified;i++){
+            if(_chifn->get_fn(i)<target()){
+                ellipse_pts.add_row(_chifn->get_pt(i));
+            }
         }
     }
 
@@ -1133,7 +1135,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int i_anchor;
     array_1d<double> base_dir;
     base_dir.set_name("dalex_simplex_boundary_base_dir");
-    if(i_origin>0){
+    if(i_origin>=0){
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
         }
@@ -1785,7 +1787,7 @@ void dalex::find_tendril_candidates(){
 
     for(i=0;i<particles.get_dim();i++){
         _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
-        _origin_candidates.set(i,origins.get_data(fn_val_dex.get_data(i)));
+        _origin_candidates.set(i,-1);
     }
 }
 
