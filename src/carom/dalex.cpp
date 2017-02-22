@@ -1678,7 +1678,9 @@ void dalex::find_tendril_candidates(){
             particles.add(i_found);
             cost=dchifn(minpt);
             fn_val.add(cost);
-            printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
+            if(_chifn->get_dim()>9){
+                printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
+            }
         }
     }
     for(i=0;i<fn_val.get_dim();i++){
@@ -1769,7 +1771,7 @@ void dalex::octopus_search(){
         }
 
         printf("pts %d lim %d\n",_chifn->get_pts(),_limit);
-        printf("got to %e %e\n",_chifn->get_pt(i_next,6),_chifn->get_pt(i_next,9));
+        if(_chifn->get_dim()>9)printf("got to %e %e\n",_chifn->get_pt(i_next,6),_chifn->get_pt(i_next,9));
         printf("is a strike: %d; strikes %d\n",is_a_strike,_strikes_arr.get_data(i));
         printf("\n");
         /*if(i_next!=particles.get_data(i)){
