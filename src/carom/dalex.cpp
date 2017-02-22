@@ -1602,6 +1602,8 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(){
 
+    printf("finding tendril candidates\n");
+
     array_1d<int> associates;
     associates.set_name("find_tendrils_associates");
     array_1d<int> associates_raw;
@@ -1790,6 +1792,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 origin[0]=_origin_candidates.get_data(i);
                 _particle_candidates.set(i,-1);
                 _origin_candidates.set(i,-1);
+                printf("returning tendril %d %d\n",particle[0],origin[0]);
                 return;
             }
         }
