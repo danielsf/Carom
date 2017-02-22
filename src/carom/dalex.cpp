@@ -1687,14 +1687,29 @@ void dalex::find_tendril_candidates(){
     int pt_start;
     array_1d<int> at_least_one;
     at_least_one.set_name("find_tendril_at_least_one");
+    double factor;
+
+    printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
             pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
-            for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,center.get_data(i)+sgn*5.0*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
+            i_found=-1;
+            factor=5.0;
+            while(i_found<0){
+                printf("    running with factor %e\n",factor);
+                for(i=0;i<_chifn->get_dim();i++){
+                    trial.set(i,center.get_data(i)+sgn*factor*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
+                }
+                evaluate(trial,&mu,&i_found);
+                printf("    first point is %d\n",i_found);
+                if(factor>2.0){
+                    factor-=1.0;
+                }
+                else{
+                    factor*=0.5;
+                }
             }
-            evaluate(trial,&mu,&i_found);
             origins.add(i_found);
             seed.add_row(trial);
             for(jdim=0;jdim<_chifn->get_dim();jdim++){
