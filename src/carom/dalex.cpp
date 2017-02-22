@@ -1664,7 +1664,7 @@ void dalex::find_tendril_candidates(){
             pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
             for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,center.get_data(i)+5.0*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
+                trial.set(i,center.get_data(i)+sgn*5.0*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
             }
             evaluate(trial,&mu,&i_found);
             origins.add(i_found);
