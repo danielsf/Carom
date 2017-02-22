@@ -14,7 +14,9 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     _norm.set_name("dchi_interior_norm");
     _pt_cache.set_name("dchi_interior_pt_cache");
     _fn_cache.set_name("dchi_interior_fn_cache");
+    _associates.set_name("dchi_interior_fn_associates");
 
+    _associates.reset_preserving_room();
     _fn_cache.reset_preserving_room();
     _pt_cache.reset_preserving_room();
     _bases.reset_preserving_room();
