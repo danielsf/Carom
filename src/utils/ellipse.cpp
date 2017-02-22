@@ -40,6 +40,8 @@ void ellipse::build(const array_2d<double> &pts_in){
 void ellipse::build(const array_1d<double> &center_in,
                     const array_2d<double> &pts_in){
 
+    Ran dice(99);
+
     _min.reset_preserving_room();
     _max.reset_preserving_room();
 
@@ -95,8 +97,30 @@ void ellipse::build(const array_1d<double> &center_in,
             }
         }
         if(norm_max<1.0e-20){
-            printf("WARNING ellipse basis dir has norm %e\n",norm_max);
-            exit(1);
+            printf("WARNING ellipse basis had norm %e; setting randomly\n",
+            norm_max);
+            norm=-1.0;
+            while(norm<1.0e-20){
+                for(i=0;i<dim;i++){
+                    dir.set(i,normal_deviate(&dice,0.0,1.0));
+                }
+                for(j=0;j<_bases.get_rows();j++){
+                    component=0.0;
+                    for(k=0;k<dim;k++){
+                        component+=dir.get_data(k)*_bases.get_data(j,k);
+                    }
+                    for(k=0;k<dim;k++){
+                        dir.subtract_val(k,component*_bases.get_data(j,k));
+                    }
+                }
+                norm=dir.normalize();
+                if(norm>1.0e-20){
+                    for(k=0;k<dim;k++){
+                        dir_max.set(k,dir.get_data(k));
+                    }
+                    norm_max=1.0e-10;
+                }
+            }
         }
         _bases.add_row(dir_max);
         _radii.add(norm_max);
