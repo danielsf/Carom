@@ -1735,6 +1735,38 @@ void dalex::get_new_tendril(int *particle, int *origin){
 }
 
 
+void dalex::init_fill(){
+    int path_len=_tendril_path.get_rows();
+    int old_type=_chifn->get_search_type();
+    _chifn->set_search_type(_type_init);
+
+    array_1d<double> dir;
+    dir.set_name("fill_dir");
+    ellipse_list dummy_list;
+
+    int i;
+    int ct=0;
+    int i_found;
+    double mu;
+    while(ct<_chifn->get_dim()/2){
+        for(i=0;i<_chifn->get_dim();i++){
+            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+        }
+        i_found=bisection(mindex(),dir,target(),0.001);
+        if(i_found!=mindex()){
+            ct++;
+            simplex_boundary_search(i_found,mindex(),dummy_list,&i);
+        }
+    }
+
+    if(_tendril_path.get_rows()!=path_len){
+        printf("WARNING init fill added to path length %d %d\n",
+        path_len,_tendril_path.get_rows());
+        exit(1);
+    }
+    _chifn->set_search_type(old_type);
+}
+
 void dalex::octopus_search(){
     int pt_start=_chifn->get_pts();
     int pt_prime=_chifn->get_pts();
