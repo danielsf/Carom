@@ -1790,6 +1790,7 @@ void dalex::octopus_search(){
     int new_p,new_o;
 
     if(_particles.get_dim()==0){
+        init_fill();
         for(i=0;i<_chifn->get_dim()/2;i++){
             get_new_tendril(&new_p,&new_o);
             _particles.add(new_p);
