@@ -1648,9 +1648,8 @@ void dalex::find_tendril_candidates(){
     array_1d<int> particles,origins;
     particles.set_name("find_tendrils_particles");
     origins.set_name("find_tendrils_origins");
-    array_1d<double> fn_val,mu_val;
+    array_1d<double> fn_val;
     fn_val.set_name("find_tendrils_fn_val");
-    mu_val.set_name("find_tendrils_mu_val");
     array_1d<int> fn_val_dex;
     fn_val_dex.set_name("find_tendrils_fn_val_dex");
 
@@ -1676,7 +1675,6 @@ void dalex::find_tendril_candidates(){
             }
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
-            mu_val.add(mu);
             particles.add(i_found);
             cost=dchifn(minpt);
             fn_val.add(cost);
@@ -1697,14 +1695,8 @@ void dalex::find_tendril_candidates(){
     sort(fn_val,fn_val_sorted,fn_val_dex);
 
     for(i=0;i<particles.get_dim();i++){
-        if(mu_val.get_data(fn_val_dex.get_data(i))<target()+2.0*(target()-chimin())){
-            _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
-            _origin_candidates.set(i,origins.get_data(fn_val_dex.get_data(i)));
-        }
-        else{
-            _particle_candidates.set(i,-1);
-            _origin_candidates.set(i,-1);
-        }
+        _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
+        _origin_candidates.set(i,origins.get_data(fn_val_dex.get_data(i)));
     }
 }
 
