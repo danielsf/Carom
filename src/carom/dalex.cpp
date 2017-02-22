@@ -1057,9 +1057,17 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
+    if(_good_points.get_dim()>20000){
+        n_thin=_good_points.get_dim()/20000;
+        if(n_thin==1){
+            n_thin=2;
+        }
+    }
     if(associates.get_dim()==0){
         for(i=0;i<_good_points.get_dim();i++){
-            associates.add(_good_points.get_data(i));
+            if(i%n_thin==0){
+                associates.add(_good_points.get_data(i));
+            }
         }
     }
 
@@ -1596,6 +1604,8 @@ void dalex::find_tendril_candidates(){
 
     array_1d<int> associates;
     associates.set_name("find_tendrils_associates");
+    array_1d<int> associates_raw;
+    associates_raw.set_name("find_tendril_associates_raw");
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("find_tendrils_ellipse_pts");
     array_1d<double> center;
@@ -1605,6 +1615,7 @@ void dalex::find_tendril_candidates(){
         if(_chifn->get_fn(i)<target()){
             ellipse_pts.add_row(_chifn->get_pt(i));
             associates.add(i);
+            associates_raw.add(i);
         }
     }
     if(ellipse_pts.get_rows()==0){
@@ -1613,6 +1624,21 @@ void dalex::find_tendril_candidates(){
     }
     for(i=0;i<_chifn->get_dim();i++){
         center.set(i,_chifn->get_pt(mindex(),i));
+    }
+
+    int n_thin;
+
+    if(associates.get_dim()>20000){
+        n_thin=associates_raw.get_dim()/20000;
+        if(n_thin==1){
+            n_thin=2;
+        }
+        associates.reset_preserving_room();
+        for(i=0;i<associates_raw.get_dim();i++){
+            if(i%n_thin==0){
+                associates.add(associates_raw.get_data(i));
+            }
+        }
     }
 
     ellipse good_ellipse;
@@ -1659,6 +1685,8 @@ void dalex::find_tendril_candidates(){
     int idim,jdim;
     double sgn,cost;
     int pt_start;
+    array_1d<int> at_least_one;
+    at_least_one.set_name("find_tendril_at_least_one");
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
             pt_start=_chifn->get_pts();
@@ -1677,6 +1705,9 @@ void dalex::find_tendril_candidates(){
             }
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
+            if(_chifn->get_fn(i_found)<target()){
+                at_least_one.add(i_found);
+            }
             particles.add(i_found);
             cost=dchifn(minpt);
             fn_val.add(cost);
@@ -1684,13 +1715,30 @@ void dalex::find_tendril_candidates(){
                 printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
             }
 
-            j=associates.get_dim();
+            j=0;
             for(i=pt_start;i<_chifn->get_pts();i++){
                 if(_chifn->get_fn(i)<target()){
                     associates.add(i);
+                    associates_raw.add(i);
+                    j++;
                 }
             }
-            if(j!=associates.get_dim()){
+            if(j>0){
+                if(associates.get_dim()>20000){
+                    n_thin=associates_raw.get_dim()/20000;
+                    if(n_thin==1){
+                        n_thin=2;
+                    }
+                    associates.reset_preserving_room();
+                    for(i=0;i<at_least_one.get_dim();i++){
+                        associates.add(at_least_one.get_data(i));
+                    }
+                    for(i=0;i<associates_raw.get_dim();i++){
+                        if(i%n_thin==0 && associates.contains(associates_raw.get_data(i))==0){
+                            associates.add(associates_raw.get_data(i));
+                        }
+                    }
+                }
                 dchifn.build(_chifn,associates);
             }
 
