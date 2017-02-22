@@ -1683,6 +1683,10 @@ void dalex::find_tendril_candidates(){
             if(_chifn->get_dim()>9){
                 printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
             }
+
+            if(_limit>0 && _chifn->get_pts()>_limit){
+                return;
+            }
         }
     }
     for(i=0;i<fn_val.get_dim();i++){
@@ -1710,6 +1714,9 @@ void dalex::get_new_tendril(int *particle, int *origin){
     origin[0]=-1;
     int i;
     while(particle[0]<0){
+        if(_limit>0 && _chifn->get_pts()>_limit){
+            return;
+        }
         for(i=0;i<_particle_candidates.get_dim();i++){
             if(_particle_candidates.get_data(i)>=0){
                 particle[0]=_particle_candidates.get_data(i);
@@ -1752,6 +1759,9 @@ void dalex::octopus_search(){
             _particles.add(new_p);
             _origins.add(new_o);
             _strikes_arr.add(0);
+            if(_limit>0 && _chifn->get_pts()>_limit){
+                return;
+            }
         }
     }
 
