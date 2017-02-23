@@ -1479,7 +1479,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int path_start,path_end;
     path_start=-1;
     path_end=-1;
-    for(i=specified;i<_chifn->get_pts();i++){
+    for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             path_start=i;
             break;
