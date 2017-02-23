@@ -3,11 +3,19 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import os
+import argparse
 
 from analyzeCarom import scatter_from_carom
 from analyzeCarom import scatter_from_multinest_projection
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--prefix', type=str, default=None)
+    args = parser.parse_args()
+
+    if args.prefix is None:
+        raise RuntimeError("must specify prefix")
 
     physics_dir = os.path.join("/Users", "danielsf", "physics")
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
@@ -62,6 +70,5 @@ if __name__ == "__main__":
                           fontsize=15)
             
             plt.tight_layout()
-            plt.savefig(os.path.join(physics_dir, 'Carom', 'figures',
-                                     'dalex_test_%d_%d_%d.png' % (time,dim[0],dim[1])))
+            plt.savefig('%s_%d_%d_%d.png' % (args.prefix,time,dim[0],dim[1])))
             plt.close()
