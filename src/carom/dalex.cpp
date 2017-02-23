@@ -1057,13 +1057,15 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    if(_good_points.get_dim()>20000){
-        n_thin=_good_points.get_dim()/20000;
-        if(n_thin==1){
-            n_thin=2;
-        }
-    }
+
     if(associates.get_dim()==0){
+
+        if(_good_points.get_dim()>20000){
+            n_thin=_good_points.get_dim()/20000;
+            if(n_thin==1){
+                n_thin=2;
+            }
+        }
         for(i=0;i<_good_points.get_dim();i++){
             if(i%n_thin==0){
                 associates.add(_good_points.get_data(i));
