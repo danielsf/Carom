@@ -1434,7 +1434,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     // *** try to fill in the local ellipse ***
     ellipse_pts.reset_preserving_room();
-    for(i=specified;i<_chifn->get_pts();i++){
+    for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
             ellipse_pts.add_row(_chifn->get_pt(i));
         }
