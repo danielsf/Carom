@@ -1813,19 +1813,34 @@ void dalex::find_tendril_candidates(){
 void dalex::get_new_tendril(int *particle, int *origin){
     particle[0]=-1;
     origin[0]=-1;
-    int i;
+    int i,j;
+    int i_chosen,is_outside;
     while(particle[0]<0){
         if(_limit>0 && _chifn->get_pts()>_limit){
             return;
         }
         for(i=0;i<_particle_candidates.get_dim();i++){
             if(_particle_candidates.get_data(i)>=0){
-                particle[0]=_particle_candidates.get_data(i);
-                origin[0]=_origin_candidates.get_data(i);
-                _particle_candidates.set(i,-1);
-                _origin_candidates.set(i,-1);
-                printf("returning tendril %d %d\n",particle[0],origin[0]);
-                return;
+                i_chosen=_particle_candidates.get_data(i);
+                is_outside=1;
+                for(j=0;j<_exclusion_zones.ct();j++){
+                    if(_exclusion_zones(j)->contains(_chifn->get_pt(i))==1){
+                        is_outside=0;
+                        break;
+                    }
+                }
+                if(is_outside==1){
+                    particle[0]=_particle_candidates.get_data(i);
+                    origin[0]=_origin_candidates.get_data(i);
+                    _particle_candidates.set(i,-1);
+                    _origin_candidates.set(i,-1);
+                    printf("returning tendril %d %d\n",particle[0],origin[0]);
+                    return;
+                }
+                else{
+                    _particle_candidates.set(i,-1);
+                    _origin_candidates.set(i,-1);
+                }
             }
         }
         find_tendril_candidates();
