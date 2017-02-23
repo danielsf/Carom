@@ -1904,20 +1904,24 @@ void dalex::octopus_search(){
 
     if(_particles.get_dim()==0){
         init_fill();
+        if(_limit>0 && _chifn->get_pts()>_limit){
+            return;
+        }
         for(i=0;i<_chifn->get_dim()/2;i++){
-            get_new_tendril(&new_p,&new_o);
-            _particles.add(new_p);
-            _origins.add(new_o);
+            _particles.add(-1);
+            _origins.add(-1);
             _strikes_arr.add(0);
-            if(_limit>0 && _chifn->get_pts()>_limit){
-                return;
-            }
         }
     }
 
     for(i=0;i<_origins.get_dim() && (_limit<0 || _chifn->get_pts()<_limit);i++){
 
         pt_start=_chifn->get_pts();
+        if(_particles.get_data(i)<0){
+            get_new_tendril(&new_p,&new_o);
+            _particles.set(i,new_p);
+            _origins.set(i,new_o);
+        }
         is_a_strike=simplex_boundary_search(_particles.get_data(i),_origins.get_data(i),_exclusion_zones,&i_next);
         ellipse_pts.reset_preserving_room();
         for(j=pt_start;j<_chifn->get_pts();j++){
