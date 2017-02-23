@@ -1376,7 +1376,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int pre_midpt=_chifn->get_pts();
     double sgn;
 
-    for(i=specified;i<i_next[0];i++){
+    for(i=pt_start;i<i_next[0];i++){
         if(_chifn->get_fn(i)<target()){
             good_dexes.add(i);
         }
