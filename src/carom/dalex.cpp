@@ -1447,9 +1447,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         _ellipse_sampler.initialize(_chifn->get_dim(), _chifn->random_int()%1000000+1);
     }
 
-    array_1d<double> ell_pt,center;
+    array_1d<double> ell_pt,center,dir;
     ell_pt.set_name("dalex_simplex_boundary_ell_pt");
     center.set_name("dalex_simplex_boundary_center");
+    dir.set_name("dalex_simplex_boundary_dir");
     trial.reset_preserving_room();
     int n_fill=(_chifn->get_pts()-pt_start)/4;
     int n_good=0;
@@ -1474,8 +1475,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         else{
             for(i=0;i<_chifn->get_dim();i++){
                 center.set(i,dummy_ellipse.center(i));
+                dir.set(i,trial.get_data(i)-center.get_data(i));
             }
-            i=bisection(center,trial,target(),0.001);
+            i=bisection(center,dir,target(),0.001);
             if(new_good.contains(i)==0){
                 n_bisect++;
                 new_good.add(i);
