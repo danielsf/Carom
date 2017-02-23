@@ -1522,20 +1522,27 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     int path_start,path_end;
     path_start=-1;
     path_end=-1;
+    array_1d<double> path_dist,path_dist_sorted;
+    array_1d<int> path_dist_dex;
+    path_dist.set_name("dalex_simp_bou_path_dist");
+    path_dist_sorted.set_name("dalex_simp_bou_path_dist_sorted");
+    path_dist_dex.set_name("dalex_simp_bou_path_dist_dex");
+
     for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            path_start=i;
-            break;
+            path_dist.add(cardinal_distance(specified,i));
+            path_dist_dex.add(i);
         }
     }
+    if(path_dist.get_dim()>1){
+        sort(path_dist, path_dist_sorted, path_dist_dex);
+    }
 
-    if(path_start>=0){
-        for(i=i_next[0];i>path_start;i--){
-            if(_chifn->get_fn(i)<target()){
-                path_end=i;
-                break;
-            }
-        }
+    if(path_dist.get_dim()>0){
+        path_start=path_dist_dex.get_data(0);
+    }
+    if(path_dist.get_dim()>1){
+        path_end=path_dist_dex.get_data(path_dist.get_dim()-1);
     }
 
     if(path_start>=0 || path_end>=0){
