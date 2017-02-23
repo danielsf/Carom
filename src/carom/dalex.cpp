@@ -1485,22 +1485,46 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
 
     printf("going to try to add to path %d %d\n",start_path,_chifn->get_pts());
-    for(i=start_path;i<_chifn->get_pts();i++){
-        if(_tendril_path.get_rows()==0){
-            _tendril_path.set_cols(2);
+    int path_start,path_end;
+    path_start=-1;
+    path_end=-1;
+    for(i=specified;i<_chifn->get_pts();i++){
+        if(_chifn->get_fn(i)<target()){
+            path_start=i;
+            break;
         }
-        if(_chifn->get_fn(i)<_chifn->target() &&
-           _chifn->get_search_type_log(i)==_type_tendril){
-            path_row.set(0,i);
-            if(distance(i,i_next[0])<distance(i,i_start_min)){
-                path_row.set(1,i_next[0]);
-            }
-            else{
-                path_row.set(1,i_start_min);
-            }
-            _tendril_path.add_row(path_row);
-        }
+    }
 
+    for(i=i_next[0];i>path_start;i--){
+        if(_chifn->get_fn(i)<target()){
+            path_end=i;
+            break;
+        }
+    }
+
+    if(path_start>=0 || path_end>=0){
+        for(i=path_start;i<_chifn->get_pts();i++){
+            if(_tendril_path.get_rows()==0){
+                _tendril_path.set_cols(2);
+            }
+            if(_chifn->get_fn(i)<_chifn->target() &&
+               _chifn->get_search_type_log(i)==_type_tendril){
+                path_row.set(0,i);
+                if(path_end<0){
+                    path_row.set(1,path_start);
+                }
+                else if(path_start<0){
+                    path_row.set(1,path_end);
+                }
+                else if(distance(i,path_start)<distance(i,path_end)){
+                    path_row.set(1,path_start);
+                }
+                else{
+                    path_row.set(1,path_end);
+                }
+                _tendril_path.add_row(path_row);
+            }
+        }
     }
 
     int is_a_strike=0;
