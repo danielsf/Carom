@@ -1041,16 +1041,23 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     for(i=0;i<_tendril_path.get_rows();i++){
         ip=_tendril_path.get_data(i,0);
         io=_tendril_path.get_data(i,1);
+        for(j=0;j<_chifn->get_dim();j++){
+                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
+        }
+
+        evaluate(trial,&mu,&k);
+        if(mu<target() || specified<=0){
+            if(associates.contains(io)==0){
+                associates.add(io);
+            }
+        }
+
         if(n_thin<0 || i%n_thin==0){
             if(specified<=0){
                 associates.add(ip);
             }
             else{
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
-                }
-                evaluate(trial,&mu,&k);
-                if(mu<_chifn->target()){
+                if(mu<target() && associates.contains(ip)==0){
                     associates.add(ip);
                 }
             }
