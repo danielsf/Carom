@@ -1038,14 +1038,32 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
        n_thin=2;
     }
 
+    array_1d<int> end_points_checked;
+    array_1d<double> end_points_chi;
+    end_points_checked.set_name("end_points_checked");
+    end_points_chi.set_name("end_points_chi");
+
     for(i=0;i<_tendril_path.get_rows();i++){
         ip=_tendril_path.get_data(i,0);
         io=_tendril_path.get_data(i,1);
-        for(j=0;j<_chifn->get_dim();j++){
-                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
+        if(end_points_checked.contains(io)==0){
+            for(j=0;j<_chifn->get_dim();j++){
+                trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
+            }
+
+            evaluate(trial,&mu,&k);
+            end_points_checked.add(io);
+            end_points_chi.add(mu);
+        }
+        else{
+            for(j=0;j<end_points_checked.get_dim();j++){
+                if(end_points_checked.get_data(j)==io){
+                    mu=end_points_chi.get_data(j);
+                    break;
+                }
+            }
         }
 
-        evaluate(trial,&mu,&k);
         if(mu<target() || specified<=0){
             if(associates.contains(io)==0){
                 associates.add(io);
