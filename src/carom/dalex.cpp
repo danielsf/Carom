@@ -1437,7 +1437,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    if(ellipse_pts.get_rows()<2*_chifn->get_dim()){
+    if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
         dummy_ellipse.build(ellipse_pts);
     }
     if(_ellipse_sampler.is_initialized()==0){
