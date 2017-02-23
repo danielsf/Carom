@@ -1519,9 +1519,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
 
-    int path_start,path_end;
+    int path_start,path_end,path_mid;
     path_start=-1;
     path_end=-1;
+    path_mid=-1;
     array_1d<double> path_dist,path_dist_sorted;
     array_1d<int> path_dist_dex;
     path_dist.set_name("dalex_simp_bou_path_dist");
@@ -1530,7 +1531,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     for(i=pt_start;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
-            path_dist.add(cardinal_distance(specified,i));
+            mu=0.0;
+            for(j=0;j<_chifn->get_dim();j++){
+                mu+=(_chifn->get_pt(i,j)-_chifn->get_pt(specified,j))*base_dir.get_data(j);
+            }
+            path_dist.add(mu);
             path_dist_dex.add(i);
         }
     }
@@ -1544,30 +1549,102 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     if(path_dist.get_dim()>1){
         path_end=path_dist_dex.get_data(path_dist.get_dim()-1);
     }
+    if(path_dist.get_dim()>2){
+        path_mid=path_dist_dex.get_data(path_dist.get_dim()/2);
+    }
 
-    if(path_start>=0 || path_end>=0){
+    double dd_start,dd_mid,dd_end;
+
+    if(path_start>=0 || path_end>=0 || path_mid>0){
         printf("going to try to add to path %d %d\n",
         path_start,_chifn->get_pts());
         printf("start %d end %d\n",path_start,path_end);
 
         for(i=path_start;i<_chifn->get_pts();i++){
+            dd_start=-1.0;
+            dd_end=-1.0;
+            dd_mid=-1.0;
             if(_tendril_path.get_rows()==0){
                 _tendril_path.set_cols(2);
             }
+
             if(_chifn->get_fn(i)<_chifn->target() &&
                _chifn->get_search_type_log(i)==_type_tendril){
+
                 path_row.set(0,i);
-                if(path_end<0){
-                    path_row.set(1,path_start);
+
+                if(path_start>=0){
+                    dd_start=distance(i,path_start);
                 }
-                else if(path_start<0){
-                    path_row.set(1,path_end);
+                if(path_end>=0){
+                    dd_end=distance(i,path_end);
                 }
-                else if(distance(i,path_start)<distance(i,path_end)){
-                    path_row.set(1,path_start);
+                if(path_mid>=0){
+                    dd_mid=distance(i,path_mid);
+                }
+
+                if(dd_start<0.0 && dd_end<0.0 && dd_mid<0.0){
+                    printf("WARNING constructing path but all dd are <0\n");
+                    exit(1);
+                }
+
+                if(dd_start<0.0){
+                    if(dd_end<0.0){
+                        path_row.set(1,path_mid);
+                    }
+                    else if(dd_mid<0.0){
+                        path_row.set(1,path_end);
+                    }
+                    else if(dd_mid<dd_end){
+                        path_row.set(1,path_mid);
+                    }
+                    else{
+                        path_row.set(1,path_end);
+                    }
+                }
+                else if(dd_mid<0.0){
+                    if(dd_start<0.0){
+                        path_row.set(1,path_end);
+                    }
+                    else if(dd_end<0.0){
+                        path_row.set(1,path_start);
+                    }
+                    else if(dd_start<dd_end){
+                        path_row.set(1,path_start);
+                    }
+                    else{
+                        path_row.set(1,path_end);
+                    }
+                }
+                else if(dd_end<0.0){
+                    if(dd_start<0.0){
+                        path_row.set(1,path_mid);
+                    }
+                    else if(dd_mid<0.0){
+                        path_row.set(1,path_start);
+                    }
+                    else if(dd_start<dd_mid){
+                        path_row.set(1,path_start);
+                    }
+                    else{
+                        path_row.set(1,path_mid);
+                    }
                 }
                 else{
-                    path_row.set(1,path_end);
+                    if(dd_start<=dd_end && dd_start<=dd_mid){
+                        path_row.set(1,path_start);
+                    }
+                    else if(dd_mid<=dd_end && dd_mid<=dd_start){
+                        path_row.set(1,path_mid);
+                    }
+                    else{
+                        path_row.set(1,path_end);
+                    }
+                }
+
+                if(path_row.get_data(1)<0){
+                    printf("WARNING somehow path_row(1)<0\n");
+                    exit(1);
                 }
                 _tendril_path.add_row(path_row);
             }
