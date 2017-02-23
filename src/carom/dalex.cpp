@@ -1146,9 +1146,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
     ellipse dummy_ellipse;
     if(i_origin>=0){
-        for(i=i_origin;i<specified;i++){
-            if(_chifn->get_fn(i)<target()){
-                ellipse_pts.add_row(_chifn->get_pt(i));
+        for(i=0;i<_tendril_path.get_rows();i++){
+            if(_tendril_path.get_data(i,1)==i_origin ||
+               _tendril_path.get_data(i,1)==specified){
+                j=_tendril_path.get_data(i,0);
+                ellipse_pts.add_row(_chifn->get_pt(j));
             }
         }
     }
