@@ -1096,8 +1096,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-
+    int associates_from_tendril=1;
     if(associates.get_dim()==0){
+        associates_from_tendril=0;
 
         if(_good_points.get_dim()>thin_to){
             n_thin=_good_points.get_dim()/thin_to;
@@ -1145,13 +1146,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
     ellipse dummy_ellipse;
-    if(i_origin>=0){
-        for(i=0;i<_tendril_path.get_rows();i++){
-            if(_tendril_path.get_data(i,1)==i_origin ||
-               _tendril_path.get_data(i,1)==specified){
-                j=_tendril_path.get_data(i,0);
-                ellipse_pts.add_row(_chifn->get_pt(j));
-            }
+    if(i_origin>=0 && associates_from_tendril==1){
+        for(i=0;i<associates.get_dim();i++){
+            ellipse_pts.add_row(_chifn->get_pt(associates.get_data(i)));
         }
     }
 
