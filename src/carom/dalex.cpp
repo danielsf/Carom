@@ -1527,16 +1527,19 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    for(i=i_next[0];i>path_start;i--){
-        if(_chifn->get_fn(i)<target()){
-            path_end=i;
-            break;
+    if(path_start>=0){
+        for(i=i_next[0];i>path_start;i--){
+            if(_chifn->get_fn(i)<target()){
+                path_end=i;
+                break;
+            }
         }
     }
 
     if(path_start>=0 || path_end>=0){
         printf("going to try to add to path %d %d\n",
         path_start,_chifn->get_pts());
+        printf("start %d end %d\n",path_start,path_end);
 
         for(i=path_start;i<_chifn->get_pts();i++){
             if(_tendril_path.get_rows()==0){
