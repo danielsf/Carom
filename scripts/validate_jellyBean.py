@@ -70,5 +70,5 @@ if __name__ == "__main__":
                           fontsize=15)
             
             plt.tight_layout()
-            plt.savefig('%s_%d_%d_%d.png' % (args.prefix,time,dim[0],dim[1])))
+            plt.savefig('%s_%d_%d_%d.png' % (args.prefix,time,dim[0],dim[1]))
             plt.close()
