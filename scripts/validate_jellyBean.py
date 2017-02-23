@@ -63,5 +63,5 @@ if __name__ == "__main__":
             
             plt.tight_layout()
             plt.savefig(os.path.join(physics_dir, 'Carom', 'figures',
-                                     'dalex_octopus3_%d_%d_%d.png' % (time,dim[0],dim[1])))
+                                     'dalex_test_%d_%d_%d.png' % (time,dim[0],dim[1])))
             plt.close()
