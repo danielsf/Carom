@@ -1296,14 +1296,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<int> path_row;
     path_row.set_name("path_row");
 
-    int start_path;
-    if(pt_start<i_start_min){
-        start_path=i_start_min;
-    }
-    else{
-        start_path=pt_start;
-    }
-
     i_next[0]=-1;
     double fn,cost_min;
     int valid_cache;
@@ -1484,7 +1476,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
 
-    printf("going to try to add to path %d %d\n",start_path,_chifn->get_pts());
     int path_start,path_end;
     path_start=-1;
     path_end=-1;
@@ -1503,6 +1494,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     if(path_start>=0 || path_end>=0){
+        printf("going to try to add to path %d %d\n",
+        path_start,_chifn->get_pts());
+
         for(i=path_start;i<_chifn->get_pts();i++){
             if(_tendril_path.get_rows()==0){
                 _tendril_path.set_cols(2);
