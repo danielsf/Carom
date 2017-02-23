@@ -1023,70 +1023,84 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     associates.set_name("dalex_simplex_boundary_associates");
     int i_start;
     int n_thin=-1;
+    int thin_ct=0;
     int ip,io;
 
     double mu;
     array_1d<double> trial;
     trial.set_name("simplex_boundary_trial");
 
-    if(_tendril_path.get_rows()>20000){
-        n_thin=_tendril_path.get_rows()/20000;
-        printf("    thinning %d\n",n_thin);
-    }
-
-    if(n_thin==1){
-       n_thin=2;
-    }
-
     array_1d<int> end_points_checked;
     array_1d<double> end_points_chi;
     end_points_checked.set_name("end_points_checked");
     end_points_chi.set_name("end_points_chi");
 
-    for(i=0;i<_tendril_path.get_rows();i++){
-        ip=_tendril_path.get_data(i,0);
-        io=_tendril_path.get_data(i,1);
-        if(end_points_checked.contains(io)==0){
-            for(j=0;j<_chifn->get_dim();j++){
-                trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
-            }
+    int accept_it;
+    int associate_iterations=0;
+    int thin_to=20000;
 
-            evaluate(trial,&mu,&k);
-            end_points_checked.add(io);
-            end_points_chi.add(mu);
+    accept_it=0;
+    while(accept_it==0){
+        associate_iterations++;
+        if(associate_iterations>2){
+            printf("WARNING associate_iterations %d\n",associate_iterations);
+            exit(1);
         }
-        else{
-            for(j=0;j<end_points_checked.get_dim();j++){
-                if(end_points_checked.get_data(j)==io){
-                    mu=end_points_chi.get_data(j);
-                    break;
+        for(i=0;i<_tendril_path.get_rows();i++){
+            ip=_tendril_path.get_data(i,0);
+            io=_tendril_path.get_data(i,1);
+            if(end_points_checked.contains(io)==0){
+                for(j=0;j<_chifn->get_dim();j++){
+                    trial.set(j,0.5*(_chifn->get_pt(specified,j)+_chifn->get_pt(io,j)));
                 }
-            }
-        }
 
-        if(mu<target() || specified<=0){
-            if(associates.contains(io)==0){
-                associates.add(io);
-            }
-        }
-
-        if(n_thin<0 || i%n_thin==0){
-            if(specified<=0){
-                associates.add(ip);
+                evaluate(trial,&mu,&k);
+                end_points_checked.add(io);
+                end_points_chi.add(mu);
             }
             else{
-                if(mu<target() && associates.contains(ip)==0){
-                    associates.add(ip);
+                for(j=0;j<end_points_checked.get_dim();j++){
+                    if(end_points_checked.get_data(j)==io){
+                        mu=end_points_chi.get_data(j);
+                        break;
+                    }
                 }
             }
+
+            if(mu<target() || specified<=0){
+                if(associates.contains(io)==0){
+                    associates.add(io);
+                }
+            }
+
+            if(associates.contains(ip)==0){
+                if(specified<=0 || _has_struck==0 || mu<target()){
+                    thin_ct++;
+                    if(n_thin<0 || thin_ct%n_thin==0){
+                        associates.add(ip);
+                    }
+                }
+            }
+        }
+
+        if(associates.get_dim()-end_points_checked.get_dim()<2*thin_to){
+            accept_it=1;
+        }
+        else{
+            n_thin=associates.get_dim()/thin_to;
+            if(n_thin==1){
+                n_thin=2;
+            }
+            thin_ct=0;
+            associates.reset();
         }
     }
 
 
     if(associates.get_dim()==0){
 
-        if(_good_points.get_dim()>20000){
-            n_thin=_good_points.get_dim()/20000;
+        if(_good_points.get_dim()>thin_to){
+            n_thin=_good_points.get_dim()/thin_to;
             if(n_thin==1){
                 n_thin=2;
             }
@@ -1895,6 +1909,7 @@ void dalex::init_fill(){
         i_found=bisection(mindex(),dir,target(),0.001);
         if(i_found!=mindex()){
             ct++;
+            _has_struck=0;
             simplex_boundary_search(i_found,mindex(),dummy_list,&i);
         }
     }
@@ -1948,6 +1963,12 @@ void dalex::octopus_search(){
             get_new_tendril(&new_p,&new_o);
             _particles.set(i,new_p);
             _origins.set(i,new_o);
+        }
+        if(_strikes_arr.get_data(i)==0){
+            _has_struck=0;
+        }
+        else{
+            _has_struck=1;
         }
         is_a_strike=simplex_boundary_search(_particles.get_data(i),_origins.get_data(i),_exclusion_zones,&i_next);
         ellipse_pts.reset_preserving_room();
