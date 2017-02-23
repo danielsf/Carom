@@ -1327,6 +1327,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     array_1d<double> minpt;
     minpt.set_name("dalex_simplex_search_minpt");
 
+    // loop over points, calling dchifn so that they
+    // get stored in dchifn's cache
     for(i=pt_start;i<_chifn->get_pts();i++){
         mu=dchifn(_chifn->get_pt(i));
     }
