@@ -2073,7 +2073,12 @@ void dalex::octopus_search(){
         if(is_a_strike==0){
             _origins.set(i,_particles.get_data(i));
             _particles.set(i,i_next);
-            _strikes_arr.set(i,0);
+            if(_chifn->get_fn(i_next)<target()){
+                _strikes_arr.set(i,0);
+            }
+            else{
+                _strikes_arr.add_val(i,1);
+            }
         }
         else{
              _strikes_arr.add_val(i,1);
