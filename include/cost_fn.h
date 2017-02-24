@@ -6,7 +6,6 @@
 class cost_fn : public function_wrapper{
     public:
         cost_fn(chisq_wrapper*, array_1d<int>&);
-        cost_fn(){_chifn=NULL;};
         ~cost_fn(){};
         void build(chisq_wrapper*, array_1d<int>&);
         virtual double operator()(const array_1d<double>&);

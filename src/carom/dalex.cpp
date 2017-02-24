@@ -1943,45 +1943,15 @@ void dalex::find_tendril_candidates(){
 void dalex::get_new_tendril(int *particle, int *origin){
     particle[0]=-1;
     origin[0]=-1;
-    int i,j,idex;
+    int i,j;
     int i_chosen,is_outside;
-    array_1d<int> associates;
-    associates.set_name("get_new_tendril_associates");
-    cost_fn dchifn;
-    array_1d<double> cost_arr,cost_arr_sorted;
-    cost_arr.set_name("get_new_tendril_cost_arr");
-    cost_arr_sorted.set_name("get_new_tendril_cost_arr_sorted");
-    array_1d<int> cost_arr_dex;
-    cost_arr_dex.set_name("get_new_tendril_cost_arr_dex");
-
     while(particle[0]<0){
         if(_limit>0 && _chifn->get_pts()>_limit){
             return;
         }
-        cost_arr.reset_preserving_room();
-        cost_arr_sorted.reset_preserving_room();
-        cost_arr_dex.reset_preserving_room();
-        associates.reset_preserving_room();
-        for(i=0;i<_chifn->get_pts();i++){
-            if(_chifn->get_fn(i)<target()){
-                associates.add(i);
-            }
-        }
-        dchifn.build(_chifn,associates);
         for(i=0;i<_particle_candidates.get_dim();i++){
-            if(_particle_candidates.get_data(i)<0){
-                cost_arr.add(2.0*exception_value);
-            }
-            else{
-                cost_arr.add(dchifn(_chifn->get_pt(_particle_candidates.get_data(i))));
-            }
-            cost_arr_dex.add(i);
-        }
-        sort(cost_arr,cost_arr_sorted,cost_arr_dex);
-        for(i=0;i<_particle_candidates.get_dim();i++){
-            idex=cost_arr_dex.get_data(i);
-            if(_particle_candidates.get_data(idex)>=0){
-                i_chosen=_particle_candidates.get_data(idex);
+            if(_particle_candidates.get_data(i)>=0){
+                i_chosen=_particle_candidates.get_data(i);
                 is_outside=1;
                 for(j=0;j<_exclusion_zones.ct();j++){
                     if(_exclusion_zones(j)->contains(_chifn->get_pt(i))==1){
@@ -1990,16 +1960,16 @@ void dalex::get_new_tendril(int *particle, int *origin){
                     }
                 }
                 if(is_outside==1){
-                    particle[0]=_particle_candidates.get_data(idex);
-                    origin[0]=_origin_candidates.get_data(idex);
-                    _particle_candidates.set(idex,-1);
-                    _origin_candidates.set(idex,-1);
+                    particle[0]=_particle_candidates.get_data(i);
+                    origin[0]=_origin_candidates.get_data(i);
+                    _particle_candidates.set(i,-1);
+                    _origin_candidates.set(i,-1);
                     printf("returning tendril %d %d\n",particle[0],origin[0]);
                     return;
                 }
                 else{
-                    _particle_candidates.set(idex,-1);
-                    _origin_candidates.set(idex,-1);
+                    _particle_candidates.set(i,-1);
+                    _origin_candidates.set(i,-1);
                 }
             }
         }
