@@ -4,6 +4,7 @@
 #include "goto_tools.h"
 #include "chisq_wrapper.h"
 #include "cost_fn.h"
+#include "ellipse.h"
 
 
 class explorers{

@@ -15,18 +15,6 @@ class cost_fn : public function_wrapper{
             _envelope=dd;
         }
 
-        void copy_bases(array_2d<double> &out){
-            int i;
-            out.reset_preserving_room();
-            for(i=0;i<_bases.get_rows();i++){
-                out.add_row(_bases(i));
-            }
-        }
-
-        double get_norm(int ii){
-            return _norm.get_data(ii);
-        }
-
         int get_cached_values(const int dex, double *fn){
 
             int i;
@@ -47,24 +35,6 @@ class cost_fn : public function_wrapper{
         chisq_wrapper *_chifn;
         int _called;
         double _envelope;
-
-        array_2d<double> _bases;
-
-        void _principal_set_bases();
-        void _random_set_bases();
-
-        void _set_bases(){
-            if(_associates.get_dim()<_chifn->get_dim()){
-                _random_set_bases();
-            }
-            else{
-                _principal_set_bases();
-            }
-        }
-
-
-        void _set_norm();
-        array_1d<double> _norm;
 
         array_1d<int> _pt_cache;
         array_1d<double> _fn_cache;

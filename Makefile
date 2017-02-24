@@ -115,7 +115,8 @@ contours: src/analysis/chisquared_contours.cpp object/kd.o
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
 
-object/cost_fn.o: src/carom/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o
+object/cost_fn.o: src/carom/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o \
+object/ellipse.o
 	$(gg) -c -o object/cost_fn.o src/carom/cost_fn.cpp
 
 object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o

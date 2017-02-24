@@ -10,8 +10,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     _called=0;
 
     _median_associate.set_name("dchi_interior_median");
-    _bases.set_name("dchi_interior_bases");
-    _norm.set_name("dchi_interior_norm");
     _pt_cache.set_name("dchi_interior_pt_cache");
     _fn_cache.set_name("dchi_interior_fn_cache");
     _associates.set_name("dchi_interior_fn_associates");
@@ -19,8 +17,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     _associates.reset_preserving_room();
     _fn_cache.reset_preserving_room();
     _pt_cache.reset_preserving_room();
-    _bases.reset_preserving_room();
-    _norm.reset_preserving_room();
     _median_associate.reset_preserving_room();
 
     _chifn=cc;
@@ -68,10 +64,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     }
     sort(norm, norm_sorted, norm_dex);
     _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
-
-    _set_bases();
-    _set_norm();
-
 }
 
 
@@ -141,144 +133,4 @@ double cost_fn::operator()(const array_1d<double> &pt){
     _pt_cache.add(i_found);
     _fn_cache.add(val);
     return val;
-}
-
-
-void cost_fn::_principal_set_bases(){
-
-    printf("\nprincipal bases\n\n");
-
-    _bases.reset_preserving_room();
-
-    array_1d<double> dir,dir_best;
-    dir.set_name("dchi_princ_bases_dir");
-    dir_best.set_name("dchi_princ_bases_dir_best");
-
-    int ip,i,j,ia;
-    double dd,dd_best,component;
-
-    while(_bases.get_rows()!=_chifn->get_dim()){
-        for(ip=0;ip<_associates.get_dim();ip++){
-            ia=_associates.get_data(ip);
-            for(i=0;i<_chifn->get_dim();i++){
-                dir.set(i,_chifn->get_pt(ia,i)-_chifn->get_pt(_chifn->mindex(),i));
-            }
-            for(i=0;i<_bases.get_rows();i++){
-                component=0.0;
-                for(j=0;j<_chifn->get_dim();j++){
-                    component+=dir.get_data(j)*_bases.get_data(i,j);
-                }
-                for(j=0;j<_chifn->get_dim();j++){
-                    dir.subtract_val(j,component*_bases.get_data(i,j));
-                }
-            }
-
-            dd=dir.normalize();
-            if(ip==0 || dd>dd_best){
-                dd_best=dd;
-                for(i=0;i<_chifn->get_dim();i++){
-                    dir_best.set(i,dir.get_data(i));
-                }
-            }
-        }
-
-        _bases.add_row(dir_best);
-    }
-
-
-    for(i=0;i<_chifn->get_dim();i++){
-        for(j=i;j<_chifn->get_dim();j++){
-            component=0.0;
-            for(ia=0;ia<_chifn->get_dim();ia++){
-                component+=_bases.get_data(i,ia)*_bases.get_data(j,ia);
-            }
-
-
-            if(i==j){
-                if(fabs(component-1.0)>0.001){
-                    printf("WARNING basis %d norm %e\n",i,component);
-                    exit(1);
-                }
-            }
-            else{
-                if(fabs(component)>0.001){
-                    printf("WARNING dot product between bases %d %d is %e\n",
-                    i,j,component);
-                    printf("associates %d\n",_associates.get_dim());
-                    exit(1);
-                }
-            }
-        }
-    }
-
-}
-
-
-void cost_fn::_random_set_bases(){
-
-    array_1d<double> vv;
-    vv.set_name("dchi_set_bases_vv");
-    int i,j;
-    double component;
-
-    _bases.reset_preserving_room();
-    while(_bases.get_rows()<_chifn->get_dim()){
-        for(i=0;i<_chifn->get_dim();i++){
-            vv.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-        }
-        for(i=0;i<_bases.get_rows();i++){
-            component=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                component+=vv.get_data(j)*_bases.get_data(i,j);
-            }
-            for(j=0;j<_chifn->get_dim();j++){
-                vv.subtract_val(j,component*_bases.get_data(i,j));
-            }
-        }
-        component=vv.normalize();
-        if(component>1.0e-10){
-            _bases.add_row(vv);
-        }
-    }
-
-}
-
-
-void cost_fn::_set_norm(){
-
-    _norm.reset_preserving_room();
-
-    double component;
-    array_1d<double> cc,cc_sorted;
-    array_1d<int> cc_dex;
-    cc.set_name("hyper_ellipse_cc");
-    cc_sorted.set_name("hyper_ellipse_cc_sorted");
-    cc_dex.set_name("hyper_ellipse_cc_dex");
-
-    int ix1,ix2;
-    ix1=0;
-    ix2=(5*_associates.get_dim())/6;
-
-    double x1,x2;
-    int ix,i,j;
-    for(ix=0;ix<_bases.get_rows();ix++){
-        cc.reset_preserving_room();
-        cc_sorted.reset_preserving_room();
-        cc_dex.reset_preserving_room();
-
-        for(i=0;i<_associates.get_dim();i++){
-            component=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                component+=_chifn->get_pt(_associates.get_data(i),j)*_bases.get_data(ix,j);
-            }
-            cc.set(i,component);
-            cc_dex.set(i,i);
-        }
-        sort(cc,cc_sorted,cc_dex);
-
-        x1=cc_sorted.get_data(ix1);
-        x2=cc_sorted.get_data(ix2);
-        _norm.set(ix,0.5*(x2-x1));
-    }
-
 }

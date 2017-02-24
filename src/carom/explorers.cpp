@@ -136,10 +136,25 @@ void explorers::sample(int n_steps, int with_kick){
 
     cost_fn dchifn(_chifn, _associates);
     dchifn.set_envelope(_envelope);
-    dchifn.copy_bases(_bases);
+
+    ellipse local_ellipse;
+    array_2d<double> ellipse_pts;
+    ellipse_pts.set_name("explorers_sample_ellipse_pts");
+    int i,j;
+    for(i=0;i<_associates.get_dim();i++){
+        ellipse_pts.add_row(_chifn->get_pt(_associates.get_data(i)));
+    }
+    local_ellipse.build(ellipse_pts);
+    _bases.reset_preserving_room();
+    _bases.set_dim(_chifn->get_dim(),_chifn->get_dim());
+    for(i=0;i<_chifn->get_dim();i++){
+        for(j=0;j<_chifn->get_dim();j++){
+            _bases.set(i,j,local_ellipse.bases(i,j));
+        }
+    }
+
     set_norm();
 
-    int i;
 
     if(with_kick==1){
         printf("\nkicking explorers\n");
