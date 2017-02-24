@@ -1954,7 +1954,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 i_chosen=_particle_candidates.get_data(i);
                 is_outside=1;
                 for(j=0;j<_exclusion_zones.ct();j++){
-                    if(_exclusion_zones(j)->contains(_chifn->get_pt(i))==1){
+                    if(_exclusion_zones(j)->contains(_chifn->get_pt(i_chosen))==1){
                         is_outside=0;
                         break;
                     }
