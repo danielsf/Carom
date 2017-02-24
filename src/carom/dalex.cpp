@@ -1363,7 +1363,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     // *** do bisection along directions perpendicular to ***
     // *** i_next - specified ***
-    base_dir.reset_preserving_room();
     array_1d<double> trial_dir;
     base_dir.set_name("dalex_boundary_base_dir");
     trial_dir.set_name("dalex_boundary_trial_dir");
@@ -1382,6 +1381,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     if(i_next[0]!=specified && good_dexes.get_dim()>1){
+        base_dir.reset_preserving_room();
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(i_next[0],i)-_chifn->get_pt(specified,i));
         }
