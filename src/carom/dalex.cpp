@@ -1825,9 +1825,7 @@ void dalex::find_tendril_candidates(){
 
     simplex_minimizer ffmin;
     ffmin.set_minmax(min,max);
-    ffmin.set_dice(_chifn->get_dice());
     ffmin.set_chisquared(&dchifn);
-    ffmin.use_gradient();
 
     array_1d<double> trial,minpt;
     trial.set_name("find_tendrils_trial");
