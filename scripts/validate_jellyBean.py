@@ -12,6 +12,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', type=str, default=None)
+    parser.add_argument('--seed', type=int, nargs='+', default=None)
+    parser.add_argument('--limit', type=int, default=600000)
     args = parser.parse_args()
 
     if args.prefix is None:
@@ -42,33 +44,31 @@ if __name__ == "__main__":
         m_x_dict[dim] = m_x
         m_y_dict[dim] = m_y
 
-    seed_list = [66, 694, 762, 1068, 6475, 626]
-    time_list = [600000]
+    seed_list = args.seed
     
     data_dict = {}
     for seed in seed_list:
         data_dict[seed] = None
     
-    for time in time_list:
-        for dim in dim_list:
-            plt.figsize = (30, 30)
-            for i_fig, seed in enumerate(seed_list):
+    for dim in dim_list:
+        plt.figsize = (30, 30)
+        for i_fig, seed in enumerate(seed_list):
                 
-                dalex_name = os.path.join(dalex_dir, "jellyBean_d12_s%d_output.sav" % seed)
+            dalex_name = os.path.join(dalex_dir, "jellyBean_d12_s%d_output.sav" % seed)
             
-                (d_x, d_y, d_min, d_target,
-                 data) = scatter_from_carom(dalex_name, 12, dim[0], dim[1],
-                                            delta_chi=delta_chi, data=data_dict[seed],
-                                            limit=time)
+            (d_x, d_y, d_min, d_target,
+             data) = scatter_from_carom(dalex_name, 12, dim[0], dim[1],
+                                        delta_chi=delta_chi, data=data_dict[seed],
+                                        limit=args.limit)
                 
-                data_dict[seed] = data
+            data_dict[seed] = data
                 
-                plt.subplot(3,2,i_fig+1)
-                plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
-                plt.scatter(d_x, d_y, marker='x', color='r')
-                plt.title('$\chi^2_{min} = %.2f$; n_calls = %.2e\nseed %d' % (d_min, time, seed),
-                          fontsize=15)
+            plt.subplot(3,2,i_fig+1)
+            plt.scatter(m_x_dict[dim], m_y_dict[dim], color='k')
+            plt.scatter(d_x, d_y, marker='x', color='r')
+            plt.title('$\chi^2_{min} = %.2f$; n_calls = %.2e\nseed %d' % (d_min, args.limit, seed),
+                      fontsize=15)
             
-            plt.tight_layout()
-            plt.savefig('%s_%d_%d_%d.png' % (args.prefix,time,dim[0],dim[1]))
-            plt.close()
+        plt.tight_layout()
+        plt.savefig('%s_%d_%d_%d.png' % (args.prefix,args.limit,dim[0],dim[1]))
+        plt.close()
