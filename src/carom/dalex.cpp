@@ -1119,7 +1119,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
-    ffmin.set_dice(_chifn->get_dice());
     array_1d<double> min,max;
     min.set_name("dalex_simplex_search_min");
     max.set_name("dalex_simplex_search_min");
@@ -1130,7 +1129,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     ffmin.set_minmax(min,max);
-    ffmin.use_gradient();
 
     int old_type=_chifn->get_search_type();
     _chifn->set_search_type(_type_tendril_seed);
