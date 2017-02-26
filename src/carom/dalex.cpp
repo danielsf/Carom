@@ -2380,10 +2380,7 @@ void dalex::iterate_on_minimum(){
         _good_points.reset_preserving_room();
         _tendril_path.reset_preserving_room();
         _exclusion_zones.reset();
-        /*_good_points.reset_preserving_room();
-        _explorers.reset();
-        _tendril_path.reset_preserving_room();
-        _exclusion_zones.reset();*/
+
         find_bases();
     }
     else if(chimin()<min_00-0.01){
