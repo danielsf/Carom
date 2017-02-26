@@ -1759,6 +1759,8 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 
 void dalex::find_tendril_candidates(){
+    int old_type=_chifn->get_search_type();
+    _chifn->set_search_type(_type_init_tendril);
 
     printf("finding tendril candidates\n");
 
@@ -1916,6 +1918,7 @@ void dalex::find_tendril_candidates(){
             }
 
             if(_limit>0 && _chifn->get_pts()>_limit){
+                _chifn->set_search_type(old_type);
                 return;
             }
         }
@@ -1931,39 +1934,75 @@ void dalex::find_tendril_candidates(){
         _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
         _origin_candidates.set(i,-1);
     }
+
+    _chifn->set_search_type(old_type);
 }
 
 
 void dalex::get_new_tendril(int *particle, int *origin){
     particle[0]=-1;
     origin[0]=-1;
-    int i,j;
-    int i_chosen,is_outside;
+    int i,j,ip,io;
+    int is_outside;
+
+    cost_fn dchifn;
+    array_1d<int> associates;
+    array_1d<double> cost_val,cost_val_sorted;
+    array_1d<int> cost_val_dex;
+    associates.set_name("new_tendril_associates");
+    cost_val.set_name("new_tendril_cost_val");
+    cost_val_sorted.set_name("new_tendril_cost_val_sorted");
+    cost_val_dex.set_name("new_tendril_cost_val_dex");
+
     while(particle[0]<0){
         if(_limit>0 && _chifn->get_pts()>_limit){
             return;
         }
+        associates.reset_preserving_room();
+        cost_val.reset_preserving_room();
+        cost_val_sorted.reset_preserving_room();
+        cost_val_dex.reset_preserving_room();
+        for(i=0;i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                if(_chifn->get_search_type_log(i)!=_type_init_tendril){
+                    associates.add(i);
+                }
+            }
+        }
+        dchifn.build(_chifn,associates);
         for(i=0;i<_particle_candidates.get_dim();i++){
-            if(_particle_candidates.get_data(i)>=0){
-                i_chosen=_particle_candidates.get_data(i);
+            if(_particle_candidates.get_data(i)<0){
+                cost_val.add(2.0*exception_value);
+            }
+            else{
+                cost_val.add(dchifn(_chifn->get_pt(_particle_candidates.get_data(i))));
+            }
+            cost_val_dex.add(i);
+        }
+        sort(cost_val, cost_val_sorted, cost_val_dex);
+
+        for(i=0;i<_particle_candidates.get_dim();i++){
+            ip=_particle_candidates.get_data(cost_val_dex.get_data(i));
+            io=_origin_candidates.get_data(cost_val_dex.get_data(i));
+            if(ip>=0){
                 is_outside=1;
                 for(j=0;j<_exclusion_zones.ct();j++){
-                    if(_exclusion_zones(j)->contains(_chifn->get_pt(i_chosen))==1){
+                    if(_exclusion_zones(j)->contains(_chifn->get_pt(ip))==1){
                         is_outside=0;
                         break;
                     }
                 }
                 if(is_outside==1){
-                    particle[0]=_particle_candidates.get_data(i);
-                    origin[0]=_origin_candidates.get_data(i);
-                    _particle_candidates.set(i,-1);
-                    _origin_candidates.set(i,-1);
+                    particle[0]=ip;
+                    origin[0]=io;
+                    _particle_candidates.set(cost_val_dex.get_data(i),-1);
+                    _origin_candidates.set(cost_val_dex.get_data(i),-1);
                     printf("returning tendril %d %d\n",particle[0],origin[0]);
                     return;
                 }
                 else{
-                    _particle_candidates.set(i,-1);
-                    _origin_candidates.set(i,-1);
+                    _particle_candidates.set(cost_val_dex.get_data(i),-1);
+                    _origin_candidates.set(cost_val_dex.get_data(i),-1);
                 }
             }
         }
