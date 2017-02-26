@@ -1,10 +1,8 @@
 #include "maps.h"
 
 maps::maps(){
-    _last_wrote_log=-1;
     _ct_dalex=0;
     _last_did_min=0;
-    _log.set_name("carom_log");
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
     _good_points.set_name("maps_good_points");
@@ -126,71 +124,7 @@ void maps::set_timingname(char *nn){
 void maps::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
-    _cloud.set_log(&_log);
     assess_good_points(0);
-}
-
-
-void maps::write_log(){
-
-    FILE *output;
-    char log_name[2*letters],suffix[letters];
-    array_1d<int> types;
-    types.set_name("carom_write_log_types");
-    types.add(_log_ricochet);
-    types.add(_log_mcmc);
-    types.add(_log_dchi_simplex);
-    types.add(_log_simplex);
-    types.add(_log_compass);
-    types.add(_log_swarm);
-    int i,j,ii;
-
-    for(ii=0;ii<types.get_dim();ii++){
-        if(types.get_data(ii)==_log_ricochet){
-            sprintf(log_name,"%s_ricochet_log.txt",_outname);
-        }
-        else if(types.get_data(ii)==_log_mcmc){
-            sprintf(log_name,"%s_mcmc_log.txt",_outname);
-        }
-        else if(types.get_data(ii)==_log_dchi_simplex){
-            sprintf(log_name,"%s_dchi_simplex_log.txt",_outname);
-        }
-        else if(types.get_data(ii)==_log_simplex){
-           sprintf(log_name,"%s_simplex_log.txt",_outname);
-        }
-        else if(types.get_data(ii)==_log_compass){
-            sprintf(log_name,"%s_compass_log.txt",_outname);
-        }
-        else if(types.get_data(ii)==_log_swarm){
-            sprintf(log_name,"%s_swarm_log.txt",_outname);
-        }
-        else{
-            printf("WARNING asked for unknown log type %d\n",types.get_data(ii));
-            exit(1);
-        }
-
-        if(_last_wrote_log<0){
-            output=fopen(log_name,"w");
-        }
-        else{
-            output=fopen(log_name,"a");
-        }
-
-        for(i=0;i<_log.get_cols(types.get_data(ii));i++){
-            for(j=0;j<_chifn.get_dim();j++){
-                fprintf(output,"%e ",_chifn.get_pt(_log.get_data(types.get_data(ii),i),j));
-            }
-            fprintf(output,"%e %d\n",
-            _chifn.get_fn(_log.get_data(types.get_data(ii),i)),
-            _log.get_data(types.get_data(ii),i));
-        }
-
-        fclose(output);
-    }
-
-    _last_wrote_log=_chifn.get_pts();
-    _log.reset_preserving_room();
-
 }
 
 void maps::mcmc_init(){
@@ -206,6 +140,7 @@ void maps::search(int limit){
     _chifn.set_outname(_outname);
     _chifn.set_timingname(_timingname);
     printf("before init min %e\n",_chifn.chimin());
+    _chifn.set_search_type(_type_init);
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());

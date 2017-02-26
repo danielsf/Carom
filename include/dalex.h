@@ -6,16 +6,42 @@
 #include "chisq_wrapper.h"
 #include "simplex.h"
 #include "eigen_wrapper.h"
-#include "search_types.h"
 #include "explorers.h"
 #include "ellipse.h"
 
 class dalex{
 
     public:
-        ~dalex(){};
+        ~dalex(){
+            FILE *ellipse_file;
+            char out_name[500];
+            sprintf(out_name,"ellipse_corners_%d.txt",_chifn->get_seed());
+            ellipse_file=fopen(out_name, "w");
+            int i,j,zone;
+            double sign;
+            double component;
+            for(zone=0;zone<_exclusion_zones.ct();zone++){
+                for(i=0;i<_chifn->get_dim();i++){
+                    for(sign=-1.0;sign<1.5;sign+=2.0){
+                        for(j=0;j<_chifn->get_dim();j++){
+                            component=_exclusion_zones(zone)->center(j) +
+                                      sign*_exclusion_zones(zone)->radii(i)*_exclusion_zones(zone)->bases(i,j);
+                            fprintf(ellipse_file,"%e ",component);
+                        }
+                        fprintf(ellipse_file,"\n");
+                    }
+                }
+            }
+            fclose(ellipse_file);
+        };
+
         dalex(){
             _chifn=NULL;
+            _reset_threshold=0.5;
+            _reset_chimin=2.0*exception_value;
+            _strikes=0;
+            _strikeouts=0;
+            _has_struck=0;
             _limit=-1;
             _good_points.set_name("dalex_good_points");
             _good_points.set_room(100000);
@@ -25,7 +51,6 @@ class dalex{
             _target_factor=1.0;
             _last_checked_good=0;
             _simplex_mindex=-1;
-            _log=NULL;
 
             _basis_chimin=2.0*exception_value;
             _basis_associates.set_name("dalex_basis_associates");
@@ -36,6 +61,12 @@ class dalex{
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
+            _particles.set_name("dalex_particles");
+            _origins.set_name("dalex_origins");
+            _particle_candidates.set_name("dalex_particle_candidates");
+            _origin_candidates.set_name("dalex_origin_candidates");
+            _strikes_arr.set_name("dalex_strikes_arr");
+
             _minimizers.set_name("dalex_minimizers");
         };
 
@@ -45,18 +76,20 @@ class dalex{
             _limit=ii;
         }
 
-        void set_log(asymm_array_2d<int> *_ll){
-            _log=_ll;
-        }
-
         void search();
         void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
-        int simplex_boundary_search(ellipse_list&, int*);
-        int simplex_boundary_search(int, int, ellipse_list&, int*);
+        int simplex_boundary_search(const int, const int, ellipse_list&, int*);
+        void explore(int);
         void explore();
+        int _exploration_simplex(int,int,array_1d<int>&);
+        void octopus_search();
+        void init_fill();
+        void find_tendril_candidates();
+        void get_new_tendril(int*,int*);
         void min_explore(int, int);
+        void initialize_min_exploration();
 
         int bisection(int, int, double, double);
         int bisection(int, const array_1d<double>&, double, double);
@@ -160,9 +193,9 @@ class dalex{
             return _target_factor*_chifn->target();
         }
 
-        asymm_array_2d<int> *_log;
         chisq_wrapper *_chifn;
         double _target_factor;
+        double _reset_threshold,_reset_chimin;
         int _simplex_mindex;
         array_1d<int> _good_points;
 
@@ -193,13 +226,21 @@ class dalex{
 
         //////code related to tendrils
         void tendril_search(int);
+        void get_negative_gradient(int, cost_fn&, ellipse&, array_1d<double>&);
         array_2d<int> _tendril_path;
+
+        array_1d<int> _particles,_origins;
+        array_1d<int> _particle_candidates,_origin_candidates;
+        array_1d<int> _strikes_arr;
 
         void compass_search(ellipse&);
 
         int _limit;
+        int _strikes,_strikeouts;
+        int _has_struck;
 
         ellipse_list _exclusion_zones;
+        ellipse_sampler _ellipse_sampler;
 };
 
 #endif

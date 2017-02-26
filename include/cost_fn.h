@@ -7,6 +7,7 @@ class cost_fn : public function_wrapper{
     public:
         cost_fn(chisq_wrapper*, array_1d<int>&);
         ~cost_fn(){};
+        void build(chisq_wrapper*, array_1d<int>&);
         virtual double operator()(const array_1d<double>&);
         virtual int get_called();
         double nn_distance(const array_1d<double>&);
@@ -14,21 +15,17 @@ class cost_fn : public function_wrapper{
             _envelope=dd;
         }
 
-        void use_median(){
-            _just_median=1;
-        }
+        int get_cached_values(const int dex, double *fn){
 
-
-        void copy_bases(array_2d<double> &out){
             int i;
-            out.reset_preserving_room();
-            for(i=0;i<_bases.get_rows();i++){
-                out.add_row(_bases(i));
+            for(i=0;i<_pt_cache.get_dim();i++){
+                if(_pt_cache.get_data(i)==dex){
+                    fn[0]=_fn_cache.get_data(i);
+                    return 1;
+                }
             }
-        }
+            return 0;
 
-        double get_norm(int ii){
-            return _norm.get_data(ii);
         }
 
     private:
@@ -37,26 +34,10 @@ class cost_fn : public function_wrapper{
         double _scalar_norm;
         chisq_wrapper *_chifn;
         int _called;
-        int _just_median;
         double _envelope;
 
-        array_2d<double> _bases;
-
-        void _principal_set_bases();
-        void _random_set_bases();
-
-        void _set_bases(){
-            if(_associates.get_dim()<_chifn->get_dim()){
-                _random_set_bases();
-            }
-            else{
-                _principal_set_bases();
-            }
-        }
-
-
-        void _set_norm();
-        array_1d<double> _norm;
+        array_1d<int> _pt_cache;
+        array_1d<double> _fn_cache;
 
 };
 

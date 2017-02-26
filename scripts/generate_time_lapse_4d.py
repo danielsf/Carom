@@ -20,11 +20,11 @@ if __name__ == "__main__":
 
     control_dir = os.path.join(dalex_dir, "controls", "draft_160907")
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    data_dir = os.path.join(dalex_dir, "output", "draft_161117")
+    data_dir = os.path.join(dalex_dir, "output", "draft_170213")
 
     multinest_file_list = []
     multinest_scatter_file_list = []
-    for ix in (100, 300, 400, 600):
+    for ix in (100, 400, 600, 800):
         multinest_file_name = os.path.join(multinest_dir,
                                            "integrableJellyBean_d4_s99_n%d_t1.00e-03.txt" % ix)
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
         control_data[dim] = np.genfromtxt(control_file_name, dtype=control_dtype)
 
-    dalex_name = os.path.join(data_dir, "jellyBean_d4_s762_output.sav")
+    dalex_name = os.path.join(data_dir, "jellyBean_d4_s112_output.sav")
 
     (x_grid, y_grid, dalex_chisq_min, dalex_target,
      dalex_data) = scatter_from_carom(dalex_name, 4, 0, 1, delta_chi=9.49)
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             plt.figure(i_fig+1)
             plt.subplot(3,2,i_time+1)
             m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
-                                      4, dim[0], dim[1])
+                                      4, dim[0], dim[1], downsample=True)
             
             (d_x, d_y, d_chisq_min, d_target,
              d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
@@ -102,8 +102,8 @@ if __name__ == "__main__":
                 legend_handles[dim].append(hh)
                 legend_labels[dim].append(label)
 
-            plt.xlabel('$\\theta_%d$' % dim[0], fontsize=10)
-            plt.ylabel('$\\theta_%d$' % dim[1], fontsize=10)
+            plt.xlabel('$\\theta_%d$' % dim[0], fontsize=15)
+            plt.ylabel('$\\theta_%d$' % dim[1], fontsize=15)
             xmin = control_data[dim]['x'].min()
             xmax = control_data[dim]['x'].max()
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         
         #plt.subplot(3,2,i_time+1)    
         plt.legend(legend_handles[dim], legend_labels[dim], fontsize=10,
-                   bbox_to_anchor=(-0.05,0.0), loc=2)
+                   bbox_to_anchor=(-0.1,-0.4), loc=2)
         plt.tight_layout()
-        file_name = os.path.join(fig_dir, "time_lapse_%d_%d.png" % (dim[0], dim[1]))
+        file_name = os.path.join(fig_dir, "time_lapse_%d_%d.eps" % (dim[0], dim[1]))
         plt.savefig(file_name)

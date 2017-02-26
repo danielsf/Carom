@@ -59,7 +59,7 @@ void maps_initializer::search(){
     array_1d<int> c_v_d;
 
     for(ip=0;ip<n_particles;ip++){
-
+        _chifn->set_search_type(-1*(ip+2));
         i_best=-1;
 
         while(i_best<0){
@@ -150,6 +150,7 @@ void maps_initializer::search(){
         }
 
         for(ip=0;ip<n_particles;ip++){
+            _chifn->set_search_type(-1*(ip+2));
 
             i_dim=_chifn->random_int()%_chifn->get_dim();
 
@@ -312,6 +313,8 @@ void maps_initializer::search(){
             }
         }
     }
+
+    _chifn->set_search_type(_type_init);
 
     array_1d<int> connected;
     double mu_min;

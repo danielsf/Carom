@@ -1,13 +1,26 @@
 #include "ellipse.h"
 
 int ellipse::contains(const array_1d<double> &pt){
+    return contains(pt, 0);
+}
+
+int ellipse::contains(const array_1d<double> &pt, const int use_extreme){
     int i,j;
     double sum=0.0;
-    double component;
+    double component,threshold;
     for(i=0;i<_bases.get_rows();i++){
         component=0.0;
+        if(i<_max.get_dim() && i<_min.get_dim()){
+            threshold=0.025*(_max.get_data(i)-_min.get_data(i));
+        }
         for(j=0;j<_bases.get_rows();j++){
             component+=(pt.get_data(j)-_center.get_data(j))*_bases.get_data(i,j);
+        }
+        if(use_extreme==1 && i<_max.get_dim() && component-_max.get_data(i)>threshold){
+            return 0;
+        }
+        if(use_extreme==1 && i<_min.get_dim() && _min.get_data(i)-component>threshold){
+            return 0;
         }
         sum+=power(component/_radii.get_data(i),2);
         if(sum>1.0){
@@ -18,6 +31,19 @@ int ellipse::contains(const array_1d<double> &pt){
 }
 
 void ellipse::build(const array_2d<double> &pts_in){
+
+    array_1d<double> dummy_center;
+    build(dummy_center, pts_in);
+
+}
+
+void ellipse::build(const array_1d<double> &center_in,
+                    const array_2d<double> &pts_in){
+
+    Ran dice(99);
+
+    _min.reset_preserving_room();
+    _max.reset_preserving_room();
 
     int n_pts = pts_in.get_rows();
     int dim = pts_in.get_cols();
@@ -31,13 +57,21 @@ void ellipse::build(const array_2d<double> &pts_in){
     _bases.reset_preserving_room();
     _radii.reset_preserving_room();
 
-    _find_center(pts_in);
+    int i;
+    if(center_in.get_dim()!=pts_in.get_cols()){
+        _find_center(pts_in);
+    }
+    else{
+        for(i=0;i<center_in.get_dim();i++){
+            _center.set(i,center_in.get_data(i));
+        }
+    }
 
     array_1d<double> dir,dir_max;
     dir.set_name("ellipse_build_dir");
     dir_max.set_name("ellipse_build_dir_max");
 
-    int i,j,k;
+    int j,k;
     double component,norm,norm_max;
 
     while(_bases.get_rows()!=dim){
@@ -63,8 +97,30 @@ void ellipse::build(const array_2d<double> &pts_in){
             }
         }
         if(norm_max<1.0e-20){
-            printf("WARNING ellipse basis dir has norm %e\n",norm_max);
-            exit(1);
+            printf("WARNING ellipse basis had norm %e; setting randomly\n",
+            norm_max);
+            norm=-1.0;
+            while(norm<1.0e-20){
+                for(i=0;i<dim;i++){
+                    dir.set(i,normal_deviate(&dice,0.0,1.0));
+                }
+                for(j=0;j<_bases.get_rows();j++){
+                    component=0.0;
+                    for(k=0;k<dim;k++){
+                        component+=dir.get_data(k)*_bases.get_data(j,k);
+                    }
+                    for(k=0;k<dim;k++){
+                        dir.subtract_val(k,component*_bases.get_data(j,k));
+                    }
+                }
+                norm=dir.normalize();
+                if(norm>1.0e-20){
+                    for(k=0;k<dim;k++){
+                        dir_max.set(k,dir.get_data(k));
+                    }
+                    norm_max=1.0e-10;
+                }
+            }
         }
         _bases.add_row(dir_max);
         _radii.add(norm_max);
@@ -83,6 +139,26 @@ void ellipse::build(const array_2d<double> &pts_in){
 
         if(is_valid==0){
             _set_radii(pts_in);
+        }
+    }
+
+    //set extremities
+    for(i=0;i<n_pts;i++){
+        for(j=0;j<dim;j++){
+            dir.set(j,pts_in.get_data(i,j)-_center.get_data(j));
+        }
+
+        for(j=0;j<dim;j++){
+            component=0.0;
+            for(k=0;k<dim;k++){
+                component+=dir.get_data(k)*_bases.get_data(j,k);
+            }
+            if(j>=_min.get_dim() || component<_min.get_data(j)){
+                _min.set(j,component);
+            }
+            if(j>=_max.get_dim() || component>_max.get_data(j)){
+                _max.set(j,component);
+            }
         }
     }
 
@@ -182,6 +258,8 @@ void ellipse::copy(ellipse &other){
     _bases.reset_preserving_room();
     _center.reset_preserving_room();
     _radii.reset_preserving_room();
+    _min.reset_preserving_room();
+    _max.reset_preserving_room();
     int i;
     for(i=0;i<other.dim();i++){
         _center.set(i,other.center(i));
@@ -193,6 +271,13 @@ void ellipse::copy(ellipse &other){
         for(j=0;j<other.dim();j++){
             _bases.set(i,j,other.bases(i,j));
         }
+    }
+
+    for(i=0;i<other._min.get_dim();i++){
+        _min.set(i,other._min.get_data(i));
+    }
+    for(i=0;i<other._max.get_dim();i++){
+        _max.set(i,other._max.get_data(i));
     }
 }
 

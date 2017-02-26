@@ -7,7 +7,6 @@
 #include "chisq_wrapper.h"
 #include "simplex.h"
 #include "cost_fn.h"
-#include "search_types.h"
 #include "dalex.h"
 #include "maps_initializer.h"
 
@@ -36,8 +35,6 @@ public:
 
     void mcmc_init();
 
-    void write_log();
-
     int get_dim();
     int get_called();
     double get_chimin();
@@ -54,11 +51,8 @@ private:
 
     chisq_wrapper _chifn;
     int _ct_dalex;
-    int _last_wrote_log;
 
     dalex _cloud;
-
-    asymm_array_2d<int> _log;
 
     char _outname[letters],_timingname[letters];
 

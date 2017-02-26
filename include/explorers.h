@@ -4,6 +4,7 @@
 #include "goto_tools.h"
 #include "chisq_wrapper.h"
 #include "cost_fn.h"
+#include "ellipse.h"
 
 
 class explorers{
@@ -18,7 +19,6 @@ class explorers{
             _scalar_acceptance=0;
             _attempted=0;
             _scalar_steps=0;
-            _n_particles=0;
             _associates.set_name("explorers_associates");
             _median_associate.set_name("explorers_mean_associate");
             _particles.set_name("explorers_particles");
@@ -28,10 +28,27 @@ class explorers{
             _max.set_name("explorers_max");
             _req_temp.set_name("explorers_req_temp");
             _mu_arr.set_name("explorers_mu_arr");
+            _envelope=1.0;
+            _target_rate=0.5;
         }
 
-        void set_n_particles(int ii){
-            _n_particles=ii;
+        void set_target_rate(double dd){
+            _target_rate=dd;
+        }
+
+        void set_envelope(double dd){
+            _envelope=dd;
+        }
+
+        void set_particle(int dex, array_1d<double> &pp){
+            if(dex>=_particles.get_rows()){
+                printf("WARNING no %d particle\n",dex);
+                exit(1);
+            }
+            int i;
+            for(i=0;i<pp.get_dim();i++){
+                _particles.set(dex,i,pp.get_data(i));
+            }
         }
 
         void set_chifn(chisq_wrapper *cc){
@@ -54,7 +71,19 @@ class explorers{
         }
 
         int get_n_particles(){
-            return _n_particles;
+            return _particles.get_rows();
+        }
+
+        double get_mu(int dex){
+            return _mu_arr.get_data(dex);
+        }
+
+        const array_1d<double> get_pt(int dex){
+            return _particles(dex);
+        }
+
+        double get_pt(int dex, int i){
+            return _particles.get_data(dex,i);
         }
 
         void get_pt(int dex, array_1d<double> &pp){
@@ -66,16 +95,16 @@ class explorers{
 
         void add_particle(const array_1d<double> &pt){
             _particles.add_row(pt);
-            _n_particles++;
         }
 
         void get_seed(array_2d<double>&);
 
         void set_norm();
         void reset();
-        void initialize_particles();
+        void initialize();
         void bump_particles();
         void kick(int);
+        void sample(int,int);
         void sample(int);
 
     private:
@@ -88,15 +117,13 @@ class explorers{
         array_1d<double> _req_temp;
         int _mindex;
         double _mu_min;
-        int _n_particles;
         double _temp;
         int _attempted;
         array_2d<double> _particles;
-        int _scalar_acceptance;
-        int _scalar_steps;
-
-
-
+        double _scalar_acceptance;
+        double _scalar_steps;
+        double _envelope;
+        double _target_rate;
 };
 
 #endif

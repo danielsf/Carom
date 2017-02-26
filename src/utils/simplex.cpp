@@ -23,6 +23,7 @@ void simplex_minimizer::initialize(){
     _chisquared=NULL;
     _dice=NULL;
     _limit=-1;
+    _n_gradients=0;
 
     _min_temp=-3.0;
 
@@ -536,6 +537,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     printf("    _true_min_ff %e\n",_true_min_ff);*/
 
     printf("    actually called %d\n",_chisquared->get_called()-ibefore);
+    printf("    gradient calls %d\n",_n_gradients);
     printf("    got min %e\n",_true_min_ff);
 
     _freeze_temp=-1;
@@ -664,6 +666,7 @@ void simplex_minimizer::gradient_minimizer(){
         printf("WARNING cannot use simplex gradient; _dice is NULL\n");
         exit(1);
     }
+    _n_gradients++;
     find_il();
 
     int need_thaw_temp,need_thaw_called;

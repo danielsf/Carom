@@ -28,7 +28,7 @@ def load_dalex_data(data_name, dim):
 
 def make_histogram(xx_in, dmag, cut_off, cumulative=True):
     xx = xx_in[np.where(xx_in<=cut_off+dmag)]
-    print xx.min(),xx.max()
+    #print xx.min(),xx.max()
     min_val=xx.min()-dmag
     i_xx = np.round((xx-min_val)/dmag).astype(int)
     unique_ixx, ct = np.unique(i_xx, return_counts=True)
@@ -126,7 +126,35 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
     return x_out[:actual_len], y_out[:actual_len]
 
 
-def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
+def _downsample_grid(xx, yy):
+
+    dx = 0.01*(xx.max()-xx.min())
+    dy = 0.01*(yy.max()-yy.min())
+
+    x_avg = 0.5*(xx.min()+xx.max())
+    y_avg = 0.5*(yy.min()+yy.max())
+    n_chosen = 0
+    x_out = np.zeros(len(xx))
+    y_out = np.zeros(len(yy))
+
+    dd_avg = np.sqrt(np.power((xx-x_avg)/dx, 2) + np.power((yy-y_avg)/dy, 2))
+    sorted_dexes = np.argsort(dd_avg)
+
+    for ix in sorted_dexes:
+        if n_chosen>0:
+            dd_chosen = np.sqrt(np.power((xx[ix]-x_out[:n_chosen])/dx,2) +
+                                np.power((yy[ix]-y_out[:n_chosen])/dy,2))
+
+        if n_chosen==0 or dd_chosen.min()>1.0:
+            x_out[n_chosen] = xx[ix]
+            y_out[n_chosen] = yy[ix]
+            n_chosen += 1
+
+    return x_out[:n_chosen], y_out[:n_chosen]
+
+
+def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None,
+                                      downsample=False):
 
     if data is None:
         ref_data = load_multinest_data(file_name, dim)
@@ -138,7 +166,12 @@ def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None):
                                ref_data['x%d' % iy],
                                ref_data['degen'])
 
-    return ref_x, ref_y, ref_data
+    if not downsample:
+        return ref_x, ref_y, ref_data
+
+    ds_x, ds_y = _downsample_grid(ref_x, ref_y)
+
+    return ds_x, ds_y, ref_data
 
 def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
 

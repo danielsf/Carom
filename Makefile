@@ -115,7 +115,8 @@ contours: src/analysis/chisquared_contours.cpp object/kd.o
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
 
-object/cost_fn.o: src/carom/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o
+object/cost_fn.o: src/carom/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o \
+object/ellipse.o
 	$(gg) -c -o object/cost_fn.o src/carom/cost_fn.cpp
 
 object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
@@ -125,11 +126,11 @@ object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o obje
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
 object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
-object/simplex.o object/cost_fn.o include/search_types.h
+object/simplex.o object/cost_fn.o
 	$(gg) -c -o object/node.o src/carom/node.cpp
 
 object/carom.o: src/carom/carom.cpp include/carom.h \
-object/simplex.o object/node.o object/eigen_wrapper.o include/search_types.h
+object/simplex.o object/node.o object/eigen_wrapper.o
 	$(gg) -c -o object/carom.o src/carom/carom.cpp
 
 object/control_integrator.o: src/controls/control_integrator.cpp \
@@ -194,7 +195,7 @@ include/exampleLikelihoods.h object/jellyBean.o
 	object/chisq.o
 
 object/maps.o: src/carom/maps.cpp include/maps.h \
-object/simplex.o object/cost_fn.o object/eigen_wrapper.o include/search_types.h \
+object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/maps_initializer.o object/ellipse.o
 	$(gg) -c -o object/maps.o src/carom/maps.cpp
 
