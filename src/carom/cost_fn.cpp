@@ -98,6 +98,11 @@ int cost_fn::get_called(){
 
 double cost_fn::operator()(const array_1d<double> &pt){
 
+    if(_chifn==NULL){
+        printf("WARNING cannot call cost_fn operator; _chifn is NULL\n");
+        exit(1);
+    }
+
     _called++;
 
     double mu;
