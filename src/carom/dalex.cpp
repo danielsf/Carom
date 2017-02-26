@@ -2085,7 +2085,6 @@ void dalex::octopus_search(){
             _origins.set(i,new_o);
         }
 
-        ellipse_pts.reset_preserving_room();
         is_a_strike=0;
         while(is_a_strike==0){
             pt_start=_chifn->get_pts();
@@ -2097,23 +2096,16 @@ void dalex::octopus_search(){
                 _has_struck=1;
             }
             is_a_strike=simplex_boundary_search(_particles.get_data(i),_origins.get_data(i),_exclusion_zones,&i_next);
-
-            if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
-                if(local_ellipse.contains(_chifn->get_pt(i_next),1)==1){
-                    is_a_strike=1;
-                }
-            }
-
+            ellipse_pts.reset_preserving_room();
             for(j=pt_start;j<_chifn->get_pts();j++){
                 if(_chifn->get_fn(j)<target()){
                     ellipse_pts.add_row(_chifn->get_pt(j));
                 }
             }
-
             if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
                 local_ellipse.build(ellipse_pts);
+                _exclusion_zones.add(local_ellipse);
             }
-
             if(is_a_strike==0){
                 _origins.set(i,_particles.get_data(i));
                 _particles.set(i,i_next);
@@ -2135,12 +2127,6 @@ void dalex::octopus_search(){
             printf("is a strike: %d; strikes %d\n",is_a_strike,_strikes_arr.get_data(i));
             printf("\n");
         }
-
-        if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
-            local_ellipse.build(ellipse_pts);
-            _exclusion_zones.add(local_ellipse);
-        }
-
         /*if(i_next!=particles.get_data(i)){
             _explorers.add_particle(_chifn->get_pt(i_next));
         }
