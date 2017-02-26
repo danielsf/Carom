@@ -81,8 +81,6 @@ class dalex{
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
         int simplex_boundary_search(const int, const int, ellipse_list&, int*);
-        void explore(int);
-        void explore();
         int _exploration_simplex(int,int,array_1d<int>&);
         void octopus_search();
         void init_fill();
@@ -215,7 +213,6 @@ class dalex{
 
 
         ///////code related to explorers
-        explorers _explorers;
         explorers _min_explorers;
         int _last_checked_good;
 

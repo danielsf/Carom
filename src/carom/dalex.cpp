@@ -4,7 +4,6 @@ void dalex::build(chisq_wrapper *cc){
 
     _chifn=cc;
 
-    _explorers.set_chifn(_chifn);
     _min_explorers.set_chifn(_chifn);
 
     int i,j;
@@ -1289,7 +1288,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     else{
         printf("calling _explorers.get_seed(); did not expect that\n");
         exit(1);
-        _explorers.get_seed(seed);
     }
 
     printf("fn anchor %e; %d %d %d\n",
@@ -2010,7 +2008,6 @@ void dalex::init_fill(){
 void dalex::octopus_search(){
     int pt_start=_chifn->get_pts();
     int pt_prime=_chifn->get_pts();
-    _explorers.initialize();
     array_1d<double> dir,midpt;
     int i_found,i_next;
     double mu;
@@ -2103,34 +2100,6 @@ void dalex::octopus_search(){
     }
     _chifn->write_pts();
     _update_good_points();
-}
-
-void dalex::explore(){
-    explore(0);
-}
-
-void dalex::explore(int with_kick){
-    printf("\nexploring\n");
-    int pt_0=_chifn->get_pts();
-
-    /*if(_explorers.get_n_particles()==0){
-        initialize_exploration();
-    }*/
-
-    array_1d<int> associates;
-    associates.set_name("dalex_explore_associates");
-    int i;
-    for(i=0;i<_good_points.get_dim();i++){
-        if(_chifn->get_search_type_log(_good_points.get_data(i))<_type_tendril){
-            associates.add(_good_points.get_data(i));
-        }
-    }
-
-    _explorers.set_associates(associates);
-    _explorers.set_envelope(4.0);
-    _explorers.sample(4*_chifn->get_dim(),with_kick);
-
-    _update_good_points(pt_0);
 }
 
 void dalex::initialize_min_exploration(){
