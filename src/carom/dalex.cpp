@@ -2079,47 +2079,54 @@ void dalex::octopus_search(){
 
     for(i=0;i<_origins.get_dim() && (_limit<0 || _chifn->get_pts()<_limit);i++){
 
-        pt_start=_chifn->get_pts();
         if(_particles.get_data(i)<0){
             get_new_tendril(&new_p,&new_o);
             _particles.set(i,new_p);
             _origins.set(i,new_o);
         }
-        if(_strikes_arr.get_data(i)==0){
-            _has_struck=0;
-        }
-        else{
-            _has_struck=1;
-        }
-        is_a_strike=simplex_boundary_search(_particles.get_data(i),_origins.get_data(i),_exclusion_zones,&i_next);
-        ellipse_pts.reset_preserving_room();
-        for(j=pt_start;j<_chifn->get_pts();j++){
-            if(_chifn->get_fn(j)<target()){
-                ellipse_pts.add_row(_chifn->get_pt(j));
-            }
-        }
-        if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
-            local_ellipse.build(ellipse_pts);
-            _exclusion_zones.add(local_ellipse);
-        }
-        if(is_a_strike==0){
-            _origins.set(i,_particles.get_data(i));
-            _particles.set(i,i_next);
-            if(_chifn->get_fn(i_next)<target()+1.0e-6){
-                _strikes_arr.set(i,0);
+
+        is_a_strike=0;
+        while(is_a_strike==0){
+            pt_start=_chifn->get_pts();
+
+            if(_strikes_arr.get_data(i)==0){
+                _has_struck=0;
             }
             else{
-                _strikes_arr.add_val(i,1);
+                _has_struck=1;
             }
-        }
-        else{
-             _strikes_arr.add_val(i,1);
-        }
+            is_a_strike=simplex_boundary_search(_particles.get_data(i),_origins.get_data(i),_exclusion_zones,&i_next);
+            ellipse_pts.reset_preserving_room();
+            for(j=pt_start;j<_chifn->get_pts();j++){
+                if(_chifn->get_fn(j)<target()){
+                    ellipse_pts.add_row(_chifn->get_pt(j));
+                }
+            }
+            if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
+                local_ellipse.build(ellipse_pts);
+                _exclusion_zones.add(local_ellipse);
+            }
+            if(is_a_strike==0){
+                _origins.set(i,_particles.get_data(i));
+                _particles.set(i,i_next);
+                if(_chifn->get_fn(i_next)<target()+1.0e-6){
+                    _strikes_arr.set(i,0);
+                }
+                else{
+                    is_a_strike=1;
+                    _strikes_arr.add_val(i,1);
+                }
+            }
+            else{
+                 _strikes_arr.add_val(i,1);
+            }
 
-        printf("pts %d lim %d\n",_chifn->get_pts(),_limit);
-        if(_chifn->get_dim()>9)printf("got to %e %e\n",_chifn->get_pt(i_next,6),_chifn->get_pt(i_next,9));
-        printf("is a strike: %d; strikes %d\n",is_a_strike,_strikes_arr.get_data(i));
-        printf("\n");
+            printf("particle %d\n",i);
+            printf("pts %d lim %d\n",_chifn->get_pts(),_limit);
+            if(_chifn->get_dim()>9)printf("got to %e %e\n",_chifn->get_pt(i_next,6),_chifn->get_pt(i_next,9));
+            printf("is a strike: %d; strikes %d\n",is_a_strike,_strikes_arr.get_data(i));
+            printf("\n");
+        }
         /*if(i_next!=particles.get_data(i)){
             _explorers.add_particle(_chifn->get_pt(i_next));
         }
