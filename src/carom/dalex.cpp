@@ -2375,11 +2375,58 @@ void dalex::iterate_on_minimum(){
         min_1=chimin();
     }
 
+    array_2d<int> tendril_cache;
+    tendril_cache.set_name("tendril_cache");
+    array_1d<int> good_cache;
+    good_cache.set_name("good_cache");
+    array_1d<int> origins;
+    origins.set_name("iterate_min_origins");
+    array_2d<double> ellipse_pts;
+    ellipse_pts.set_name("iterate_ellipse_pts");
+    ellipse local_ellipse;
+
     if(chimin()<_reset_chimin-_reset_threshold){
+
+        for(i=0;i<_tendril_path.get_rows();i++){
+            if(_chifn->get_fn(_tendril_path.get_data(i,0))<target()+1.0e-6){
+                tendril_cache.add_row(_tendril_path(i));
+            }
+        }
+
+        for(i=0;i<_good_points.get_dim();i++){
+            if(_chifn->get_fn(_good_points.get_data(i))<target()){
+                good_cache.add(_good_points.get_data(i));
+            }
+        }
+
         _reset_chimin=chimin();
         _good_points.reset_preserving_room();
         _tendril_path.reset_preserving_room();
         _exclusion_zones.reset();
+
+        for(i=0;i<good_cache.get_dim();i++){
+            _good_points.add(good_cache.get_data(i));
+        }
+
+        for(i=0;i<tendril_cache.get_rows();i++){
+            _tendril_path.add_row(tendril_cache(i));
+            if(origins.contains(tendril_cache.get_data(i,1))==0){
+                origins.add(tendril_cache.get_data(i,1));
+            }
+        }
+
+        for(i=0;i<origins.get_dim();i++){
+            ellipse_pts.reset_preserving_room();
+            for(j=0;j<_tendril_path.get_rows();j++){
+                if(_tendril_path.get_data(j,1)==origins.get_data(i)){
+                    ellipse_pts.add_row(_chifn->get_pt(_tendril_path.get_data(j,0)));
+                }
+            }
+            if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
+                local_ellipse.build(ellipse_pts);
+                _exclusion_zones.add(local_ellipse);
+            }
+        }
 
         find_bases();
     }
