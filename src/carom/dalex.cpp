@@ -1947,7 +1947,7 @@ void dalex::find_tendril_candidates(){
     fn_val_sorted.set_name("find_tendrils_fn_val_sorted");
     sort(fn_val,fn_val_sorted,fn_val_dex);
 
-    for(i=0;i<_chifn->get_dim()/2;i++){
+    for(i=0;i<_chifn->get_dim();i++){
         _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
         _origin_candidates.set(i,-1);
     }
