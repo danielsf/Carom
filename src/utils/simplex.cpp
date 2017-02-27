@@ -70,6 +70,10 @@ void simplex_minimizer::use_gradient(){
     _use_gradient=1;
 }
 
+void simplex_minimizer::do_not_use_gradient(){
+    _use_gradient=0;
+}
+
 void simplex_minimizer::freeze_temp(){
     _freeze_temp=1;
 }
