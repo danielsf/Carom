@@ -16,6 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('--limit', type=int, default=600000)
     parser.add_argument('--input', type=str,
                         default='output/workspace')
+    parser.add_argument('--x', type=int, nargs='+', default=None)
     args = parser.parse_args()
 
     if args.prefix is None:
@@ -33,7 +34,12 @@ if __name__ == "__main__":
     multinest_file = os.path.join(multinest_dir,
                                   "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % nlive)
 
-    dim_list = [(0,1), (6,9)]
+    if args.x is None:
+        dim_list = [(0,1), (6,9)]
+    else:
+        dim_list = []
+        for ix in range(0,len(args.x),2):
+            dim_list.append((args.x[ix], args.x[ix+1]))
 
     _data = None
     m_x_dict = {}
