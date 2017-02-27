@@ -1855,7 +1855,7 @@ void dalex::find_tendril_candidates(){
             pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
             i_found=-1;
-            factor=2.0;
+            factor=3.0;
             while(i_found<0){
                 printf("    running with factor %e\n",factor);
                 for(i=0;i<_chifn->get_dim();i++){
