@@ -1880,6 +1880,23 @@ void dalex::find_tendril_candidates(){
             }
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
+            if(_chifn->get_fn(i_found)>target()){
+                printf("    trying again because %e > %e\n",
+                _chifn->get_fn(i_found),target());
+                seed.reset_preserving_room();
+                seed.add_row(minpt);
+                for(jdim=0;jdim<_chifn->get_dim();jdim++){
+                    for(i=0;i<_chifn->get_dim();i++){
+                        trial.set(i,seed.get_data(0,i)+0.05*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
+                    }
+                    seed.add_row(trial);
+                }
+                ffmin.set_dice(_chifn->get_dice());
+                ffmin.use_gradient();
+                ffmin.find_minimum(seed,minpt);
+                evaluate(minpt,&mu,&i_found);
+                ffmin.do_not_use_gradient();
+            }
             if(_chifn->get_fn(i_found)<target()){
                 at_least_one.add(i_found);
             }
