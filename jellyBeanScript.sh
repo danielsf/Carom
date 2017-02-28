@@ -12,7 +12,7 @@ for ss in 11 452 831 642 53 19 90 52 112 7742 5345 1082
 do
     out_name=${out_dir}jellyBean_d12_s${ss}_output.sav
     
-    ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 400000 -s ${ss} \
+    ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 600000 -s ${ss} \
     -t ${out_dir}jellyBean_d12_s${ss}_timing.sav \
     -o ${out_name} -i 24 >& ${out_dir}jellyBean_s${ss}_stdout.txt
     
