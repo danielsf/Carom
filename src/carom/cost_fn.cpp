@@ -29,9 +29,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     }
 
     array_1d<double> norm;
-    for(i=0;i<_chifn->get_dim();i++){
-        norm.set(i,_chifn->get_characteristic_length(i));
-    }
     array_1d<double> min,max;
     int j;
     for(i=0;i<_associates.get_dim();i++){
@@ -47,9 +44,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
 
     if(min.get_dim()>0){
         for(i=0;i<_chifn->get_dim();i++){
-            if(max.get_data(i)-min.get_data(i)<norm.get_data(i)){
-                norm.set(i,max.get_data(i)-min.get_data(i));
-            }
+            norm.set(i,max.get_data(i)-min.get_data(i));
         }
     }
 
