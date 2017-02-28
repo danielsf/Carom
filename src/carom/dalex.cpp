@@ -2163,7 +2163,7 @@ void dalex::octopus_search(){
         }
         printf("\n    %d explorers\n",_explorers.get_n_particles());*/
 
-        if(_strikes_arr.get_data(i)==2){
+        if(_strikes_arr.get_data(i)==1){
             _strikeouts++;
             get_new_tendril(&new_p,&new_o);
             _particles.set(i,new_p);
