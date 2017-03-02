@@ -1936,6 +1936,7 @@ void dalex::find_tendril_candidates(){
 
             if(_limit>0 && _chifn->get_pts()>_limit){
                 _chifn->set_search_type(old_type);
+                _chifn->write_pts();
                 return;
             }
         }
@@ -1973,6 +1974,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
 
     while(particle[0]<0){
         if(_limit>0 && _chifn->get_pts()>_limit){
+            _chifn->write_pts();
             return;
         }
         associates.reset_preserving_room();
@@ -2086,6 +2088,7 @@ void dalex::octopus_search(){
         init_fill();
         _octopus_init=1;
         if(_limit>0 && _chifn->get_pts()>_limit){
+            _chifn->write_pts();
             return;
         }
     }
