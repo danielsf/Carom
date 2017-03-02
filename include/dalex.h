@@ -61,13 +61,8 @@ class dalex{
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
-            _particles.set_name("dalex_particles");
-            _origins.set_name("dalex_origins");
-            _particle_candidates.set_name("dalex_particle_candidates");
-            _origin_candidates.set_name("dalex_origin_candidates");
-            _strikes_arr.set_name("dalex_strikes_arr");
-
             _minimizers.set_name("dalex_minimizers");
+            _octopus_init=0;
         };
 
         void build(chisq_wrapper*);
@@ -235,6 +230,7 @@ class dalex{
         int _limit;
         int _strikes,_strikeouts;
         int _has_struck;
+        int _octopus_init;
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;
