@@ -66,7 +66,7 @@ void dalex::search(){
         iterate_on_minimum();
 
         _chifn->set_search_type(_type_tendril);
-        octopus_search();
+        tendril_search();
         _update_good_points();
     }
 
@@ -2063,30 +2063,30 @@ void dalex::init_fill(){
     _chifn->set_search_type(old_type);
 }
 
-void dalex::octopus_search(){
+void dalex::tendril_search(){
     int pt_start=_chifn->get_pts();
     int pt_prime=_chifn->get_pts();
     array_1d<double> dir,midpt;
     int i_found,i_next;
     double mu;
-    dir.set_name("octopus_dir");
-    midpt.set_name("octopus_mid_pt");
+    dir.set_name("tendril_dir");
+    midpt.set_name("tendril_mid_pt");
     int i,j;
 
     array_2d<double> ellipse_pts;
-    ellipse_pts.set_name("octopus_ellipse_pts");
+    ellipse_pts.set_name("tendril_ellipse_pts");
     ellipse local_ellipse;
     int is_a_strike;
 
     array_1d<int> new_particles,new_origins;
-    new_particles.set_name("octopus new_particles");
+    new_particles.set_name("tendril new_particles");
     new_origins.set_name("new_origins");
 
     int particle, origin;
 
-    if(_octopus_init==0){
+    if(_tendril_init==0){
         init_fill();
-        _octopus_init=1;
+        _tendril_init=1;
         if(_limit>0 && _chifn->get_pts()>_limit){
             _chifn->write_pts();
             return;

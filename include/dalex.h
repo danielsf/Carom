@@ -62,7 +62,7 @@ class dalex{
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
             _minimizers.set_name("dalex_minimizers");
-            _octopus_init=0;
+            _tendril_init=0;
         };
 
         void build(chisq_wrapper*);
@@ -77,7 +77,7 @@ class dalex{
         void simplex_search(array_1d<int>&);
         int simplex_boundary_search(const int, const int, ellipse_list&, int*);
         int _exploration_simplex(int,int,array_1d<int>&);
-        void octopus_search();
+        void tendril_search();
         void init_fill();
         void find_tendril_candidates();
         void get_new_tendril(int*,int*);
@@ -229,7 +229,7 @@ class dalex{
         int _limit;
         int _strikes,_strikeouts;
         int _has_struck;
-        int _octopus_init;
+        int _tendril_init;
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;
