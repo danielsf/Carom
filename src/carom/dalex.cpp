@@ -1848,6 +1848,7 @@ void dalex::find_tendril_candidates(){
     array_1d<int> at_least_one;
     at_least_one.set_name("find_tendril_at_least_one");
     double factor;
+    int failures;
 
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -1878,9 +1879,11 @@ void dalex::find_tendril_candidates(){
                 }
                 seed.add_row(trial);
             }
+            failures=0;
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
-            if(_chifn->get_fn(i_found)>target()){
+            failures++;
+            while(_chifn->get_fn(i_found)>target() && failures<3){
                 printf("    trying again because %e > %e\n",
                 _chifn->get_fn(i_found),target());
                 seed.reset_preserving_room();
@@ -1896,6 +1899,7 @@ void dalex::find_tendril_candidates(){
                 ffmin.find_minimum(seed,minpt);
                 evaluate(minpt,&mu,&i_found);
                 ffmin.do_not_use_gradient();
+                failures++;
             }
             if(_chifn->get_fn(i_found)<target()){
                 at_least_one.add(i_found);
