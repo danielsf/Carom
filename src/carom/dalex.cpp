@@ -998,7 +998,7 @@ void dalex::get_negative_gradient(int i_origin, cost_fn &cost, ellipse &dummy_el
     }
 }
 
-int dalex::simplex_boundary_search(const int specified, const int i_origin,
+int dalex::simplex_boundary_search(const int specified, const int i_origin, const double factor,
                                    ellipse_list &exclusion_zones, int *i_next){
 
     safety_check("simplex_boundary_search");
@@ -1113,6 +1113,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     cost_fn dchifn(_chifn,associates);
+    dchifn.multiply_norm(factor);
 
     printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
 
@@ -2051,7 +2052,7 @@ void dalex::init_fill(){
         if(i_found!=mindex()){
             ct++;
             _has_struck=0;
-            simplex_boundary_search(i_found,mindex(),dummy_list,&i);
+            simplex_boundary_search(i_found,mindex(),1.0,dummy_list,&i);
         }
     }
 
@@ -2098,13 +2099,17 @@ void dalex::tendril_search(){
 
     get_new_tendril(&particle,&origin);
 
+    double norm_factor;
+
     while(strikes<3){
 
         ellipse_pts.reset_preserving_room();
         is_a_strike=0;
         pt_start=_chifn->get_pts();
 
-        is_a_strike=simplex_boundary_search(particle,origin,_exclusion_zones,&i_next);
+        norm_factor=power(0.5,strikes);
+
+        is_a_strike=simplex_boundary_search(particle,origin,norm_factor,_exclusion_zones,&i_next);
 
         if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
             if(local_ellipse.contains(_chifn->get_pt(i_next),1)==1){
