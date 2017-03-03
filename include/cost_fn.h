@@ -11,6 +11,9 @@ class cost_fn : public function_wrapper{
         void build(chisq_wrapper*, array_1d<int>&);
         virtual double operator()(const array_1d<double>&);
         virtual int get_called();
+        void multiply_norm(double dd){
+            _scalar_norm*=dd;
+        }
         double nn_distance(const array_1d<double>&);
         void set_envelope(double dd){
             _envelope=dd;
