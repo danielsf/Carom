@@ -217,7 +217,6 @@ class dalex{
         void iterate_on_minimum();
 
         //////code related to tendrils
-        void tendril_search(int);
         void get_negative_gradient(int, cost_fn&, ellipse&, array_1d<double>&);
         array_2d<int> _tendril_path;
 
