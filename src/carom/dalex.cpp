@@ -1906,7 +1906,7 @@ void dalex::find_tendril_candidates(){
             }
             particles.add(i_found);
             cost=dchifn(minpt);
-            fn_val.add(cost);
+            fn_val.add(-1.0*dchifn.nn_distance(minpt));
             if(_chifn->get_dim()>9){
                 printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
             }
@@ -1998,7 +1998,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 cost_val.add(2.0*exception_value);
             }
             else{
-                cost_val.add(dchifn(_chifn->get_pt(_particle_candidates.get_data(i))));
+                cost_val.add(-1.0*dchifn.nn_distance(_chifn->get_pt(_particle_candidates.get_data(i))));
             }
             cost_val_dex.add(i);
         }
