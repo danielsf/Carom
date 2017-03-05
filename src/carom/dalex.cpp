@@ -1181,6 +1181,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(mindex(),i));
         }
+        if(_chifn->get_fn(specified)>target()){
+            for(i=0;i<_chifn->get_dim();i++){
+                base_dir.multiply_val(i,-1.0);
+            }
+        }
     }
     base_dir.normalize();
 
