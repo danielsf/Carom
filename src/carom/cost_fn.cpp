@@ -58,7 +58,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
         norm_dex.add(i);
     }
     sort(norm, norm_sorted, norm_dex);
-    _scalar_norm=norm_sorted.get_data(0);
+    _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
 }
 
 
