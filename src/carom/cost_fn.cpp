@@ -1,10 +1,12 @@
 #include "cost_fn.h"
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
+    _envelope=1.0;
     build(cc,aa,1);
 }
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
+    _envelope=1.0;
     build(cc,aa,min_or_med);
 }
 
@@ -24,7 +26,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     _median_associate.reset_preserving_room();
 
     _chifn=cc;
-    _envelope=1.0;
 
     int i;
 
