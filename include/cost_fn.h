@@ -6,9 +6,10 @@
 class cost_fn : public function_wrapper{
     public:
         cost_fn(chisq_wrapper*, array_1d<int>&);
+        cost_fn(chisq_wrapper*, array_1d<int>&, int);
         cost_fn(){_chifn=NULL;};
         ~cost_fn(){};
-        void build(chisq_wrapper*, array_1d<int>&);
+        void build(chisq_wrapper*, array_1d<int>&, int);
         virtual double operator()(const array_1d<double>&);
         virtual int get_called();
         void multiply_norm(double dd){

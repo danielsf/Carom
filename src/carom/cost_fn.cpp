@@ -1,10 +1,14 @@
 #include "cost_fn.h"
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
-    build(cc,aa);
+    build(cc,aa,1);
 }
 
-void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
+cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
+    build(cc,aa,min_or_med);
+}
+
+void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 
     printf("building cost_fn with %d associates\n",aa.get_dim());
     _called=0;
@@ -58,7 +62,12 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
         norm_dex.add(i);
     }
     sort(norm, norm_sorted, norm_dex);
-    _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
+    if(min_or_med==1){
+        _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
+    }
+    else{
+        _scalar_norm=norm_sorted.get_data(0);
+    }
 }
 
 

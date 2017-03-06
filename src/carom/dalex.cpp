@@ -1811,7 +1811,7 @@ void dalex::find_tendril_candidates(){
     ellipse good_ellipse;
     good_ellipse.build(center,ellipse_pts);
 
-    cost_fn dchifn(_chifn,associates);
+    cost_fn dchifn(_chifn,associates,0);
     double envelope=0.25*(target()-chimin());
     if(envelope<2.0){
         envelope=2.0;
@@ -1940,7 +1940,7 @@ void dalex::find_tendril_candidates(){
                         }
                     }
                 }
-                dchifn.build(_chifn,associates);
+                dchifn.build(_chifn,associates,0);
             }
 
             if(_limit>0 && _chifn->get_pts()>_limit){
@@ -1997,7 +1997,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 }
             }
         }
-        dchifn.build(_chifn,associates);
+        dchifn.build(_chifn,associates,1);
         for(i=0;i<_particle_candidates.get_dim();i++){
             if(_particle_candidates.get_data(i)<0){
                 cost_val.add(2.0*exception_value);
