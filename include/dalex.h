@@ -79,7 +79,7 @@ class dalex{
         int _exploration_simplex(int,int,array_1d<int>&);
         void tendril_search();
         void init_fill();
-        void find_tendril_candidates();
+        void find_tendril_candidates(double);
         void get_new_tendril(int*,int*);
         void min_explore(int, int);
         void initialize_min_exploration();

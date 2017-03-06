@@ -1763,7 +1763,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 }
 
 
-void dalex::find_tendril_candidates(){
+void dalex::find_tendril_candidates(double factor_in){
     int old_type=_chifn->get_search_type();
     _chifn->set_search_type(_type_init_tendril);
 
@@ -1861,7 +1861,7 @@ void dalex::find_tendril_candidates(){
             pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
             i_found=-1;
-            factor=3.0;
+            factor=factor_in;
             while(i_found<0){
                 printf("    running with factor %e\n",factor);
                 for(i=0;i<_chifn->get_dim();i++){
@@ -2034,7 +2034,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 }
             }
         }
-        find_tendril_candidates();
+        find_tendril_candidates(3.0);
     }
 }
 
