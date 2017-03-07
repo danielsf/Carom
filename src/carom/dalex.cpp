@@ -1764,8 +1764,6 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 
 void dalex::find_tendril_candidates(double factor_in){
-    int old_type=_chifn->get_search_type();
-    _chifn->set_search_type(_type_init_tendril);
 
     printf("finding tendril candidates\n");
 
@@ -1944,7 +1942,6 @@ void dalex::find_tendril_candidates(double factor_in){
             }
 
             if(_limit>0 && _chifn->get_pts()>_limit){
-                _chifn->set_search_type(old_type);
                 _chifn->write_pts();
                 return;
             }
@@ -1961,8 +1958,6 @@ void dalex::find_tendril_candidates(double factor_in){
         _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
         _origin_candidates.set(i,-1);
     }
-
-    _chifn->set_search_type(old_type);
 }
 
 
@@ -1971,6 +1966,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
     origin[0]=-1;
     int i,j,ip,io;
     int is_outside;
+    int old_type;
 
     cost_fn dchifn;
     array_1d<int> associates;
@@ -2034,7 +2030,10 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 }
             }
         }
+        old_type=_chifn->get_search_type();
+        _chifn->set_search_type(_type_init_tendril);
         find_tendril_candidates(3.0);
+        _chifn->set_search_type(old_type);
     }
 }
 
@@ -2043,32 +2042,13 @@ void dalex::init_fill(){
     int path_len=_tendril_path.get_rows();
     int old_type=_chifn->get_search_type();
     _chifn->set_search_type(_type_init);
-
-    array_1d<double> dir;
-    dir.set_name("fill_dir");
-    ellipse_list dummy_list;
-
+    find_tendril_candidates(1.0);
     int i;
-    int ct=0;
-    int i_found;
-    double mu;
-    while(ct<_chifn->get_dim()/2){
-        for(i=0;i<_chifn->get_dim();i++){
-            dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
-        }
-        i_found=bisection(mindex(),dir,target(),0.001);
-        if(i_found!=mindex()){
-            ct++;
-            _has_struck=0;
-            simplex_boundary_search(i_found,mindex(),dummy_list,&i);
-        }
+    for(i=0;i<_particle_candidates.get_dim();i++){
+        _particle_candidates.set(i,-1);
+        _origin_candidates.set(i,-1);
     }
 
-    if(_tendril_path.get_rows()!=path_len){
-        printf("WARNING init fill added to path length %d %d\n",
-        path_len,_tendril_path.get_rows());
-        exit(1);
-    }
     _chifn->set_search_type(old_type);
 }
 
