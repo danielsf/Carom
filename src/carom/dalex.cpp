@@ -1440,8 +1440,6 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    dummy_ellipse.use_geo_center();
-
     if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
         dummy_ellipse.build(ellipse_pts);
     }
@@ -1472,6 +1470,17 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         evaluate(trial,&mu,&j);
         if(mu<target()){
             n_good++;
+        }
+        else{
+            for(i=0;i<_chifn->get_dim();i++){
+                center.set(i,dummy_ellipse.center(i));
+                trial_dir.set(i,trial.get_data(i)-center.get_data(i));
+            }
+            i=bisection(center,trial_dir,target(),0.001);
+            if(new_good.contains(i)==0){
+                n_bisect++;
+                new_good.add(i);
+            }
         }
     }
     printf("    n_fill %d n_good %d n_bisect %d -- %d\n",n_fill,n_good,n_bisect,new_good.get_dim());
