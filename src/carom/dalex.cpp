@@ -1361,131 +1361,51 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     int pre_fill=_chifn->get_pts();
-
-    // *** do bisection along directions perpendicular to ***
-    // *** i_next - specified ***
+    array_1d<double> perp_dir;
     array_1d<double> trial_dir;
-    base_dir.set_name("dalex_boundary_base_dir");
-    trial_dir.set_name("dalex_boundary_trial_dir");
-    array_2d<double> perp_dir;
-    perp_dir.set_name("dalex_boundary_perp_dir");
-    array_1d<int> good_dexes;
-    good_dexes.set_name("dalex_boundary_good_dexes");
-    int i_midst;
-    int pre_midpt=_chifn->get_pts();
-    double sgn;
-
-    for(i=pt_start;i<i_next[0];i++){
-        if(_chifn->get_fn(i)<target()){
-            good_dexes.add(i);
-        }
-    }
-
-    if(i_next[0]!=specified && good_dexes.get_dim()>1){
-        base_dir.reset_preserving_room();
+    perp_dir.set_name("dalex_simp_bou_perp_dir");
+    trial_dir.set_name("dalex_simp_bou_trial_dir");
+    double base_norm;
+    int iteration;
+    double step;
+    double rr;
+    int n_good_fill=0;
+    if(i_next[0]!=specified){
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(i_next[0],i)-_chifn->get_pt(specified,i));
         }
-        base_dir.normalize();
-        while(perp_dir.get_rows()<_chifn->get_dim()-1){
+        base_norm=base_dir.normalize();
+        for(iteration=0;iteration<2*_chifn->get_dim();iteration++){
             for(i=0;i<_chifn->get_dim();i++){
-                trial_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+                perp_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
             }
             component=0.0;
             for(i=0;i<_chifn->get_dim();i++){
-                component+=trial_dir.get_data(i)*base_dir.get_data(i);
+                component+=perp_dir.get_data(i)*base_dir.get_data(i);
             }
             for(i=0;i<_chifn->get_dim();i++){
-                trial_dir.subtract_val(i,component*base_dir.get_data(i));
+                perp_dir.subtract_val(i,component*base_dir.get_data(i));
             }
-            for(i=0;i<perp_dir.get_rows();i++){
-                component=0.0;
-                for(j=0;j<_chifn->get_dim();j++){
-                    component+=trial_dir.get_data(j)*perp_dir.get_data(i,j);
-                }
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial_dir.subtract_val(j,component*perp_dir.get_data(i,j));
-                }
-            }
-            component=trial_dir.normalize();
-            if(component>1.0e-20){
-                perp_dir.add_row(trial_dir);
-            }
-        }
-
-        i_midst=good_dexes.get_data(good_dexes.get_dim()/2);
-        for(i=0;i<perp_dir.get_rows();i++){
-            for(sgn=-1.0;sgn<1.1;sgn+=2.0){
-                for(j=0;j<_chifn->get_dim();j++){
-                    trial_dir.set(j,sgn*perp_dir.get_data(i,j));
-                }
-                bisection(i_midst,trial_dir,target(),0.01);
-            }
-        }
-        j=0;
-        for(i=pre_midpt;i<_chifn->get_pts();i++){
-            if(_chifn->get_fn(i)<target()){
-                j++;
-            }
-        }
-        printf("bisection sampled %d good %d\n",
-               _chifn->get_pts()-pre_midpt,j);
-    }
-
-    // *** try to fill in the local ellipse ***
-    ellipse_pts.reset_preserving_room();
-    for(i=pt_start;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
-            ellipse_pts.add_row(_chifn->get_pt(i));
-        }
-    }
-
-    if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
-        dummy_ellipse.build(ellipse_pts);
-    }
-    if(_ellipse_sampler.is_initialized()==0){
-        _ellipse_sampler.initialize(_chifn->get_dim(), _chifn->random_int()%1000000+1);
-    }
-
-    array_1d<double> ell_pt,center;
-    ell_pt.set_name("dalex_simplex_boundary_ell_pt");
-    center.set_name("dalex_simplex_boundary_center");
-    trial.reset_preserving_room();
-    int n_fill=(_chifn->get_pts()-pt_start)/4;
-    int n_good=0;
-    int n_bisect=0;
-    array_1d<int> new_good;
-    new_good.set_name("dalex_simplex_new_good");
-    int i_fill_start=_chifn->get_pts();
-    while(_chifn->get_pts()-i_fill_start<n_fill && ellipse_pts.get_rows()>2*_chifn->get_dim()){
-        _ellipse_sampler.get_pt(ell_pt);
-        for(j=0;j<_chifn->get_dim();j++){
-            trial.set(j,dummy_ellipse.center(j));
-        }
-        for(j=0;j<_chifn->get_dim();j++){
-            for(k=0;k<_chifn->get_dim();k++){
-                trial.add_val(k,ell_pt.get_data(j)*dummy_ellipse.radii(j)*dummy_ellipse.bases(j,k));
-            }
-        }
-        evaluate(trial,&mu,&j);
-        if(mu<target()){
-            n_good++;
-        }
-        else{
+            perp_dir.normalize();
+            rr=_chifn->random_double();
             for(i=0;i<_chifn->get_dim();i++){
-                center.set(i,dummy_ellipse.center(i));
-                trial_dir.set(i,trial.get_data(i)-center.get_data(i));
+                trial_dir.set(i,base_dir.get_data(i)+rr*perp_dir.get_data(i));
             }
-            i=bisection(center,trial_dir,target(),0.001);
-            if(new_good.contains(i)==0){
-                n_bisect++;
-                new_good.add(i);
+            trial_dir.normalize();
+            for(step=0.1*base_norm;step<1.05*base_norm;step+=0.1*base_norm){
+                for(i=0;i<_chifn->get_dim();i++){
+                    trial.set(i,_chifn->get_pt(specified,i)
+                               +step*trial_dir.get_data(i));
+                }
+                evaluate(trial,&mu,&i);
+                if(mu<target()){
+                    n_good_fill++;
+                }
             }
         }
     }
-    printf("    n_fill %d n_good %d n_bisect %d -- %d\n",n_fill,n_good,n_bisect,new_good.get_dim());
 
-    int i_good_start;
+    printf("    filling called %d good %d\n",_chifn->get_pts()-pre_fill,n_good_fill);
 
     _update_good_points(pt_start);
 
