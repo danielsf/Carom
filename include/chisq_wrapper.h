@@ -13,7 +13,7 @@
 
 #define _type_init 0
 #define _type_refine 1
-#define _type_explore 2
+#define _type_init_tendril 2
 #define _type_tendril 3
 #define _type_find_bases 4
 #define _type_tendril_seed 5
@@ -37,7 +37,7 @@ public:
     }
     void set_search_type(int ii){
         if(ii!=_type_init && ii!=_type_refine &&
-           ii!=_type_explore && ii!=_type_tendril &&
+           ii!=_type_init_tendril && ii!=_type_tendril &&
            ii!=_type_find_bases && ii!=_type_tendril_seed &&
            ii!=_type_tendril_fill && ii!=-1){
 

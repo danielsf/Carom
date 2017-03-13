@@ -1,4 +1,4 @@
-make jellyBean_maps
+#make jellyBean_maps
 #make analysis
 
 out_dir=output/workspace/
@@ -7,8 +7,7 @@ out_dir=output/workspace/
 
 #for ss in 626 694 762 1068 6475 66 125
 #for ss in 66 694 6475 762 1068 125 626
-#for ss in 66 694 1068 626 6475 762
-for ss in 11 452 831 642 53 19 90 52 112
+for ss in 66 694 1068 626 6475 762 1082 5345 7742
 do
     out_name=${out_dir}jellyBean_d12_s${ss}_output.sav
     

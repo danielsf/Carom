@@ -1,10 +1,16 @@
 #include "cost_fn.h"
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
-    build(cc,aa);
+    _envelope=1.0;
+    build(cc,aa,1);
 }
 
-void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
+cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
+    _envelope=1.0;
+    build(cc,aa,min_or_med);
+}
+
+void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 
     printf("building cost_fn with %d associates\n",aa.get_dim());
     _called=0;
@@ -20,7 +26,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     _median_associate.reset_preserving_room();
 
     _chifn=cc;
-    _envelope=1.0;
 
     int i;
 
@@ -29,9 +34,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
     }
 
     array_1d<double> norm;
-    for(i=0;i<_chifn->get_dim();i++){
-        norm.set(i,_chifn->get_characteristic_length(i));
-    }
     array_1d<double> min,max;
     int j;
     for(i=0;i<_associates.get_dim();i++){
@@ -47,9 +49,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
 
     if(min.get_dim()>0){
         for(i=0;i<_chifn->get_dim();i++){
-            if(max.get_data(i)-min.get_data(i)<norm.get_data(i)){
-                norm.set(i,max.get_data(i)-min.get_data(i));
-            }
+            norm.set(i,max.get_data(i)-min.get_data(i));
         }
     }
 
@@ -63,7 +63,12 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa){
         norm_dex.add(i);
     }
     sort(norm, norm_sorted, norm_dex);
-    _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
+    if(min_or_med==1){
+        _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
+    }
+    else{
+        _scalar_norm=norm_sorted.get_data(0);
+    }
 }
 
 
@@ -97,6 +102,11 @@ int cost_fn::get_called(){
 }
 
 double cost_fn::operator()(const array_1d<double> &pt){
+
+    if(_chifn==NULL){
+        printf("WARNING cannot call cost_fn operator; _chifn is NULL\n");
+        exit(1);
+    }
 
     _called++;
 

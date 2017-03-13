@@ -61,13 +61,8 @@ class dalex{
             _basis_vectors.set_name("dalex_basis_vectors");
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
-            _particles.set_name("dalex_particles");
-            _origins.set_name("dalex_origins");
-            _particle_candidates.set_name("dalex_particle_candidates");
-            _origin_candidates.set_name("dalex_origin_candidates");
-            _strikes_arr.set_name("dalex_strikes_arr");
-
             _minimizers.set_name("dalex_minimizers");
+            _tendril_init=0;
         };
 
         void build(chisq_wrapper*);
@@ -81,12 +76,10 @@ class dalex{
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
         int simplex_boundary_search(const int, const int, ellipse_list&, int*);
-        void explore(int);
-        void explore();
         int _exploration_simplex(int,int,array_1d<int>&);
-        void octopus_search();
+        void tendril_search();
         void init_fill();
-        void find_tendril_candidates();
+        void find_tendril_candidates(double);
         void get_new_tendril(int*,int*);
         void min_explore(int, int);
         void initialize_min_exploration();
@@ -215,7 +208,6 @@ class dalex{
 
 
         ///////code related to explorers
-        explorers _explorers;
         explorers _min_explorers;
         int _last_checked_good;
 
@@ -225,7 +217,6 @@ class dalex{
         void iterate_on_minimum();
 
         //////code related to tendrils
-        void tendril_search(int);
         void get_negative_gradient(int, cost_fn&, ellipse&, array_1d<double>&);
         array_2d<int> _tendril_path;
 
@@ -238,6 +229,7 @@ class dalex{
         int _limit;
         int _strikes,_strikeouts;
         int _has_struck;
+        int _tendril_init;
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;

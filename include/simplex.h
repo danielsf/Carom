@@ -19,6 +19,7 @@ public:
     void set_minmax(array_1d<double>&, array_1d<double>&);
     void set_abort_max_factor(int);
     void use_gradient();
+    void do_not_use_gradient();
     void freeze_temp();
     void unfreeze_temp();
     void get_minpt(array_1d<double>&);
