@@ -61,7 +61,7 @@ if __name__ == "__main__":
     m_data = None
     m_d_data = None
 
-    time_list = [100000, 125000, 150000, 250000]
+    time_list = [150000, 200000, 250000, 400000]
 
     if not isinstance(args.seed, list):
         seed_list = [args.seed]
