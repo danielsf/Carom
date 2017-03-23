@@ -14,9 +14,9 @@ if __name__ == "__main__":
                             "workspace")
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
-    seed_list = [6475, 1068]
+    seed_list = [90, 452]
     title_list = ['fast convergence', 'slow convergence']
-    cutoff_list = [350000, 500000]
+    cutoff_list = [200000, 400000]
 
     dtype_list = []
     for ii in range(12):
