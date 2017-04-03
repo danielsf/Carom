@@ -22,7 +22,7 @@ if __name__ == "__main__":
     full_dim = 12
     nlive = 20000
     n_dud = 300
-    seed = 831
+    seed = 112
 
     multinest_dud_file = os.path.join(multinest_dir,
                                       "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % n_dud)
