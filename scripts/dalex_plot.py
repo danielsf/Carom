@@ -17,6 +17,7 @@ parser.add_argument('--x', type=int, default=None, nargs='+')
 parser.add_argument('--d', type=int, default=None)
 parser.add_argument('--c', type=float, default=21.03,
                     help='delta chisquared')
+parser.add_argument('--limit', type=int, default=None)
 
 import os
 
@@ -67,7 +68,8 @@ for ix_dex in range(0,len(args.x),2):
          dmin, dtarget,
          ddata) = scatter_from_carom(full_name, args.d, ix, iy,
                                      delta_chi=args.c,
-                                     data=carom_data[file_name])
+                                     data=carom_data[file_name],
+                                     limit=args.limit)
 
         carom_data[file_name] = ddata
 
@@ -78,8 +80,13 @@ for ix_dex in range(0,len(args.x),2):
         plt.xlabel('$\\theta_%d$' % ix)
         plt.ylabel('$\\theta_%d$' % iy)
 
+        if args.limit is not None:
+            npts=args.limit
+        else:
+            npts=len(carom_data[file_name])
+
         out_name = os.path.join(args.out_dir,
-                                '%s_%d_%d.png' % (file_name, ix, iy))
+                                '%s_%d_%d_%.2e.png' % (file_name, ix, iy, npts))
 
         plt.savefig(out_name)
         plt.close()
