@@ -189,6 +189,20 @@ void control_integrator::run_analysis(array_1d<double> &cc){
             }
         }
     }
+
+    sprintf(name, "%s_all_good_points.txt", _name_root);
+    FILE *output;
+    output=fopen(name, "w");
+    for(ix=0;ix<coordinates.get_rows();ix++){
+        if(chi_vals.get_data(ix)<foundMin+40.0){
+            for(iy=0;iy<coordinates.get_cols();iy++){
+                fprintf(output,"%e ",_min.get_data(iy)+coordinates.get_data(ix,iy)*_dx.get_data(iy));
+            }
+            fprintf(output,"%e\n",chi_vals.get_data(ix));
+        }
+    }
+    fclose(output);
+
 }
 
 int control_integrator::get_dex(double value, double min, double dx, int max){
