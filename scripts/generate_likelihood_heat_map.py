@@ -24,40 +24,7 @@ if __name__ == "__main__":
     for ix, iy in zip(ix_list, iy_list):
         name = 'gentle_integrable_detailed_x2_0.95_%d_%d_heatmap.txt' % (ix, iy)
         input_name = os.path.join(input_dir, name)
-        raw_data = np.genfromtxt(input_name).transpose()
-        xmin = raw_data[0].min()
-        xmax = raw_data[0].max()
-        ymin = raw_data[1].min()
-        ymax = raw_data[1].max()
-        xx_sorted = np.sort(raw_data[0])
-        dx_raw = np.unique(np.diff(xx_sorted))
-        dx = dx_raw[np.where(dx_raw>1.0e-10)].min()
-
-        yy_sorted = np.sort(raw_data[1])
-        dy_raw = np.unique(np.diff(yy_sorted))
-        dy = dy_raw[np.where(dy_raw>1.0e-10)].min()
-
-        dx_resample = 2.0*dx
-        dy_resample = 2.0*dy
-
-        xx_out = np.zeros(len(raw_data[0]))
-        yy_out = np.zeros(len(raw_data[1]))
-        like_out = np.zeros(len(raw_data[3]))
-        n_pixels = 0
-        for xx in np.arange(xmin+0.5*dx_resample, xmax, dx_resample):
-            for yy in np.arange(ymin+0.5*dx_resample, ymax, dy_resample):
-                valid_pixels = np.where(np.logical_and(raw_data[0]>xx-0.5*dx_resample,
-                                        np.logical_and(raw_data[0]<=xx+0.5*dx_resample,
-                                        np.logical_and(raw_data[1]>yy-0.5*dy_resample,
-                                                       raw_data[1]<=yy+0.5*dy_resample))))
-
-                if len(valid_pixels[0])>0:
-                    xx_out[n_pixels] = xx
-                    yy_out[n_pixels] = yy
-                    like_out[n_pixels] = raw_data[3][valid_pixels].sum()*dx*dy
-                    n_pixels += 1
-
-        data['%d_%d' % (ix, iy)] = np.array([xx_out, yy_out, like_out])
+        data['%d_%d' % (ix, iy)] = np.genfromtxt(input_name).transpose()
 
 
     plt.figure(figsize=(30, 30))
@@ -65,11 +32,11 @@ if __name__ == "__main__":
 
         tag = '%d_%d' % (xdex, ydex)
         plt.subplot(3, 2, ifig+1)
-        indices = np.where(data[tag][2]>1.0e-4)
+        indices = np.where(data[tag][3]>1.0e-6)
 
         xx = data[tag][0][indices]
         yy = data[tag][1][indices]
-        cc = data[tag][2][indices]
+        cc = data[tag][3][indices]
 
         x_min = xx.min()
         x_max = xx.max()
@@ -121,4 +88,4 @@ if __name__ == "__main__":
         plt.yticks(fontsize=40)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'heat_map.eps'))
+    plt.savefig(os.path.join(output_dir, 'heat_map.png'))
