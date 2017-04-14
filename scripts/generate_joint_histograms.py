@@ -15,7 +15,7 @@ multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
 fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
 multinest_nlive = 300
-dalex_seed = 112
+dalex_seed = 90
 
 dchi = 0.5
 chi_cutoff = 250.0
