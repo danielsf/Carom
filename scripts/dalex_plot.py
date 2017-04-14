@@ -77,8 +77,8 @@ for ix_dex in range(0,len(args.x),2):
         if control_x is not None:
             plt.scatter(control_x, control_y, marker='o', color='k', s=10)
         plt.scatter(dx, dy, marker='x', color='r', s=10)
-        plt.xlabel('$\\theta_%d$' % ix)
-        plt.ylabel('$\\theta_%d$' % iy)
+        plt.xlabel('$\\theta_{%d}$' % ix)
+        plt.ylabel('$\\theta_{%d}$' % iy)
 
         if args.limit is not None:
             npts=args.limit
