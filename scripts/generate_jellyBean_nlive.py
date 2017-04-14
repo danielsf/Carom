@@ -34,7 +34,8 @@ for i_set, n_live in enumerate(n_live_list):
                                  "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % n_live)
 
         xx, yy, data = scatter_from_multinest_projection(file_name, 12, dim[0], dim[1],
-                                                        data=data)
+                                                        data=data,
+                                                        downsample=0.02)
 
         color = plt.cm.gist_ncar(i_set*50)
         hh = plt.scatter(xx, yy, color=[color]*len(xx), s=7)
@@ -67,4 +68,4 @@ plt.xlim((xmin, xmax+0.4*dx))
 plt.ylim((ymin, ymax+0.4*dx))
 plt.legend(header_list, label_list, fontsize=10, loc=0)
 plt.tight_layout()
-plt.savefig(os.path.join(fig_dir, 'jellyBean_nlive_comparison.png'))
+plt.savefig(os.path.join(fig_dir, 'jellyBean_nlive_comparison.eps'))

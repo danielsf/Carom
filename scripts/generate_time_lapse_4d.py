@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
         multinest_scatter_file_list.append(multinest_file_name)
 
-    dim_list = ((0,1), (0,2), (0,3), (1,2), (1,3), (2,3))
+    dim_list = [(0,1)]
 
     control_dtype = np.dtype([('x', float), ('y', float)])
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             plt.figure(i_fig+1)
             plt.subplot(3,2,i_time+1)
             m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
-                                      4, dim[0], dim[1], downsample=True)
+                                      4, dim[0], dim[1], downsample=0.01)
             
             (d_x, d_y, d_chisq_min, d_target,
              d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
@@ -150,5 +150,5 @@ if __name__ == "__main__":
         plt.legend(legend_handles[dim], legend_labels[dim], fontsize=10,
                    bbox_to_anchor=(-0.1,-0.4), loc=2)
         plt.tight_layout()
-        file_name = os.path.join(fig_dir, "time_lapse_%d_%d.png" % (dim[0], dim[1]))
+        file_name = os.path.join(fig_dir, "time_lapse_%d_%d.eps" % (dim[0], dim[1]))
         plt.savefig(file_name)
