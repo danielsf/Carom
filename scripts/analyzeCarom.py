@@ -26,10 +26,11 @@ def load_dalex_data(data_name, dim):
 
     return np.genfromtxt(data_name, dtype=dtype)
 
-def make_histogram(xx_in, dmag, cut_off, cumulative=True):
+def make_histogram(xx_in, dmag, cut_off, min_val = None, cumulative=True):
     xx = xx_in[np.where(xx_in<=cut_off+dmag)]
     #print xx.min(),xx.max()
-    min_val=xx.min()-dmag
+    if min_val is None:
+        min_val=xx.min()-dmag
     i_xx = np.round((xx-min_val)/dmag).astype(int)
     unique_ixx, ct = np.unique(i_xx, return_counts=True)
 
