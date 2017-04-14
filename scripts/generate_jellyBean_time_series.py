@@ -22,7 +22,7 @@ if __name__ == "__main__":
     full_dim = 12
     nlive = 20000
     n_dud = 300
-    seed = 112
+    seed = 90
 
     multinest_dud_file = os.path.join(multinest_dir,
                                       "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % n_dud)
@@ -59,10 +59,15 @@ if __name__ == "__main__":
     for ix, iy in zip((0, 6), (1, 9)):
 
         m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
-                                                             full_dim, ix, iy, data=m_data)
+                                                             full_dim, ix, iy, data=m_data,
+                                                             downsample=0.02)
 
         md_x, md_y, md_data = scatter_from_multinest_projection(multinest_dud_file,
-                                                                full_dim, ix, iy, data=md_data)
+                                                                full_dim, ix, iy, data=md_data,
+                                                                downsample=0.02)
+
+
+        print('len %d %d' % (len(m_x), len(md_x)))
 
         xmin = m_x.min()
         xmax = m_x.max()
@@ -134,6 +139,6 @@ if __name__ == "__main__":
                 plt.ylabel('$\\theta_%d$' % iy, fontsize=15)
 
         plt.tight_layout()
-        plt.savefig(os.path.join(fig_dir, 'jellyBean_time_series_s%d_%d_%d.png' % (seed, ix, iy)))
+        plt.savefig(os.path.join(fig_dir, 'jellyBean_time_series_s%d_%d_%d.eps' % (seed, ix, iy)))
         plt.close()
 
