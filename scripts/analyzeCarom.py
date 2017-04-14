@@ -138,7 +138,7 @@ def _downsample_grid(xx, yy, pixel_size):
     x_out = np.zeros(len(xx))
     y_out = np.zeros(len(yy))
 
-    dd_avg = np.sqrt(np.power((xx-x_avg)/dx, 2) + np.power((yy-y_avg)/dy, 2))
+    dd_avg = -1.0*np.sqrt(np.power((xx-x_avg)/dx, 2) + np.power((yy-y_avg)/dy, 2))
     sorted_dexes = np.argsort(dd_avg)
 
     for ix in sorted_dexes:
