@@ -90,3 +90,16 @@ for ix_dex in range(0,len(args.x),2):
 
         plt.savefig(out_name)
         plt.close()
+
+import numpy as np
+print('npts %d' % npts)
+for file_name in carom_data:
+    data_arr = carom_data[file_name][:npts]
+    good_dexes = np.where(data_arr['chisq']<=dtarget)
+    good_data = data_arr[good_dexes]
+    print("stats for %s" % file_name)
+    print("    chi^2 min: %e" % good_data['chisq'].min())
+    for ii in range(args.d):
+        print("    range %d: %e -> %e" % (ii,
+                                          good_data['x%d' % ii].min(),
+                                          good_data['x%d' % ii].max()))
