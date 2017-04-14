@@ -88,7 +88,7 @@ int main(){
     //dx.multiply_val(2,2.0);
     //dx.multiply_val(3,2.0);
 
-    control_integrator integrator(chisq,min,max,dx,"controls/draft_160907/gentle_integrable_detailed_x2");
+    control_integrator integrator(chisq,min,max,dx,"controls/draft_170407/gentle_integrable_detailed_x2");
     array_1d<double> cc;
     cc.add(0.95);
     cc.add(0.68);

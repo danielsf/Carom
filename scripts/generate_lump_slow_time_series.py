@@ -16,13 +16,13 @@ if __name__ == "__main__":
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    dalex_dir = os.path.join(physics_dir, "Carom", "output", "draft_161215")
+    dalex_dir = os.path.join(physics_dir, "Carom", "output", "workspace")
 
     delta_chi = 21.03
     full_dim = 12
     nlive = 5000
     n_dud = 300
-    seed = 33
+    seed = 62
 
     multinest_dud_file = os.path.join(multinest_dir,
                                       "nonGaussianLump_d12_s99_n%d_t1.00e-03.txt" % n_dud)

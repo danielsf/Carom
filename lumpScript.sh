@@ -11,7 +11,7 @@ for ss in 83 13 48 33 62 717
 do
     out_name=${out_dir}lump_d12_s${ss}_output.sav
     
-    ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 250000 -s ${ss} \
+    ./bin/jellyBean_maps -d 12 -c 21.03 -p 0.95 -n 400000 -s ${ss} \
     -t ${out_dir}lump_d12_s${ss}_timing.sav \
     -o ${out_name} -i 24 -x 2
     

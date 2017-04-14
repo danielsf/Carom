@@ -228,3 +228,26 @@ def scatter_from_carom(data_name, dim, ix, iy, delta_chi=None, target=None, data
                                  x_norm, y_norm)
 
     return x_grid, y_grid, chisq_min, target, data
+
+
+def one_d_marginalized_posterior_from_multinest(file_name, ix, dim, data=None, dx=0.05):
+    if data is None:
+        ref_data = load_multinest_data(file_name, dim)
+    else:
+       ref_data = data
+
+    tag = 'x%d' % ix
+    xmin = ref_data[tag].min()
+    xmax = ref_data[tag].max()
+
+    idx = np.round((ref_data[tag]-xmin)/dx).astype(int)
+
+    total_posterior = 0.0
+    x_arr = np.arange(xmin, xmax, dx)
+    p_arr = np.zeros(len(x_arr))
+    for ii, xx in enumerate(x_arr):
+        post = ref_data['degen'][np.where(idx==ii)].sum()
+        total_posterior += post*dx
+        p_arr[ii] = post
+
+    return x_arr, p_arr/total_posterior, ref_data

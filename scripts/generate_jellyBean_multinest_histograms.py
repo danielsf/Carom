@@ -30,12 +30,13 @@ if __name__ == "__main__":
     multinest_name = os.path.join(multinest_dir, 'gaussianJellyBean_d12_s99_n%d_t1.00e-03_carom.sav' % n_live)
     data = np.genfromtxt(multinest_name, dtype=dtype)
     cutoff=len(data)
-    time_list = [50000, 100000] + range(200000, cutoff+50000, 100000)
+    print('cutoff ',cutoff)
+    time_list = [50000, 100000] + range(200000, cutoff, 100000) + [cutoff]
 
     header_list = []
     label_list = []
     dchi = 0.5
-    chi_cutoff = 130.0
+    chi_cutoff = 250.0
     ymax = 0
     time_list.reverse()
     for time in time_list:

@@ -1232,6 +1232,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
+
+                // note the bug below; i_bisect2 does not get used
+                // because it will never be set to i_bisect2 != i_anchor
+                // this seems to have not hurt performance
                 i_bisect2=i_anchor;
                 tt=local_target;
                 while(i_bisect1==i_anchor){

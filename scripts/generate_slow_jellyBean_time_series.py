@@ -16,13 +16,13 @@ if __name__ == "__main__":
     fig_dir = os.path.join(physics_dir, "Carom_drafts", "figures")
 
     multinest_dir = os.path.join(physics_dir, "MultiNest_v3.9", "chains")
-    dalex_dir = os.path.join(physics_dir, "Carom", "output", "draft_161215")
+    dalex_dir = os.path.join(physics_dir, "Carom", "output", "workspace")
 
     delta_chi = 21.03
     full_dim = 12
-    nlive = 3000
+    nlive = 20000
     n_dud = 300
-    seed = 1068
+    seed = 452
 
     multinest_dud_file = os.path.join(multinest_dir,
                                       "gaussianJellyBean_d12_s99_n%d_t1.00e-03.txt" % n_dud)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     md_data = None
     d_data = None
 
-    time_list = [200000, 300000, 400000, 500000]
+    time_list = [150000, 200000, 300000, 400000]
 
     for ix, iy in zip((0, 6), (1, 9)):
 
