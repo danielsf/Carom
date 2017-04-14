@@ -30,7 +30,8 @@ control_file = os.path.join(physics_dir, 'MultiNest_v3.9',
 
 (m_x,
  m_y, 
- m_data) = scatter_from_multinest_projection(control_file, 12, args.x, args.y)
+ m_data) = scatter_from_multinest_projection(control_file, 12, args.x, args.y,
+                                             downsample=0.02)
 
 plt.figsize = (30,30)
 
@@ -66,5 +67,5 @@ for i_fig, seed in enumerate(seed_list):
     plt.ylim(0,90)
 
 plt.tight_layout()
-out_name = os.path.join(out_dir,'jellyBean_evolution.png')
+out_name = os.path.join(out_dir,'jellyBean_evolution.eps')
 plt.savefig(out_name)

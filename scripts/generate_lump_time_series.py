@@ -61,7 +61,7 @@ if __name__ == "__main__":
     m_data = None
     m_d_data = None
 
-    time_list = [150000, 200000, 250000, 400000]
+    time_list = [100000, 150000, 200000, 250000]
 
     if not isinstance(args.seed, list):
         seed_list = [args.seed]
@@ -75,10 +75,13 @@ if __name__ == "__main__":
         for ix, iy in zip((0, 6), (3, 9)):
 
             m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
-                                                                 full_dim, ix, iy, data=m_data)
+                                                                 full_dim, ix, iy, data=m_data,
+                                                                 downsample=0.02)
 
             m_d_x, m_d_y, m_d_data = scatter_from_multinest_projection(multinest_dud_file,
-                                                                       full_dim, ix, iy, data=m_d_data)
+                                                                       full_dim, ix, iy,
+                                                                       data=m_d_data,
+                                                                       downsample=0.02)
 
             xmin = m_x.min()
             xmax = m_x.max()
@@ -164,6 +167,6 @@ if __name__ == "__main__":
                     plt.ylabel('$\\theta_%d$' % iy, fontsize=15)
 
             plt.tight_layout()
-            plt.savefig(os.path.join(fig_dir, 'lump_time_series_s%d_%d_%d.png' % (seed, ix, iy)))
+            plt.savefig(os.path.join(fig_dir, 'lump_time_series_s%d_%d_%d.eps' % (seed, ix, iy)))
             plt.close()
 

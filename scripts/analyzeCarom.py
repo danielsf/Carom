@@ -26,10 +26,11 @@ def load_dalex_data(data_name, dim):
 
     return np.genfromtxt(data_name, dtype=dtype)
 
-def make_histogram(xx_in, dmag, cut_off, cumulative=True):
+def make_histogram(xx_in, dmag, cut_off, min_val = None, cumulative=True):
     xx = xx_in[np.where(xx_in<=cut_off+dmag)]
     #print xx.min(),xx.max()
-    min_val=xx.min()-dmag
+    if min_val is None:
+        min_val=xx.min()-dmag
     i_xx = np.round((xx-min_val)/dmag).astype(int)
     unique_ixx, ct = np.unique(i_xx, return_counts=True)
 
@@ -126,10 +127,10 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
     return x_out[:actual_len], y_out[:actual_len]
 
 
-def _downsample_grid(xx, yy):
+def _downsample_grid(xx, yy, pixel_size):
 
-    dx = 0.01*(xx.max()-xx.min())
-    dy = 0.01*(yy.max()-yy.min())
+    dx = pixel_size*(xx.max()-xx.min())
+    dy = pixel_size*(yy.max()-yy.min())
 
     x_avg = 0.5*(xx.min()+xx.max())
     y_avg = 0.5*(yy.min()+yy.max())
@@ -137,7 +138,7 @@ def _downsample_grid(xx, yy):
     x_out = np.zeros(len(xx))
     y_out = np.zeros(len(yy))
 
-    dd_avg = np.sqrt(np.power((xx-x_avg)/dx, 2) + np.power((yy-y_avg)/dy, 2))
+    dd_avg = -1.0*np.sqrt(np.power((xx-x_avg)/dx, 2) + np.power((yy-y_avg)/dy, 2))
     sorted_dexes = np.argsort(dd_avg)
 
     for ix in sorted_dexes:
@@ -154,7 +155,7 @@ def _downsample_grid(xx, yy):
 
 
 def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None,
-                                      downsample=False):
+                                      downsample=None):
 
     if data is None:
         ref_data = load_multinest_data(file_name, dim)
@@ -166,10 +167,10 @@ def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None,
                                ref_data['x%d' % iy],
                                ref_data['degen'])
 
-    if not downsample:
+    if downsample is None:
         return ref_x, ref_y, ref_data
 
-    ds_x, ds_y = _downsample_grid(ref_x, ref_y)
+    ds_x, ds_y = _downsample_grid(ref_x, ref_y, downsample)
 
     return ds_x, ds_y, ref_data
 
