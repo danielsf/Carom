@@ -37,6 +37,7 @@ if __name__ == "__main__":
         xx = data[tag][0][indices]
         yy = data[tag][1][indices]
         cc = data[tag][3][indices]
+        print('num pts %.2e' % len(cc))
 
         x_min = xx.min()
         x_max = xx.max()
@@ -67,7 +68,8 @@ if __name__ == "__main__":
         plt.pcolormesh(xx_grid, yy_grid, cc_masked,
                        cmap=plt.cm.gist_ncar,
                        edgecolor='',
-                       norm=LogNorm(vmin=cc.min(), vmax=cc.max()))
+                       norm=LogNorm(vmin=cc.min(), vmax=cc.max()),
+                       rasterized=True)
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=40)
         if ifig==0:
@@ -88,4 +90,4 @@ if __name__ == "__main__":
         plt.yticks(fontsize=40)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'heat_map.png'))
+    plt.savefig(os.path.join(output_dir, 'heat_map.eps'), dpi=20)
