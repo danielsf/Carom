@@ -12,10 +12,10 @@ class dalex_initializer{
     
         dalex_initializer(){
             _chifn=NULL;
-            _particles.set_name("maps_init_particles");
-            _local_min.set_name("maps_init_local_min");
-            _abs_min.set_name("maps_init_abs_min");
-            _since_min.set_name("maps_init_since_min");
+            _particles.set_name("dalex_init_particles");
+            _local_min.set_name("dalex_init_local_min");
+            _abs_min.set_name("dalex_init_abs_min");
+            _since_min.set_name("dalex_init_since_min");
         }
 
         void set_chifn(chisq_wrapper *cc){
