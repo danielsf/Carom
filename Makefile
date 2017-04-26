@@ -223,17 +223,6 @@ jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp objec
 	object/wrappers.o \
 	$(LIBRARIES)
 
-wmap7: src/examples/wmap7_example.cpp object/carom.o \
-object/wmap_likelihood_function.o
-	$(gg) -o bin/wmap7 src/examples/wmap7_example.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/camb_wrapper_wmap.o object/wmap_wrapper.o \
-	object/wmap_likelihood_function.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/node.o object/carom.o \
-	$(WMAP_LIBRARIES) \
-	$(WMAP_INCLUDE) $(CAMB_INCLUDE) $(LIBRARIES)
-
 all:
 	make test_containers
 	make test_kd
