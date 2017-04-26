@@ -55,9 +55,6 @@ test_ellipse_creator: object/ellipse.o src/tests/test_ellipse_creator.cpp
 object/kd.o: src/utils/kd.cpp include/kd.h object/containers.o object/goto_tools.o
 	$(gg) -c -o object/kd.o src/utils/kd.cpp
 
-object/kde.o: include/kde.h src/utils/kde.cpp object/goto_tools.o object/kd.o
-	$(gg) -c -o object/kde.o src/utils/kde.cpp
-
 test_kd: src/tests/test_kd.cpp object/kd.o
 	$(gg) -o bin/test_kd src/tests/test_kd.cpp object/containers.o object/goto_tools.o \
 	object/kd.o $(LIBRARIES)
