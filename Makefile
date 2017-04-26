@@ -133,19 +133,6 @@ object/chisq.o
 	object/chisq.o object/control_integrator.o object/simplex.o \
 	$(LIBRARIES)
 
-object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
-object/wrappers.o
-	$(gg) -c -o object/gp.o src/utils/gp.cpp
-
-test_gp: src/tests/test_gp.cpp object/gp.o object/jellyBean.o \
-include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
-	$(gg) -o bin/test_gp src/tests/test_gp.cpp object/goto_tools.o \
-	object/containers.o \
-	object/wrappers.o object/eigen_wrapper.o object/kd.o object/gp.o \
-	object/chisq_wrapper.o object/chisq.o object/jellyBean.o \
-        object/gp_lin.o \
-	$(LIBRARIES)
-
 object/explorers.o: src/dalex/explorers.cpp include/explorers.h \
 object/chisq_wrapper.o object/cost_fn.o
 	$(gg) -c -o object/explorers.o src/dalex/explorers.cpp
