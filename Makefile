@@ -148,11 +148,6 @@ object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/dalex_initializer.o object/ellipse.o
 	$(gg) -c -o object/dalex_driver.o src/dalex/dalex_driver.cpp
 
-test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
-	$(gg) -o bin/test_sa src/tests/test_simulated_annealing.cpp \
-	object/containers.o object/goto_tools.o object/chisq.o \
-	object/jellyBean.o object/wrappers.o
-
 test_fill: src/tests/test_filling_function.cpp object/jellyBean.o \
 object/simplex.o
 	$(gg) -o bin/test_fill src/tests/test_filling_function.cpp \
