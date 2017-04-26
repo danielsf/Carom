@@ -691,12 +691,12 @@ void chisq_wrapper::write_pts(){
     for(i=0;i<get_dim();i++){
         fprintf(output,"p%d ",i);
     }
-    fprintf(output,"chisq mu sig log\n");
+    fprintf(output,"chisq log\n");
     for(i=0;i<get_pts();i++){
         for(j=0;j<get_dim();j++){
             fprintf(output,"%.18e ",get_pt(i,j));
         }
-        fprintf(output,"%.18e 0 0 %d\n",get_fn(i),_search_type_log.get_data(i));
+        fprintf(output,"%.18e %d\n",get_fn(i),_search_type_log.get_data(i));
     }
     fclose(output);
 
