@@ -152,14 +152,6 @@ object/chisq.o
 	object/chisq.o object/control_integrator.o object/simplex.o \
 	$(LIBRARIES)
 
-jellyBean_test: src/examples/jellyBean_example.cpp object/carom.o \
-object/jellyBean.o include/exampleLikelihoods.h
-	$(gg) -o bin/jellyBean_test src/examples/jellyBean_example.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/node.o object/carom.o object/jellyBean.o \
-	$(LIBRARIES)
-
 object/gp.o: src/utils/gp.cpp include/gp.h object/kd.o object/eigen_wrapper.o \
 object/wrappers.o
 	$(gg) -c -o object/gp.o src/utils/gp.cpp
