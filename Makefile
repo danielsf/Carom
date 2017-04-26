@@ -118,9 +118,9 @@ object/control_integrator.o: src/controls/control_integrator.cpp \
 include/controls/control_integrator.h object/simplex.o object/kd.o
 	$(gg) -c -o object/control_integrator.o src/controls/control_integrator.cpp
 
-jellyBean_control: object/control_integrator.o src/controls/jellyBean_control.cpp \
+curved_4d_truth: object/control_integrator.o src/controls/curved_4d_truth.cpp \
 object/jellyBean.o include/exampleLikelihoods.h
-	$(gg) -o bin/jellyBean_control src/controls/jellyBean_control.cpp \
+	$(gg) -o bin/curved_4d_truth src/controls/curved_4d_truth.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/wrappers.o \
 	object/chisq.o object/jellyBean.o object/control_integrator.o \
 	object/simplex.o \
