@@ -148,13 +148,6 @@ object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/dalex_initializer.o object/ellipse.o
 	$(gg) -c -o object/dalex_driver.o src/dalex/dalex_driver.cpp
 
-test_tunnel: src/tests/test_tunneling_function.cpp object/jellyBean.o \
-object/simplex.o object/chisq_wrapper.o
-	$(gg) -o bin/test_tunnel src/tests/test_tunneling_function.cpp \
-	object/containers.o object/goto_tools.o object/chisq.o \
-	object/jellyBean.o object/wrappers.o object/simplex.o \
-	object/kd.o object/chisq_wrapper.o
-
 curved_4d: src/examples/curved_4d_example.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
 object/ellipse.o
