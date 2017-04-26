@@ -227,23 +227,6 @@ jellyBean_frequentistControl: src/controls/jellyBeanFrequentistControl.cpp objec
 	object/wrappers.o \
 	$(LIBRARIES)
 
-jellyBeanMCMC: src/examples/jellyBean_mcmc_example.cpp object/mcmc.o \
-object/wmap_likelihood_function.o object/jellyBean.o \
-include/exampleLikelihoods.h
-	$(gg) -o bin/jellyBeanMCMC src/examples/jellyBean_mcmc_example.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
-	object/chain.o object/kde.o object/mcmc.o object/jellyBean.o \
-	$(LIBRARIES)
-
-ellipseMCMC: src/examples/ellipse_mcmc_example.cpp object/mcmc.o \
-object/wmap_likelihood_function.o object/jellyBean.o
-	$(gg) -o bin/ellipseMCMC src/examples/ellipse_mcmc_example.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/eigen_wrapper.o object/simplex.o \
-	object/chain.o object/kde.o object/mcmc.o object/jellyBean.o \
-	$(LIBRARIES)
-
 wmap7: src/examples/wmap7_example.cpp object/carom.o \
 object/wmap_likelihood_function.o
 	$(gg) -o bin/wmap7 src/examples/wmap7_example.cpp \
