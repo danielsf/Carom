@@ -8,7 +8,7 @@
 #include "simplex.h"
 #include "cost_fn.h"
 #include "dalex.h"
-#include "maps_initializer.h"
+#include "dalex_initializer.h"
 
 class maps{
 

@@ -1,6 +1,6 @@
-#include "maps_initializer.h"
+#include "dalex_initializer.h"
 
-void maps_initializer::search(){
+void dalex_initializer::search(){
     safety_check();
     int total_per=100*_chifn->get_dim();
     int adjust_every=total_per/10;

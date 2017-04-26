@@ -128,7 +128,7 @@ void maps::initialize(int npts){
 }
 
 void maps::mcmc_init(){
-    maps_initializer initializer;
+    dalex_initializer initializer;
     initializer.set_chifn(&_chifn);
     initializer.search();
 }

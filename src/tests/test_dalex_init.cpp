@@ -1,4 +1,4 @@
-#include "maps_initializer.h"
+#include "dalex_initializer.h"
 #include "exampleLikelihoods.h"
 
 int main(){
@@ -9,7 +9,7 @@ int main(){
     int ii, dim, jj;
     chisq_wrapper *chifn_wrapped;
     integrableJellyBean *chifn_integrable;
-    maps_initializer *initializer;
+    dalex_initializer *initializer;
 
     FILE *output;
     output=fopen("output/scratch/init_test_data.txt", "w");
@@ -34,7 +34,7 @@ int main(){
         chifn_wrapped->set_seed(seed);
         chifn_wrapped->initialize(dim*2);
 
-        initializer = new maps_initializer();
+        initializer = new dalex_initializer();
         initializer->set_chifn(chifn_wrapped);
         initializer->search();
 
@@ -68,7 +68,7 @@ int main(){
         chifn_wrapped->set_seed(seed);
         chifn_wrapped->initialize(dim*2);
 
-        initializer = new maps_initializer();
+        initializer = new dalex_initializer();
         initializer->set_chifn(chifn_wrapped);
         initializer->search();
 
@@ -103,7 +103,7 @@ int main(){
         chifn_wrapped->set_seed(seed);
         chifn_wrapped->initialize(dim*2);
 
-        initializer = new maps_initializer();
+        initializer = new dalex_initializer();
         initializer->set_chifn(chifn_wrapped);
         initializer->search();
 

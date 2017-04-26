@@ -182,21 +182,21 @@ object/goto_tools.o object/chisq_wrapper.o object/simplex.o object/explorers.o \
 object/ellipse.o
 	$(gg) -c -o object/dalex.o src/dalex/dalex.cpp
 
-object/maps_initializer.o: src/dalex/maps_initializer.cpp include/maps_initializer.h \
+object/dalex_initializer.o: src/dalex/dalex_initializer.cpp include/dalex_initializer.h \
 object/chisq_wrapper.o object/simplex.o
-	$(gg) -c -o object/maps_initializer.o src/dalex/maps_initializer.cpp
+	$(gg) -c -o object/dalex_initializer.o src/dalex/dalex_initializer.cpp
 
-test_maps_init: src/tests/test_maps_init.cpp object/maps_initializer.o \
+test_dalex_init: src/tests/test_dalex_init.cpp object/dalex_initializer.o \
 include/exampleLikelihoods.h object/jellyBean.o
-	$(gg) -o bin/test_maps_init src/tests/test_maps_init.cpp \
+	$(gg) -o bin/test_dalex_init src/tests/test_dalex_init.cpp \
 	object/containers.o object/goto_tools.o \
-	object/wrappers.o object/maps_initializer.o object/simplex.o \
+	object/wrappers.o object/dalex_initializer.o object/simplex.o \
 	object/chisq_wrapper.o object/kd.o object/jellyBean.o \
 	object/chisq.o
 
 object/maps.o: src/dalex/maps.cpp include/maps.h \
 object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
-object/dalex.o object/maps_initializer.o object/ellipse.o
+object/dalex.o object/dalex_initializer.o object/ellipse.o
 	$(gg) -c -o object/maps.o src/dalex/maps.cpp
 
 test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
@@ -224,7 +224,7 @@ object/ellipse.o
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/cost_fn.o object/maps.o object/jellyBean.o object/ellipse.o \
-        object/dalex.o object/maps_initializer.o object/explorers.o \
+        object/dalex.o object/dalex_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
 test_opt: src/examples/test_opt.cpp object/maps.o \
@@ -234,7 +234,7 @@ object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapp
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
 	object/cost_fn.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
         object/kde.o object/gp_lin.o object/dalex.o \
-	object/maps_initializer.o \
+	object/dalex_initializer.o \
 	$(LIBRARIES)
 
 d24_test: src/examples/test_d24_chisq.cpp object/jellyBean.o \
