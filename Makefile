@@ -106,10 +106,6 @@ object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
 object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o object/chisq_wrapper.o
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
-object/node.o: src/dalex/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
-object/simplex.o object/cost_fn.o
-	$(gg) -c -o object/node.o src/dalex/node.cpp
-
 object/control_integrator.o: src/controls/control_integrator.cpp \
 include/controls/control_integrator.h object/simplex.o object/kd.o
 	$(gg) -c -o object/control_integrator.o src/controls/control_integrator.cpp
