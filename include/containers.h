@@ -52,7 +52,18 @@ outer subroutine, unless you explicitly tell it.
 
 #define letters 500
 
-int compare_char(char*,char*);
+inline int compare_char(char *s1, char *s2){
+    //are two character strings the same?
+    //if so, return 1
+    //if not, return 0
+
+    int i;
+    //printf("\ncomparing %s %s\n",s1,s2);
+    for(i=0;i<letters && (s1[i]!=0 || s2[i]!=0);i++){
+     if(s1[i]!=s2[i])return 0;
+    }
+    return 1;
+}
 
 template <typename T>
 class array_1d{
@@ -68,12 +79,50 @@ class array_1d{
 
 public:
 
-    array_1d();
-    array_1d(const array_1d<T> &in);
-    ~array_1d();
+    array_1d(){
+        room=0;
+        dim=0;
+        data=NULL;
+        name=NULL;
+        where_am_i=NULL;
+
+        name_set=0;
+        where_set=0;
+    }
+
+    array_1d(const array_1d<T> &in){
+        room=in.room;
+        dim=in.dim;
+        name=NULL;
+        where_am_i=NULL;
+        name_set=0;
+        where_set=0;
+        data=new T[room];
+        int i;
+        for(i=0;i<room;i++){
+            data[i]=in.data[i];
+        }
+    }
+
+    ~array_1d(){
+        if(data!=NULL){
+           delete [] data;
+        }
+
+        if(name!=NULL && name_set==1){
+            delete [] name;
+        }
+
+        if(where_am_i!=NULL && where_set==1){
+            delete [] where_am_i;
+        }
+
+    }
 
     /*return a pointer to the data in this array*/
-    T* get_ptr();
+    T* get_ptr(){
+        return data;
+    }
 
     inline int contains(T val){
         int i;
@@ -234,57 +283,234 @@ public:
 
 
     /*set all of the elements of the array to zero*/
-    void zero();
+    void zero(){
+        int i;
+        for(i=0;i<room;i++)data[i]=0;
+    }
 
     /*remove the element indexed by int from the array; shift all of the elements
     with indexes greater than int down to fill in the gap*/
-    void remove(int);
+    void remove(int dex){
+        if(dex<0 || dex>=dim){
+            return;
+        }
+
+        int i;
+        for(i=dex+1;i<dim;i++){
+            data[i-1]=data[i];
+        }
+        dim--;
+    }
+
 
     /*set the length of the array to int; if the array is already carrying data
     this will not delete that data*/
-    void set_dim(int);
+    void set_dim(int ii){
+
+        if(ii<0){
+            printf("tried to set dim %d\n",dim);
+            die(ii);
+        }
+
+        if(ii==0){
+            reset();
+            return;
+        }
+
+        T *buffer;
+        int j,new_room;
+
+        if(data!=NULL && room<ii){
+            buffer=new T[room];
+            for(j=0;j<room;j++)buffer[j]=data[j];
+            delete [] data;
+            new_room=ii;
+            data=new T[new_room];
+            for(j=0;j<room;j++)data[j]=buffer[j];
+            delete [] buffer;
+            dim=ii;
+            room=new_room;
+            for(;j<room;j++)data[j]=0;
+        }
+        else if(data!=NULL && room>=ii){
+            dim=ii;
+        }
+        else if(data==NULL){
+            data=new T[ii];
+            room=ii;
+            dim=ii;
+            for(j=0;j<room;j++)data[j]=0;
+        }
+
+    }
+
 
     /*reduce the length of the array by one without changing the contents of the
     array*/
-    void decrement_dim();
+    void decrement_dim(){
+        dim--;
+        if(dim<0)dim=0;
+    }
 
     /*increase the length of the array by one by adding a zero to the end of the
     array*/
-    void increment_dim();
+    void increment_dim(){
+        int i=dim;
+        add(0);
+
+        if(dim!=i+1){
+             printf("WARNING increment_dim did not work %d %d\n",i,dim);
+             die(dim);
+        }
+    }
 
     /*return the length of the array*/
     inline int get_dim() const{
-        return dim;
+       return dim;
     }
 
     /*set the name of the array, so that, if it causes an exception to be thrown,
     you will know which array threw the exception*/
-    void set_name(char*);
+    void set_name(char *word){
+        int i,ct=0;
+
+
+        if(name!=NULL && name_set==1)delete [] name;
+
+        if(compare_char(word,"nowhere")==1){
+            name_set=0;
+            name=NULL;
+            return;
+        }
+
+        for(i=0;word[i]!=0;i++)ct++;
+        ct++;
+
+        name=new char[ct];
+        for(i=0;i<ct && word[i]!=0;i++)name[i]=word[i];
+        name[ct-1]=0;
+
+        name_set=1;
+
+    }
+
 
     /*set where_am_i so that, if an exception is thrown, you can tell where in the program
     it happened; note that if an array is passed between multiple nested subroutines,
     this may not be the most useful message, as where_am_i does not automatically revert
     to previous settings upon leaving a subroutine*/
-    void set_where(char*) const;
+    void set_where(char *word) const{
+
+        int i,ct=0;
+
+        if(where_am_i!=NULL && where_set==1){
+            delete [] where_am_i;
+        }
+
+        if(compare_char(word,"nowhere")==1){
+            where_set=0;
+            where_am_i=NULL;
+            return;
+        }
+
+        for(i=0;word[i]!=0;i++)ct++;
+        ct++;
+
+        where_am_i=new char[ct];
+        for(i=0;i<ct && word[i]!=0;i++)where_am_i[i]=word[i];
+        where_am_i[ct-1]=0;
+
+        where_set=1;
+
+    }
 
     /*print the name of this array to the screen*/
-    void print_name();
+    void print_name(){
+        if(name!=NULL)printf("%s\n",name);
+    }
 
     /*throw an exception; the argument is the element of the array that was asked for when
     the exception is thrown*/
-    void die(int) const;
+    void die(int ii) const{
+        printf("\nWARNING 1d array\n");
+
+        if(name!=NULL)printf("in 1_d array %s\n",name);
+        if(where_am_i!=NULL)printf("in routine %s\n",where_am_i);
+
+        printf("asked for %d but dim %d\n",ii,dim);
+        printf("room %d\n",room);
+
+        if(data==NULL){
+            printf("data is null\n\n");
+        }
+
+        int ifail=1;
+
+        throw ifail;
+
+    }
 
     /*clear the contents of the array; name and where_am_i are untouched*/
-    void reset();
-    void reset_preserving_room();
+    void reset(){
+
+        if(data==NULL && (room>0 || dim>0)){
+            printf("dying from reset\n");
+             die(-1);
+        }
+
+        if(data!=NULL && room==0){
+            printf("dying from reset\n");
+            die(-1);
+        }
+
+        delete [] data;
+        data=NULL;
+        room=0;
+        dim=0;
+
+    }
+
+    void reset_preserving_room(){
+        dim=0;
+    }
 
     /*these routines exist so that array_2d can apply its name to the array_1d's that
     comprise its rows*/
-    void assert_name(char*);
-    void assert_where(char*);
+    void assert_name(char *word){
+        if(name_set==1){
+            printf("cannot assert name; it has been set internally\n");
+            die(0);
+        }
 
-    void assert_name_null();
-    void assert_where_null();
+        name=word;
+    }
+
+    void assert_where(char *word){
+        if(where_set==1){
+            printf("cannot assert where; it has been set internally\n");
+            die(0);
+        }
+
+        where_am_i=word;
+    }
+
+    void assert_name_null(){
+        if(name_set==1){
+            delete [] name;
+            name_set=0;
+        }
+
+        name=NULL;
+    }
+
+    void assert_where_null(){
+        if(where_set==1){
+            delete [] where_am_i;
+            where_set=0;
+        }
+
+        where_am_i=NULL;
+    }
 
     /*calculate the Euclidean norm of the array and divide all of the elements thereby.
     Return the calculated norm*/
@@ -369,12 +595,54 @@ public:
     }
 
     /*add room for int new elements in the array*/
-    void add_room(int);
+    void add_room(int ii){
+
+        if(data==NULL && dim>0){
+           printf("dying from add_room\n");
+           die(0);
+        }
+
+        if(data==NULL && room>0){
+            printf("dying from add_room\n");
+            die(0);
+        }
+
+        if(room==0 && data!=NULL){
+            printf("dying from add_room\n");
+             die(0);
+        }
+
+        if(dim>room){
+            printf("dying from add_room\n");
+            die(0);
+        }
+
+        T *buffer;
+        int i,old_room=room;
+
+        if(data==NULL){
+            room=ii;
+            data=new T[room];
+            for(i=0;i<room;i++)data[i]=0;
+        }
+        else{
+            buffer=new T[room];
+            for(i=0;i<room;i++)buffer[i]=data[i];
+            delete [] data;
+            room*=2;
+            data=new T[room];
+            for(i=0;i<old_room;i++)data[i]=buffer[i];
+            delete [] buffer;
+        }
+}
+
 
     /*return the amount of room allotted for elements in the array.
     This is not the same as get_dim() which returns the number of occupied
     spaces in the array*/
-    int get_room();
+    int get_room(){
+        return room;
+    }
 
 
     inline array_1d& operator=(const array_1d &in){
