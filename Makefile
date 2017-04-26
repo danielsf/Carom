@@ -189,13 +189,6 @@ object/jellyBean.o
 	object/node.o object/carom.o object/jellyBean.o \
 	$(LIBRARIES)
 
-
-jellyBean_bayesianControl: src/controls/jellyBeanBayesianControl.cpp object/jellyBean.o
-	$(gg) -o bin/jellyBean_bayesianControl src/controls/jellyBeanBayesianControl.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o object/jellyBean.o \
-	object/wrappers.o \
-	$(LIBRARIES)
-
 all:
 	make test_containers
 	make test_kd
