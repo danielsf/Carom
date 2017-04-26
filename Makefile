@@ -110,10 +110,6 @@ object/node.o: src/dalex/node.cpp include/node.h object/wrappers.o object/chisq_
 object/simplex.o object/cost_fn.o
 	$(gg) -c -o object/node.o src/dalex/node.cpp
 
-object/carom.o: src/dalex/carom.cpp include/carom.h \
-object/simplex.o object/node.o object/eigen_wrapper.o
-	$(gg) -c -o object/carom.o src/dalex/carom.cpp
-
 object/control_integrator.o: src/controls/control_integrator.cpp \
 include/controls/control_integrator.h object/simplex.o object/kd.o
 	$(gg) -c -o object/control_integrator.o src/controls/control_integrator.cpp
