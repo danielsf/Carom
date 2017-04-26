@@ -126,13 +126,6 @@ object/jellyBean.o include/exampleLikelihoods.h
 	object/simplex.o \
 	$(LIBRARIES)
 
-cartoon_control: object/control_integrator.o src/controls/cartoon_control.cpp \
-object/chisq.o
-	$(gg) -o bin/cartoon_control src/controls/cartoon_control.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/wrappers.o \
-	object/chisq.o object/control_integrator.o object/simplex.o \
-	$(LIBRARIES)
-
 object/explorers.o: src/dalex/explorers.cpp include/explorers.h \
 object/chisq_wrapper.o object/cost_fn.o
 	$(gg) -c -o object/explorers.o src/dalex/explorers.cpp
