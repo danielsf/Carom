@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import numpy as np
 
 __all__ = ["load_multinest_data", "load_dalex_data",
@@ -14,14 +15,20 @@ def load_multinest_data(file_name, dim):
 
 
 def load_dalex_data(data_name, dim):
+    with open(data_name, 'r') as input_file:
+        first_line = input_file.readline()
+    first_line = first_line.split(' ')
+
     dt_list = []
     for ii in range(dim):
         dt_list.append(('x%d' % ii, np.float))
 
     dt_list.append(('chisq', np.float))
     dt_list.append(('junk1', int))
-    dt_list.append(('junk2', int))
-    dt_list.append(('junk3', int))
+
+    if len(first_line) == dim+5:
+        dt_list.append(('junk2', int))
+        dt_list.append(('junk3', int))
     dtype = np.dtype(dt_list)
 
     return np.genfromtxt(data_name, dtype=dtype)
