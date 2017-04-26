@@ -194,10 +194,10 @@ include/exampleLikelihoods.h object/jellyBean.o
 	object/chisq_wrapper.o object/kd.o object/jellyBean.o \
 	object/chisq.o
 
-object/maps.o: src/dalex/maps.cpp include/maps.h \
+object/dalex_driver.o: src/dalex/dalex_driver.cpp include/dalex_driver.h \
 object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/dalex_initializer.o object/ellipse.o
-	$(gg) -c -o object/maps.o src/dalex/maps.cpp
+	$(gg) -c -o object/dalex_driver.o src/dalex/dalex_driver.cpp
 
 test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
 	$(gg) -o bin/test_sa src/tests/test_simulated_annealing.cpp \
@@ -217,22 +217,22 @@ object/simplex.o object/chisq_wrapper.o
 	object/jellyBean.o object/wrappers.o object/simplex.o \
 	object/kd.o object/chisq_wrapper.o
 
-jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/maps.o \
+jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
 object/ellipse.o
 	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/maps.o object/jellyBean.o object/ellipse.o \
+	object/cost_fn.o object/dalex_driver.o object/jellyBean.o object/ellipse.o \
         object/dalex.o object/dalex_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
-test_opt: src/examples/test_opt.cpp object/maps.o \
+test_opt: src/examples/test_opt.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o
 	$(gg) -o bin/test_opt src/examples/test_opt.cpp \
 	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
 	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/maps.o object/jellyBean.o object/mcmc.o object/chain.o \
+	object/cost_fn.o object/dalex_driver.o object/jellyBean.o object/mcmc.o object/chain.o \
         object/kde.o object/gp_lin.o object/dalex.o \
 	object/dalex_initializer.o \
 	$(LIBRARIES)

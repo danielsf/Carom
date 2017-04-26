@@ -1,19 +1,19 @@
-#include "maps.h"
+#include "dalex_driver.h"
 
-maps::maps(){
+dalex_driver::dalex_driver(){
     _ct_dalex=0;
     _last_did_min=0;
     sprintf(_outname,"output/carom_output.sav");
     sprintf(_timingname,"output/carom_timing.sav");
-    _good_points.set_name("maps_good_points");
+    _good_points.set_name("dale_driver_good_points");
     _good_points.set_room(100000);
 }
 
-maps::~maps(){
+dalex_driver::~dalex_driver(){
     _chifn.write_pts();
 }
 
-double maps::evaluate(array_1d<double> &pt, int *dex){
+double dalex_driver::evaluate(array_1d<double> &pt, int *dex){
     double mu;
     _chifn.evaluate(pt,&mu,dex);
 
@@ -26,15 +26,15 @@ double maps::evaluate(array_1d<double> &pt, int *dex){
     return mu;
 }
 
-void maps::assess_good_points(){
+void dalex_driver::assess_good_points(){
     assess_good_points(0,_chifn.get_pts());
 }
 
-void maps::assess_good_points(int i_min){
+void dalex_driver::assess_good_points(int i_min){
     assess_good_points(i_min,_chifn.get_pts());
 }
 
-void maps::assess_good_points(int i_min, int i_max){
+void dalex_driver::assess_good_points(int i_min, int i_max){
     int i;
 
     for(i=0;i<_good_points.get_dim();i++){
@@ -53,59 +53,59 @@ void maps::assess_good_points(int i_min, int i_max){
     }
 }
 
-void maps::set_dof(int dd){
+void dalex_driver::set_dof(int dd){
     _chifn.set_dof(dd);
 }
 
-void maps::set_confidence_limit(double cc){
+void dalex_driver::set_confidence_limit(double cc){
     _chifn.set_confidence_limit(cc);
 }
 
-void maps::set_seed(int ii){
+void dalex_driver::set_seed(int ii){
     _chifn.set_seed(ii);
 }
 
-void maps::set_min(array_1d<double> &vv){
+void dalex_driver::set_min(array_1d<double> &vv){
     _chifn.set_min(vv);
 }
 
-void maps::set_max(array_1d<double> &vv){
+void dalex_driver::set_max(array_1d<double> &vv){
     _chifn.set_max(vv);
 }
 
-void maps::set_characteristic_length(int dex, double vv){
+void dalex_driver::set_characteristic_length(int dex, double vv){
     _chifn.set_characteristic_length(dex,vv);
 }
 
-void maps::set_chisquared(chisquared *xx){
+void dalex_driver::set_chisquared(chisquared *xx){
     _chifn.set_chisquared(xx);
 }
 
-void maps::set_deltachi(double xx){
+void dalex_driver::set_deltachi(double xx){
     _chifn.set_deltachi(xx);
 }
 
-void maps::set_target(double tt){
+void dalex_driver::set_target(double tt){
     _chifn.set_target(tt);
 }
 
-void maps::set_write_every(int ww){
+void dalex_driver::set_write_every(int ww){
     _chifn.set_write_every(ww);
 }
 
-int maps::get_dim(){
+int dalex_driver::get_dim(){
     return _chifn.get_dim();
 }
 
-int maps::get_called(){
+int dalex_driver::get_called(){
     return _chifn.get_called();
 }
 
-double maps::get_chimin(){
+double dalex_driver::get_chimin(){
     return _chifn.chimin();
 }
 
-void maps::set_outname(char *nn){
+void dalex_driver::set_outname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
         _outname[i]=nn[i];
@@ -113,7 +113,7 @@ void maps::set_outname(char *nn){
     _outname[i]=0;
 }
 
-void maps::set_timingname(char *nn){
+void dalex_driver::set_timingname(char *nn){
     int i;
     for(i=0;i<letters-1 && nn[i]!=0;i++){
         _timingname[i]=nn[i];
@@ -121,19 +121,19 @@ void maps::set_timingname(char *nn){
     _timingname[i]=0;
 }
 
-void maps::initialize(int npts){
+void dalex_driver::initialize(int npts){
     _chifn.initialize(npts);
     _cloud.build(&_chifn);
     assess_good_points(0);
 }
 
-void maps::mcmc_init(){
+void dalex_driver::mcmc_init(){
     dalex_initializer initializer;
     initializer.set_chifn(&_chifn);
     initializer.search();
 }
 
-void maps::search(int limit){
+void dalex_driver::search(int limit){
     int pt_start;
 
     double min0=_chifn.chimin();

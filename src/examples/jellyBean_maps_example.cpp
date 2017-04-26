@@ -3,7 +3,7 @@
 #include <time.h>
 #include "jellyBean.h"
 #include "exampleLikelihoods.h"
-#include "maps.h"
+#include "dalex_driver.h"
 
 int main(int iargc, char *argv[]){
 
@@ -178,7 +178,7 @@ printf("done constructing chisq\n");
 //the '11.0' is the \Delta\chi^2 corresponding to a 95% confidence limit
 //on a 5-dimensional parameter space
 
-maps carom_test;
+dalex_driver dalex_test;
 if(delta_chisq>0.0 && abs_target>0.0){
     printf("WARNING cannot set delta chisq and target\n");
     exit(1);
@@ -189,19 +189,19 @@ else if(delta_chisq<0.0 && abs_target<0.0){
 }
 
 if(delta_chisq>0.0){
-    carom_test.set_deltachi(delta_chisq);
+    dalex_test.set_deltachi(delta_chisq);
 }
 else{
-    carom_test.set_target(abs_target);
+    dalex_test.set_target(abs_target);
 }
-carom_test.set_seed(seed);
-carom_test.set_confidence_limit(confidence_limit);
+dalex_test.set_seed(seed);
+dalex_test.set_confidence_limit(confidence_limit);
 
 //pass chisq to the aps object
-carom_test.set_chisquared(chisq);
+dalex_test.set_chisquared(chisq);
 
 //how often will APS stop and write its output
-carom_test.set_write_every(50000);
+dalex_test.set_write_every(50000);
 
 //set the maximum and minimum values in parameter space
 array_1d<double> max,min;
@@ -233,18 +233,18 @@ max.set(2,65.0);
 min.set(3,0.0);
 max.set(3,80.0);*/
 
-carom_test.set_timingname(timingname);
-carom_test.set_outname(outname);
-carom_test.set_min(min);
-carom_test.set_max(max);
+dalex_test.set_timingname(timingname);
+dalex_test.set_outname(outname);
+dalex_test.set_min(min);
+dalex_test.set_max(max);
 
 //initialize aps with 1000 random samples
 printf("time to initialize\n");
 chisq->reset_timer();
-carom_test.initialize(init);
+dalex_test.initialize(init);
 int active_nodes=1;
 printf("ready to search\n");
-carom_test.search(nsamples);
+dalex_test.search(nsamples);
 //chisq->print_mins();
 
 array_1d<double> v0,v1;
@@ -265,7 +265,7 @@ FILE *min_output;
 if(min_test==1){
     min_output=fopen("output/scratch/test_min_pt.sav","a");
     fprintf(min_output,"%d %d %d %e\n",
-    carom_test.get_dim(),seed,carom_test.get_called(),carom_test.get_chimin());
+    dalex_test.get_dim(),seed,dalex_test.get_called(),dalex_test.get_chimin());
     fclose(min_output);
 }
 
