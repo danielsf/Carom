@@ -115,9 +115,9 @@ contours: src/analysis/chisquared_contours.cpp object/kd.o
 object/chisq_wrapper.o: src/utils/chisq_wrapper.cpp include/chisq_wrapper.h object/wrappers.o object/chisq.o object/kd.o
 	$(gg) -c -o object/chisq_wrapper.o src/utils/chisq_wrapper.cpp
 
-object/cost_fn.o: src/carom/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o \
+object/cost_fn.o: src/dalex/cost_fn.cpp include/cost_fn.h object/chisq_wrapper.o \
 object/ellipse.o
-	$(gg) -c -o object/cost_fn.o src/carom/cost_fn.cpp
+	$(gg) -c -o object/cost_fn.o src/dalex/cost_fn.cpp
 
 object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
 	$(gg) -c -o object/jellyBean.o src/utils/jellyBean.cpp
@@ -125,13 +125,13 @@ object/jellyBean.o: src/utils/jellyBean.cpp include/jellyBean.h object/chisq.o
 object/simplex.o: src/utils/simplex.cpp include/simplex.h object/wrappers.o object/chisq_wrapper.o
 	$(gg) -c -o object/simplex.o src/utils/simplex.cpp
 
-object/node.o: src/carom/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
+object/node.o: src/dalex/node.cpp include/node.h object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o \
 object/simplex.o object/cost_fn.o
-	$(gg) -c -o object/node.o src/carom/node.cpp
+	$(gg) -c -o object/node.o src/dalex/node.cpp
 
-object/carom.o: src/carom/carom.cpp include/carom.h \
+object/carom.o: src/dalex/carom.cpp include/carom.h \
 object/simplex.o object/node.o object/eigen_wrapper.o
-	$(gg) -c -o object/carom.o src/carom/carom.cpp
+	$(gg) -c -o object/carom.o src/dalex/carom.cpp
 
 object/control_integrator.o: src/controls/control_integrator.cpp \
 include/controls/control_integrator.h object/simplex.o object/kd.o
@@ -173,18 +173,18 @@ include/exampleLikelihoods.h object/chisq_wrapper.o object/gp_lin.o
         object/gp_lin.o \
 	$(LIBRARIES)
 
-object/explorers.o: src/carom/explorers.cpp include/explorers.h \
+object/explorers.o: src/dalex/explorers.cpp include/explorers.h \
 object/chisq_wrapper.o object/cost_fn.o
-	$(gg) -c -o object/explorers.o src/carom/explorers.cpp
+	$(gg) -c -o object/explorers.o src/dalex/explorers.cpp
 
-object/dalex.o: src/carom/dalex.cpp include/dalex.h object/containers.o \
+object/dalex.o: src/dalex/dalex.cpp include/dalex.h object/containers.o \
 object/goto_tools.o object/chisq_wrapper.o object/simplex.o object/explorers.o \
 object/ellipse.o
-	$(gg) -c -o object/dalex.o src/carom/dalex.cpp
+	$(gg) -c -o object/dalex.o src/dalex/dalex.cpp
 
-object/maps_initializer.o: src/carom/maps_initializer.cpp include/maps_initializer.h \
+object/maps_initializer.o: src/dalex/maps_initializer.cpp include/maps_initializer.h \
 object/chisq_wrapper.o object/simplex.o
-	$(gg) -c -o object/maps_initializer.o src/carom/maps_initializer.cpp
+	$(gg) -c -o object/maps_initializer.o src/dalex/maps_initializer.cpp
 
 test_maps_init: src/tests/test_maps_init.cpp object/maps_initializer.o \
 include/exampleLikelihoods.h object/jellyBean.o
@@ -194,10 +194,10 @@ include/exampleLikelihoods.h object/jellyBean.o
 	object/chisq_wrapper.o object/kd.o object/jellyBean.o \
 	object/chisq.o
 
-object/maps.o: src/carom/maps.cpp include/maps.h \
+object/maps.o: src/dalex/maps.cpp include/maps.h \
 object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/maps_initializer.o object/ellipse.o
-	$(gg) -c -o object/maps.o src/carom/maps.cpp
+	$(gg) -c -o object/maps.o src/dalex/maps.cpp
 
 test_sa: src/tests/test_simulated_annealing.cpp object/jellyBean.o
 	$(gg) -o bin/test_sa src/tests/test_simulated_annealing.cpp \
