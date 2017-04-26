@@ -1335,32 +1335,216 @@ class asymm_array_2d{
     */
 
 public:
-    asymm_array_2d();
-    ~asymm_array_2d();
+    asymm_array_2d(){
+        name=NULL;
+        where_am_i=NULL;
+        data=NULL;
+        rows=0;
+        row_room=0;
+    }
+
+    ~asymm_array_2d(){
+        int i;
+
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_name_null();
+            }
+            catch(int iex){
+                printf("in asymm 2d destructor\n");
+                die(0);
+            }
+
+            try{
+                data[i].assert_where_null();
+            }
+            catch(int iex){
+                printf("in asymm 2d destructor\n");
+                die(0);
+            }
+        }
+
+        //printf("calling 2d destructor on %s\n",name);
+
+        if(data!=NULL){
+            delete [] data;
+        }
+
+        if(name!=NULL)delete [] name;
+
+        if(where_am_i!=NULL)delete [] where_am_i;
+
+
+    }
+
 
     /*set the name of this asymm_array_2d for diagnostic purposes*/
-    void set_name(char*);
+    void set_name(char *word){
+        int i,ct=0;
+
+        for(i=0;word[i]!=0;i++)ct++;
+        ct++;
+
+        if(name!=NULL){
+            delete [] name;
+        }
+
+        name=new char[ct];
+        for(i=0;i<ct && word[i]!=0;i++)name[i]=word[i];
+        name[ct-1]=0;
+
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_name(name);
+            }
+            catch(int iex){
+                printf("in asymm 2d set name\n");
+                die(0);
+            }
+        }
+
+    }
+
 
     /*set the location of this asymm_array_2d for diagnostic purposes*/
-    void set_where(char*) const;
+    void set_where(char *word) const{
+
+        int i,ct=0;
+
+        for(i=0;word[i]!=0;i++)ct++;
+        ct++;
+
+        if(where_am_i!=NULL)delete [] where_am_i;
+        where_am_i=new char[ct];
+
+        for(i=0;i<ct && word[i]!=0;i++)where_am_i[i]=word[i];
+        where_am_i[ct-1]=0;
+
+        for(i=0;i<row_room;i++){
+            try{
+                data[i].assert_where(where_am_i);
+            }
+            catch(int iex){
+                printf("in asymm 2d set where\n");
+                die(0);
+            }
+        }
+
+    }
+
 
     /*add a row to the end of this asymm_array_2d*/
-    void add_row(const array_1d<T>&);
+    void add_row(const array_1d<T> &in){
+
+        if(data==NULL){
+            row_room=2;
+            rows=0;
+            data=new array_1d<T>[row_room];
+        }
+
+        array_1d<T> *buffer;
+        int i,j;
+
+        if(rows==row_room){
+            buffer=new array_1d<T>[rows];
+            for(i=0;i<rows;i++){
+                buffer[i].set_dim(data[i].get_dim());
+                for(j=0;j<data[i].get_dim();j++){
+                    buffer[i].set(j,data[i].get_data(j));
+                }
+            }
+            delete [] data;
+
+            i=row_room/2;
+            if(i<100)i=100;
+
+            row_room*=2;
+            data=new array_1d<T>[row_room];
+
+            for(i=0;i<rows;i++){
+                data[i].set_dim(buffer[i].get_dim());
+                for(j=0;j<buffer[i].get_dim();j++){
+                    data[i].set(j,buffer[i].get_data(j));
+                }
+            }
+            delete [] buffer;
+        }
+
+        data[rows].set_dim(in.get_dim());
+        for(i=0;i<in.get_dim();i++){
+            data[rows].set(i,in.get_data(i));
+        }
+        rows++;
+
+        for(i=0;i<row_room;i++){
+                try{
+                    data[i].assert_name(name);
+                }
+                catch(int iex){
+                    printf("in asymm 2d add row (asserting name)\n");
+                    die(0);
+                }
+
+                try{
+                    data[i].assert_where(where_am_i);
+                }
+                catch(int iex){
+                    printf("in asymm 2d add row (asserting where)\n");
+                    die(0);
+                }
+        }
+
+    }
+
 
     /*set the indexed row to the provided array_1d;
     If you set a row beyond the current size of this asymm_array_2d,
     then empty rows will be used to fill in the gaps
     */
-    void set_row(int, const array_1d<T>&);
+    void set_row(int ir, const array_1d<T> &vv){
+
+        int i;
+        array_1d<T> empty;
+
+        while(rows<=ir){
+            add_row(empty);
+        }
+
+        data[ir].reset();
+        for(i=0;i<vv.get_dim();i++){
+            data[ir].set(i,vv.get_data(i));
+        }
+
+    }
 
     /*
     remove the row indexed by int.  Rows with indexes greater than the provided
     index will be shifted down to fill in the gap
     */
-    void remove_row(int);
+    void remove_row(int dex){
+
+        if(dex<0 || dex>=rows){
+            printf("WARNING asking to remove %d from asymm\n",dex);
+            die(dex);
+        }
+
+        int i,j;
+        for(i=dex;i<rows-1;i++){
+            data[i].set_dim(data[i+1].get_dim());
+            for(j=0;j<data[i+1].get_dim();j++){
+                data[i].set(j,data[i+1].get_data(j));
+            }
+        }
+        data[rows-1].reset();
+        rows--;
+
+    }
 
     /*set all of the elements in this asymm_array_2d to zero*/
-    void zero();
+    void zero(){
+        int i;
+        for(i=0;i<row_room;i++)data[i].zero();
+    }
 
     /*
     set the element indexed by the ints to the provided value.
@@ -1467,7 +1651,21 @@ public:
     }
 
     /*replace the indexed row with the provided array_1d*/
-    void replace_row(int,array_1d<T>&);
+    void replace_row(int dex, array_1d<T> &pt){
+        if(dex<0 || dex>=rows){
+            printf("WARNING trying to replace row %d in asymm, but only have %d\n",
+            dex,rows);
+
+            die(dex);
+        }
+
+        data[dex].reset();
+        int i;
+        for(i=0;i<pt.get_dim();i++){
+            data[dex].add(pt.get_data(i));
+        }
+
+    }
 
     inline int get_rows() const{
         return rows;
@@ -1497,11 +1695,64 @@ public:
 
     /*throw an exception; the argument indicates the row index being
     called for when the exception was thrown*/
-    void die(int) const;
+    void die(int ir) const{
+        printf("\nWARNING asymm 2d array\n");
+
+        if(name!=NULL)printf("in 2d_array %s\n",name);
+        if(where_am_i!=NULL)printf("in routine %s\n",where_am_i);
+
+        printf("asked for %d\n",ir);
+        printf("but dimensions are %d\n",rows);
+        printf("row_room %d\n",row_room);
+
+        if(data==NULL){
+            printf("data is null\n");
+        }
+
+        int ifail=1;
+
+        throw ifail;
+    }
 
     /*reset the contents of this asymm_array_2d*/
-    void reset();
-    void reset_preserving_room();
+    void reset(){
+
+        //printf("resetting %s\n",name);
+
+        //set_name("resetting");
+
+        int i;
+
+        if(data==NULL && (rows>0 || row_room>0)){
+            printf("resetting but data is null and something is wrong\n");
+            die(-1);
+        }
+
+        if(row_room==0 && data!=NULL){
+            die(-1);
+        }
+
+        if(row_room<rows){
+            die(-2);
+        }
+
+        if(data!=NULL){
+            delete [] data;
+            data=NULL;
+            row_room=0;
+            rows=0;
+
+        }
+
+    }
+
+    void reset_preserving_room(){
+        int i;
+        for(i=0;i<rows;i++){
+            data[i].reset_preserving_room();
+        }
+        rows=0;
+    }
 
     /*return a pointer to the row indexed by int, i.e.
 
