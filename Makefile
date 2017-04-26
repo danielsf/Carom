@@ -52,10 +52,6 @@ test_ellipse_creator: object/ellipse.o src/tests/test_ellipse_creator.cpp
 	$(gg) -o bin/test_ellipse_creator src/tests/test_ellipse_creator.cpp \
 	object/containers.o object/goto_tools.o object/ellipse.o
 
-diagnose_containers: object/containers.o src/tests/diagnose_containers.cpp object/goto_tools.o
-	$(gg) -o bin/diagnose_containers src/tests/diagnose_containers.cpp object/containers.o \
-        object/goto_tools.o $(LIBRARIES)
-
 test_grid: object/containers.o src/tests/test_grid.cpp object/goto_tools.o
 	$(gg) -o bin/test_grid src/tests/test_grid.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
