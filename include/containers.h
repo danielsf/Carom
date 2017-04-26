@@ -732,10 +732,40 @@ public:
     number of columns, either by using set_cols(int), set_dim(int,int) or by first adding
     a row to your blank array_2d with add_row(array_1d<T>&).
     */
-    array_2d(int,int);
-    array_2d();
+    array_2d(int r,int c){
+        int i,j;
+        _rows=0;
+        _cols=c;
+        _room=r*c;
 
-    ~array_2d();
+        _data=new T[_room];
+
+        _name=NULL;
+        _where_am_i=NULL;
+
+    }
+
+    array_2d(){
+        _rows=0;
+        _cols=0;
+        _room=0;
+        _data=NULL;
+        _name=NULL;
+        _where_am_i=NULL;
+    }
+
+    ~array_2d(){
+        int i;
+
+        if(_data!=NULL){
+            delete [] _data;
+        }
+
+        if(_name!=NULL)delete [] _name;
+
+        if(_where_am_i!=NULL)delete [] _where_am_i;
+    }
+
 
     /*set the dimensions of the array_2d. rows first, columns second*/
     inline void set_dim(int ir, int ic){
@@ -836,23 +866,212 @@ public:
 
 
     /*set the name member variable (for diagnostic purposes)*/
-    void set_name(char*);
+    void set_name(char *word){
+        int i,ct=0;
+
+        for(i=0;word[i]!=0;i++)ct++;
+        ct++;
+
+        if(_name!=NULL){
+            delete [] _name;
+        }
+
+        _name=new char[ct];
+        for(i=0;i<ct && word[i]!=0;i++)_name[i]=word[i];
+        _name[ct-1]=0;
+
+    }
 
     /*set where_am_i (for diagnostic purposes)*/
-    void set_where(char*) const;
+    void set_where(char *word) const{
+
+        int i,ct=0;
+
+        for(i=0;word[i]!=0;i++)ct++;
+        ct++;
+
+        if(_where_am_i!=NULL)delete [] _where_am_i;
+        _where_am_i=new char[ct];
+
+        for(i=0;i<ct && word[i]!=0;i++)_where_am_i[i]=word[i];
+        _where_am_i[ct-1]=0;
+
+    }
 
     /*print name to screen*/
-    void print_name();
+    void print_name(){
+        if(_name!=NULL)printf("%s\n",_name);
+    }
 
-    void set_row_room(int);
+
+    void set_row_room(int row_room_in){
+
+        if(row_room_in*_cols<_room){
+            printf("dying from set_row_room; row_roomis %d trying to set %d\n",
+            _room/_cols, row_room_in);
+            die(0,0);
+        }
+
+        if(_cols<=0){
+           printf("dying from set_row_room because cols are %d\n",_cols);
+           die(0,0);
+        }
+
+        T *buffer;
+        int i,j;
+
+        if(_data!=NULL){
+            buffer=new T[_room];
+            for(i=0;i<_room;i++){
+                buffer[i]=_data[i];
+            }
+            delete[] _data;
+
+            _data=new T[row_room_in*_cols];
+            for(i=0;i<_room;i++){
+               _data[i]=buffer[i];
+            }
+            delete [] buffer;
+            _room=row_room_in*_cols;
+            for(;i<_room;i++){
+                _data[i]=0;
+            }
+        }
+        else{
+            _data = new T[row_room_in*_cols];
+        }
+
+        _room=row_room_in*_cols;
+    }
+
 
     /*add the array_1d as a row to this array_2d.  If this array_2d is blank,
     then the number of columns in this array_2d will be set to the length
     of the input array_1d*/
-    void add_row(const array_1d<T>&);
+    void add_row(const array_1d<T> &in){
+
+        if(_data==NULL && _room>0){
+            printf("dying from add_row\n");
+            die(0,0);
+        }
+
+        if(_data==NULL && _rows>0){
+            printf("dying from add_row\n");
+            die(1,0);
+        }
+
+        if(_data==NULL && _cols>0){
+            printf("dying from add_row\n");
+            die(2,0);
+        }
+
+        if(_room<_rows*_cols){
+            printf("dying from add_row\n");
+            die(3,0);
+        }
+
+        if((_cols<=0 || _room<=0) && _data!=NULL){
+            printf("dying from add_row\n");
+            die(4,0);
+        }
+
+        if(_cols>0 && _cols!=in.get_dim()){
+            printf("dying from add_row cols are: %d but got: %d\n",_cols,in.get_dim());
+            die(-2,0);
+        }
+
+        if(_cols==0){
+            _cols=in.get_dim();
+        }
+
+        if(_cols==0){
+            printf("about add a row but cols zero\n");
+            die(-1,-1);
+        }
+
+        int i,j;
+
+        if(_data==NULL){
+            set_row_room(100);
+        }
+
+        if(_rows==_room/_cols){
+            set_row_room(2*_room/_cols);
+        }
+
+        for(i=0;i<_cols;i++){
+            try{
+                _data[_rows*_cols+i]=in.get_data(i);
+            }
+            catch(int iex){
+                printf("dying from array_2d add_row when actually copying data\n");
+                die(_rows,i);
+            }
+        }
+
+        _rows++;
+    }
 
     /*set the row indexed by int to the array_1d provided*/
-    void set_row(int,const array_1d<T>&);
+    void set_row(int dex, const array_1d<T> &in){
+
+        if(dex<0){
+            printf("tried to set to negative row\n");
+            die(dex,0);
+        }
+
+        if(_data==NULL && _room>0){
+            printf("dying from set_row\n");
+            die(0,0);
+        }
+
+        if(_data==NULL && _rows>0){
+             printf("dying from set_row\n");
+            die(1,0);
+        }
+
+        if(_data==NULL && _cols>0){
+             printf("dying from set_row\n");
+            die(2,0);
+        }
+
+        if(_room<_rows){
+            printf("dying from set_row\n");
+            die(3,0);
+        }
+
+        if((_cols<=0 || _room<=0) && _data!=NULL){
+             printf("dying from set_row\n");
+            die(4,0);
+        }
+
+        if(_cols>0 && _cols!=in.get_dim()){
+             printf("dying from set_row\n");
+            printf("columns do not match\n");
+            die(-2,0);
+        }
+
+        if(dex<0){
+             printf("dying from set_row\n");
+            die(dex,0);
+        }
+
+        int i;
+        if(dex>=_rows){
+            for(i=_rows;i<dex+1;i++)add_row(in);
+        }
+        else{
+            for(i=0;i<_cols;i++){
+                try{
+                    _data[dex*_cols+i]=in.get_data(i);
+                }
+                catch(int ifail){
+                    die(dex,_cols);
+                }
+            }
+        }
+
+    }
 
     /*set the element indexed by the two ints to the value provided.
     If you try to set a row that is beyond the current size of this
@@ -895,7 +1114,12 @@ public:
     }
 
     /*set all of the elements of this array_2d to zero*/
-    void zero();
+    void zero(){
+        int i;
+        for(i=0;i<_room;i++){
+            _data[i]=0;
+        }
+    }
 
     /*
     add the provided value to the indexed element, i.e.
@@ -942,12 +1166,58 @@ public:
     }
 
     /*reset the contents of the array_2d; name and where_am_i are untouched*/
-    void reset();
-    void reset_preserving_room();
+    void reset(){
+
+        //printf("resetting %s\n",name);
+
+        //set_name("resetting");
+
+        int i;
+
+        if(_data==NULL && (_rows>0 || _cols>0 || _room>0)){
+            printf("resetting but data is null and something is wrong\n");
+            die(-1,-1);
+        }
+
+        if(_room==0 && _data!=NULL){
+            die(-1,-1);
+        }
+
+        if(_cols==0 && _data!=NULL){
+            die(-1,-1);
+        }
+
+        if(_room<_rows){
+            die(-2,-2);
+        }
+
+        if(_data!=NULL){
+            delete [] _data;
+
+            _data=NULL;
+            _room=0;
+            _rows=0;
+            _cols=0;
+        }
+
+    }
+
+
+    void reset_preserving_room(){
+        _rows=0;
+    }
 
     /*reduce the number of rows by one; the contents of the array_2d
     are untouched*/
-    void decrement_rows();
+    void decrement_rows(){
+
+        if(_rows==0){
+            printf("WARNING trying to decrement rows but rows already zero\n");
+            die(0,0);
+        }
+
+        _rows--;
+    }
 
     /*return the number of rows*/
     inline int get_rows() const{
@@ -961,11 +1231,41 @@ public:
 
     /*throw an exception; the arguments are for indicating which element
     the code tried to access when the exception was thrown*/
-    void die(int,int) const;
+    void die(int ir, int ic) const{
+        printf("\nWARNING 2d array\n");
+
+        if(_name!=NULL)printf("in 2d_array %s\n",_name);
+        if(_where_am_i!=NULL)printf("in routine %s\n",_where_am_i);
+
+        printf("asked for %d %d\n",ir,ic);
+        printf("but dimensions are %d %d\n",_rows,_cols);
+        printf("room %d\n",_room);
+
+        if(_data==NULL){
+            printf("data is null\n");
+        }
+
+        int ifail=1;
+
+        throw ifail;
+    }
 
     /*remove the row indexed by the int.  All of the rows with
     indexes greater than the argument are shifted to fill in the gap*/
-    void remove_row(int);
+    void remove_row(int dex){
+
+        if(dex<0 || dex>=_rows)return;
+
+        int i,j;
+        for(i=dex+1;i<_rows;i++){
+            for(j=0;j<_cols;j++){
+                _data[(i-1)*_cols+j]= _data[i*_cols+j];
+            }
+        }
+
+        _rows--;
+
+    }
 
     /*return a pointer to the indexed array, i.e.
 
