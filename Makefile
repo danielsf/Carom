@@ -217,16 +217,6 @@ object/simplex.o object/chisq_wrapper.o
 	object/jellyBean.o object/wrappers.o object/simplex.o \
 	object/kd.o object/chisq_wrapper.o
 
-jellyBean_maps: src/examples/jellyBean_maps_example.cpp object/dalex_driver.o \
-object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
-object/ellipse.o
-	$(gg) -o bin/jellyBean_maps src/examples/jellyBean_maps_example.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/dalex_driver.o object/jellyBean.o object/ellipse.o \
-        object/dalex.o object/dalex_initializer.o object/explorers.o \
-	$(LIBRARIES)
-
 curved_4d: src/examples/curved_4d_example.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
 object/ellipse.o
