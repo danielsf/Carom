@@ -164,14 +164,6 @@ object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapp
 	object/dalex_initializer.o \
 	$(LIBRARIES)
 
-d24_test: src/examples/test_d24_chisq.cpp object/jellyBean.o \
-include/exampleLikelihoods.h
-	$(gg) -o bin/d24_test src/examples/test_d24_chisq.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/jellyBean.o \
-	$(LIBRARIES)
-
 all:
 	make test_containers
 	make test_kd
