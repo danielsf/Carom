@@ -174,8 +174,9 @@ if __name__ == "__main__":
     legend_labels = []
 
     plt.subplot(1,2,1)
-    for suffix, color in zip(('bayesianFullD', 'frequentistFullDrelative'),
-                             ('b', 'm')):
+    for suffix, color in zip(('bayesian2D', 'frequentist2D'),
+                             ('r', 'g')):
+
 
         for pct in (0.68, 0.95):
 
@@ -200,8 +201,8 @@ if __name__ == "__main__":
                 legend_handles.append(hh)
                 legend_labels.append(legend_dict[suffix][pct])
 
-    for suffix, color in zip(('bayesian2D', 'frequentist2D'),
-                             ('r', 'g')):
+    for suffix, color in zip(('bayesianFullD', 'frequentistFullDrelative'),
+                             ('b', 'm')):
 
         for pct in (0.68, 0.95):
 
