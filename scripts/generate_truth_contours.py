@@ -171,7 +171,7 @@ if __name__ == "__main__":
     legend_handles = []
     legend_labels = []
 
-    plt.subplot(2,2,1)
+    plt.subplot(1,2,1)
     for suffix, color in zip(('bayesianFullD', 'frequentistFullDrelative'),
                              ('b', 'm')):
 
@@ -198,14 +198,6 @@ if __name__ == "__main__":
                 legend_handles.append(hh)
                 legend_labels.append(legend_dict[suffix][pct])
 
-    plt.legend(legend_handles, legend_labels, fontsize=10,
-               bbox_to_anchor=(1.05, 1), loc=2)
-
-
-    legend_handles = []
-    legend_labels = []
-
-    plt.subplot(2,2,3)
     for suffix, color in zip(('bayesian2D', 'frequentist2D'),
                              ('r', 'g')):
 
