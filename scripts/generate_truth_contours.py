@@ -17,7 +17,7 @@ def order_x_y(x_in, y_in):
     x_out[0] = x_in[0]
     y_out[0] = y_in[0]
 
-    steps = np.zeros(len(x_in))
+    steps = np.zeros(len(x_in)+1)
     n_chosen = 1
 
     while n_chosen != len(x_in):
@@ -57,6 +57,8 @@ def order_x_y(x_in, y_in):
 
         n_chosen += 1
         available.pop(chosen_dex)
+        x_out[-1] = x_out[0]
+        y_out[-1] =y_out[0]
 
     return x_out, y_out
 
