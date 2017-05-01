@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-from analyzeCarom import (scatter_from_multinest_projection,
-                          scatter_from_carom)
+from analyzeDalex import (scatter_from_multinest_projection,
+                          scatter_from_dalex)
 
 if __name__ == "__main__":
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                                                              downsample=True)
 
         (d_x, d_y, d_chisq_min, d_target,
-         d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
+         d_data) = scatter_from_dalex(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
                                       data=d_data, limit=n_pts)
 
 

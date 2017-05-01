@@ -4,7 +4,7 @@ import numpy as np
 __all__ = ["load_multinest_data", "load_dalex_data",
            "scatter_from_multinest_projection",
            "scatter_from_multinest_marginalized",
-           "scatter_from_carom", "make_histogram"]
+           "scatter_from_dalex", "make_histogram"]
 
 def load_multinest_data(file_name, dim):
     dt_list = [('degen', np.float), ('chisq', np.float)]
@@ -196,7 +196,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
     return ref_x, ref_y, ref_data
 
 
-def scatter_from_carom(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
+def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
     if data is None:
         data = load_dalex_data(data_name, dim)
 

@@ -2,8 +2,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from analyzeCarom import scatter_from_multinest_projection
-from analyzeCarom import scatter_from_carom
+from analyzeDalex import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_dalex
 
 import os
 
@@ -51,7 +51,7 @@ for i_fig, seed in enumerate(seed_list):
     for i_c, (lim, color) in enumerate(zip(limit_list, color_list)):
         (d_x, d_y,
          d_min, d_target,
-         data) = scatter_from_carom(dalex_file, 12, args.x, args.y,
+         data) = scatter_from_dalex(dalex_file, 12, args.x, args.y,
                                     delta_chi=21.03, data=data, limit=lim)
 
         hh = plt.scatter(d_x, d_y, color=color, s=5)

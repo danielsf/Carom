@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-from analyzeCarom import make_histogram
+from analyzeDalex import make_histogram
 
 physics_dir = os.path.join("/Users", "danielsf", "physics")
 dalex_dir = os.path.join(physics_dir, "Carom", "output",

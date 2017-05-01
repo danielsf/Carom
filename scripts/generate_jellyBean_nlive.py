@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 import os
 
-from analyzeCarom import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_multinest_projection
 
 n_live_list = [50000, 20000, 5000, 3000, 2000]
 color_list = ['k', 'r', 'b', 'y', 'c']

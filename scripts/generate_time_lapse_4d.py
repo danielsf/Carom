@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-from analyzeCarom import (scatter_from_multinest_projection,
-                          scatter_from_carom)
+from analyzeDalex import (scatter_from_multinest_projection,
+                          scatter_from_dalex)
 
 if __name__ == "__main__":
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     dalex_name = os.path.join(data_dir, "jellyBean_d4_s112_output.sav")
 
     (x_grid, y_grid, dalex_chisq_min, dalex_target,
-     dalex_data) = scatter_from_carom(dalex_name, 4, 0, 1, delta_chi=9.49)
+     dalex_data) = scatter_from_dalex(dalex_name, 4, 0, 1, delta_chi=9.49)
 
     legend_handles = {}
     legend_labels = {}
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                                       4, dim[0], dim[1], downsample=0.01)
             
             (d_x, d_y, d_chisq_min, d_target,
-             d_data) = scatter_from_carom(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
+             d_data) = scatter_from_dalex(dalex_name, 4, dim[0], dim[1], delta_chi=9.49,
                                           data=dalex_data, limit=n_pts)
 
             hh, = plt.plot(control_data[dim]['x'], control_data[dim]['y'],

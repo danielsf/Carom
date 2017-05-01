@@ -2,7 +2,7 @@ from __future__ import with_statement
 import argparse
 import os
 
-from analyzeCarom import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_multinest_projection
 
 if __name__ == "__main__":
 

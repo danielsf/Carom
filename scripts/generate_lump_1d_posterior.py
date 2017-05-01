@@ -12,7 +12,7 @@ multinest_file = os.path.join(physics_dir, 'MultiNest_v3.9', 'chains',
 
 out_dir = os.path.join(physics_dir, 'Carom_drafts', 'figures')
 
-from analyzeCarom import one_d_marginalized_posterior_from_multinest
+from analyzeDalex import one_d_marginalized_posterior_from_multinest
 
 data = None
 i_fig = 0

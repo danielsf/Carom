@@ -6,8 +6,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from analyzeCarom import scatter_from_multinest_projection, scatter_from_carom
-from analyzeCarom import scatter_from_multinest_marginalized
+from analyzeDalex import scatter_from_multinest_projection, scatter_from_dalex
+from analyzeDalex import scatter_from_multinest_marginalized
 
 
 if __name__ == "__main__":
@@ -86,12 +86,12 @@ if __name__ == "__main__":
         #    label_list.append('MultiNest; %.2e $\chi^2$ calls' % n_mult_dud_calls)
 
         (d_x, d_y, d_min,
-         d_target, d_data) = scatter_from_carom(dalex_file, full_dim, ix, iy,
+         d_target, d_data) = scatter_from_dalex(dalex_file, full_dim, ix, iy,
                                                 delta_chi=delta_chi, data=d_data,
                                                 limit=limit)
 
         (d_xp1, d_yp1, d_min_p1,
-         d_target_p1, d_data) = scatter_from_carom(dalex_file, full_dim, ix, iy,
+         d_target_p1, d_data) = scatter_from_dalex(dalex_file, full_dim, ix, iy,
                                                     target=94.16+delta_chi, data=d_data,
                                                     limit=limit)
 
