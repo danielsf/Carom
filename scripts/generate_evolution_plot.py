@@ -67,5 +67,5 @@ for i_fig, seed in enumerate(seed_list):
     plt.ylim(0,90)
 
 plt.tight_layout()
-out_name = os.path.join(out_dir,'jellyBean_evolution.eps')
+out_name = os.path.join(out_dir,'figure_12.eps')
 plt.savefig(out_name)

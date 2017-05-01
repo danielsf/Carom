@@ -139,6 +139,15 @@ if __name__ == "__main__":
                 plt.ylabel('$\\theta_%d$' % iy, fontsize=15)
 
         plt.tight_layout()
-        plt.savefig(os.path.join(fig_dir, 'jellyBean_time_series_s%d_%d_%d.eps' % (seed, ix, iy)))
+
+        if seed==90 and ix==0 and iy==1:
+            file_name = os.path.join(fig_dir, 'figure_11.eps')
+        elif seed==90 and ix==6 and iy==9:
+            file_name = os.path.join(fig_dir, 'figure_10.eps')
+        else:
+            file_name = os.path.join(fig_dir,
+                                     'jellyBean_time_series_s%d_%d_%d.eps' % (seed, ix, iy))
+
+        plt.savefig(file_name)
         plt.close()
 

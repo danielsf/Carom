@@ -100,4 +100,4 @@ plt.xlabel('$\chi^2$')
 plt.ylabel('dN/d$\chi^2$')
 plt.xlim(dalex_data['chisq'].min(), chi_cutoff)
 
-plt.savefig(os.path.join(fig_dir, 'dalex_vs_multinest_histogram.eps'))
+plt.savefig(os.path.join(fig_dir, 'figure_13.eps'))

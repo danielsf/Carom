@@ -167,6 +167,12 @@ if __name__ == "__main__":
                     plt.ylabel('$\\theta_%d$' % iy, fontsize=15)
 
             plt.tight_layout()
-            plt.savefig(os.path.join(fig_dir, 'lump_time_series_s%d_%d_%d.eps' % (seed, ix, iy)))
+            if seed==13 and ix==0 and iy==3:
+                file_name = os.path.join(fig_dir, 'figure_7.eps')
+            elif seed==13 and ix==6 and iy==9:
+                file_name = os.path.join(fig_dir, 'figure_8.eps')
+            else:
+                file_name = os.path.join(fig_dir, 'lump_time_series_s%d_%d_%d.eps' % (seed, ix, iy))
+            plt.savefig(file_name)
             plt.close()
 

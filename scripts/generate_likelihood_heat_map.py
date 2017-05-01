@@ -90,4 +90,4 @@ if __name__ == "__main__":
         plt.yticks(fontsize=40)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'heat_map.eps'), dpi=20)
+    plt.savefig(os.path.join(output_dir, 'figure_1.eps'), dpi=20)
