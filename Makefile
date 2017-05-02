@@ -123,6 +123,15 @@ object/simplex.o object/cost_fn.o object/eigen_wrapper.o \
 object/dalex.o object/dalex_initializer.o object/ellipse.o
 	$(gg) -c -o object/dalex_driver.o src/dalex/dalex_driver.cpp
 
+basic_example: src/examples/basic_example.cpp object/dalex_driver.o \
+object/eigen_wrapper.o object/ellipse.o
+	$(gg) -o bin/basic_example src/examples/basic_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/cost_fn.o object/dalex_driver.o object/ellipse.o \
+        object/dalex.o object/dalex_initializer.o object/explorers.o \
+	$(LIBRARIES)
+
 curved_4d: src/examples/curved_4d_example.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
 object/ellipse.o
