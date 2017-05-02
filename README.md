@@ -8,6 +8,7 @@ To build and run Dalex, you will need the ARPACK, LAPACK, and BLAS linear
 algebra libraries.  We downloaded those libraries from
 
 www.caam.rice.edu/software/ARPACK
+
 www.netlib.org/lapack (for both LAPACK and BLAS)
 
 Once built and installed, you will need to modify the LAPACK_LIB, BLAS_LIB,and
