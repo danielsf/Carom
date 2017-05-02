@@ -97,7 +97,7 @@ implement an arbitrary chi-squared function for use with Dalex.  In summary: the
 chis-squared function must inherit from the class `chisquared`, which is defined
 in the files `include/chisq.h` and `src/utils/chisq.cpp`.  The arbitrary
 chi-squared function must also implement an `operator()` which accepts as
-argument a `cont array_1d<double>&` representing the point in parameter space
+argument a `const array_1d<double>&` representing the point in parameter space
 where chi-square is to be evaluated and returns a double representing the value
 of chi-squared at that point.  `array_1d<double>` is an example of a special
 array-like class implemented for Dalex.  It is designed to throw an exception if
