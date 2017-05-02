@@ -1,4 +1,4 @@
-CAROM_HOME = /Users/danielsf/physics/Carom/
+DALEX_HOME = /Users/danielsf/physics/Carom/
 
 LAPACK_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -llapack
 BLAS_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -lrefblas
@@ -11,7 +11,7 @@ R_PATH = /Users/danielsf/physics/lib/
 
 LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
-INCLUDE = -I$(CAROM_HOME)include/
+INCLUDE = -I$(DALEX_HOME)include/
 
 #do not use these compilers with omp
 gg = g++ -Wno-write-strings -O3 $(INCLUDE)
