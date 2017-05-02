@@ -41,6 +41,9 @@ be fixed in the near future.  If an actual error occurs, you will notice that
 your output and timing files do not reflect the full number of samples you
 specified by `N`.
 
+Also note: Dalex prints a lot of information to `stdout`.  We will clean this
+up in the near future, as well.
+
 ## Output
 
 Running Dalex produces two output files.  The file specified by `out_name` above
