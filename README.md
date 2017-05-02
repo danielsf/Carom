@@ -35,6 +35,12 @@ of likelihood evaluations to make with Dalex, `out_name` is the name of the file
 where the output data will be written, and `timing_name` is the name of a file to
 which information summarizing the wall-time efficiency of Dalex will be written.
 
+Note: when Dalex exits because it has sampled all of the points you requested,
+it prints a warning message to `stdout`.  This is expected and harmless and will
+be fixed in the near future.  If an actual error occurs, you will notice that
+your output and timing files do not reflect the full number of samples you
+specified by `N`.
+
 ## Output
 
 Running Dalex produces two output files.  The file specified by `out_name` above
