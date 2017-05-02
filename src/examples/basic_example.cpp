@@ -47,8 +47,13 @@ int main(){
     dalex_driver dalex_test;
     dalex_test.set_deltachi(12.03); // set delta chi^2 defining chi^2_lim
     dalex_test.set_seed(883); // seed the random number generator
+
     dalex_test.set_min(min); // set the minimum range in parameter space
     dalex_test.set_max(max); // set the maximum range in parameter space
+    // the above limits just bound the initial random samples and the
+    // seeds of the first optimization search; if Dalex finds interesting
+    // regions of parameter space outside of these bounds, it will go there
+
     dalex_test.set_chisquared(&chifn); // pass in the chi^2 function
     dalex_test.set_timingname("output/workspace/basic_timing.txt");
     dalex_test.set_outname("output/workspace/basic_output.txt");
