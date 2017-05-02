@@ -111,3 +111,9 @@ If you wish to keep track of the number of times your chi-squared function is
 called, the `chisquared` class includes an integer `_called` member variable
 that the `operator()` can increment, if you so choose.  The value of this member
 variable is the second column in the timing file defined above.
+
+## Comparison to MultiNest
+
+The directory `multinest_code` contains code defining the functions we used to
+call our cartoon likelihood functions within MultiNest.  There is a `README`
+in that directory explaining how to use that code.
