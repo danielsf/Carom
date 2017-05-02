@@ -58,7 +58,7 @@ of how computationally efficient Dalex is being.  The columns of this file are:
 - The number of times the chi-squared function has been called.  This could be
 different from the first column if points have been called at which the
 chi-squared function returned an exception but caught it gracefully, in which
-case Dalex will not include the point in its history.  Also note thhat this
+case Dalex will not include the point in its history.  Also note that this
 column will only be non-zero if the chi-squared function's `operator()`
 increments the `_called` member variable (see below, where we explain how to
 implement your own chi-squared function).
