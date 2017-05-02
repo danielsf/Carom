@@ -391,8 +391,6 @@ void dalex::guess_bases(array_2d<double> &bases){
         bases.normalize_row(ix);
     }
 
-    validate_bases(bases,"dalex_guess_bases");
-
     printf("validated guessed bases\n");
 }
 
