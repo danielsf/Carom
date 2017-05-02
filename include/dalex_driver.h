@@ -1,5 +1,5 @@
-#ifndef MAPS_H
-#define MAPS_H
+#ifndef DALEX_DRIVER_H
+#define DALEX_DRIVER_H
 
 #include <stdio.h>
 #include <time.h>
@@ -8,14 +8,14 @@
 #include "simplex.h"
 #include "cost_fn.h"
 #include "dalex.h"
-#include "maps_initializer.h"
+#include "dalex_initializer.h"
 
-class maps{
+class dalex_driver{
 
 public:
 
-    maps();
-    ~maps();
+    dalex_driver();
+    ~dalex_driver();
 
     void initialize(int);
 

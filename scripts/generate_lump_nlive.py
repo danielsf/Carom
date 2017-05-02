@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 import os
 
-from analyzeCarom import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_multinest_projection
 
 n_live_list = [10000, 5000, 3000, 2000, 1000]
 color_list = ['k', 'r', 'b', 'y', 'c']
@@ -68,4 +68,4 @@ plt.xlim((xmin-0.1*dx, xmax+0.4*dx))
 plt.ylim((ymin-0.1*dy, ymax+0.4*dx))
 plt.legend(header_list, label_list, fontsize=10, loc=0)
 plt.tight_layout()
-plt.savefig(os.path.join(fig_dir, 'lump_nlive_comparison.eps'))
+plt.savefig(os.path.join(fig_dir, 'figure_5.eps'))

@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 import argparse
 
-from analyzeCarom import scatter_from_multinest_projection
-from analyzeCarom import scatter_from_carom
+from analyzeDalex import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_dalex
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--in_file', type=str, default=None,
@@ -42,9 +42,9 @@ control_data = None
 control_x = None
 control_y = None
 
-carom_data = {}
+dalex_data = {}
 for file_name in in_file_names:
-    carom_data[file_name] = None
+    dalex_data[file_name] = None
 
 for ix_dex in range(0,len(args.x),2):
     ix = args.x[ix_dex]
@@ -66,12 +66,12 @@ for ix_dex in range(0,len(args.x),2):
 
         (dx, dy,
          dmin, dtarget,
-         ddata) = scatter_from_carom(full_name, args.d, ix, iy,
+         ddata) = scatter_from_dalex(full_name, args.d, ix, iy,
                                      delta_chi=args.c,
-                                     data=carom_data[file_name],
+                                     data=dalex_data[file_name],
                                      limit=args.limit)
 
-        carom_data[file_name] = ddata
+        dalex_data[file_name] = ddata
 
         plt.figsize = (30,30)
         if control_x is not None:
@@ -83,7 +83,7 @@ for ix_dex in range(0,len(args.x),2):
         if args.limit is not None:
             npts=args.limit
         else:
-            npts=len(carom_data[file_name])
+            npts=len(dalex_data[file_name])
 
         out_name = os.path.join(args.out_dir,
                                 '%s_%d_%d_%.2e.png' % (file_name, ix, iy, npts))
@@ -93,8 +93,8 @@ for ix_dex in range(0,len(args.x),2):
 
 import numpy as np
 print('npts %d' % npts)
-for file_name in carom_data:
-    data_arr = carom_data[file_name][:npts]
+for file_name in dalex_data:
+    data_arr = dalex_data[file_name][:npts]
     good_dexes = np.where(data_arr['chisq']<=dtarget)
     good_data = data_arr[good_dexes]
     print("stats for %s" % file_name)

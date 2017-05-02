@@ -12,7 +12,7 @@ multinest_file = os.path.join(physics_dir, 'MultiNest_v3.9', 'chains',
 
 out_dir = os.path.join(physics_dir, 'Carom_drafts', 'figures')
 
-from analyzeCarom import one_d_marginalized_posterior_from_multinest
+from analyzeDalex import one_d_marginalized_posterior_from_multinest
 
 data = None
 i_fig = 0
@@ -31,5 +31,5 @@ for ii, ix in enumerate((0,3,6,9)):
     plt.xlabel('$\\theta_%d$' % ix)
 
 plt.tight_layout()
-plt.savefig(os.path.join(out_dir,'lump_one_d_posterior.eps'))
+plt.savefig(os.path.join(out_dir,'figure_9.eps'))
 plt.close()

@@ -6,8 +6,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from analyzeCarom import scatter_from_multinest_projection, scatter_from_carom
-from analyzeCarom import scatter_from_multinest_marginalized
+from analyzeDalex import scatter_from_multinest_projection, scatter_from_dalex
+from analyzeDalex import scatter_from_multinest_marginalized
 
 
 if __name__ == "__main__":
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 label_list.append('MultiNest; %.2e $\chi^2$ calls' % n_mult_dud_calls)
 
             (d_x, d_y, d_min,
-             d_target, d_data) = scatter_from_carom(dalex_file, full_dim, ix, iy,
+             d_target, d_data) = scatter_from_dalex(dalex_file, full_dim, ix, iy,
                                                     delta_chi=delta_chi, data=d_data,
                                                     limit=limit)
 
@@ -139,6 +139,15 @@ if __name__ == "__main__":
                 plt.ylabel('$\\theta_%d$' % iy, fontsize=15)
 
         plt.tight_layout()
-        plt.savefig(os.path.join(fig_dir, 'jellyBean_time_series_s%d_%d_%d.eps' % (seed, ix, iy)))
+
+        if seed==90 and ix==0 and iy==1:
+            file_name = os.path.join(fig_dir, 'figure_11.eps')
+        elif seed==90 and ix==6 and iy==9:
+            file_name = os.path.join(fig_dir, 'figure_10.eps')
+        else:
+            file_name = os.path.join(fig_dir,
+                                     'jellyBean_time_series_s%d_%d_%d.eps' % (seed, ix, iy))
+
+        plt.savefig(file_name)
         plt.close()
 

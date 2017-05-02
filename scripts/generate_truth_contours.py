@@ -17,7 +17,7 @@ def order_x_y(x_in, y_in):
     x_out[0] = x_in[0]
     y_out[0] = y_in[0]
 
-    steps = np.zeros(len(x_in))
+    steps = np.zeros(len(x_in)+1)
     n_chosen = 1
 
     while n_chosen != len(x_in):
@@ -57,6 +57,8 @@ def order_x_y(x_in, y_in):
 
         n_chosen += 1
         available.pop(chosen_dex)
+        x_out[-1] = x_out[0]
+        y_out[-1] =y_out[0]
 
     return x_out, y_out
 
@@ -161,7 +163,7 @@ if __name__ == "__main__":
     plt.legend(legend_handles, legend_labels, fontsize=10,
                bbox_to_anchor=(1.05, 1), loc=2)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "truth_contours.eps"))
+    plt.savefig(os.path.join(output_dir, "figure_2.eps"))
     plt.close()
 
 
@@ -171,9 +173,10 @@ if __name__ == "__main__":
     legend_handles = []
     legend_labels = []
 
-    plt.subplot(2,2,1)
-    for suffix, color in zip(('bayesianFullD', 'frequentistFullDrelative'),
-                             ('b', 'm')):
+    plt.subplot(1,2,1)
+    for suffix, color in zip(('bayesian2D', 'frequentist2D'),
+                             ('r', 'g')):
+
 
         for pct in (0.68, 0.95):
 
@@ -198,16 +201,8 @@ if __name__ == "__main__":
                 legend_handles.append(hh)
                 legend_labels.append(legend_dict[suffix][pct])
 
-    plt.legend(legend_handles, legend_labels, fontsize=10,
-               bbox_to_anchor=(1.05, 1), loc=2)
-
-
-    legend_handles = []
-    legend_labels = []
-
-    plt.subplot(2,2,3)
-    for suffix, color in zip(('bayesian2D', 'frequentist2D'),
-                             ('r', 'g')):
+    for suffix, color in zip(('bayesianFullD', 'frequentistFullDrelative'),
+                             ('b', 'm')):
 
         for pct in (0.68, 0.95):
 
@@ -237,7 +232,7 @@ if __name__ == "__main__":
     plt.legend(legend_handles, legend_labels, fontsize=10,
                bbox_to_anchor=(1.05, 1), loc=2)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "truth_contours_0_1.eps"))
+    plt.savefig(os.path.join(output_dir, "figure_3.eps"))
     plt.close()
 
 

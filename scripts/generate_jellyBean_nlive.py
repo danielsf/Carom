@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 import os
 
-from analyzeCarom import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_multinest_projection
 
 n_live_list = [50000, 20000, 5000, 3000, 2000]
 color_list = ['k', 'r', 'b', 'y', 'c']
@@ -68,4 +68,4 @@ plt.xlim((xmin, xmax+0.4*dx))
 plt.ylim((ymin, ymax+0.4*dx))
 plt.legend(header_list, label_list, fontsize=10, loc=0)
 plt.tight_layout()
-plt.savefig(os.path.join(fig_dir, 'jellyBean_nlive_comparison.eps'))
+plt.savefig(os.path.join(fig_dir, 'figure_6.eps'))

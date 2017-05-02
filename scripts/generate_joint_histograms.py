@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-from analyzeCarom import make_histogram
+from analyzeDalex import make_histogram
 
 physics_dir = os.path.join("/Users", "danielsf", "physics")
 dalex_dir = os.path.join(physics_dir, "Carom", "output",
@@ -100,4 +100,4 @@ plt.xlabel('$\chi^2$')
 plt.ylabel('dN/d$\chi^2$')
 plt.xlim(dalex_data['chisq'].min(), chi_cutoff)
 
-plt.savefig(os.path.join(fig_dir, 'dalex_vs_multinest_histogram.eps'))
+plt.savefig(os.path.join(fig_dir, 'figure_13.eps'))

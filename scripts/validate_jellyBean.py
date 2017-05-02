@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import os
 import argparse
 
-from analyzeCarom import scatter_from_carom
-from analyzeCarom import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_dalex
+from analyzeDalex import scatter_from_multinest_projection
 
 if __name__ == "__main__":
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
             dalex_name = os.path.join(dalex_dir, "jellyBean_d12_s%d_output.sav" % seed)
             
             (d_x, d_y, d_min, d_target,
-             data) = scatter_from_carom(dalex_name, 12, dim[0], dim[1],
+             data) = scatter_from_dalex(dalex_name, 12, dim[0], dim[1],
                                         delta_chi=delta_chi, data=data_dict[seed],
                                         limit=args.limit)
                 

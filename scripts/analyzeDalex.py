@@ -1,9 +1,10 @@
+from __future__ import with_statement
 import numpy as np
 
 __all__ = ["load_multinest_data", "load_dalex_data",
            "scatter_from_multinest_projection",
            "scatter_from_multinest_marginalized",
-           "scatter_from_carom", "make_histogram"]
+           "scatter_from_dalex", "make_histogram"]
 
 def load_multinest_data(file_name, dim):
     dt_list = [('degen', np.float), ('chisq', np.float)]
@@ -14,14 +15,20 @@ def load_multinest_data(file_name, dim):
 
 
 def load_dalex_data(data_name, dim):
+    with open(data_name, 'r') as input_file:
+        first_line = input_file.readline()
+    first_line = first_line.split(' ')
+
     dt_list = []
     for ii in range(dim):
         dt_list.append(('x%d' % ii, np.float))
 
     dt_list.append(('chisq', np.float))
     dt_list.append(('junk1', int))
-    dt_list.append(('junk2', int))
-    dt_list.append(('junk3', int))
+
+    if len(first_line) == dim+5:
+        dt_list.append(('junk2', int))
+        dt_list.append(('junk3', int))
     dtype = np.dtype(dt_list)
 
     return np.genfromtxt(data_name, dtype=dtype)
@@ -189,7 +196,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
     return ref_x, ref_y, ref_data
 
 
-def scatter_from_carom(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
+def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
     if data is None:
         data = load_dalex_data(data_name, dim)
 
