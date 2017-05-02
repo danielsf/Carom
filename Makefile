@@ -13,13 +13,8 @@ LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
 INCLUDE = -I$(DALEX_HOME)include/
 
-#do not use these compilers with omp
 gg = g++ -Wno-write-strings -O3 $(INCLUDE)
 ff = gfortran -O3
-
-#use these compilers if you are going to use omp
-#gg = /opt/local/bin/g++-mp-4.8 -Wno-write-strings -O3 -fopenmp -DUSE_OPENMP -g
-#ff = /opt/local/bin/gfortran-mp-4.8 -O3 -g
 
 object/containers.o: src/utils/containers.cpp include/containers.h
 	$(gg) -c -o object/containers.o src/utils/containers.cpp
