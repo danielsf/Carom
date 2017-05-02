@@ -106,3 +106,8 @@ element of an array of three numbers).  The `array` classes are defined in
 `include/containers.h`.  For the purposes of implementing your own chi-squared
 function, it is enough to know that `x.get_data(i)` returns the `i`th element of
 an `array` `x`.  `x.set_data(i,2.0)` sets the `i`th element of `x` to be `2.0`.
+
+If you wish to keep track of the number of times your chi-squared function is
+called, the `chisquared` class includes an integer `_called` member variable
+that the `operator()` can increment, if you so choose.  The value of this member
+variable is the second column in the timing file defined above.
