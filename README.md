@@ -32,5 +32,5 @@ functions are all of the form
 
 where `S` is an integer seeding the random number generator, `N` is the number
 of likelihood evaluations to make with Dalex, `out_name` is the name of the file
-where the output data will be written and `timing_name` is the name of a file to
+where the output data will be written, and `timing_name` is the name of a file to
 which information summarizing the wall-time efficiency of Dalex will be written.
