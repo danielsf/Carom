@@ -72,3 +72,28 @@ timing data was written out.
 chi-squared over the whole Dalex run.
 - The wall-clock time overhead per call to chi-squared all of the chi-squared
 evaluations since the last time timing data was written.
+
+## Implementing your own chi-squared function
+
+The source code file `src/examples/basic_example.cpp` shows how to implement an
+arbitrary chi-squared function.  To build and run this example, run
+```
+Make basic_example
+./bin/basic_example
+```
+This will create files `output/workspace/basic_output.txt` and
+`output/workspace/basic_timing.txt` (you will have to make sure that the
+directory `output/workspace/` exists).  Examining this code, you will see how to
+implement an arbitrary chi-squared function for use with Dalex.  In summary: the
+chis-squared function must inherit from the class `chisquared`, which is defined
+in the files `include/chisq.h` and `src/utils/chisq.cpp`.  The arbitrary
+chi-squared function must also implement an `operator()` which accepts as
+argument a `cont array_1d<double>&` representing the point in parameter space
+where chi-square is to be evaluated and returns a double representing the value
+of chi-squared at that point.  `array_1d<double>` is an example of a special
+array-like class implemented for Dalex.  It is designed to throw an exception if
+you ever ask for a value that does not exist (e.g. asking for the fifth
+element of an array of three numbers).  The `array` classes are defined in
+`include/containers.h`.  For the purposes of implementing your own chi-squared
+function, it is enough to know that `x.get_data(i)` returns the `i`th element of
+an `array` `x`.  `x.set_data(i,2.0)` sets the `i`th element of `x` to be `2.0`.
