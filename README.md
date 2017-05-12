@@ -2,6 +2,10 @@
 Using cost function minimization to directly find confidence limits in
 high-dimensional parameter spaces.
 
+If you use Dalex in your research, please cite Daniel and Linder 2017
+
+https://arxiv.org/abs/1705.02007
+
 ## Dependencies
 
 To build and run Dalex, you will need the ARPACK, LAPACK, and BLAS linear
