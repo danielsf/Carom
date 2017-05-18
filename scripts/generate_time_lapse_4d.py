@@ -151,7 +151,7 @@ if __name__ == "__main__":
                    bbox_to_anchor=(-0.1,-0.4), loc=2)
         plt.tight_layout()
         if dim[0]==0 and dim[1]==1:
-            file_name = os.path.join(fig_dir, "figure_4.eps")
+            file_name = os.path.join(fig_dir, "figure_4.png")
         else:
             file_name = os.path.join(fig_dir, "time_lapse_%d_%d.eps" % (dim[0], dim[1]))
         plt.savefig(file_name)

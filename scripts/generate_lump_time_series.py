@@ -168,9 +168,9 @@ if __name__ == "__main__":
 
             plt.tight_layout()
             if seed==13 and ix==0 and iy==3:
-                file_name = os.path.join(fig_dir, 'figure_7.eps')
+                file_name = os.path.join(fig_dir, 'figure_7.png')
             elif seed==13 and ix==6 and iy==9:
-                file_name = os.path.join(fig_dir, 'figure_8.eps')
+                file_name = os.path.join(fig_dir, 'figure_8.png')
             else:
                 file_name = os.path.join(fig_dir, 'lump_time_series_s%d_%d_%d.eps' % (seed, ix, iy))
             plt.savefig(file_name)

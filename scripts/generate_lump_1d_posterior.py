@@ -31,5 +31,5 @@ for ii, ix in enumerate((0,3,6,9)):
     plt.xlabel('$\\theta_%d$' % ix)
 
 plt.tight_layout()
-plt.savefig(os.path.join(out_dir,'figure_9.eps'))
+plt.savefig(os.path.join(out_dir,'figure_9.png'))
 plt.close()
