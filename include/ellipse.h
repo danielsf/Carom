@@ -36,6 +36,7 @@ class ellipse{
         double radii(int i){return _radii.get_data(i);}
         int dim(){return _center.get_dim();}
         void copy(ellipse&);
+        void trim(array_2d<double>&);
 
     private:
         array_2d<double> _bases;

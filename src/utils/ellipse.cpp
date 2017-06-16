@@ -262,6 +262,41 @@ void ellipse::_set_radii(const array_2d<double> &pts_in){
 
 }
 
+void ellipse::trim(array_2d<double> &pts){
+    printf("trimming\n");
+    int ir,ii,i_target,failed;
+    double old_rad,max_rad,rr;
+    array_1d<int> do_not_touch;
+
+    while(do_not_touch.get_dim()<_bases.get_rows()){
+        i_target=-1;
+        for(ir=0;ir<_bases.get_rows();ir++){
+            if(i_target==-1 || _radii.get_data(ir)>max_rad){
+                if(do_not_touch.contains(ir)==0){
+                    max_rad=_radii.get_data(ir);
+                    i_target=ir;
+                }
+            }
+        }
+        old_rad = _radii.get_data(i_target);
+        rr = old_rad*0.95;
+        _radii.set(i_target, rr);
+        failed=0;
+        for(ii=0;ii<pts.get_rows();ii++){
+            if(contains(pts(ii))==0){
+                _radii.set(i_target, old_rad);
+                do_not_touch.add(i_target);
+                failed=1;
+                break;
+            }
+        }
+        if(failed!=1){
+            printf("successfully shrunk %d\n",i_target);
+        }
+    }
+
+}
+
 void ellipse::copy(ellipse &other){
     _bases.reset_preserving_room();
     _center.reset_preserving_room();
