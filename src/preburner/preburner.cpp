@@ -123,6 +123,7 @@ int main(int iargc, char *argv[]){
     ellipse good_ellipse;
     good_ellipse.use_geo_center();
     good_ellipse.build(pts);
+    good_ellipse.trim(pts);
 
     FILE *output;
     output=fopen(out_file, "w");
