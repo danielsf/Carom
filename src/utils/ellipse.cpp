@@ -262,6 +262,77 @@ void ellipse::_set_radii(const array_2d<double> &pts_in){
 
 }
 
+void ellipse::careful_set_radii(const array_2d<double> &pts_in){
+
+    _radii.reset();
+
+    array_1d<double> max_extent,max,min,mean_radii,max_radii;
+    max_extent.set_name("ellipse_careful_set_radii_max_extent");
+    max.set_name("ellipse_careful_set_radii_max");
+    min.set_name("ellipse_careful_set_radii_min");
+    mean_radii.set_name("ellipse_careful_set_radii_mean");
+    max_radii.set_name("ellipse_careful_set_radii_max_radii");
+    int i,j,idim;
+    double component;
+    mean_radii.set_dim(_bases.get_rows());
+    mean_radii.zero();
+    for(i=0;i<pts_in.get_rows();i++){
+        for(idim=0;idim<_bases.get_rows();idim++){
+            component=0.0;
+            for(j=0;j<_bases.get_rows();j++){
+                component+=(pts_in.get_data(i,j)-_center.get_data(j))*_bases.get_data(idim,j);
+            }
+            if(idim>=min.get_dim() || component<min.get_data(idim)){
+                min.set(idim,component);
+            }
+            if(idim>=max.get_dim() || component>max.get_data(idim)){
+                max.set(idim,component);
+            }
+            if(idim>=max_radii.get_dim() || fabs(component)>max_radii.get_data(idim)){
+                max_radii.set(idim,fabs(component));
+            }
+            mean_radii.set(idim,fabs(component));
+        }
+    }
+
+    for(idim=0;idim<_bases.get_rows();idim++){
+        max_extent.set(idim,max.get_data(idim)-min.get_data(idim));
+        mean_radii.divide_val(idim,float(pts_in.get_rows()));
+        _radii.set(idim,1.1*max_radii.get_data(idim));
+    }
+
+    int is_valid=1;
+    for(i=0;i<pts_in.get_rows();i++){
+        if(contains(pts_in(i))==0){
+            is_valid=0;
+            break;
+        }
+    }
+
+    double min_r_diff;
+    double diff;
+    int i_to_change;
+    while(is_valid==0){
+        for(i=0;i<_radii.get_dim();i++){
+            diff = fabs(_radii.get_data(i)-0.5*max_extent.get_data(i));
+            if(i==0 || diff<min_r_diff){
+                min_r_diff=diff;
+                i_to_change=i;
+            }
+        }
+        _radii.multiply_val(i_to_change, 1.1);
+        is_valid=1;
+        for(i=0;i<pts_in.get_rows();i++){
+            if(contains(pts_in(i))==0){
+                is_valid=0;
+                break;
+            }
+        }
+    }
+
+}
+
+
 void ellipse::trim(array_2d<double> &pts){
     printf("trimming\n");
     int ir,ii,i_target,failed;
