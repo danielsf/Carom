@@ -168,6 +168,10 @@ object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapp
 	object/dalex_initializer.o \
 	$(LIBRARIES)
 
+preburner: src/preburner/preburner.cpp object/ellipse.o
+	$(cc) -o bin/preburner src/preburner/preburner.cpp \
+	object/containers.o object/goto_tools.o object/ellipse.o
+
 all:
 	make test_containers
 	make test_kd
