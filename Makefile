@@ -172,6 +172,18 @@ preburner: src/preburner/preburner.cpp object/ellipse.o
 	$(cc) -o bin/preburner src/preburner/preburner.cpp \
 	object/containers.o object/goto_tools.o object/ellipse.o
 
+object/mcmc.o: include/mcmc.h src/mcmc/mcmc.cpp object/containers.o \
+object/goto_tools.o object/eigen_wrapper.o object/wrappers.o
+	$(cc) -c -o object/mcmc.o src/mcmc/mcmc.cpp
+
+mcmc_example: src/examples/mcmc_curved_12d_example.cpp object/mcmc.o \
+object/chisq.o object/jellyBean.o
+	$(cc) -o bin/mcmc_example src/examples/mcmc_curved_12d_example.cpp \
+	object/containers.o object/goto_tools.o object/wrappers.o \
+	object/eigen_wrapper.o object/chisq.o object/jellyBean.o \
+	object/mcmc.o \
+	$(LIBRARIES)
+
 all:
 	make test_containers
 	make test_kd
