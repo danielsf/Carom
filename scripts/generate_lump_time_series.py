@@ -72,7 +72,7 @@ if __name__ == "__main__":
         d_data = None
         dalex_file = os.path.join(dalex_dir,'lump_d12_s%d_output.sav' % seed)
 
-        for ix, iy in zip((0, 6), (3, 9)):
+        for ix, iy in zip((0, 6, 2, 4), (3, 9, 8, 11)):
 
             m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
                                                                  full_dim, ix, iy, data=m_data,
