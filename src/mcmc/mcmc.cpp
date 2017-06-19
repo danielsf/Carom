@@ -114,7 +114,9 @@ void mcmc_sampler::sample(int steps_per_chain){
     new_pt.set_name("mcmc_sample_new_pt");
     int old_dex;
     int total_ct=0;
-    int i,accept_it;
+    int i,j,accept_it;
+    array_1d<double> dir;
+    dir.set_name("mcmc_sample_dir");
     for(i_step=0;i_step<steps_per_chain;i_step++){
         for(i_chain=0;i_chain<_n_chains;i_chain++){
             total_ct++;
@@ -122,9 +124,18 @@ void mcmc_sampler::sample(int steps_per_chain){
             old_dex=_point_dexes.get_data(i_chain,_point_dexes.get_cols(i_chain)-1);
             chi_old=_chisq_arr.get_data(old_dex);
             i_basis=_dice->int32()%_dim;
-            rr=normal_deviate(_dice,0.0,_radii.get_data(i_basis));
+            rr=fabs(normal_deviate(_dice,1.0,0.25));
             for(i=0;i<_dim;i++){
-                new_pt.set(i,_points.get_data(old_dex,i)+rr*_bases.get_data(i_basis,i));
+                dir.set(i,normal_deviate(_dice,0.0,1.0));
+            }
+            dir.normalize();
+            for(i=0;i<_dim;i++){
+                new_pt.set(i,_points.get_data(old_dex,i));
+            }
+            for(i=0;i<_dim;i++){
+                 for(j=0;j<_dim;j++){
+                     new_pt.add_val(j,rr*dir.get_data(i)*_bases.get_data(i,j));
+                 }
             }
             chi_new=_chisq_fn[0](new_pt);
             if(chi_new<chi_old){

@@ -165,6 +165,7 @@ select_start_pts(12,21.03,24,
 sampler.set_start_pts(points);
 sampler.set_name_root("chains/jb_170619/test_chain");
 
+printf("sampling\n");
 sampler.sample(100000);
 sampler.write_chains();
 
