@@ -115,13 +115,13 @@ void select_start_pts(int dim, double dchi, int n_chains,
 
 int main(int iargc, char *argv[]){
 
-gaussianJellyBean12 chifn;
+nonGaussianLump12 chifn;
 mcmc_sampler sampler;
 sampler.set_seed(124);
 sampler.set_chisq_fn(&chifn);
 
 char preburner_name[letters];
-sprintf(preburner_name, "test_jelly_bases.txt");
+sprintf(preburner_name, "test_ellipse_bases.txt");
 
 int dim=12;
 
@@ -157,10 +157,18 @@ for(i=0;i<dim;i++){
 
 sampler.set_bases(bases,radii);
 
-select_start_pts(12,21.03,24,
+/*select_start_pts(12,21.03,24,
                 "output/workspace/jellyBean_d12_s90_output.sav",
+                points);*/
+
+select_start_pts(12,21.03,24,
+                "output/workspace/lump_d12_s13_output.sav",
                 points);
 
+
+/*for(i=0;i<dim;i++){
+    points.add_row(center);
+}*/
 
 sampler.set_start_pts(points);
 sampler.set_name_root("chains/jb_170619/test_chain");
