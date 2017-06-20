@@ -131,7 +131,6 @@ array_2d<double> points;
 
 bases.set_dim(dim,dim);
 radii.set_dim(dim);
-points.set_dim(dim,dim);
 
 Ran dice(47);
 
