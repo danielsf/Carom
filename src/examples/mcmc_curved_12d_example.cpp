@@ -141,11 +141,12 @@ int i;
 for(i=0;i<dim;i++){
     fscanf(input,"%le",&xx);
     center.set(i,xx);
+    printf("center %d %e\n",i,xx);
 }
 int j;
 for(i=0;i<dim;i++){
     fscanf(input,"%le",&xx);
-    radii.set(i,xx);
+    radii.set(i,xx*0.25);
 }
 for(i=0;i<dim;i++){
     for(j=0;j<dim;j++){
