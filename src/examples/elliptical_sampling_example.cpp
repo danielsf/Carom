@@ -1,5 +1,44 @@
 #include "ellipse.h"
+#include "kd.h"
 #include "exampleLikelihoods.h"
+
+int is_okay(array_1d<double> &pt, kd_tree_list &tree_list){
+    array_1d<double> pt_2d;
+    int ix,iy,i_tree;
+    i_tree=-1;
+    int n_neigh=10;
+    array_1d<int> neigh;
+    array_1d<double> dd;
+    ellipse *ell_ptr;
+    array_2d<double> neighbor_pts;
+    neighbor_pts.set_cols(2);
+    int i,j;
+    int _is_okay=1;
+    for(ix=0;ix<pt.get_dim() && _is_okay==1;ix++){
+        for(iy=ix+1;iy<pt.get_dim() && _is_okay==1;iy++){
+            i_tree++;
+            pt_2d.set(0,pt.get_data(ix));
+            pt_2d.set(1,pt.get_data(iy));
+            tree_list(i_tree)->nn_srch(pt,n_neigh,neigh,dd);
+            for(i=0;i<n_neigh;i++){
+                for(j=0;j<2;j++){
+                    neighbor_pts.set(i,j,tree_list(i_tree)->get_pt(neigh.get_data(i),j));
+                }
+            }
+            if(dd.get_data(0)>0.01){
+                ell_ptr = new ellipse;
+                ell_ptr->use_geo_center();
+                ell_ptr->build(neighbor_pts);
+                ell_ptr->careful_set_radii(neighbor_pts);
+                if(ell_ptr->contains(pt_2d)==0){
+                    _is_okay=0;
+                }
+                delete ell_ptr;
+            }
+        }
+    }
+    return _is_okay;
+}
 
 int main(int iarg, char *argv[]){
 
@@ -79,16 +118,33 @@ good_ellipse_list.add(local_ellipse[0]);
 
 delete local_ellipse;
 
+kd_tree_list good_tree_list;
+kd_tree *local_tree;
+
 int ix,iy;
+array_1d<double> tree_min,tree_max;
 array_2d<double> good_pts_2d;
 for(ix=0;ix<dim;ix++){
     for(iy=ix+1;iy<dim;iy++){
+        printf("%d %d\n",ix,iy);
         pt.reset();
         good_pts_2d.reset_preserving_room();
         for(i=0;i<good_pts.get_rows();i++){
             pt.set(0,good_pts.get_data(i,ix));
             pt.set(1,good_pts.get_data(i,iy));
             good_pts_2d.add_row(pt);
+            if(i==0 || pt.get_data(0)<tree_min.get_data(0)){
+                tree_min.set(0,pt.get_data(0));
+            }
+            if(i==0 || pt.get_data(0)>tree_max.get_data(0)){
+                tree_max.set(0,pt.get_data(0));
+            }
+            if(i==0 || pt.get_data(1)<tree_min.get_data(1)){
+                tree_min.set(1,pt.get_data(1));
+            }
+            if(i==0 || pt.get_data(1)>tree_max.get_data(1)){
+                tree_max.set(1,pt.get_data(1));
+            }
         }
         local_ellipse = new ellipse;
         local_ellipse[0].use_geo_center();
@@ -97,6 +153,10 @@ for(ix=0;ix<dim;ix++){
         //local_ellipse[0].multiply_radii(1.05);
         good_ellipse_list.add(local_ellipse[0]);
         delete local_ellipse;
+
+        local_tree = new kd_tree(good_pts_2d, tree_min, tree_max);
+        good_tree_list.add(local_tree[0]);
+        delete local_tree;
     }
 }
 
@@ -214,18 +274,11 @@ while(accept_it==0){
             pt.add_val(j,sphere_pt.get_data(i)*macro_ellipse->radii(i)*macro_ellipse->bases(i,j));
         }
     }
-    accept_it=1;
-    i_ell=0;
-    for(ix=0;ix<dim && accept_it==1;ix++){
-        for(iy=ix+1;iy<dim && accept_it==1;iy++){
-            i_ell++;
-            local_ellipse=good_ellipse_list(i_ell);
-            pt_2d.set(0,pt.get_data(ix));
-            pt_2d.set(1,pt.get_data(iy));
-            if(local_ellipse->contains(pt_2d)==0){
-                accept_it=0;
-                duds++;
-            }
+    accept_it=is_okay(pt, good_tree_list);
+    if(accept_it==0){
+        duds++;
+        if(duds>0 && duds%1000==0){
+            printf("duds on first %d\n",duds);
         }
     }
 }
@@ -253,19 +306,9 @@ while(n_samples<5000000){
             pt.add_val(j,sphere_pt.get_data(i)*macro_ellipse->radii(i)*macro_ellipse->bases(i,j));
         }
     }
-    accept_it=1;
-    i_ell=0;
-    for(ix=0;ix<dim && accept_it==1;ix++){
-        for(iy=ix+1;iy<dim && accept_it==1;iy++){
-            i_ell++;
-            local_ellipse=good_ellipse_list(i_ell);
-            pt_2d.set(0,pt.get_data(ix));
-            pt_2d.set(1,pt.get_data(iy));
-            if(local_ellipse->contains(pt_2d)==0){
-                accept_it=0;
-                duds++;
-            }
-        }
+    accept_it=is_okay(pt, good_tree_list);
+    if(accept_it==0){
+        duds++;
     }
     if(accept_it==1){
         n_samples++;
