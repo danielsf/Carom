@@ -184,6 +184,13 @@ object/chisq.o object/jellyBean.o
 	object/mcmc.o \
 	$(LIBRARIES)
 
+ellipse_sampler: src/examples/elliptical_sampling_example.cpp \
+object/ellipse.o object/chisq.o object/jellyBean.o
+	$(cc) -o bin/ellipse_sampler src/examples/elliptical_sampling_example.cpp \
+	object/containers.o object/ellipse.o object/goto_tools.o \
+	object/wrappers.o object/chisq.o object/jellyBean.o \
+	$(LIBRARIES)
+
 all:
 	make test_containers
 	make test_kd
