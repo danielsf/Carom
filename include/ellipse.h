@@ -38,6 +38,12 @@ class ellipse{
         void copy(ellipse&);
         void trim(array_2d<double>&);
         void careful_set_radii(const array_2d<double>&);
+        void multiply_radii(double ff){
+            int i;
+            for(i=0;i<_radii.get_dim();i++){
+                _radii.multiply_val(i,ff);
+            }
+        }
 
     private:
         array_2d<double> _bases;
