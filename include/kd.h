@@ -271,6 +271,42 @@ class kd_tree{
 };
 
 
+class kd_tree_list{
+    public:
+        kd_tree_list(){
+            _kd_tree_list=NULL;
+            _ct=0;
+        }
+
+        ~kd_tree_list(){
+            if(_kd_tree_list!=NULL){
+                delete [] _kd_tree_list;
+            }
+        }
+
+        void add(kd_tree&);
+        int ct(){return _ct;}
+        void reset(){
+            _ct=0;
+            if(_kd_tree_list!=NULL){
+                delete [] _kd_tree_list;
+                _kd_tree_list=NULL;
+            }
+        }
+
+        kd_tree* operator()(int ii){
+            if(ii<0 || ii>=_ct){
+                printf("No such kd_tree: %d\n",ii);
+                exit(1);
+            }
+            return &_kd_tree_list[ii];
+        }
+
+    private:
+        int _ct;
+        kd_tree *_kd_tree_list;
+};
+
 void convert_to_boundary(array_2d<double>&, double, double, array_2d<double>&);
 
 #endif

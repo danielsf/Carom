@@ -1413,3 +1413,26 @@ void convert_to_boundary(array_2d<double> &pts, double dx, double dy, array_2d<d
     delete point_tree;
 
 }
+
+
+void kd_tree_list::add(kd_tree &kd_in){
+    kd_tree *buffer;
+    int i;
+    if(_ct>0){
+        buffer=new kd_tree[_ct];
+        for(i=0;i<_ct;i++){
+            buffer[i].copy(_kd_tree_list[i]);
+        }
+        delete [] _kd_tree_list;
+        _kd_tree_list = new kd_tree[_ct+1];
+        for(i=0;i<_ct;i++){
+            _kd_tree_list[i].copy(buffer[i]);
+        }
+        delete [] buffer;
+    }
+    else{
+        _kd_tree_list=new kd_tree[1];
+    }
+    _kd_tree_list[_ct].copy(kd_in);
+    _ct++;
+}
