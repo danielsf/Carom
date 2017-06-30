@@ -113,4 +113,34 @@ int main(int iargc, char *argv[]){
         exit(1);
     }
 
+    double chisq_min=exception_value;
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        if(dalex_chisq.get_data(i)<chisq_min){
+            chisq_min=dalex_chisq.get_data(i);
+        }
+    }
+
+    array_1d<double> xmin,xmax;
+    xmin.set_name("xmin");
+    xmax.set_name("xmax");
+    for(i=0;i<dalex_pts.get_rows();i++){
+        if(dalex_chisq.get_data(i)<chisq_min+21.03){
+            for(j=0;j<dim;j++){
+                if(j>=xmin.get_dim() || dalex_pts.get_data(i,j)<xmin.get_data(j)){
+                    xmin.set(j,dalex_pts.get_data(i,j));
+                }
+                if(j>=xmax.get_dim() || dalex_pts.get_data(i,j)>xmax.get_data(j)){
+                    xmax.set(j,dalex_pts.get_data(i,j));
+                }
+            }
+        }
+    }
+
+    kd_tree dalex_tree(dalex_pts, xmin, xmax);
+
+    array_1d<int> neigh;
+    array_1d<double> dist;
+    neigh.set_name("neigh");
+    dist.set_name("dist");
+
 }
