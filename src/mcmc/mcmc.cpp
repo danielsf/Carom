@@ -109,6 +109,9 @@ void mcmc_sampler::sample(int steps_per_chain){
     int i_step;
     int i_chain;
     int i_basis;
+    int n_accept,n_reject;
+    n_accept=0;
+    n_reject=0;
     double rr;
     array_1d<double> new_pt;
     new_pt.set_name("mcmc_sample_new_pt");
@@ -118,6 +121,9 @@ void mcmc_sampler::sample(int steps_per_chain){
     array_1d<double> dir;
     dir.set_name("mcmc_sample_dir");
     for(i_step=0;i_step<steps_per_chain;i_step++){
+        if(i_step>0 && i_step%10000==0){
+            printf("    i_step %le -- %d %d\n",float(i_step),n_accept,n_reject);
+        }
         for(i_chain=0;i_chain<_n_chains;i_chain++){
             total_ct++;
             accept_it=0;
@@ -149,11 +155,13 @@ void mcmc_sampler::sample(int steps_per_chain){
             }
 
             if(accept_it==1){
+                n_accept++;
                 _points.add_row(new_pt);
                 _chisq_arr.add(chi_new);
                 _point_dexes.add(i_chain,_points.get_rows()-1);
             }
             else{
+                n_reject++;
                 _point_dexes.add(i_chain,old_dex);
             }
         }
