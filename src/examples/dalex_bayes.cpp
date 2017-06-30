@@ -143,4 +143,97 @@ int main(int iargc, char *argv[]){
     neigh.set_name("neigh");
     dist.set_name("dist");
 
+    array_1d<double> delta;
+    array_1d<double> local_min,local_max;
+    array_1d<int> local_min_set,local_max_set;
+    array_2d<double> box_min,box_max;
+    local_min.set_name("local_min");
+    local_max.set_name("local_max");
+    local_min_set.set_name("local_min_set");
+    local_max_set.set_name("local_max_set");
+    box_min.set_name("box_min");
+    box_max.set_name("box_max");
+    delta.set_name("delta");
+
+    int n_neigh=3*dim+1;
+    int mins_set;
+    int maxes_set;
+    int k;
+    int dim_dex;
+    int neigh_dex;
+
+    array_1d<double> sorted_delta;
+    array_1d<int> sorted_delta_dex;
+    sorted_delta.set_name("sorted_delta");
+    sorted_delta_dex.set_name("sorted_delta_dex");
+
+    double t_start = double(time(NULL));
+
+    for(i=0;i<dalex_pts.get_rows();i++){
+        dalex_tree.nn_srch(i,n_neigh,neigh,dist);
+        if(neigh.get_data(0)!=i){
+            printf("neighbor search did not find self\n");
+            exit(1);
+        }
+
+        for(j=0;j<dim;j++){
+            local_min_set.set(j,0);
+            local_max_set.set(j,0);
+            local_min.set(j,dalex_pts.get_data(i,j));
+            local_max.set(j,dalex_pts.get_data(i,j));
+        }
+        mins_set=0;
+        maxes_set=0;
+        for(j=0;j<n_neigh && mins_set<dim && maxes_set<dim; j++){
+             neigh_dex = neigh.get_data(j);
+             sorted_delta.reset_preserving_room();
+             sorted_delta_dex.reset_preserving_room();
+             for(k=0;k<dim;k++){
+                 delta.set(k,fabs(dalex_pts.get_data(i,k)-dalex_pts.get_data(neigh_dex,k)));
+                 sorted_delta_dex.set(k,k);
+             }
+             sort(delta,sorted_delta,sorted_delta_dex);
+
+             for(k=dim-1;k>=1;k--){
+                 dim_dex=sorted_delta_dex.get_data(k);
+                 if(dalex_pts.get_data(neigh_dex,dim_dex)>dalex_pts.get_data(i,dim_dex)
+                    && local_max_set.get_data(dim_dex)==0){
+
+                     local_max.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
+                     maxes_set++;
+                     local_max_set.set(dim_dex,1);
+                     break;
+                 }
+                 else if(dalex_pts.get_data(neigh_dex,dim_dex)<dalex_pts.get_data(i,dim_dex)
+                         && local_min_set.get_data(dim_dex)==0){
+
+                     local_min.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
+                     mins_set++;
+                     local_min_set.set(dim_dex,1);
+                     break;
+                 }
+             }
+
+        }
+        if(dalex_chisq.get_data(i)<chisq_min+200.0){
+            for(j=0;j<dim;j++){
+                if(local_min_set.get_data(j)==0 && local_max_set.get_data(j)==0){
+                    printf("%d %e somehow, volume will be zero\n",i,dalex_chisq.get_data(i));
+                    exit(1);
+                }
+                if(local_min.get_data(j)>dalex_pts.get_data(i,j) ||
+                   local_max.get_data(j)<dalex_pts.get_data(i,j)){
+
+                   printf("%d somehow %e < %e < %e, which is not true\n",
+                   i, local_min.get_data(j),dalex_pts.get_data(i,j),
+                   local_max.get_data(j));
+               }
+            }
+        }
+        box_min.add_row(local_min);
+        box_max.add_row(local_max);
+        if(box_min.get_rows()%1000==0){
+            printf("%d %e\n",box_min.get_rows(),double(time(NULL))-t_start);
+        }
+    }
 }
