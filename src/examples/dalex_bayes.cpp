@@ -239,7 +239,9 @@ int main(int iargc, char *argv[]){
                     printf("%d %e somehow, volume will be zero\n",i,dalex_chisq.get_data(i));
                     printf("%e\n",dalex_pts.get_data(i,j));
                     for(k=0;k<n_neigh;k++){
-                         printf("%e\n",dalex_pts.get_data(neigh.get_data(k),j));
+                         printf("    %e %e\n",
+                         dalex_pts.get_data(neigh.get_data(k),j)-dalex_pts.get_data(i,j),
+                         dalex_chisq.get_data(i)-dalex_chisq.get_data(neigh.get_data(k)));
                     }
                     exit(1);
                 }
