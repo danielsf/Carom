@@ -208,20 +208,21 @@ int main(int iargc, char *argv[]){
 
                     for(k=dim-1;k>=0;k--){
                         dim_dex=sorted_delta_dex.get_data(k);
-                        if(dalex_pts.get_data(neigh_dex,dim_dex)>dalex_pts.get_data(i,dim_dex)
+                        xx = dalex_pts.get_data(neigh_dex,dim_dex);
+                        if(xx>dalex_pts.get_data(i,dim_dex)
                            && local_max_set.get_data(dim_dex)==0){
 
-                            local_max.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
+                            local_max.set(dim_dex, 0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                             maxes_set++;
                             local_max_set.set(dim_dex,1);
                             if(n_pass==0){
                                 break;
                             }
                         }
-                        else if(dalex_pts.get_data(neigh_dex,dim_dex)<dalex_pts.get_data(i,dim_dex)
+                        else if(xx<dalex_pts.get_data(i,dim_dex)
                                 && local_min_set.get_data(dim_dex)==0){
 
-                            local_min.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
+                            local_min.set(dim_dex, 0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                             mins_set++;
                             local_min_set.set(dim_dex,1);
                             if(n_pass==0){
@@ -277,11 +278,12 @@ int main(int iargc, char *argv[]){
                     is_valid=0;
                     sort(delta,sorted_delta,sorted_delta_dex);
                     dim_dex = sorted_delta_dex.get_data(0);
-                    if(dalex_pts.get_data(neigh.get_data(j),dim_dex)<dalex_pts.get_data(i,dim_dex)){
-                        local_min.set(dim_dex,dalex_pts.get_data(neigh.get_data(j),dim_dex));
+                    xx = dalex_pts.get_data(neigh.get_data(j),dim_dex);
+                    if(xx<dalex_pts.get_data(i,dim_dex)){
+                        local_min.set(dim_dex,0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                     }
                     else{
-                        local_max.set(dim_dex,dalex_pts.get_data(neigh.get_data(j),dim_dex));
+                        local_max.set(dim_dex,0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                     }
                 }
 
