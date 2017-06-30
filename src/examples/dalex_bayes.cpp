@@ -266,7 +266,7 @@ int main(int iargc, char *argv[]){
         }
         box_min.add_row(local_min);
         box_max.add_row(local_max);
-        if(box_min.get_rows()%1000==0){
+        if(box_min.get_rows()%10000==0){
             printf("%d %e %d\n",box_min.get_rows(),double(time(NULL))-t_start,max_n_neigh);
         }
     }
