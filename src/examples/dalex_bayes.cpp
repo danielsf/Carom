@@ -157,6 +157,7 @@ int main(int iargc, char *argv[]){
 
     int n_neigh_start=3*dim+1;
     int n_neigh;
+    int n_neigh_validate=20*dim;
     int mins_set;
     int maxes_set;
     int k;
@@ -166,6 +167,7 @@ int main(int iargc, char *argv[]){
     int n_pass;
     int max_n_neigh=-1;
     int is_inside;
+    double vol,min_vol=2.0*exception_value,mean_vol=0.0,var_vol=0.0;
 
     array_1d<double> sorted_delta;
     array_1d<int> sorted_delta_dex;
@@ -183,7 +185,7 @@ int main(int iargc, char *argv[]){
         }
         mins_set=0;
         maxes_set=0;
-        n_neigh=n_neigh_start;
+        n_neigh=n_neigh_validate;
         is_valid=0;
         while(is_valid==0){
             n_pass=0;
@@ -192,6 +194,7 @@ int main(int iargc, char *argv[]){
                 printf("neighbor search did not find self\n");
                 exit(1);
             }
+            delta.reset_preserving_room();
             while(is_valid==0 && n_pass<2){
                 for(j=1;j<n_neigh && mins_set<dim && maxes_set<dim; j++){
                     neigh_dex = neigh.get_data(j);
@@ -238,6 +241,50 @@ int main(int iargc, char *argv[]){
                         break;
                     }
                 }
+            }
+        }
+
+        if(n_neigh>n_neigh_validate){
+            n_neigh=n_neigh+10*dim;
+            dalex_tree.nn_srch(i,n_neigh,neigh,dist);
+        }
+        is_valid=0;
+        delta.reset_preserving_room();
+        sorted_delta.reset_preserving_room();
+        sorted_delta_dex.reset_preserving_room();
+        while(is_valid==0){
+            is_valid=1;
+            for(j=1;j<n_neigh;j++){
+                is_inside=1;
+                for(k=0;k<dim;k++){
+                    delta.set(k,2.0*exception_value);
+                    sorted_delta_dex.set(k,k);
+                    if(!(dalex_pts.get_data(neigh.get_data(j),k)>local_min.get_data(k) &&
+                         dalex_pts.get_data(neigh.get_data(j),k)<local_max.get_data(k))){
+                        is_inside=0;
+                    }
+                    else{
+                        if(dalex_pts.get_data(neigh.get_data(j),k)<dalex_pts.get_data(i,k)){
+                            delta.set(k,dalex_pts.get_data(neigh.get_data(j),k)-local_min.get_data(k));
+                        }
+                        else{
+                            delta.set(k,local_max.get_data(k)-dalex_pts.get_data(neigh.get_data(j),k));
+                        }
+                    }
+                }
+
+                if(is_inside==1){
+                    is_valid=0;
+                    sort(delta,sorted_delta,sorted_delta_dex);
+                    dim_dex = sorted_delta_dex.get_data(0);
+                    if(dalex_pts.get_data(neigh.get_data(j),dim_dex)<dalex_pts.get_data(i,dim_dex)){
+                        local_min.set(dim_dex,dalex_pts.get_data(neigh.get_data(j),dim_dex));
+                    }
+                    else{
+                        local_max.set(dim_dex,dalex_pts.get_data(neigh.get_data(j),dim_dex));
+                    }
+                }
+
             }
         }
 
@@ -290,10 +337,40 @@ int main(int iargc, char *argv[]){
         if(n_neigh>max_n_neigh){
             max_n_neigh=n_neigh;
         }
+        vol=1.0;
+        for(k=0;k<dim;k++){
+            vol*=local_max.get_data(k)-local_min.get_data(k);
+        }
+        if(vol<min_vol){
+            min_vol=vol;
+        }
+        mean_vol+=vol;
+        var_vol+=vol*vol;
         box_min.add_row(local_min);
         box_max.add_row(local_max);
         if(box_min.get_rows()%10000==0){
-            printf("%d %e %d\n",box_min.get_rows(),double(time(NULL))-t_start,max_n_neigh);
+            mean_vol=mean_vol/10000.0;
+            var_vol = var_vol/10000.0-mean_vol*mean_vol;
+            printf("%d %e %d -- %e %e %e\n",
+            box_min.get_rows(),double(time(NULL))-t_start,max_n_neigh,min_vol,
+            mean_vol,sqrt(var_vol));
+            min_vol=2.0*exception_value;
+            mean_vol=0.0;
+            var_vol=0.0;
         }
     }
+
+    FILE *out_file;
+    out_file=fopen("volume_plot.txt", "w");
+    double ln_vol;
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        vol=1.0;
+        ln_vol=0.0;
+        for(j=0;j<dim;j++){
+            vol*=box_max.get_data(i,j)-box_min.get_data(i,j);
+            ln_vol+=log(box_max.get_data(i,j)-box_min.get_data(i,j));
+        }
+        fprintf(out_file,"%e %e %e\n",dalex_chisq.get_data(i),vol,ln_vol);
+    }
+    fclose(out_file);
 }
