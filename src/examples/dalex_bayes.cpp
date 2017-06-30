@@ -165,6 +165,7 @@ int main(int iargc, char *argv[]){
     int is_valid;
     int n_pass;
     int max_n_neigh=-1;
+    int is_inside;
 
     array_1d<double> sorted_delta;
     array_1d<int> sorted_delta_dex;
@@ -260,6 +261,31 @@ int main(int iargc, char *argv[]){
                    local_max.get_data(j));
                }
             }
+
+            for(j=1;j<n_neigh;j++){
+                neigh_dex=neigh.get_data(j);
+                is_inside=1;
+                for(k=0;k<dim;k++){
+                    xx=dalex_pts.get_data(neigh_dex,k);
+                    if(!(xx>local_min.get_data(k) && xx<local_max.get_data(k))){
+                        is_inside=0;
+                        break;
+                    }
+                }
+
+                if(is_inside==1){
+                    printf("a neighbor is inside the box %d\n",j);
+                    for(k=0;k<dim;k++){
+                        printf("%e ?< %e ?< %e; %e\n",
+                        local_min.get_data(k),
+                        dalex_pts.get_data(neigh_dex,k),
+                        local_max.get_data(k),
+                        dalex_pts.get_data(i,k));
+                    }
+                    exit(1);
+                }
+            }
+
         }
         if(n_neigh>max_n_neigh){
             max_n_neigh=n_neigh;
