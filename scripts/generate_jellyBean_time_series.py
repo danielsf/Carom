@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     time_list = [150000, 200000, 300000, 400000]
 
-    for ix, iy in zip((0, 6, 2, 4), (1, 9, 8, 11)):
+    for ix, iy in zip((0, 6, 2, 4, 1), (1, 9, 8, 11, 7)):
 
         m_x, m_y, m_data = scatter_from_multinest_projection(multinest_file,
                                                              full_dim, ix, iy, data=m_data,
