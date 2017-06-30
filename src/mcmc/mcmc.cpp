@@ -134,7 +134,7 @@ void mcmc_sampler::sample(int steps_per_chain){
             }
             for(i=0;i<_dim;i++){
                  for(j=0;j<_dim;j++){
-                     new_pt.add_val(j,rr*dir.get_data(i)*_bases.get_data(i,j));
+                     new_pt.add_val(j,rr*_radii.get_data(i)*dir.get_data(i)*_bases.get_data(i,j));
                  }
             }
             chi_new=_chisq_fn[0](new_pt);
