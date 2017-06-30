@@ -194,7 +194,7 @@ int main(int iargc, char *argv[]){
                         if(xx>dalex_pts.get_data(i,dim_dex)
                            && local_max_set.get_data(dim_dex)==0){
 
-                            local_max.set(dim_dex, xx);
+                            local_max.set(dim_dex, 0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                             maxes_set++;
                             local_max_set.set(dim_dex,1);
                             if(n_pass==0){
@@ -204,7 +204,7 @@ int main(int iargc, char *argv[]){
                         else if(xx<dalex_pts.get_data(i,dim_dex)
                                 && local_min_set.get_data(dim_dex)==0){
 
-                            local_min.set(dim_dex,xx);
+                            local_min.set(dim_dex, 0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                             mins_set++;
                             local_min_set.set(dim_dex,1);
                             if(n_pass==0){
@@ -262,10 +262,10 @@ int main(int iargc, char *argv[]){
                     dim_dex = sorted_delta_dex.get_data(0);
                     xx = dalex_pts.get_data(neigh.get_data(j),dim_dex);
                     if(xx<dalex_pts.get_data(i,dim_dex)){
-                        local_min.set(dim_dex, xx);
+                        local_min.set(dim_dex,0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                     }
                     else{
-                        local_max.set(dim_dex, xx);
+                        local_max.set(dim_dex,0.5*(xx+dalex_pts.get_data(i,dim_dex)));
                     }
                 }
 
