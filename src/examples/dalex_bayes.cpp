@@ -7,9 +7,6 @@ int main(int iargc, char *argv[]){
     int i,j,dim;
     char in_name[letters];
     char out_name[letters];
-    array_1d<int> xdexes,ydexes;
-    xdexes.set_name("xdexes");
-    ydexes.set_name("ydexes");
     in_name[0]=0;
     out_name[0]=0;
     dim=-1;
@@ -34,12 +31,6 @@ int main(int iargc, char *argv[]){
                     i++;
                     dim=atoi(argv[i]);
                     break;
-                case 'x':
-                    i++;
-                    xdexes.add(atoi(argv[i]));
-                    i++;
-                    ydexes.add(atoi(argv[i]));
-                    break;
             }
         }
     }
@@ -54,15 +45,6 @@ int main(int iargc, char *argv[]){
     }
     if(out_name[0]==0){
         printf("need to specify out_name\n");
-        exit(1);
-    }
-    if(xdexes.get_dim()==0){
-        printf("need to specify dimensions to plot\n");
-        exit(1);
-    }
-    if(xdexes.get_dim()!=ydexes.get_dim()){
-        printf("somehow got %d xes but %d ys\n",
-        xdexes.get_dim(),ydexes.get_dim());
         exit(1);
     }
 
