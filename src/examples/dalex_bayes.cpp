@@ -1,10 +1,12 @@
 #include "containers.h"
 #include "goto_tools.h"
 #include "kd.h"
+#include "ellipse.h"
 
 int main(int iargc, char *argv[]){
 
-    int i,j,dim;
+    double delta_chisq=9.49;
+    int i,j,k,dim;
     char in_name[letters];
     char out_name[letters];
     in_name[0]=0;
@@ -30,6 +32,10 @@ int main(int iargc, char *argv[]){
                 case 'd':
                     i++;
                     dim=atoi(argv[i]);
+                    break;
+                case 'c':
+                    i++;
+                    delta_chisq=atof(argv[i]);
                     break;
             }
         }
@@ -60,11 +66,11 @@ int main(int iargc, char *argv[]){
         }
     }
 
-    array_2d<double> dalex_pts;
+    array_2d<double> dalex_pts_raw;
     array_1d<double> dalex_chisq;
     array_1d<double> pt;
     double xx;
-    dalex_pts.set_name("dalex_pts");
+    dalex_pts_raw.set_name("dalex_pts_raw");
     dalex_chisq.set_name("dalex_chisq");
     pt.set_name("pt");
 
@@ -75,7 +81,7 @@ int main(int iargc, char *argv[]){
             fscanf(in_file,"%le",&xx);
             pt.set(i,xx);
         }
-        dalex_pts.add_row(pt);
+        dalex_pts_raw.add_row(pt);
         fscanf(in_file,"%le",&xx);
         dalex_chisq.add(xx);
         for(i=dim+1;i<n_cols;i++){
@@ -86,11 +92,11 @@ int main(int iargc, char *argv[]){
     fclose(in_file);
 
     printf("dalex_pts %d %d; dalex_chisq %d\n",
-    dalex_pts.get_rows(),dalex_pts.get_cols(),dalex_chisq.get_dim());
+    dalex_pts_raw.get_rows(),dalex_pts_raw.get_cols(),dalex_chisq.get_dim());
 
-    if(dalex_pts.get_rows()!=dalex_chisq.get_dim()){
+    if(dalex_pts_raw.get_rows()!=dalex_chisq.get_dim()){
         printf("somehow got %d pts but %d chisq\n",
-        dalex_pts.get_rows(),dalex_chisq.get_dim());
+        dalex_pts_raw.get_rows(),dalex_chisq.get_dim());
 
         exit(1);
     }
@@ -102,20 +108,56 @@ int main(int iargc, char *argv[]){
         }
     }
 
+    array_2d<double> dalex_pts_good;
+    dalex_pts_good.set_name("dalex_pts_good");
+    for(i=0;i<dalex_pts_raw.get_rows();i++){
+        if(dalex_chisq.get_data(i)<chisq_min+delta_chisq){
+            dalex_pts_good.add_row(dalex_pts_raw(i));
+        }
+    }
+
+    ellipse dalex_ellipse;
+    dalex_ellipse.use_geo_center();
+    dalex_ellipse.build(dalex_pts_good);
+    dalex_ellipse.careful_set_radii(dalex_pts_good);
+
+    array_2d<double> dalex_pts;
+    dalex_pts.set_name("dalex_pts");
+
+    pt.reset_preserving_room();
+    for(i=0;i<dalex_pts_raw.get_rows();i++){
+        for(j=0;j<dim;j++){
+            pt.set(j,0.0);
+        }
+        for(j=0;j<dim;j++){
+            xx=0.0;
+            for(k=0;k<dim;k++){
+                xx+=dalex_pts_raw.get_data(i,k)*dalex_ellipse.bases(j,k);
+            }
+            pt.set(j,xx);
+        }
+        dalex_pts.add_row(pt);
+    }
+
+    if(dalex_pts.get_cols()!=dim){
+        printf("somehow ended up with %d dim in dalex_pts\n",
+        dalex_pts.get_cols());
+        exit(1);
+    }
+
+    if(dalex_pts.get_rows()!=dalex_chisq.get_dim()){
+        printf("somehow ended up with %d projected pts and %d chisq\n",
+        dalex_pts.get_rows(),dalex_chisq.get_dim());
+        exit(1);
+    }
+
     array_1d<double> xmin,xmax;
     xmin.set_name("xmin");
     xmax.set_name("xmax");
-    for(i=0;i<dalex_pts.get_rows();i++){
-        if(dalex_chisq.get_data(i)<chisq_min+21.03){
-            for(j=0;j<dim;j++){
-                if(j>=xmin.get_dim() || dalex_pts.get_data(i,j)<xmin.get_data(j)){
-                    xmin.set(j,dalex_pts.get_data(i,j));
-                }
-                if(j>=xmax.get_dim() || dalex_pts.get_data(i,j)>xmax.get_data(j)){
-                    xmax.set(j,dalex_pts.get_data(i,j));
-                }
-            }
-        }
+
+    for(i=0;i<dim;i++){
+        xmin.set(i,0.0);
+        xmax.set(i,dalex_ellipse.radii(i));
     }
 
     kd_tree dalex_tree(dalex_pts, xmin, xmax);
@@ -142,7 +184,6 @@ int main(int iargc, char *argv[]){
     int n_neigh_validate=20*dim;
     int mins_set;
     int maxes_set;
-    int k;
     int dim_dex;
     int neigh_dex;
     int is_valid;
@@ -429,6 +470,13 @@ int main(int iargc, char *argv[]){
 
     double local_prob=0.0;
     out_file = fopen(out_name, "w");
+    for(i=0;i<dim;i++){
+        fprintf(out_file,"# ");
+        for(j=0;j<dim;j++){
+            fprintf(out_file,"%le ",dalex_ellipse.bases(i,j));
+        }
+        fprintf(out_file,"\n");
+    }
     fprintf(out_file,"# prob/total chisq log_vol min0 max0 min1 max1...\n");
     for(i=0;i<dalex_chisq.get_dim();i++){
         j=chisq_dex.get_data(i);
