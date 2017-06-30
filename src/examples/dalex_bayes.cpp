@@ -155,12 +155,14 @@ int main(int iargc, char *argv[]){
     box_max.set_name("box_max");
     delta.set_name("delta");
 
-    int n_neigh=3*dim+1;
+    int n_neigh=4*dim+1;
     int mins_set;
     int maxes_set;
     int k;
     int dim_dex;
     int neigh_dex;
+    int is_valid;
+    int n_pass;
 
     array_1d<double> sorted_delta;
     array_1d<int> sorted_delta_dex;
@@ -184,41 +186,61 @@ int main(int iargc, char *argv[]){
         }
         mins_set=0;
         maxes_set=0;
-        for(j=0;j<n_neigh && mins_set<dim && maxes_set<dim; j++){
-             neigh_dex = neigh.get_data(j);
-             sorted_delta.reset_preserving_room();
-             sorted_delta_dex.reset_preserving_room();
-             for(k=0;k<dim;k++){
-                 delta.set(k,fabs(dalex_pts.get_data(i,k)-dalex_pts.get_data(neigh_dex,k)));
-                 sorted_delta_dex.set(k,k);
-             }
-             sort(delta,sorted_delta,sorted_delta_dex);
+        is_valid=0;
+        n_pass=0;
+        while(is_valid==0 && n_pass<2){
+            for(j=1;j<n_neigh && mins_set<dim && maxes_set<dim; j++){
+                neigh_dex = neigh.get_data(j);
+                sorted_delta.reset_preserving_room();
+                sorted_delta_dex.reset_preserving_room();
+                for(k=0;k<dim;k++){
+                    delta.set(k,fabs(dalex_pts.get_data(i,k)-dalex_pts.get_data(neigh_dex,k)));
+                    sorted_delta_dex.set(k,k);
+                }
+                sort(delta,sorted_delta,sorted_delta_dex);
 
-             for(k=dim-1;k>=1;k--){
-                 dim_dex=sorted_delta_dex.get_data(k);
-                 if(dalex_pts.get_data(neigh_dex,dim_dex)>dalex_pts.get_data(i,dim_dex)
-                    && local_max_set.get_data(dim_dex)==0){
+                for(k=dim-1;k>=0;k--){
+                    dim_dex=sorted_delta_dex.get_data(k);
+                    if(dalex_pts.get_data(neigh_dex,dim_dex)>dalex_pts.get_data(i,dim_dex)
+                       && local_max_set.get_data(dim_dex)==0){
 
-                     local_max.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
-                     maxes_set++;
-                     local_max_set.set(dim_dex,1);
-                     break;
-                 }
-                 else if(dalex_pts.get_data(neigh_dex,dim_dex)<dalex_pts.get_data(i,dim_dex)
-                         && local_min_set.get_data(dim_dex)==0){
+                        local_max.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
+                        maxes_set++;
+                        local_max_set.set(dim_dex,1);
+                        if(n_pass==0){
+                            break;
+                        }
+                    }
+                    else if(dalex_pts.get_data(neigh_dex,dim_dex)<dalex_pts.get_data(i,dim_dex)
+                            && local_min_set.get_data(dim_dex)==0){
 
-                     local_min.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
-                     mins_set++;
-                     local_min_set.set(dim_dex,1);
-                     break;
-                 }
-             }
-
+                        local_min.set(dim_dex, dalex_pts.get_data(neigh_dex,dim_dex));
+                        mins_set++;
+                        local_min_set.set(dim_dex,1);
+                        if(n_pass==0){
+                            break;
+                        }
+                    }
+                }
+            }
+            is_valid=1;
+            for(j=0;j<dim;j++){
+                if(local_min_set.get_data(j)==0 && local_max_set.get_data(j)==0){
+                    is_valid=0;
+                    n_pass++;
+                    break;
+                }
+            }
         }
+
         if(dalex_chisq.get_data(i)<chisq_min+200.0){
             for(j=0;j<dim;j++){
                 if(local_min_set.get_data(j)==0 && local_max_set.get_data(j)==0){
                     printf("%d %e somehow, volume will be zero\n",i,dalex_chisq.get_data(i));
+                    printf("%e\n",dalex_pts.get_data(i,j));
+                    for(k=0;k<n_neigh;k++){
+                         printf("%e\n",dalex_pts.get_data(neigh.get_data(k),j));
+                    }
                     exit(1);
                 }
                 if(local_min.get_data(j)>dalex_pts.get_data(i,j) ||
