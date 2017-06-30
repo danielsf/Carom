@@ -198,7 +198,7 @@ int main(int iargc, char *argv[]){
                     sorted_delta.reset_preserving_room();
                     sorted_delta_dex.reset_preserving_room();
                     for(k=0;k<dim;k++){
-                        delta.set(k,fabs(dalex_pts.get_data(i,k)-dalex_pts.get_data(neigh_dex,k)));
+                        delta.set(k,fabs(dalex_pts.get_data(i,k)-dalex_pts.get_data(neigh_dex,k))/(xmax.get_data(k)-xmin.get_data(k)));
                         sorted_delta_dex.set(k,k);
                     }
                     sort(delta,sorted_delta,sorted_delta_dex);
