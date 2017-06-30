@@ -362,6 +362,18 @@ int main(int iargc, char *argv[]){
         }
     }
 
+    if(box_min.get_rows()!=dalex_chisq.get_dim()){
+        printf("somehow got %d box_min and %d chisq\n",
+        box_min.get_rows(), dalex_chisq.get_dim());
+        exit(1);
+    }
+
+    if(box_max.get_rows()!=dalex_chisq.get_dim()){
+        printf("somehow got %d box_max %d chisq\n",
+        box_max.get_rows(),dalex_chisq.get_dim());
+        exit(1);
+    }
+
     FILE *out_file;
     out_file=fopen("volume_plot.txt", "w");
     double ln_vol;
@@ -375,4 +387,80 @@ int main(int iargc, char *argv[]){
         fprintf(out_file,"%e %e %e\n",dalex_chisq.get_data(i),vol,ln_vol);
     }
     fclose(out_file);
+
+    double dx;
+    array_1d<double> log_volume;
+    log_volume.set_name("log_volume");
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        ln_vol=0.0;
+        for(j=0;j<dim;j++){
+            dx=box_max.get_data(i,j)-box_min.get_data(i,j);
+            if(dx>1.0e-30){
+                ln_vol += log(dx);
+            }
+            else{
+                ln_vol=-69.0*dim;
+                break;
+            }
+        }
+        log_volume.add(ln_vol);
+    }
+
+    if(log_volume.get_dim()!=dalex_chisq.get_dim()){
+        printf("somehow got %d volumes and %d chisq\n",
+        log_volume.get_dim(),dalex_chisq.get_dim());
+    }
+
+    array_1d<double> log_posterior;
+    log_posterior.set_name("log_posterior");
+    array_1d<int> log_posterior_dex;
+    log_posterior_dex.set_name("log_posterior_dex");
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        log_posterior.set(i,-0.5*(dalex_chisq.get_data(i)-chisq_min)+log_volume.get_data(i));
+        log_posterior_dex.set(i,i);
+    }
+    if(log_posterior.get_dim()!=dalex_chisq.get_dim()){
+        printf("somehow got %d log_posteriors, but %d chisq\n",
+        log_posterior.get_dim(),dalex_chisq.get_dim());
+        exit(1);
+    }
+    array_1d<double> log_posterior_sorted;
+    log_posterior_sorted.set_name("log_posterior_sorted");
+    sort(log_posterior,log_posterior_sorted,log_posterior_dex);
+
+    double total_posterior=0.0;
+    for(i=0;i<log_posterior.get_dim();i++){
+        j=log_posterior_dex.get_data(i);
+        total_posterior+=exp(log_posterior.get_data(j));
+    }
+
+    array_1d<int> chisq_dex;
+    chisq_dex.set_name("chisq_dex");
+    array_1d<double> chisq_sorted;
+    chisq_sorted.set_name("chisq_sorted");
+
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        chisq_dex.set(i,i);
+    }
+
+    sort(dalex_chisq,chisq_sorted,chisq_dex);
+
+    double local_prob=0.0;
+    out_file = fopen(out_name, "w");
+    fprintf(out_file,"# prob/total chisq log_vol min0 max0 min1 max1...\n");
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        j=chisq_dex.get_data(i);
+        local_prob+=exp(log_posterior.get_data(j));
+
+        fprintf(out_file,"%le %le %le ",
+        local_prob/total_posterior,dalex_chisq.get_data(j),log_volume.get_data(j));
+
+        for(k=0;k<dim;k++){
+            fprintf(out_file,"%le %le ",box_min.get_data(j,k),box_max.get_data(j,k));
+        }
+        fprintf(out_file,"\n");
+
+    }
+    fclose(out_file);
+
 }
