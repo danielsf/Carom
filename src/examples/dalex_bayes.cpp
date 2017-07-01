@@ -4,6 +4,7 @@
 
 int main(int iargc, char *argv[]){
 
+    double pixel_factor=0.1;
     int i,j,dim;
     char in_name[letters];
     char out_name[letters];
@@ -125,5 +126,22 @@ int main(int iargc, char *argv[]){
 
     array_1d<double> dx;
     dx.set_name("dx");
+    array_1d<double> xmin,xmax;
+    xmin.set_name("xmin");
+    xmax.set_name("xmax");
+    for(i=0;i<good_pts.get_rows();i++){
+        for(j=0;j<dim;j++){
+            if(j>=xmin.get_dim() || good_pts.get_data(i,j)<xmin.get_data(j)){
+                xmin.set(j,good_pts.get_data(i,j));
+            }
+            if(j>=xmax.get_dim() || good_pts.get_data(i,j)>xmax.get_data(j)){
+                xmax.set(j,good_pts.get_data(i,j));
+            }
+        }
+    }
+
+    for(i=0;i<dim;i++){
+        dx.set(i,pixel_factor*(xmax.get_data(i)-xmin.get_data(i)));
+    }
 
 }
