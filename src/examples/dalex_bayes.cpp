@@ -21,7 +21,7 @@ void pixellate(const array_1d<double> &pt,
 int main(int iargc, char *argv[]){
 
     double pixel_factor=0.1;
-    int i,j,dim;
+    int i,j,k,dim;
     char in_name[letters];
     char out_name[letters];
     double delta_chisq=-1.0;
@@ -166,29 +166,43 @@ int main(int iargc, char *argv[]){
 
     int ix, iy;
 
-    asymm_array_2d<int> pixel_arr;
-    pixel_arr.set_name("pixel_arr");
+    array_2d<int> pixel_list;
+    pixel_list.set_name("pixel_list");
     array_1d<int> pixel;
     pixel.set_name("pixel");
+    int is_valid,is_same;
     for(i=0;i<good_pts.get_rows();i++){
         pixellate(good_pts(i),dx,xmin,pixel);
-        for(j=0;j<dim;j++){
-            ix = pixel.get_data(j);
-            if(j>=pixel_arr.get_rows() || pixel_arr(j)->contains(ix)==0){
-                pixel_arr.add(j,ix);
+        is_valid=1;
+        for(j=0;j<pixel_list.get_rows();j++){
+            is_same=1;
+            for(k=0;k<dim;k++){
+                if(pixel_list.get_data(j,k)!=pixel.get_data(k)){
+                    is_same=0;
+                    break;
+                }
             }
-            /*if(pixel_arr(j)->contains(ix+1)==0){
-                pixel_arr.add(j,ix+1);
+            if(is_same==1){
+                is_valid=0;
+                break;
             }
-            if(pixel_arr(j)->contains(ix-1)==0){
-                pixel_arr.add(j,ix-1);
-            }*/
+        }
+        if(is_valid==1){
+            pixel_list.add_row(pixel);
         }
     }
 
-    for(i=0;i<dim;i++){
-        printf("i %d npix %d\n",i,pixel_arr.get_cols(i));
+    printf("n pixels %d\n",pixel_list.get_rows());
+    FILE *out_file;
+    out_file=fopen("pixel_test.txt","w");
+    for(i=0;i<pixel_list.get_rows();i++){
+        for(j=0;j<dim;j++){
+            fprintf(out_file,"%le ",xmin.get_data(j)+pixel_list.get_data(i,j)*dx.get_data(j));
+        }
+        fprintf(out_file,"\n");
     }
+    fclose(out_file);
+    exit(1);
 
     kd_tree *forest;
     forest = new kd_tree[dim*dim];
