@@ -144,4 +144,40 @@ int main(int iargc, char *argv[]){
         dx.set(i,pixel_factor*(xmax.get_data(i)-xmin.get_data(i)));
     }
 
+    kd_tree *forest;
+    forest = new kd_tree[dim*dim];
+
+    int ix, iy;
+    array_2d<double> pts2d;
+    pts2d.set_name("pts2d");
+    array_1d<double> max2d,min2d;
+    max2d.set_name("max2d");
+    min2d.set_name("min2d");
+    for(ix=0;ix<dim;ix++){
+        for(iy=ix+1;iy<dim;iy++){
+            pts2d.reset_preserving_room();
+            max2d.reset_preserving_room();
+            min2d.reset_preserving_room();
+            pts2d.set_dim(good_pts.get_rows(),2);
+            for(i=0;i<good_pts.get_rows();i++){
+                pts2d.set(i,0,good_pts.get_data(i,ix));
+                pts2d.set(i,1,good_pts.get_data(i,iy));
+                if(i==0 || good_pts.get_data(i,ix)<min2d.get_data(0)){
+                    min2d.set(0,good_pts.get_data(i,ix));
+                }
+                if(i==0 || good_pts.get_data(i,ix)>max2d.get_data(0)){
+                    max2d.set(0,good_pts.get_data(i,ix));
+                }
+                if(i==0 || good_pts.get_data(i,iy)<min2d.get_data(1)){
+                    min2d.set(1,good_pts.get_data(i,iy));
+                }
+                if(i==0 || good_pts.get_data(i,iy)>max2d.get_data(1)){
+                    max2d.set(1,good_pts.get_data(i,iy));
+                }
+            }
+            forest[ix*dim+iy].build_tree(pts2d,min2d,max2d);
+        }
+    }
+
+    delete [] forest;
 }
