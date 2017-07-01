@@ -2,6 +2,22 @@
 #include "goto_tools.h"
 #include "kd.h"
 
+void pixellate(const array_1d<double> &pt,
+               const array_1d<double> &dx,
+               const array_1d<double> &min,
+               array_1d<int> &px){
+
+    int i,j;
+    for(i=0;i<pt.get_dim();i++){
+        for(j=0;min.get_data(i)+j*dx.get_data(i)<pt.get_data(i);j++);
+        if(min.get_data(i)+j*dx.get_data(i)-pt.get_data(i)>0.5*dx.get_data(i)){
+            j--;
+        }
+        px.set(i,j);
+    }
+
+}
+
 int main(int iargc, char *argv[]){
 
     double pixel_factor=0.1;
@@ -100,6 +116,7 @@ int main(int iargc, char *argv[]){
     array_2d<double> good_pts;
     good_pts.set_name("good_pts");
 
+    word[0]=0;
     in_file = fopen(in_name, "r");
     while(compare_char("log", word)==0){
         fscanf(in_file,"%s",word);
@@ -140,14 +157,42 @@ int main(int iargc, char *argv[]){
         }
     }
 
+    printf("set min max %d %d %e\n",dim,xmax.get_dim(),chisq_min);
+    printf("good pts %d %e\n",good_pts.get_rows(),delta_chisq);
+
     for(i=0;i<dim;i++){
         dx.set(i,pixel_factor*(xmax.get_data(i)-xmin.get_data(i)));
+    }
+
+    int ix, iy;
+
+    asymm_array_2d<int> pixel_arr;
+    pixel_arr.set_name("pixel_arr");
+    array_1d<int> pixel;
+    pixel.set_name("pixel");
+    for(i=0;i<good_pts.get_rows();i++){
+        pixellate(good_pts(i),dx,xmin,pixel);
+        for(j=0;j<dim;j++){
+            ix = pixel.get_data(j);
+            if(j>=pixel_arr.get_rows() || pixel_arr(j)->contains(ix)==0){
+                pixel_arr.add(j,ix);
+            }
+            /*if(pixel_arr(j)->contains(ix+1)==0){
+                pixel_arr.add(j,ix+1);
+            }
+            if(pixel_arr(j)->contains(ix-1)==0){
+                pixel_arr.add(j,ix-1);
+            }*/
+        }
+    }
+
+    for(i=0;i<dim;i++){
+        printf("i %d npix %d\n",i,pixel_arr.get_cols(i));
     }
 
     kd_tree *forest;
     forest = new kd_tree[dim*dim];
 
-    int ix, iy;
     array_2d<double> pts2d;
     pts2d.set_name("pts2d");
     array_1d<double> max2d,min2d;
@@ -178,6 +223,7 @@ int main(int iargc, char *argv[]){
             forest[ix*dim+iy].build_tree(pts2d,min2d,max2d);
         }
     }
+
 
     delete [] forest;
 }
