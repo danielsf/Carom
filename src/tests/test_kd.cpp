@@ -275,5 +275,6 @@ for(outerloop=0;outerloop<3;outerloop++){
 
 
 printf("maxerr %e\n",maxerr);
+printf("done\n");
 
 }

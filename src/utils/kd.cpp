@@ -135,6 +135,8 @@ void kd_tree::build_tree(array_2d<double> &mm,
 
     data.reset();
     tree.reset();
+    maxs.reset();
+    mins.reset();
 
     array_1d<int> inn,use_left,use_right;
     array_1d<double> tosort,sorted;
