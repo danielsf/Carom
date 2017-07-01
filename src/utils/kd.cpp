@@ -143,6 +143,13 @@ void kd_tree::build_tree(array_2d<double> &mm,
 
     int i,j,k,l,inp;
 
+    for(i=0;i<nmin.get_dim();i++){
+        if(nmin.get_data(i)>nmax.get_data(i)){
+            printf("WARNING mins and maxes reversed in kdtree\n");
+            exit(1);
+        }
+    }
+
     tol=1.0e-7;
 
     diagnostic=1;
