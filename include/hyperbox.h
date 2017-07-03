@@ -20,7 +20,7 @@ class hyperbox{
             build(h1._pts, h1._min, h1._max);
         }
 
-        const int dim(){return _pts.get_cols();}
+        const int dim(){return _min.get_dim();}
 
         const int n_pts(){return _pts.get_rows();}
 
@@ -32,8 +32,9 @@ class hyperbox{
                    const array_1d<double> &min_in,
                    const array_1d<double> &max_in){
 
-            if(pts.get_cols()!=max_in.get_dim() ||
-               pts.get_cols()!=min_in.get_dim()){
+            if(pts.get_cols()<max_in.get_dim() ||
+               pts.get_cols()<min_in.get_dim() ||
+               min_in.get_dim()<max_in.get_dim()){
 
                 printf("dimensions don't line up in hyperbox::build\n");
                 printf("pts %d max %d min %d\n",

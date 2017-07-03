@@ -217,6 +217,8 @@ int main(int iargc, char *argv[]){
 
     double t_start=double(time(NULL));
     int n_box_pts=0;
+    int pt_dex;
+    pt.reset_preserving_room();
     for(i=0;i<pixel_list.get_rows();i++){
         box_pts.reset_preserving_room();
         for(j=0;j<dim;j++){
@@ -230,7 +232,12 @@ int main(int iargc, char *argv[]){
             }
         }
         for(j=0;j<pixel_mapping.get_cols(i);j++){
-            box_pts.add_row(dalex_pts(pixel_mapping.get_data(i,j)));
+            pt_dex = pixel_mapping.get_data(i,j);
+            for(k=0;k<dim;k++){
+                pt.set(k,dalex_pts.get_data(pt_dex,k));
+            }
+            pt.set(dim, dalex_chisq.get_data(pt_dex));
+            box_pts.add_row(pt);
         }
         if(box_pts.get_rows()==0){
             printf("trying to initialize empty box\n");
