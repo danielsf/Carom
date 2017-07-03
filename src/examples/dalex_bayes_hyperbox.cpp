@@ -352,8 +352,8 @@ int main(int iargc, char *argv[]){
     int dex;
 
     out_file=fopen(out_name,"w");
-    for(i=dalex_chisq.get_dim()-1;i>=0;i--){
-        dex=ln_posterior_dex.get_data(i);
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        dex=chisq_dex.get_data(i);
         local_prob+=exp(ln_posterior.get_data(dex));
         fprintf(out_file,"%e %e %e ",
                 local_prob/total_prob,
