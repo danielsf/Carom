@@ -25,6 +25,10 @@ object/wrappers.o: src/utils/wrappers.cpp include/wrappers.h object/containers.o
 object/goto_tools.o: include/goto_tools.h src/utils/goto_tools.cpp object/wrappers.o
 	$(cc) -c -o object/goto_tools.o src/utils/goto_tools.cpp
 
+object/hyperbox.o: include/hyperbox.h src/utils/hyperbox.cpp object/goto_tools.o \
+object/containers.o
+	$(cc) -c -o object/hyperbox.o src/utils/hyperbox.cpp
+
 test_containers: object/containers.o src/tests/test_containers.cpp object/goto_tools.o
 	$(cc) -o bin/test_containers src/tests/test_containers.cpp object/containers.o \
         object/goto_tools.o $(LIBRARIES)
