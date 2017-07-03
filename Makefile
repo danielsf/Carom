@@ -191,9 +191,11 @@ object/ellipse.o object/chisq.o object/jellyBean.o
 	object/wrappers.o object/chisq.o object/jellyBean.o \
 	$(LIBRARIES)
 
-bayes: src/examples/dalex_bayes.cpp object/kd.o
+bayes: src/examples/dalex_bayes.cpp object/kd.o include/exampleLikelihoods.h \
+object/jellyBean.o
 	$(cc) -o bin/bayes src/examples/dalex_bayes.cpp \
 	object/containers.o object/goto_tools.o object/kd.o \
+	object/wrappers.o object/chisq.o object/jellyBean.o \
 	$(LIBRARIES)
 
 all:
