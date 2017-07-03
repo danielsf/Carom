@@ -80,4 +80,66 @@ class hyperbox{
 
 };
 
+
+class hyperbox_list{
+
+    public:
+
+        hyperbox_list(){
+            _ct=0;
+            _room=0;
+            _hyperbox_list=NULL;
+        }
+
+        ~hyperbox_list(){
+            if(_hyperbox_list != NULL){
+                delete [] _hyperbox_list;
+            }
+        }
+
+        int ct(){return _ct;}
+
+        void add(hyperbox &h_in){
+            hyperbox *buffer;
+            int i;
+            int d_room=3;
+            if(_room==0){
+                if(_hyperbox_list!=NULL){
+                    printf("somehow, room is 0 but _hyperbox_list is not NULL\n");
+                    exit(1);
+                }
+                _hyperbox_list = new hyperbox[3];
+                _room=3;
+            }
+            else if(_ct==_room && _room>0){
+                buffer = new hyperbox[_room];
+                for(i=0;i<_room;i++){
+                    buffer[i].copy(_hyperbox_list[i]);
+                }
+                delete [] _hyperbox_list;
+                _hyperbox_list = new hyperbox[_room+d_room];
+                for(i=0;i<_room;i++){
+                    _hyperbox_list[i].copy(buffer[i]);
+                }
+                delete [] buffer;
+                _room += d_room;
+            }
+            _hyperbox_list[_ct].copy(h_in);
+            _ct++;
+        }
+
+        hyperbox* operator()(int ii){
+            if(ii>=_ct){
+                printf("askint for hyperbox %d; only have %d\n",ii,_ct);
+                exit(1);
+            }
+            return &_hyperbox_list[ii];
+        }
+
+    private:
+        int _ct;
+        int _room;
+        hyperbox *_hyperbox_list;
+};
+
 #endif
