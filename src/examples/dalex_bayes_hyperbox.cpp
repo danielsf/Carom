@@ -262,4 +262,43 @@ int main(int iargc, char *argv[]){
 
     printf("hyperboxes %d; points %d\n",hb_list.ct(),n_box_pts);
 
+    for(i=0;i<hb_list.ct();i++){
+        if(hb_list(i)->dim()!=dim){
+            printf("WARNING initial box has dim %d\n",
+            hb_list(i)->dim());
+            exit(1);
+        }
+    }
+
+    int all_clear=0;
+    array_1d<double> min1,min2,max1,max2;
+    array_2d<double> pts1,pts2;
+    min1.set_name("min1");
+    min2.set_name("min2");
+    max1.set_name("max1");
+    max2.set_name("max2");
+    pts1.set_name("pts1");
+    pts2.set_name("pts2");
+    while(all_clear==0){
+        all_clear=1;
+        for(i=0;i<hb_list.ct();i++){
+            if(hb_list(i)->n_pts()>1){
+                all_clear=0;
+                hb_list(i)->split(pts1,min1,max1,pts2,min2,max2);
+                hb_list(i)->build(pts1,min1,max1);
+                hb.build(pts2,min2,max2);
+                hb_list.add(hb);
+            }
+        }
+    }
+
+    for(i=0;i<hb_list.ct();i++){
+        if(hb_list(i)->n_pts()>1){
+            printf("have box with %d pts\n",hb_list(i)->n_pts());
+            exit(1);
+        }
+    }
+
+    printf("%d boxes\n",hb_list.ct());
+
 }

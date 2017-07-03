@@ -54,7 +54,7 @@ class hyperbox{
             for(i=0;i<pts_in.get_rows();i++){
                 _pts.add_row(pts_in(i));
             }
-            for(i=0;i<dim();i++){
+            for(i=0;i<min_in.get_dim();i++){
                 _min.set(i,min_in.get_data(i));
                 _max.set(i,max_in.get_data(i));
                 if(_min.get_data(i)>_max.get_data(i)){

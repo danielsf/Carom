@@ -120,7 +120,7 @@ void hyperbox::split(array_2d<double> &pts1,
     int n_best;
     int dim_best=-1;
     for(i_dim=0;i_dim<dim();i_dim++){
-        if(n_lower.get_dim()!=0 && n_lower.get_dim()!=n_pts()){
+        if(n_lower.get_data(i_dim)!=0 && n_lower.get_data(i_dim)!=n_pts()){
             if(dim_best<0 ||
                abs(n_lower.get_data(i_dim)-n_pts()/2)<abs(n_best-n_pts()/2)){
 
@@ -148,6 +148,8 @@ void hyperbox::split(array_2d<double> &pts1,
     sorted_dex.set_dim(n_pts());
 
     double xmid_best;
+    array_1d<double> pt_xmid;
+    pt_xmid.set_name("hypberbox_split_pt_xmid");
     double dist_best;
     double dist;
     int n1;
@@ -163,6 +165,7 @@ void hyperbox::split(array_2d<double> &pts1,
         sort(x_val,x_val_sorted,sorted_dex);
 
         xmid=x_val_sorted.get_data(sorted_dex.get_dim()/2);
+        pt_xmid.set(i_dim,0.5*(x_val_sorted.get_data(0)+x_val_sorted.get_data(sorted_dex.get_dim()-1)));
 
         n1=0;
         for(i=0;i<n_pts();i++){
@@ -182,11 +185,31 @@ void hyperbox::split(array_2d<double> &pts1,
         }
     }
 
-    if(dim_best<0){
-       printf("splitting on the median did not help in hypberbox:split");
-       exit(1);
+    if(dim_best>=0){
+        _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,xmid_best);
+        return;
     }
 
-    _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,xmid_best);
+    for(i_dim=0;i_dim<dim();i_dim++){
+        dist=fabs(pt_xmid.get_data(i_dim)-0.5*(_min.get_data(i_dim)+_max.get_data(i_dim)));
+        n1=0;
+        for(i=0;i<n_pts();i++){
+            if(_pts.get_data(i,i_dim)<pt_xmid.get_data(i_dim)){
+                n1++;
+            }
+        }
+        if(n1!=0 && n1!=n_pts()){
+            if(dim_best<0 || dist<dist_best){
+                dim_best=i_dim;
+                dist_best=dist;
+            }
+        }
+    }
+
+    if(dim_best<0){
+        printf("exhausted all splitting searches\n");
+        exit(1);
+    }
+    _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,pt_xmid.get_data(dim_best));
 
 }
