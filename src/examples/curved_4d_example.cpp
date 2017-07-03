@@ -42,6 +42,10 @@ for(i=1;i<iargc;i++){
                 }
                 timing_name[j]=0;
                 break;
+            case 'c':
+                i++;
+                delta_chi=atof(argv[i]);
+                break;
         }
     }
 }
