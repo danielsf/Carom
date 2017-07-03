@@ -100,6 +100,37 @@ class hyperbox_list{
 
         int ct(){return _ct;}
 
+        void set_room(int rr){
+            if(_room>rr){
+                return;
+            }
+            int i;
+            hyperbox *buffer;
+            if(_ct>0){
+                if(_hyperbox_list==NULL){
+                    printf("_ct %d but _hyperbox_list is NULL\n",_ct);
+                    exit(1);
+                }
+                buffer=new hyperbox[_ct];
+                for(i=0;i<_ct;i++){
+                    buffer[i].copy(_hyperbox_list[i]);
+                }
+                delete _hyperbox_list;
+                _hyperbox_list = new hyperbox[rr];
+                for(i=0;i<_ct;i++){
+                    _hyperbox_list[i].copy(buffer[i]);
+                }
+                delete [] buffer;
+            }
+            else{
+                if(_hyperbox_list!=NULL){
+                    delete [] _hyperbox_list;
+                }
+                _hyperbox_list = new hyperbox[rr];
+            }
+            _room=rr;
+        }
+
         void add(hyperbox &h_in){
             hyperbox *buffer;
             int i;
