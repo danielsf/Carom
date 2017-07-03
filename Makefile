@@ -202,6 +202,12 @@ object/jellyBean.o
 	object/wrappers.o object/chisq.o object/jellyBean.o \
 	$(LIBRARIES)
 
+hyper_bayes: src/examples/dalex_bayes_hyperbox.cpp object/hyperbox.o
+	$(cc) -o bin/hyper_bayes src/examples/dalex_bayes_hyperbox.cpp \
+	object/containers.o object/goto_tools.o object/hyperbox.o \
+	$(LIBRARIES)
+
+
 all:
 	make test_containers
 	make test_kd
