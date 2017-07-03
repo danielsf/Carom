@@ -236,7 +236,7 @@ int main(int iargc, char *argv[]){
             for(k=0;k<dim;k++){
                 pt.set(k,dalex_pts.get_data(pt_dex,k));
             }
-            pt.set(dim, dalex_chisq.get_data(pt_dex));
+            pt.set(dim, dalex_chisq.get_data(pt_dex)-chisq_min);
             box_pts.add_row(pt);
         }
         if(box_pts.get_rows()==0){
@@ -300,5 +300,70 @@ int main(int iargc, char *argv[]){
     }
 
     printf("%d boxes\n",hb_list.ct());
+
+    dalex_chisq.reset_preserving_room();
+    for(i=0;i<hb_list.ct();i++){
+        dalex_chisq.set(i,hb_list(i)->pts(0,dim));
+    }
+    array_1d<double> ln_posterior;
+    ln_posterior.set_name("ln_posterior");
+    array_1d<double> ln_vol_arr;
+    ln_vol_arr.set_name("ln_vol_arr");
+    double ln_vol;
+    for(i=0;i<hb_list.ct();i++){
+        ln_vol=0.0;
+        for(j=0;j<dim;j++){
+            if(hb_list(i)->max(j)-hb_list(i)->min(j)>1.0e-120){
+                ln_vol+=log(hb_list(i)->max(j)-hb_list(i)->min(j));
+            }
+            else{
+                ln_vol=-69.0*dim;
+                break;
+            }
+        }
+        ln_posterior.set(i,-0.5*hb_list(i)->pts(0,dim)+ln_vol);
+        ln_vol_arr.set(i,ln_vol);
+    }
+
+    array_1d<double> sorted_ln_posterior;
+    array_1d<int> ln_posterior_dex;
+    sorted_ln_posterior.set_name("sorted_ln_posterior");
+    ln_posterior_dex.set_name("ln_posterior_dex");
+    for(i=0;i<ln_posterior.get_dim();i++){
+        ln_posterior_dex.set(i,i);
+    }
+    sort(ln_posterior,sorted_ln_posterior,ln_posterior_dex);
+    double total_prob=0.0;
+    for(i=0;i<ln_posterior.get_dim();i++){
+        total_prob+=exp(sorted_ln_posterior.get_data(i));
+    }
+
+    array_1d<double> sorted_chisq;
+    array_1d<int> chisq_dex;
+    sorted_chisq.set_name("sorted_chisq");
+    chisq_dex.set_name("chisq_dex");
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        chisq_dex.set(i,i);
+    }
+
+    sort(dalex_chisq,sorted_chisq,chisq_dex);
+
+    double local_prob=0.0;
+    int dex;
+
+    out_file=fopen(out_name,"w");
+    for(i=0;i<dalex_chisq.get_dim();i++){
+        dex=chisq_dex.get_data(i);
+        local_prob+=exp(ln_posterior.get_data(dex));
+        fprintf(out_file,"%e %e %e ",
+                local_prob/total_prob,
+                dalex_chisq.get_data(dex)+chisq_min,
+                ln_vol_arr.get_data(dex));
+        for(j=0;j<dim;j++){
+            fprintf(out_file,"%e %e ",hb_list(dex)->min(j),hb_list(dex)->max(j));
+        }
+        fprintf(out_file,"\n");
+    }
+    fclose(out_file);
 
 }
