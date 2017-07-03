@@ -29,8 +29,8 @@ class hyperbox{
         const double max(int ii){return _max.get_data(ii);}
 
         void build(const array_2d<double> &pts,
-                   const array_1d<double> &max_in,
-                   const array_1d<double> &min_in){
+                   const array_1d<double> &min_in,
+                   const array_1d<double> &max_in){
 
             if(pts.get_cols()!=max_in.get_dim() ||
                pts.get_cols()!=min_in.get_dim()){
@@ -54,6 +54,7 @@ class hyperbox{
                 _max.set(i,max_in.get_data(i));
                 if(_min.get_data(i)>_max.get_data(i)){
                     printf("min/max backwards in hyperbox::build\n");
+                    printf("%e %e\n",_min.get_data(i),_max.get_data(i));
                     exit(1);
                 }
             }
