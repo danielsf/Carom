@@ -26,7 +26,7 @@ void pixellate(const array_1d<double> &pt,
 
 int main(int iargc, char *argv[]){
 
-    double pixel_factor=0.1;
+    double pixel_factor=0.05;
     int i,j,k,dim;
     char in_name[letters];
     char out_name[letters];
