@@ -236,7 +236,7 @@ int main(int iargc, char *argv[]){
             for(k=0;k<dim;k++){
                 pt.set(k,dalex_pts.get_data(pt_dex,k));
             }
-            pt.set(dim, dalex_chisq.get_data(pt_dex)-chisq_min+1.0);
+            pt.set(dim, dalex_chisq.get_data(pt_dex)-chisq_min);
             box_pts.add_row(pt);
         }
         if(box_pts.get_rows()==0){

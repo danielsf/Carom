@@ -120,7 +120,7 @@ double hyperbox::_var_metric(int i_dim, double xmid, array_2d<double> &pts){
     }
     var1=var1/n1;
     var2=var2/n2;
-    return var1/mean1 + var2/mean2;
+    return var1+var2;
 }
 
 void hyperbox::split(array_2d<double> &pts1,
