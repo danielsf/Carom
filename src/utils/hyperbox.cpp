@@ -104,7 +104,6 @@ double hyperbox::_var_metric(int i_dim, double xmid, array_2d<double> &pts){
     }
 
     if(n1==0 || n2==0){
-        printf("        returning because %d %d\n",n1,n2);
         return 2.0*exception_value;
     }
 
@@ -205,16 +204,8 @@ void hyperbox::split(array_2d<double> &pts1,
         return;
     }
 
-    int n1;
     for(i_dim=0;i_dim<dim();i_dim++){
-        n1=0;
-        for(i=0;i<_pts.get_rows();i++){
-            if(_pts.get_data(i,i_dim)<pt_xmid.get_data(i_dim)){
-                n1++;
-            }
-        }
         metric=_var_metric(i_dim,pt_xmid.get_data(i_dim),_pts);
-        printf("    %d n1 %d n2 %d metric %e\n",i_dim,n1,_pts.get_rows()-n1,metric);
         if(metric<exception_value){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
