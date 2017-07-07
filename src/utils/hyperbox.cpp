@@ -137,37 +137,20 @@ void hyperbox::split(array_2d<double> &pts1,
         exit(1);
     }
 
-    int i_dim;
-    array_1d<int> n_lower,n_upper;
-    n_lower.set_name("hyperbox_split_n_lower");
-    n_upper.set_name("hyperbox_split_n_upper");
     int i;
+    int i_dim;
     double xmid;
-    n_lower.set_dim(dim());
-    n_upper.set_dim(dim());
-    for(i_dim=0;i_dim<dim();i_dim++){
-        n_lower.set(i_dim,0);
-        n_upper.set(i_dim,0);
-        xmid=0.5*(_min.get_data(i_dim)+_max.get_data(i_dim));
-        for(i=0;i<_pts.get_rows();i++){
-            if(_pts.get_data(i,i_dim)<xmid){
-                n_lower.add_val(i_dim,1);
-            }
-            else{
-                n_upper.add_val(i_dim,1);
-            }
-        }
-    }
-
-    int n_best;
     int dim_best=-1;
-    for(i_dim=0;i_dim<dim();i_dim++){
-        if(n_lower.get_data(i_dim)!=0 && n_lower.get_data(i_dim)!=n_pts()){
-            if(dim_best<0 ||
-               abs(n_lower.get_data(i_dim)-n_pts()/2)<abs(n_best-n_pts()/2)){
+    double metric;
+    double metric_best;
 
+    for(i_dim=0;i_dim<dim();i_dim++){
+        xmid=0.5*(_max.get_data(i_dim)+_min.get_data(i_dim));
+        metric=_var_metric(i_dim,xmid,_pts);
+        if(metric<exception_value){
+            if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
-                n_best=n_lower.get_data(i_dim);
+                metric_best=metric;
             }
         }
     }
@@ -192,9 +175,6 @@ void hyperbox::split(array_2d<double> &pts1,
     double xmid_best;
     array_1d<double> pt_xmid;
     pt_xmid.set_name("hypberbox_split_pt_xmid");
-    double dist_best;
-    double dist;
-    int n1;
 
     for(i_dim=0;i_dim<dim();i_dim++){
         x_val.reset_preserving_room();
@@ -209,21 +189,13 @@ void hyperbox::split(array_2d<double> &pts1,
         xmid=x_val_sorted.get_data(sorted_dex.get_dim()/2);
         pt_xmid.set(i_dim,0.5*(x_val_sorted.get_data(0)+x_val_sorted.get_data(sorted_dex.get_dim()-1)));
 
-        n1=0;
-        for(i=0;i<n_pts();i++){
-            if(_pts.get_data(i,i_dim)<xmid){
-                n1++;
+        metric=_var_metric(i_dim,xmid,_pts);
+        if(metric<exception_value){
+            if(dim_best<0 || metric<metric_best){
+                dim_best=i_dim;
+                xmid_best=xmid;
+                metric_best=metric;
             }
-        }
-
-        if(n1==n_pts() || n1==0){
-            continue;
-        }
-
-        dist=fabs(1.0-xmid/0.5*(_min.get_data(i_dim)+_max.get_data(i_dim)));
-        if(dim_best<0 || dist<dist_best){
-            xmid_best=xmid;
-            dim_best=i_dim;
         }
     }
 
@@ -233,17 +205,11 @@ void hyperbox::split(array_2d<double> &pts1,
     }
 
     for(i_dim=0;i_dim<dim();i_dim++){
-        dist=fabs(pt_xmid.get_data(i_dim)-0.5*(_min.get_data(i_dim)+_max.get_data(i_dim)));
-        n1=0;
-        for(i=0;i<n_pts();i++){
-            if(_pts.get_data(i,i_dim)<pt_xmid.get_data(i_dim)){
-                n1++;
-            }
-        }
-        if(n1!=0 && n1!=n_pts()){
-            if(dim_best<0 || dist<dist_best){
+        metric=_var_metric(i_dim,pt_xmid.get_data(i_dim),_pts);
+        if(metric<exception_value){
+            if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
-                dist_best=dist;
+                metric_best=metric;
             }
         }
     }
