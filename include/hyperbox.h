@@ -84,6 +84,8 @@ class hyperbox{
         array_2d<double> _pts;
         array_1d<double> _max,_min;
 
+        double _var_metric(int,double,array_2d<double>&);
+
 };
 
 

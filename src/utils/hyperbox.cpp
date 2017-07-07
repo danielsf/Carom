@@ -81,6 +81,48 @@ void hyperbox::_split_on_val(array_2d<double> &pts1,
     }
 }
 
+double hyperbox::_var_metric(int i_dim, double xmid, array_2d<double> &pts){
+    int i;
+    double mean1,mean2;
+    double var1,var2;
+    int n1,n2;
+    mean1=0.0;
+    mean2=0.0;
+    var1=0.0;
+    var2=0.0;
+    n1=0;
+    n2=0;
+    for(i=0;i<pts.get_rows();i++){
+        if(pts.get_data(i,i_dim)<xmid){
+            n1++;
+            mean1+=pts.get_data(i,pts.get_cols()-1);
+        }
+        else{
+            n2++;
+            mean2+=pts.get_data(i,pts.get_cols()-1);
+        }
+    }
+
+    if(n1==0 || n2==0){
+        return 2.0*exception_value;
+    }
+
+    mean1=mean1/n1;
+    mean2=mean2/n2;
+
+    for(i=0;i<pts.get_rows();i++){
+        if(pts.get_data(i,i_dim)<xmid){
+            var1+=power(pts.get_data(i,pts.get_cols()-1)-mean1,2);
+        }
+        else{
+            var2+=power(pts.get_data(i,pts.get_cols()-1)-mean2,2);
+        }
+    }
+    var1=var1/n1;
+    var2=var2/n2;
+    return var1/mean1 + var2/mean2;
+}
+
 void hyperbox::split(array_2d<double> &pts1,
                      array_1d<double> &min1,
                      array_1d<double> &max1,
