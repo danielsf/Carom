@@ -104,7 +104,7 @@ double hyperbox::_var_metric(int i_dim, double xmid, array_2d<double> &pts){
     }
 
     if(n1==0 || n2==0){
-        return 2.0*exception_value;
+        return -1.0;
     }
 
     mean1=mean1/n1;
@@ -147,7 +147,7 @@ void hyperbox::split(array_2d<double> &pts1,
     for(i_dim=0;i_dim<dim();i_dim++){
         xmid=0.5*(_max.get_data(i_dim)+_min.get_data(i_dim));
         metric=_var_metric(i_dim,xmid,_pts);
-        if(metric<exception_value){
+        if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
                 metric_best=metric;
@@ -190,7 +190,7 @@ void hyperbox::split(array_2d<double> &pts1,
         pt_xmid.set(i_dim,0.5*(x_val_sorted.get_data(0)+x_val_sorted.get_data(sorted_dex.get_dim()-1)));
 
         metric=_var_metric(i_dim,xmid,_pts);
-        if(metric<exception_value){
+        if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
                 xmid_best=xmid;
@@ -206,7 +206,7 @@ void hyperbox::split(array_2d<double> &pts1,
 
     for(i_dim=0;i_dim<dim();i_dim++){
         metric=_var_metric(i_dim,pt_xmid.get_data(i_dim),_pts);
-        if(metric<exception_value){
+        if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
                 metric_best=metric;
