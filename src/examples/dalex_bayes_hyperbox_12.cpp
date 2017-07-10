@@ -383,7 +383,8 @@ int main(int iargc, char *argv[]){
 
     FILE *out_file;
 
-    for(iteration=0;iteration<1000;iteration++){
+    int total_pts_added = 0;
+    for(iteration=0;iteration<1000 && total_pts_added<dim*2000;iteration++){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
         sorted_ln_posterior.reset_preserving_room();
@@ -507,6 +508,7 @@ int main(int iargc, char *argv[]){
             dalex_tree.get_pts(),dalex_pts.get_rows());
             exit(1);
         }
+        total_pts_added+=pts_added;
     }
 
     sorted_chisq.set_name("sorted_chisq");
