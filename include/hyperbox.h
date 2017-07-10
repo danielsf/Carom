@@ -175,6 +175,10 @@ class hyperbox_list{
             return &_hyperbox_list[ii];
         }
 
+        void reset(){
+            _ct=0;
+        }
+
     private:
         int _ct;
         int _room;
