@@ -380,9 +380,11 @@ int main(int iargc, char *argv[]){
     int vol_max_dex;
     double sgn;
     double max_valid_chisq;
+    double max_valid_vol;
 
     FILE *out_file;
 
+    int keep_going;
     int total_pts_added = 0;
     for(iteration=0;iteration<1000 && total_pts_added<dim*2000;iteration++){
         ln_posterior.reset_preserving_room();
@@ -470,12 +472,14 @@ int main(int iargc, char *argv[]){
             }
         }
         printf("degen %d\n",j);
+        max_valid_vol=valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1);
 
         pt.reset_preserving_room();
         pts_added=0;
         factor=0.25;
+        keep_going=1;
         while(pts_added==0){
-            for(k=valid_vol_dex.get_dim()-1;pts_added==0 && k>=0;k--){
+            for(k=valid_vol_dex.get_dim()-1;k>=0 && (pts_added==0 || keep_going==1);k--){
                 dex=valid_vol_dex.get_data(k);
                 printf("acting on %e %e\n",ln_vol_arr.get_data(dex),posterior_chisq.get_data(dex));
                 for(i=0;i<dim;i++){
@@ -495,6 +499,12 @@ int main(int iargc, char *argv[]){
                             dalex_chisq.add(chifn[0](pt));
                             pts_added++;
                          }
+                    }
+                }
+                keep_going=0;
+                if(k>0){
+                    if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
+                        keep_going=1;
                     }
                 }
             }
