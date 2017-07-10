@@ -122,7 +122,7 @@ class hyperbox_list{
                 for(i=0;i<_ct;i++){
                     buffer[i].copy(_hyperbox_list[i]);
                 }
-                delete _hyperbox_list;
+                delete [] _hyperbox_list;
                 _hyperbox_list = new hyperbox[rr];
                 for(i=0;i<_ct;i++){
                     _hyperbox_list[i].copy(buffer[i]);
