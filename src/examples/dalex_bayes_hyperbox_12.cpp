@@ -232,6 +232,7 @@ int main(int iargc, char *argv[]){
     in_name[0]=0;
     out_name[0]=0;
     dim=-1;
+    int n_new_pts=0;
     for(i=1;i<iargc;i++){
         if(argv[i][0]=='-'){
             switch(argv[i][1]){
@@ -256,6 +257,10 @@ int main(int iargc, char *argv[]){
                 case 'c':
                     i++;
                     delta_chisq=atof(argv[i]);
+                    break;
+                case 'n':
+                    i++;
+                    n_new_pts=atoi(argv[i]);
                     break;
             }
         }
@@ -357,7 +362,6 @@ int main(int iargc, char *argv[]){
     array_1d<int> neigh;
     dist.set_name("dist");
     neigh.set_name("neigh");
-    int iteration;
     array_1d<double> ln_posterior;
     array_1d<double> ln_vol_arr;
     double ln_vol;
@@ -386,7 +390,7 @@ int main(int iargc, char *argv[]){
 
     int keep_going;
     int total_pts_added = 0;
-    for(iteration=0;iteration<1000 && total_pts_added<dim*2000;iteration++){
+    while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
         sorted_ln_posterior.reset_preserving_room();
