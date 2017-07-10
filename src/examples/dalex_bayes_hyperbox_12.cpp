@@ -379,6 +379,7 @@ int main(int iargc, char *argv[]){
     double vol_max;
     int vol_max_dex;
     double sgn;
+    double max_valid_chisq;
 
     FILE *out_file;
 
@@ -441,8 +442,12 @@ int main(int iargc, char *argv[]){
         valid_vol.reset_preserving_room();
         valid_vol_sorted.reset_preserving_room();
         valid_vol_dex.reset_preserving_room();
+        max_valid_chisq=-1.0;
         for(i=0;i<posterior_chisq.get_dim() && local_prob<0.95*total_prob;i++){
             dex=chisq_dex.get_data(i);
+            if(posterior_chisq.get_data(dex)>max_valid_chisq){
+                max_valid_chisq=posterior_chisq.get_data(dex);
+            }
             local_prob+=exp(ln_posterior.get_data(dex));
             valid_vol.add(ln_vol_arr.get_data(dex));
             valid_vol_dex.add(dex);
@@ -453,8 +458,9 @@ int main(int iargc, char *argv[]){
         }
 
         sort(valid_vol,valid_vol_sorted,valid_vol_dex);
-        printf("max vol %e\n",
-        valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1));
+        printf("max vol %e -- max chisq %e\n",
+        valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1),
+        max_valid_chisq);
         j=0;
         xx=valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1);
         for(i=0;i<valid_vol_sorted.get_dim();i++){
