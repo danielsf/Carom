@@ -115,16 +115,6 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
     }
 
     printf("n pixels %d\n",pixel_list.get_rows());
-    FILE *out_file;
-    out_file=fopen("pixel_test.txt","w");
-    for(i=0;i<pixel_list.get_rows();i++){
-        for(j=0;j<dim;j++){
-            fprintf(out_file,"%le ",xmin.get_data(j)+pixel_list.get_data(i,j)*dx.get_data(j));
-        }
-        fprintf(out_file,"\n");
-    }
-    fclose(out_file);
-
 
     hyperbox hb;
     hb_list.set_room(dalex_pts.get_rows());
