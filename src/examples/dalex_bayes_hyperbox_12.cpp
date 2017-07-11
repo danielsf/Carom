@@ -26,6 +26,37 @@ void pixellate(const array_1d<double> &pt,
 
 }
 
+class hyperbox_integrator{
+
+    public:
+
+        hyperbox_integrator(){
+            _dalex_pts.set_name("integrator_dalex_pts");
+            _dalex_chisq.set_name("integrator_dalex_chisq");
+        }
+
+        ~hyperbox_integrator(){}
+
+        void set_pts(array_2d<double> &pts, array_1d<double> &xx){
+             _dalex_pts.reset_preserving_room();
+             _dalex_chisq.reset_preserving_room();
+             int i;
+             for(i=0;i<pts.get_rows();i++){
+                 _dalex_pts.add_row(pts(i));
+                 _dalex_chisq.add(xx.get_data(i));
+             }
+        }
+
+        void add_pt(array_1d<double> &pt, double xx){
+            _dalex_pts.add_row(pt);
+            _dalex_chisq.add(xx);
+        }
+
+    private:
+        array_2d<double> _dalex_pts;
+        array_1d<double> _dalex_chisq;
+};
+
 void get_hyperbox_list(array_2d<double> &dalex_pts,
                        array_1d<double> &dalex_chisq,
                        double delta_chisq,
