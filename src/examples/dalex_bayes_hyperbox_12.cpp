@@ -4,21 +4,18 @@
 
 void pixellate(const array_1d<double> &pt,
                const array_1d<double> &dx,
-               const array_1d<double> &min,
                array_1d<int> &px){
 
     int i,j;
     for(i=0;i<pt.get_dim();i++){
-        for(j=0;min.get_data(i)+j*dx.get_data(i)<pt.get_data(i);j++);
-        if(min.get_data(i)+j*dx.get_data(i)-pt.get_data(i)>0.5*dx.get_data(i)){
-            j--;
-        }
-        if(j<0){
-            printf("WARNING pixellate set j %d\n",j);
-            exit(1);
-        }
-        if(fabs(min.get_data(i)+j*dx.get_data(i)-pt.get_data(i))>0.5*dx.get_data(i)){
+        j=int(pt.get_data(i)/dx.get_data(i));
+        if(pt.get_data(i)-j*dx.get_data(i)>0.5*dx.get_data(i))j++;
+        if(j*dx.get_data(i)-pt.get_data(i)>0.5*dx.get_data(i))j--;
+
+        if(fabs(j*dx.get_data(i)-pt.get_data(i))>0.5*dx.get_data(i)){
             printf("pixellate failed\n");
+            printf("input %e fit %e\n",pt.get_data(i),j*dx.get_data(i));
+            printf("dx %e delta %e\n",dx.get_data(i), fabs(j*dx.get_data(i)-pt.get_data(i)));
             exit(1);
         }
         px.set(i,j);
@@ -80,9 +77,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
 
     array_1d<double> dx;
     dx.set_name("dx");
-    array_1d<double> xmin;
     array_1d<double> good_xmin,good_xmax;
-    xmin.set_name("xmin");
     good_xmin.set_name("good_xmin");
     good_xmax.set_name("good_xmax");
     for(i=0;i<dalex_pts.get_rows();i++){
@@ -97,11 +92,6 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
             }
         }
 
-        for(j=0;j<dim;j++){
-            if(j>=xmin.get_dim() || dalex_pts.get_data(i,j)<xmin.get_data(j)){
-                xmin.set(j,dalex_pts.get_data(i,j));
-            }
-        }
     }
 
     printf("set min max %d %d %e\n",dim,good_xmax.get_dim(),chisq_min);
@@ -125,7 +115,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
     asymm_array_2d<int> pixel_mapping;
     pixel_mapping.set_name("pixel_mapping");
     for(i=0;i<dalex_pts.get_rows();i++){
-        pixellate(dalex_pts(i),dx,xmin,pixel);
+        pixellate(dalex_pts(i),dx,pixel);
         is_valid=1;
         for(j=0;j<pixel_list.get_rows();j++){
             is_same=1;
@@ -166,12 +156,12 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
     for(i=0;i<pixel_list.get_rows();i++){
         box_pts.reset_preserving_room();
         for(j=0;j<dim;j++){
-            box_min.set(j,xmin.get_data(j)+pixel_list.get_data(i,j)*dx.get_data(j)-0.5*dx.get_data(j));
-            box_max.set(j,xmin.get_data(j)+pixel_list.get_data(i,j)*dx.get_data(j)+0.5*dx.get_data(j));
+            box_min.set(j,pixel_list.get_data(i,j)*dx.get_data(j)-0.5*dx.get_data(j));
+            box_max.set(j,pixel_list.get_data(i,j)*dx.get_data(j)+0.5*dx.get_data(j));
             if(box_min.get_data(j)>box_max.get_data(j)){
                printf("setting min/max backwards\n");
                printf("%e  %e\n",box_min.get_data(j),box_max.get_data(j));
-               printf("%e %d %e\n",xmin.get_data(j),pixel_list.get_data(i,j),dx.get_data(j));
+               printf("%d %e\n",pixel_list.get_data(i,j),dx.get_data(j));
                exit(1);
             }
         }
