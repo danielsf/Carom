@@ -390,6 +390,8 @@ int main(int iargc, char *argv[]){
 
     int keep_going;
     int total_pts_added = 0;
+    double t_start=double(time(NULL));
+
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
@@ -523,6 +525,9 @@ int main(int iargc, char *argv[]){
             exit(1);
         }
         total_pts_added+=pts_added;
+        printf("ran %d in %e; estimate %e hours\n",
+        total_pts_added,double(time(NULL))-t_start,
+        n_new_pts*(double(time(NULL))-t_start)/(3600.0*total_pts_added));
     }
 
     sorted_chisq.set_name("sorted_chisq");
