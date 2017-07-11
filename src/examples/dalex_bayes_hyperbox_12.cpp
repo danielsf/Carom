@@ -31,6 +31,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
                        double delta_chisq,
                        hyperbox_list &hb_list){
 
+    double t_start=double(time(NULL));
     printf("starting with %d points\n",dalex_pts.get_rows());
     double pixel_factor=0.1;
 
@@ -84,6 +85,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
 
     int ix, iy;
 
+    double t_pre_pixel=double(time(NULL));
     array_2d<int> pixel_list;
     pixel_list.set_name("pixel_list");
     array_1d<int> pixel;
@@ -113,6 +115,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
             pixel_mapping.set(pixel_list.get_rows()-1,0,i);
         }
     }
+    double t_pixel=double(time(NULL))-t_pre_pixel;
 
     printf("n pixels %d\n",pixel_list.get_rows());
 
@@ -125,9 +128,9 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
     box_min.set_name("box_min");
     box_max.set_name("box_max");
 
-    double t_start=double(time(NULL));
     int n_box_pts=0;
     int pt_dex;
+    double t_pre_init=double(time(NULL));
     pt.reset_preserving_room();
     for(i=0;i<pixel_list.get_rows();i++){
         box_pts.reset_preserving_room();
@@ -169,6 +172,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
         hb.build(box_pts,box_min,box_max);
         hb_list.add(hb);
     }
+    double t_init = double(time(NULL))-t_pre_init;
 
     printf("hyperboxes %d; points %d\n",hb_list.ct(),n_box_pts);
 
@@ -189,6 +193,7 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
     max2.set_name("max2");
     pts1.set_name("pts1");
     pts2.set_name("pts2");
+    double t_pre_split=double(time(NULL));
     while(all_clear==0){
         all_clear=1;
         for(i=0;i<hb_list.ct();i++){
@@ -210,6 +215,12 @@ void get_hyperbox_list(array_2d<double> &dalex_pts,
     }
 
     printf("%d boxes\n",hb_list.ct());
+    printf("took %e splitting %e init %e\n",
+    double(time(NULL))-t_start,
+    double(time(NULL))-t_pre_split,
+    t_init);
+    printf("pixel %e\n",t_pixel);
+    printf("\n");
 
 }
 
@@ -382,6 +393,8 @@ int main(int iargc, char *argv[]){
     int total_pts_added = 0;
     double t_start=double(time(NULL));
 
+    double t_build_hyperbox=0.0;
+    double t0;
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
@@ -392,7 +405,9 @@ int main(int iargc, char *argv[]){
         posterior_chisq.reset_preserving_room();
         hb_list.reset();
 
+        t0=double(time(NULL));
         get_hyperbox_list(dalex_pts, dalex_chisq, delta_chisq, hb_list);
+        t_build_hyperbox+=double(time(NULL))-t0;
 
         posterior_chisq.reset_preserving_room();
         for(i=0;i<hb_list.ct();i++){
@@ -515,8 +530,9 @@ int main(int iargc, char *argv[]){
             exit(1);
         }
         total_pts_added+=pts_added;
-        printf("ran %d in %e; estimate %e hours\n",
+        printf("ran %d in %e; build %e; estimate %e hours\n",
         total_pts_added,double(time(NULL))-t_start,
+        t_build_hyperbox,
         n_new_pts*(double(time(NULL))-t_start)/(3600.0*total_pts_added));
     }
 
