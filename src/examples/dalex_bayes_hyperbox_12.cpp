@@ -624,13 +624,51 @@ int main(int iargc, char *argv[]){
         printf("max_valid_chisq %e\n",max_valid_chisq);
     }
 
-    sorted_chisq.set_name("sorted_chisq");
-    chisq_dex.set_name("chisq_dex");
-    for(i=0;i<posterior_chisq.get_dim();i++){
-        chisq_dex.set(i,i);
-    }
+    //need to process one last time
 
-    sort(posterior_chisq,sorted_chisq,chisq_dex);
+        ln_posterior.reset_preserving_room();
+        ln_vol_arr.reset_preserving_room();
+        sorted_ln_posterior.reset_preserving_room();
+        ln_posterior_dex.reset_preserving_room();
+        sorted_chisq.reset_preserving_room();
+        chisq_dex.reset_preserving_room();
+        posterior_chisq.reset_preserving_room();
+
+        t0=double(time(NULL));
+        hb_integrator.split_hyperboxes();
+        t_build_hyperbox+=double(time(NULL))-t0;
+
+        posterior_chisq.reset_preserving_room();
+        for(i=0;i<hb_integrator.hb_list.ct();i++){
+            posterior_chisq.set(i,hb_integrator.hb_list(i)->pts(0,dim));
+        }
+        ln_posterior.set_name("ln_posterior");
+        ln_vol_arr.set_name("ln_vol_arr");
+        for(i=0;i<hb_integrator.hb_list.ct();i++){
+            ln_posterior.set(i,-0.5*hb_integrator.hb_list(i)->pts(0,dim)+hb_integrator.hb_list(i)->ln_vol());
+            ln_vol_arr.set(i,hb_integrator.hb_list(i)->ln_vol());
+        }
+
+        sorted_ln_posterior.set_name("sorted_ln_posterior");
+        ln_posterior_dex.set_name("ln_posterior_dex");
+        for(i=0;i<ln_posterior.get_dim();i++){
+            ln_posterior_dex.set(i,i);
+        }
+        sort(ln_posterior,sorted_ln_posterior,ln_posterior_dex);
+        total_prob=0.0;
+        for(i=0;i<ln_posterior.get_dim();i++){
+            total_prob+=exp(sorted_ln_posterior.get_data(i));
+        }
+
+
+        sorted_chisq.set_name("sorted_chisq");
+        chisq_dex.set_name("chisq_dex");
+        for(i=0;i<posterior_chisq.get_dim();i++){
+            chisq_dex.set(i,i);
+        }
+
+        sort(posterior_chisq,sorted_chisq,chisq_dex);
+
 
     local_prob=0.0;
     FILE *pt_file;
