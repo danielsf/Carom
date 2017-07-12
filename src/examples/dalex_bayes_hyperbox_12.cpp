@@ -638,6 +638,10 @@ int main(int iargc, char *argv[]){
     sort(posterior_chisq,sorted_chisq,chisq_dex);
 
     local_prob=0.0;
+    FILE *pt_file;
+    char pt_name[letters];
+    sprintf(pt_name,"%s_pts.sav",out_name);
+    pt_file=fopen(pt_name,"w");
     out_file=fopen(out_name,"w");
     for(i=0;i<posterior_chisq.get_dim();i++){
         dex=chisq_dex.get_data(i);
@@ -646,10 +650,16 @@ int main(int iargc, char *argv[]){
                 local_prob/total_prob,
                 posterior_chisq.get_data(dex)+hb_integrator.chisq_min(),
                 ln_vol_arr.get_data(dex));
+        fprintf(pt_file,"%e %e %e ",
+                local_prob/total_prob,
+                posterior_chisq.get_data(dex)+hb_integrator.chisq_min(),
+                ln_vol_arr.get_data(dex));
         for(j=0;j<dim;j++){
             fprintf(out_file,"%e %e ",hb_integrator.hb_list(dex)->min(j),hb_integrator.hb_list(dex)->max(j));
+            fprintf(pt_file,"%e ",hb_integrator.hb_list(dex)->pts(0,j));
         }
         fprintf(out_file,"\n");
+        fprintf(pt_file,"\n");
     }
     fclose(out_file);
 
