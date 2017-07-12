@@ -112,7 +112,7 @@ class hyperbox{
         array_1d<double> _max,_min;
         double _ln_vol;
 
-        double _var_metric(int,double,array_2d<double>&);
+        double _n_metric(int,double,array_2d<double>&);
 
 };
 

@@ -81,46 +81,20 @@ void hyperbox::_split_on_val(array_2d<double> &pts1,
     }
 }
 
-double hyperbox::_var_metric(int i_dim, double xmid, array_2d<double> &pts){
+double hyperbox::_n_metric(int i_dim, double xmid, array_2d<double> &pts){
     int i;
-    double mean1,mean2;
-    double var1,var2;
-    int n1,n2;
-    mean1=0.0;
-    mean2=0.0;
-    var1=0.0;
-    var2=0.0;
-    n1=0;
-    n2=0;
+    int n1=0;
     for(i=0;i<pts.get_rows();i++){
         if(pts.get_data(i,i_dim)<xmid){
             n1++;
-            mean1+=pts.get_data(i,pts.get_cols()-1);
-        }
-        else{
-            n2++;
-            mean2+=pts.get_data(i,pts.get_cols()-1);
         }
     }
 
-    if(n1==0 || n2==0){
+    if(n1==0 || n1==pts.get_rows()){
         return -1.0;
     }
 
-    mean1=mean1/n1;
-    mean2=mean2/n2;
-
-    for(i=0;i<pts.get_rows();i++){
-        if(pts.get_data(i,i_dim)<xmid){
-            var1+=power(pts.get_data(i,pts.get_cols()-1)-mean1,2);
-        }
-        else{
-            var2+=power(pts.get_data(i,pts.get_cols()-1)-mean2,2);
-        }
-    }
-    var1=var1/n1;
-    var2=var2/n2;
-    return var1+var2;
+    return fabs(n1-pts.get_rows()/2.0);
 }
 
 void hyperbox::split(array_2d<double> &pts1,
@@ -146,7 +120,7 @@ void hyperbox::split(array_2d<double> &pts1,
 
     for(i_dim=0;i_dim<dim();i_dim++){
         xmid=0.5*(_max.get_data(i_dim)+_min.get_data(i_dim));
-        metric=_var_metric(i_dim,xmid,_pts);
+        metric=_n_metric(i_dim,xmid,_pts);
         if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
@@ -189,7 +163,7 @@ void hyperbox::split(array_2d<double> &pts1,
         xmid=x_val_sorted.get_data(sorted_dex.get_dim()/2);
         pt_xmid.set(i_dim,0.5*(x_val_sorted.get_data(0)+x_val_sorted.get_data(sorted_dex.get_dim()-1)));
 
-        metric=_var_metric(i_dim,xmid,_pts);
+        metric=_n_metric(i_dim,xmid,_pts);
         if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
@@ -205,7 +179,7 @@ void hyperbox::split(array_2d<double> &pts1,
     }
 
     for(i_dim=0;i_dim<dim();i_dim++){
-        metric=_var_metric(i_dim,pt_xmid.get_data(i_dim),_pts);
+        metric=_n_metric(i_dim,pt_xmid.get_data(i_dim),_pts);
         if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
