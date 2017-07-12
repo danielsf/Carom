@@ -488,19 +488,6 @@ int main(int iargc, char *argv[]){
     hb_integrator.split_hyperboxes();
     t_build_hyperbox+=double(time(NULL))-t0;
 
-    array_2d<double> expanses;
-    array_1d<double> local_expanse,sorted_expanse;
-    array_1d<double> expanse_limit;
-    array_1d<int> expanse_dex;
-    expanses.set_name("expanses");
-    local_expanse.set_name("local_expanse");
-    sorted_expanse.set_name("sorted_expanse");
-    expanse_dex.set_name("expanse_dex");
-    expanse_limit.set_name("expanse_limit");
-    int i_dim;
-    int last_printed;
-    int all_done=0;
-
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
@@ -552,15 +539,8 @@ int main(int iargc, char *argv[]){
         valid_vol_sorted.reset_preserving_room();
         valid_vol_dex.reset_preserving_room();
         max_valid_chisq=-1.0;
-        expanses.reset_preserving_room();
-        local_expanse.reset_preserving_room();
-        expanses.set_cols(dim);
         for(i=0;i<posterior_chisq.get_dim() && local_prob<0.95*total_prob;i++){
             dex=chisq_dex.get_data(i);
-            if(fabs(posterior_chisq.get_data(dex)-hb_integrator.hb_list(dex)->pts(0,dim))>1.0e-10){
-                printf("WARNING; incorreclty mapping chisq\n");
-                exit(1);
-            }
             if(posterior_chisq.get_data(dex)>max_valid_chisq){
                 max_valid_chisq=posterior_chisq.get_data(dex);
             }
@@ -571,23 +551,6 @@ int main(int iargc, char *argv[]){
                 vol_max_dex=i;
                 vol_max=ln_vol_arr.get_data(dex);
             }
-            for(j=0;j<dim;j++){
-                local_expanse.set(j,hb_integrator.hb_list(dex)->max(j)-hb_integrator.hb_list(dex)->min(j));
-            }
-            expanses.add_row(local_expanse);
-        }
-
-        expanse_limit.reset_preserving_room();
-        for(i_dim=0;i_dim<dim;i_dim++){
-            local_expanse.reset_preserving_room();
-            sorted_expanse.reset_preserving_room();
-            expanse_dex.reset_preserving_room();
-            for(i=0;i<expanses.get_rows();i++){
-                local_expanse.add(expanses.get_data(i,i_dim));
-                expanse_dex.set(i,i);
-            }
-            sort(local_expanse,sorted_expanse,expanse_dex);
-            expanse_limit.set(i_dim,sorted_expanse.get_data(expanse_dex.get_dim()-dim));
         }
 
         sort(valid_vol,valid_vol_sorted,valid_vol_dex);
@@ -608,30 +571,24 @@ int main(int iargc, char *argv[]){
         pts_added=0;
         factor=0.25;
         keep_going=1;
-        last_printed=0;
         for(dex=0;dex<hb_integrator.hb_list.ct();dex++){
-            if(dex%10000==0 || pts_added-last_printed>10000){
-                printf("dex %d of %d pts_added %d\n",dex,hb_integrator.hb_list.ct(),pts_added);
-                last_printed=pts_added;
-            }
             if(hb_integrator.hb_list(dex)->pts(0,dim)>max_valid_chisq+0.2){
                 continue;
             }
 
-            for(i_dim=0;i_dim<dim;i_dim++){
+            if(hb_integrator.hb_list(dex)->ln_vol()<max_valid_vol-0.1){
+                continue;
+            }
 
-                if(hb_integrator.hb_list(dex)->max(i_dim)-hb_integrator.hb_list(dex)->min(i_dim)<expanse_limit.get_data(i_dim)){
-                    continue;
-                }
-
-                //printf("acting on %e %e\n",hb_integrator.hb_list(dex)->ln_vol(),hb_integrator.hb_list(dex)->pts(0,dim));
+            printf("acting on %e %e\n",hb_integrator.hb_list(dex)->ln_vol(),hb_integrator.hb_list(dex)->pts(0,dim));
+            for(i=0;i<dim;i++){
                 for(sgn=-1.0;sgn<2.0;sgn+=2.0){
                     for(j=0;j<dim;j++){
                         pt.set(j,0.5*(hb_integrator.hb_list(dex)->max(j)+
                                       hb_integrator.hb_list(dex)->min(j)));
                     }
-                    pt.add_val(i_dim,sgn*factor*(hb_integrator.hb_list(dex)->max(i_dim)-
-                                             hb_integrator.hb_list(dex)->min(i_dim)));
+                    pt.add_val(i,sgn*factor*(hb_integrator.hb_list(dex)->max(i)-
+                                             hb_integrator.hb_list(dex)->min(i)));
 
 
                     dalex_tree.nn_srch(pt,1,neigh,dist);
@@ -642,11 +599,11 @@ int main(int iargc, char *argv[]){
                         pts_added++;
                      }
                 }
-                keep_going=0;
-                if(k>0){
-                    if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
-                        keep_going=1;
-                    }
+            }
+            keep_going=0;
+            if(k>0){
+                if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
+                    keep_going=1;
                 }
             }
         }
