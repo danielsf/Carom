@@ -448,7 +448,6 @@ int main(int iargc, char *argv[]){
     neigh.set_name("neigh");
     array_1d<double> ln_posterior;
     array_1d<double> ln_vol_arr;
-    double ln_vol;
     array_1d<double> sorted_ln_posterior;
     array_1d<int> ln_posterior_dex;
     double total_prob=0.0;
@@ -509,18 +508,8 @@ int main(int iargc, char *argv[]){
         ln_posterior.set_name("ln_posterior");
         ln_vol_arr.set_name("ln_vol_arr");
         for(i=0;i<hb_integrator.hb_list.ct();i++){
-            ln_vol=0.0;
-            for(j=0;j<dim;j++){
-                if(hb_integrator.hb_list(i)->max(j)-hb_integrator.hb_list(i)->min(j)>1.0e-120){
-                    ln_vol+=log(hb_integrator.hb_list(i)->max(j)-hb_integrator.hb_list(i)->min(j));
-                }
-                else{
-                    ln_vol=-69.0*dim;
-                    break;
-                }
-            }
-            ln_posterior.set(i,-0.5*hb_integrator.hb_list(i)->pts(0,dim)+ln_vol);
-            ln_vol_arr.set(i,ln_vol);
+            ln_posterior.set(i,-0.5*hb_integrator.hb_list(i)->pts(0,dim)+hb_integrator.hb_list(i)->ln_vol());
+            ln_vol_arr.set(i,hb_integrator.hb_list(i)->ln_vol());
         }
 
         sorted_ln_posterior.set_name("sorted_ln_posterior");
