@@ -571,34 +571,39 @@ int main(int iargc, char *argv[]){
         pts_added=0;
         factor=0.25;
         keep_going=1;
-        while(pts_added==0){
-            for(k=valid_vol_dex.get_dim()-1;k>=0 && (pts_added==0 || keep_going==1);k--){
-                dex=valid_vol_dex.get_data(k);
-                printf("acting on %e %e\n",ln_vol_arr.get_data(dex),posterior_chisq.get_data(dex));
-                for(i=0;i<dim;i++){
-                    for(sgn=-1.0;sgn<2.0;sgn+=2.0){
-                        for(j=0;j<dim;j++){
-                            pt.set(j,0.5*(hb_integrator.hb_list(dex)->max(j)+
-                                          hb_integrator.hb_list(dex)->min(j)));
-                        }
-                        pt.add_val(i,sgn*factor*(hb_integrator.hb_list(dex)->max(i)-
-                                                 hb_integrator.hb_list(dex)->min(i)));
+        for(dex=0;dex<hb_integrator.hb_list.ct();dex++){
+            if(hb_integrator.hb_list(dex)->pts(0,dim)>max_valid_chisq+0.5){
+                continue;
+            }
 
+            if(hb_integrator.hb_list(dex)->ln_vol()<max_valid_vol-0.1){
+                continue;
+            }
 
-                        dalex_tree.nn_srch(pt,1,neigh,dist);
-                        if(dist.get_data(0)>1.0e-20){
-                            xx = chifn[0](pt);
-                            hb_integrator.add_pt(pt, xx, dex);
-                            dalex_tree.add(pt);
-                            pts_added++;
-                         }
+            printf("acting on %e %e\n",hb_integrator.hb_list(dex)->ln_vol(),hb_integrator.hb_list(dex)->pts(0,dim));
+            for(i=0;i<dim;i++){
+                for(sgn=-1.0;sgn<2.0;sgn+=2.0){
+                    for(j=0;j<dim;j++){
+                        pt.set(j,0.5*(hb_integrator.hb_list(dex)->max(j)+
+                                      hb_integrator.hb_list(dex)->min(j)));
                     }
+                    pt.add_val(i,sgn*factor*(hb_integrator.hb_list(dex)->max(i)-
+                                             hb_integrator.hb_list(dex)->min(i)));
+
+
+                    dalex_tree.nn_srch(pt,1,neigh,dist);
+                    if(dist.get_data(0)>1.0e-20){
+                        xx = chifn[0](pt);
+                        hb_integrator.add_pt(pt, xx, dex);
+                        dalex_tree.add(pt);
+                        pts_added++;
+                     }
                 }
-                keep_going=0;
-                if(k>0){
-                    if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
-                        keep_going=1;
-                    }
+            }
+            keep_going=0;
+            if(k>0){
+                if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
+                    keep_going=1;
                 }
             }
         }
