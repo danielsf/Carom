@@ -122,6 +122,8 @@ class hyperbox_list{
 
         int ct(){return _ct;}
 
+        int room(){return _room;}
+
         void set_room(int rr){
             if(_room>=rr){
                 return;
