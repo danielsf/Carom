@@ -65,6 +65,21 @@ class hyperbox{
             }
         }
 
+        void add_point(array_1d<double> &pt){
+            int i;
+            for(i=0;i<dim();i++){
+               if(pt.get_data(i)<_min.get_data(i)){
+                   printf("cannot add this point; violates min\n");
+                   exit(1);
+               }
+               if(pt.get_data(i)>_max.get_data(i)){
+                   printf("cannot add this point; violates max\n");
+                   exit(1);
+               }
+            }
+            _pts.add_row(pt);
+        }
+
         void _split_on_val(array_2d<double>&,
                            array_1d<double>&,
                            array_1d<double>&,
