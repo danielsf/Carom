@@ -24,6 +24,8 @@ class hyperbox{
 
         const int n_pts(){return _pts.get_rows();}
 
+        const double ln_vol(){return _ln_vol;}
+
         const double min(int ii){return _min.get_data(ii);}
 
         const double max(int ii){return _max.get_data(ii);}
@@ -63,6 +65,16 @@ class hyperbox{
                     exit(1);
                 }
             }
+
+            _ln_vol=0.0;
+            for(i=0;i<dim();i++){
+                if(_max.get_data(i)-_min.get_data(i)>1.0e-60){
+                    _ln_vol+=log(_max.get_data(i)-_min.get_data(i));
+                }
+                else{
+                    _ln_vol=-69.0*dim();
+                }
+            }
         }
 
         void add_point(array_1d<double> &pt){
@@ -98,6 +110,7 @@ class hyperbox{
     private:
         array_2d<double> _pts;
         array_1d<double> _max,_min;
+        double _ln_vol;
 
         double _var_metric(int,double,array_2d<double>&);
 
