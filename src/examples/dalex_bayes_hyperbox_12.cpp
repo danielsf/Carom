@@ -616,6 +616,7 @@ int main(int iargc, char *argv[]){
         total_pts_added,double(time(NULL))-t_start,
         t_build_hyperbox,
         n_new_pts*(double(time(NULL))-t_start)/(3600.0*total_pts_added));
+        printf("max_valid_chisq %e\n",max_valid_chisq);
     }
 
     sorted_chisq.set_name("sorted_chisq");
