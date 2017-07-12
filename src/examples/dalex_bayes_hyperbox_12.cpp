@@ -465,7 +465,6 @@ int main(int iargc, char *argv[]){
 
     double vol_max;
     int vol_max_dex;
-    double sgn;
     double max_valid_chisq;
     double max_valid_vol;
 
@@ -487,6 +486,8 @@ int main(int iargc, char *argv[]){
     hb_integrator.create_hyperboxes();
     hb_integrator.split_hyperboxes();
     t_build_hyperbox+=double(time(NULL))-t0;
+
+    Ran dice(47394);
 
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
@@ -581,24 +582,20 @@ int main(int iargc, char *argv[]){
             }
 
             printf("acting on %e %e\n",hb_integrator.hb_list(dex)->ln_vol(),hb_integrator.hb_list(dex)->pts(0,dim));
-            for(i=0;i<dim;i++){
-                for(sgn=-1.0;sgn<2.0;sgn+=2.0){
-                    for(j=0;j<dim;j++){
-                        pt.set(j,0.5*(hb_integrator.hb_list(dex)->max(j)+
-                                      hb_integrator.hb_list(dex)->min(j)));
-                    }
-                    pt.add_val(i,sgn*factor*(hb_integrator.hb_list(dex)->max(i)-
-                                             hb_integrator.hb_list(dex)->min(i)));
-
-
-                    dalex_tree.nn_srch(pt,1,neigh,dist);
-                    if(dist.get_data(0)>1.0e-20){
-                        xx = chifn[0](pt);
-                        hb_integrator.add_pt(pt, xx, dex);
-                        dalex_tree.add(pt);
-                        pts_added++;
-                     }
+            for(i=0;i<2*dim;i++){
+                for(j=0;j<dim;j++){
+                    pt.set(j,hb_integrator.hb_list(dex)->min(j)+
+                           dice.doub()*(hb_integrator.hb_list(dex)->max(j)-
+                                        hb_integrator.hb_list(dex)->min(j)));
                 }
+
+                dalex_tree.nn_srch(pt,1,neigh,dist);
+                if(dist.get_data(0)>1.0e-20){
+                    xx = chifn[0](pt);
+                    hb_integrator.add_pt(pt, xx, dex);
+                    dalex_tree.add(pt);
+                    pts_added++;
+                 }
             }
             keep_going=0;
             if(k>0){
