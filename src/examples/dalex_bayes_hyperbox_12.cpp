@@ -156,7 +156,7 @@ class hyperbox_integrator{
              printf("done with initialization\n");
         }
 
-        void add_pt(array_1d<double> &pt, double xx){
+        void add_pt(array_1d<double> &pt, double xx, int box_dex){
             _dalex_pts.add_row(pt);
             _dalex_chisq.add(xx);
             if(_dalex_pts.get_rows()!=_dalex_chisq.get_dim()){
@@ -165,6 +165,14 @@ class hyperbox_integrator{
                 exit(1);
             }
             _add_pixel(_dalex_pts.get_rows()-1);
+            array_1d<double> dummy_pt;
+            dummy_pt.set_name("dummy_pt");
+            int i;
+            for(i=0;i<pt.get_dim();i++){
+                dummy_pt.set(i,pt.get_data(i));
+            }
+            dummy_pt.set(pt.get_dim(),xx);
+            hb_list(box_dex)->add_point(dummy_pt);
         }
 
         void create_hyperboxes(){
@@ -241,7 +249,19 @@ class hyperbox_integrator{
                     exit(1);
                  }
             }
+        }
 
+        void split_hyperboxes(){
+            int i,j;
+            hyperbox hb;
+            int n_pts=0;
+            for(i=0;i<hb_list.ct();i++){
+                n_pts+=hb_list(i)->n_pts();
+            }
+            int room0=hb_list.room();
+            if(n_pts>hb_list.room()){
+                hb_list.set_room(room0+100000);
+            }
             int all_clear=0;
             array_1d<double> min1,min2,max1,max2;
             array_2d<double> pts1,pts2;
@@ -270,6 +290,15 @@ class hyperbox_integrator{
                     printf("have box with %d pts\n",hb_list(i)->n_pts());
                     exit(1);
                 }
+            }
+
+            n_pts=0;
+            for(i=0;i<hb_list.ct();i++){
+                n_pts+=hb_list(i)->n_pts();
+            }
+            if(n_pts!=_dalex_pts.get_rows()){
+                printf("WARNING; pt mismatch\n");
+                exit(1);
             }
         }
 
@@ -455,6 +484,11 @@ int main(int iargc, char *argv[]){
     dalex_pts.reset();
     dalex_chisq.reset();
 
+    t0=double(time(NULL));
+    hb_integrator.create_hyperboxes();
+    hb_integrator.split_hyperboxes();
+    t_build_hyperbox+=double(time(NULL))-t0;
+
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
@@ -465,7 +499,7 @@ int main(int iargc, char *argv[]){
         posterior_chisq.reset_preserving_room();
 
         t0=double(time(NULL));
-        hb_integrator.create_hyperboxes();
+        hb_integrator.split_hyperboxes();
         t_build_hyperbox+=double(time(NULL))-t0;
 
         posterior_chisq.reset_preserving_room();
@@ -565,7 +599,7 @@ int main(int iargc, char *argv[]){
                         dalex_tree.nn_srch(pt,1,neigh,dist);
                         if(dist.get_data(0)>1.0e-20){
                             xx = chifn[0](pt);
-                            hb_integrator.add_pt(pt, xx);
+                            hb_integrator.add_pt(pt, xx, dex);
                             dalex_tree.add(pt);
                             pts_added++;
                          }
