@@ -572,7 +572,7 @@ int main(int iargc, char *argv[]){
         factor=0.25;
         keep_going=1;
         for(dex=0;dex<hb_integrator.hb_list.ct();dex++){
-            if(hb_integrator.hb_list(dex)->pts(0,dim)>max_valid_chisq+0.5){
+            if(hb_integrator.hb_list(dex)->pts(0,dim)>max_valid_chisq+0.2){
                 continue;
             }
 
