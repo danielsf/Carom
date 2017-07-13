@@ -128,87 +128,63 @@ void hyperbox::split(array_2d<double> &pts1,
         exit(1);
     }
 
-    int i;
     int i_dim;
-    double xmid;
-    int dim_best=-1;
+    int dim_best;
+    array_1d<double> local_chi;
+    array_1d<double> local_chi_sorted;
+    array_1d<int> local_chi_dex;
+    local_chi.set_name("split_local_chi");
+    local_chi_sorted.set_name("split_local_chi_sorted");
+    local_chi_dex.set_name("split_local_chi_dex");
     double metric;
     double metric_best;
-
+    double xx_best;
+    double xx;
+    dim_best=-1;
+    int i;
+    int i_mid;
+    for(i=0;i<_pts.get_rows();i++){
+        local_chi.add(_pts.get_data(i,dim()));
+        local_chi_dex.set(i,i);
+    }
+    sort(local_chi,local_chi_sorted,local_chi_dex);
+    i_mid=local_chi_dex.get_data(local_chi.get_dim()/2);
     for(i_dim=0;i_dim<dim();i_dim++){
-        xmid=0.5*(_max.get_data(i_dim)+_min.get_data(i_dim));
-        metric=_n_metric(i_dim,xmid,_pts);
+        xx=_pts.get_data(i_mid,i_dim);
+        metric=_median_metric(i_dim,xx,_pts);
         if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
-                metric_best=metric;
+                xx_best=xx;
             }
         }
     }
 
     if(dim_best>=0){
-        _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,
-                      0.5*(_min.get_data(dim_best)+_max.get_data(dim_best)));
-
+        _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,xx_best);
         return;
     }
 
-    array_1d<int> sorted_dex;
-    array_1d<double> x_val,x_val_sorted;
-    sorted_dex.set_name("hyperbox_split_sorted_dex");
-    x_val.set_name("hyperbox_split_x_val");
-    x_val_sorted.set_name("hyperbox_split_x_val_sorted");
-
-    x_val.set_dim(n_pts());
-    x_val_sorted.set_dim(n_pts());
-    sorted_dex.set_dim(n_pts());
-
-    double xmid_best;
-    array_1d<double> pt_xmid;
-    pt_xmid.set_name("hypberbox_split_pt_xmid");
-
     for(i_dim=0;i_dim<dim();i_dim++){
-        x_val.reset_preserving_room();
-        sorted_dex.reset_preserving_room();
-        x_val_sorted.reset_preserving_room();
-        for(i=0;i<n_pts();i++){
-            x_val.set(i,_pts.get_data(i,i_dim));
-            sorted_dex.set(i,i);
-        }
-        sort(x_val,x_val_sorted,sorted_dex);
-
-        xmid=x_val_sorted.get_data(sorted_dex.get_dim()/2);
-        pt_xmid.set(i_dim,0.5*(x_val_sorted.get_data(0)+x_val_sorted.get_data(sorted_dex.get_dim()-1)));
-
-        metric=_n_metric(i_dim,xmid,_pts);
+        xx=0.5*(_pts.get_data(local_chi_dex.get_data(0),i_dim)+
+                _pts.get_data(local_chi_dex.get_data(local_chi_dex.get_dim()-1),i_dim));
+        metric=_n_metric(i_dim,xx,_pts);
         if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
-                xmid_best=xmid;
-                metric_best=metric;
+                xx_best=xx;
             }
         }
     }
 
     if(dim_best>=0){
-        _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,xmid_best);
+        _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,xx_best);
         return;
     }
 
-    for(i_dim=0;i_dim<dim();i_dim++){
-        metric=_n_metric(i_dim,pt_xmid.get_data(i_dim),_pts);
-        if(metric>-0.1){
-            if(dim_best<0 || metric<metric_best){
-                dim_best=i_dim;
-                metric_best=metric;
-            }
-        }
-    }
-
-    if(dim_best<0){
-        printf("exhausted all splitting searches\n");
-        exit(1);
-    }
-    _split_on_val(pts1,min1,max1,pts2,min2,max2,dim_best,pt_xmid.get_data(dim_best));
-
+    printf("all splits failed %e %e %e %d\n",local_chi_sorted.get_data(0),
+    local_chi_sorted.get_data(local_chi_sorted.get_dim()/2),
+    local_chi_sorted.get_data(local_chi_sorted.get_dim()-1),
+    local_chi_sorted.get_dim());
+    exit(1);
 }
