@@ -522,6 +522,9 @@ int main(int iargc, char *argv[]){
     t_build_hyperbox+=double(time(NULL))-t0;
 
     int n_new_good=0;
+    double sgn;
+    double local_min,local_max;
+    double local_vol,local_chi;
 
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
@@ -615,31 +618,47 @@ int main(int iargc, char *argv[]){
                 continue;
             }
 
-            printf("acting on %e %e\n",hb_integrator.hb_list(dex)->ln_vol(),hb_integrator.hb_list(dex)->pts(0,dim));
-            for(i=0;i<2*dim;i++){
-                for(j=0;j<dim;j++){
-                    pt.set(j,hb_integrator.hb_list(dex)->min(j)+
-                           dice.doub()*(hb_integrator.hb_list(dex)->max(j)-
-                                        hb_integrator.hb_list(dex)->min(j)));
-                }
-
-                dalex_tree.nn_srch(pt,1,neigh,dist);
-                if(dist.get_data(0)>1.0e-20){
-                    xx = chifn[0](pt);
-                    if(xx<chisq_min+delta_chisq){
-                        n_new_good++;
+            local_min=2.0*exception_value;
+            local_max=-2.0*exception_value;
+            local_chi=hb_integrator.hb_list(dex)->pts(0,dim);
+            local_vol=hb_integrator.hb_list(dex)->ln_vol();
+            for(i=0;i<dim;i++){
+                for(sgn=-1.0;sgn<2.0;sgn+=2.0){
+                    for(j=0;j<dim;j++){
+                        pt.set(j,0.5*(hb_integrator.hb_list(dex)->max(j)+
+                                            hb_integrator.hb_list(dex)->min(j)));
                     }
-                    hb_integrator.add_pt(pt, xx, dex);
-                    dalex_tree.add(pt);
-                    pts_added++;
-                 }
-            }
-            keep_going=0;
-            if(k>0){
-                if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
-                    keep_going=1;
+                    pt.add_val(i,sgn*0.25*(hb_integrator.hb_list(dex)->max(i)-
+                                           hb_integrator.hb_list(dex)->min(i)));
+
+                    dalex_tree.nn_srch(pt,1,neigh,dist);
+                    if(dist.get_data(0)>1.0e-20){
+                        xx = chifn[0](pt);
+                        if(xx<chisq_min+delta_chisq){
+                            n_new_good++;
+                        }
+                        if(xx<local_min){
+                            local_min=xx;
+                        }
+                        if(xx>local_max){
+                            local_max=xx;
+                        }
+                        hb_integrator.add_pt(pt, xx, dex);
+                        dalex_tree.add(pt);
+                        pts_added++;
+                     }
+                }
+                keep_going=0;
+                if(k>0){
+                    if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
+                        keep_going=1;
+                    }
                 }
             }
+            printf("acting on %e %e -- %e %e\n",
+            local_vol,local_chi,
+            local_min,local_max);
+
         }
         if(pts_added==0){
             printf("did not add any points\n");
