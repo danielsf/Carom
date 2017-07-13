@@ -667,6 +667,7 @@ int main(int iargc, char *argv[]){
         sort(posterior_chisq,sorted_chisq,chisq_dex);
 
 
+    double min,max;
     local_prob=0.0;
     FILE *pt_file;
     char pt_name[letters];
@@ -685,6 +686,13 @@ int main(int iargc, char *argv[]){
                 posterior_chisq.get_data(dex)+hb_integrator.chisq_min(),
                 ln_vol_arr.get_data(dex));
         for(j=0;j<dim;j++){
+            min = hb_integrator.hb_list(dex)->min(j);
+            max = hb_integrator.hb_list(dex)->max(j);
+            xx = hb_integrator.hb_list(dex)->pts(0,j);
+            if(xx<min || xx>max){
+                printf("violated bounds %e < %e <%e\n",min,xx,max);
+                exit(1);
+            }
             fprintf(out_file,"%e %e ",hb_integrator.hb_list(dex)->min(j),hb_integrator.hb_list(dex)->max(j));
             fprintf(pt_file,"%e ",hb_integrator.hb_list(dex)->pts(0,j));
         }
