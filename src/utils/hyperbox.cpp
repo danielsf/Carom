@@ -81,6 +81,23 @@ void hyperbox::_split_on_val(array_2d<double> &pts1,
     }
 }
 
+double hyperbox::_median_metric(int i_dim, double xmid, array_2d<double> &pts){
+    int i;
+    int n1=0;
+    for(i=0;i<pts.get_rows();i++){
+        if(pts.get_data(i,i_dim)<xmid){
+            n1++;
+        }
+    }
+
+    if(n1==0 || n1==pts.get_rows()){
+        return -1.0;
+    }
+
+    double ell=_max.get_data(i_dim)-_min.get_data(i_dim);
+    return fabs(xmid-0.5*(_max.get_data(i_dim)+_min.get_data(i_dim)))/ell;
+}
+
 double hyperbox::_n_metric(int i_dim, double xmid, array_2d<double> &pts){
     int i;
     int n1=0;
