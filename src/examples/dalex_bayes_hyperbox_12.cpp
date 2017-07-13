@@ -395,6 +395,7 @@ int main(int iargc, char *argv[]){
     xmin.set_name("xmin");
     xmax.set_name("xmax");
 
+    double chisq_min=2.0*exception_value;
     printf("n_cols %d\n",n_cols);
     while(fscanf(in_file,"%le",&xx)>0){
         pt.set(0,xx);
@@ -417,6 +418,9 @@ int main(int iargc, char *argv[]){
         dalex_pts.add_row(pt);
         fscanf(in_file,"%le",&xx);
         dalex_chisq.add(xx);
+        if(xx<chisq_min){
+            chisq_min=xx;
+        }
         for(i=dim+1;i<n_cols;i++){
             fscanf(in_file,"%le",&xx);
         }
@@ -425,7 +429,23 @@ int main(int iargc, char *argv[]){
     fclose(in_file);
     printf("read in data\n");
 
-    kd_tree dalex_tree(dalex_pts,xmin,xmax);
+    array_1d<double> good_xmin,good_xmax;
+    good_xmin.set_name("good_xmin");
+    good_xmax.set_name("good_xmax");
+    for(i=0;i<dalex_pts.get_rows();i++){
+        if(dalex_chisq.get_data(i)<=chisq_min+delta_chisq){
+            for(j=0;j<dim;j++){
+                xx=dalex_pts.get_data(i,j);
+                if(j>=good_xmin.get_dim() || xx<good_xmin.get_data(j)){
+                    good_xmin.set(j,xx);
+                }
+                if(j>=good_xmax.get_dim() || xx>good_xmax.get_data(j)){
+                    good_xmax.set(j,xx);
+                }
+            }
+        }
+    }
+
 
     jellyBeanData *chifn;
 
@@ -439,6 +459,20 @@ int main(int iargc, char *argv[]){
         printf("cannot do dim %d\n",dim);
         exit(1);
     }
+    Ran dice(81242);
+    array_1d<double> ran_pt;
+    ran_pt.set_name("ran_pt");
+    for(i=0;i<100000;i++){
+        for(j=0;j<dim;j++){
+            xx=good_xmax.get_data(j)-good_xmin.get_data(j);
+            ran_pt.set(j,good_xmin.get_data(j)+dice.doub()*xx);
+        }
+        xx=chifn[0](ran_pt);
+        dalex_pts.add_row(ran_pt);
+        dalex_chisq.add(xx);
+    }
+
+    kd_tree dalex_tree(dalex_pts,xmin,xmax);
 
     double factor;
     int pts_added;
@@ -487,7 +521,7 @@ int main(int iargc, char *argv[]){
     hb_integrator.split_hyperboxes();
     t_build_hyperbox+=double(time(NULL))-t0;
 
-    Ran dice(47394);
+    int n_new_good=0;
 
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
