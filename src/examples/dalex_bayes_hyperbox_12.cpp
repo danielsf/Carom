@@ -171,7 +171,7 @@ class hyperbox_integrator{
             for(i=0;i<pt.get_dim();i++){
                 dummy_pt.set(i,pt.get_data(i));
             }
-            dummy_pt.set(pt.get_dim(),xx);
+            dummy_pt.set(pt.get_dim(),xx-_chisq_min);
             hb_list(box_dex)->add_point(dummy_pt);
         }
 
