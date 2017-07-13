@@ -145,16 +145,8 @@ class hyperbox_integrator{
                  }
              }
 
-             double factor;
-
              for(i=0;i<_dalex_pts.get_cols();i++){
-                 if(i==9){
-                     factor=0.05;
-                 }
-                 else{
-                     factor=0.2;
-                 }
-                 _dx.set(i,factor*(good_xmax.get_data(i)-good_xmin.get_data(i)));
+                 _dx.set(i,0.1*(good_xmax.get_data(i)-good_xmin.get_data(i)));
              }
 
              for(i=0;i<_dalex_pts.get_rows();i++){
