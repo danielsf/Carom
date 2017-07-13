@@ -626,6 +626,9 @@ int main(int iargc, char *argv[]){
                 dalex_tree.nn_srch(pt,1,neigh,dist);
                 if(dist.get_data(0)>1.0e-20){
                     xx = chifn[0](pt);
+                    if(xx<chisq_min+delta_chisq){
+                        n_new_good++;
+                    }
                     hb_integrator.add_pt(pt, xx, dex);
                     dalex_tree.add(pt);
                     pts_added++;
@@ -653,6 +656,7 @@ int main(int iargc, char *argv[]){
         t_build_hyperbox,
         n_new_pts*(double(time(NULL))-t_start)/(3600.0*total_pts_added));
         printf("max_valid_chisq %e\n",max_valid_chisq);
+        printf("n_new_good %d\n",n_new_good);
     }
 
     //need to process one last time
