@@ -566,7 +566,7 @@ int main(int iargc, char *argv[]){
     minpt.set_name("minpt");
     double rr;
     int found_box;
-    double d_tol=1.0e-20;
+    double d_tol=1.0e-6;
 
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
