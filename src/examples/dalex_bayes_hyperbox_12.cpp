@@ -289,7 +289,7 @@ class hyperbox_integrator{
             }
             int room0=hb_list.room();
             if(n_pts>hb_list.room()){
-                hb_list.set_room(room0+100000);
+                hb_list.set_room(n_pts+100000);
             }
             int all_clear=0;
             array_1d<double> min1,min2,max1,max2;
