@@ -166,10 +166,15 @@ void hyperbox::split(array_2d<double> &pts1,
         return;
     }
 
+    int i_max,i_min;
+    i_min=local_chi_dex.get_data(0);
+    i_max=local_chi_dex.get_data(local_chi_dex.get_dim()-1);
     for(i_dim=0;i_dim<dim();i_dim++){
-        xx=0.5*(_pts.get_data(local_chi_dex.get_data(0),i_dim)+
-                _pts.get_data(local_chi_dex.get_data(local_chi_dex.get_dim()-1),i_dim));
+        xx=0.5*(_pts.get_data(i_min,i_dim)+
+                _pts.get_data(i_max,i_dim));
+
         metric=_n_metric(i_dim,xx,_pts);
+
         if(metric>-0.1){
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
