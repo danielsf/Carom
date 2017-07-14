@@ -555,6 +555,18 @@ int main(int iargc, char *argv[]){
     double local_min,local_max;
     double local_vol,local_chi;
 
+    array_1d<double> dir;
+    dir.set_name("dir");
+    int i_bisect;
+    array_1d<double> pt0;
+    pt0.set_name("pt0");
+    array_1d<double> pt1;
+    pt1.set_name("pt1");
+    array_1d<double> minpt;
+    minpt.set_name("minpt");
+    double rr;
+    int found_box;
+
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
         ln_vol_arr.reset_preserving_room();
@@ -653,36 +665,136 @@ int main(int iargc, char *argv[]){
             local_chi=hb_integrator.hb_list(dex)->pts(0,dim);
             local_vol=hb_integrator.hb_list(dex)->ln_vol();
             for(i=0;i<dim;i++){
-                for(sgn=-1.0;sgn<2.0;sgn+=2.0){
-                    for(j=0;j<dim;j++){
-                        pt.set(j,0.5*(hb_integrator.hb_list(dex)->max(j)+
-                                            hb_integrator.hb_list(dex)->min(j)));
-                    }
-                    pt.add_val(i,sgn*0.25*(hb_integrator.hb_list(dex)->max(i)-
-                                           hb_integrator.hb_list(dex)->min(i)));
-
-                    dalex_tree.nn_srch(pt,1,neigh,dist);
-                    if(dist.get_data(0)>1.0e-20){
-                        xx = chifn[0](pt);
-                        if(xx<chisq_min+delta_chisq){
-                            n_new_good++;
-                        }
-                        if(xx<local_min){
-                            local_min=xx;
-                        }
-                        if(xx>local_max){
-                            local_max=xx;
-                        }
-                        hb_integrator.add_pt(pt, xx, dex);
-                        dalex_tree.add(pt);
-                        pts_added++;
-                     }
+                dir.set(i,0.5*(hb_integrator.hb_list(dex)->max(i)+
+                               hb_integrator.hb_list(dex)->min(i))-
+                          hb_integrator.hb_list(dex)->pts(0,i));
+            }
+            xx=dir.normalize();
+            if(xx<1.0e-30){
+                for(i=0;i<dim;i++){
+                    dir.set(i,normal_deviate(&dice,0.0,1.0));
                 }
-                keep_going=0;
-                if(k>0){
-                    if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
-                        keep_going=1;
+                dir.normalize();
+            }
+            xx=2.0*exception_value;
+            for(i=0;i<dim;i++){
+                pt0.set(i,hb_integrator.hb_list(dex)->pts(0,i));
+                pt1.set(i,pt0.get_data(i)+dir.get_data(i));
+            }
+            xx = chifn[0](pt1);
+            pts_added++;
+            dalex_tree.nn_srch(pt1,1,neigh,dist);
+            if(dist.get_data(0)>1.0e-20){
+                if(xx<chisq_min+delta_chisq){
+                    n_new_good++;
+                }
+                if(xx<local_min){
+                    local_min=xx;
+                    for(i=0;i<dim;i++){
+                            minpt.set(i,pt1.get_data(i));
                     }
+                }
+                if(xx>local_max){
+                    local_max=xx;
+                }
+                found_box=hb_integrator.add_pt(pt1, xx);
+                if(found_box==1){
+                    dalex_tree.add(pt1);
+                }
+             }
+             rr=1.0;
+             while(xx<chisq_min+delta_chisq){
+                 rr*=2.0;
+                 for(i=0;i<dim;i++){
+                     pt1.set(i,pt0.get_data(i)+rr*dir.get_data(i));
+                 }
+                 dalex_tree.nn_srch(pt1,1,neigh,dist);
+                 xx=chifn[0](pt1);
+                 pts_added++;
+                 if(dist.get_data(0)>1.0e-20){
+                     if(xx<chisq_min+delta_chisq){
+                         n_new_good++;
+                     }
+                     if(xx<local_min){
+                         local_min=xx;
+                         for(i=0;i<dim;i++){
+                            minpt.set(i,pt1.get_data(i));
+                        }
+                     }
+                     if(xx>local_max){
+                         local_max=xx;
+                     }
+                     found_box=hb_integrator.add_pt(pt1, xx);
+                     if(found_box==1){
+                         dalex_tree.add(pt1);
+                     }
+                  }
+            }
+
+            for(i_bisect=0;i_bisect<20 && fabs(xx-chisq_min+delta_chisq)>0.1;i_bisect++){
+                for(i=0;i<dim;i++){
+                    pt.set(i,0.5*(pt0.get_data(i)+pt1.get_data(i)));
+                }
+                xx = chifn[0](pt);
+                pts_added++;
+                dalex_tree.nn_srch(pt,1,neigh,dist);
+                if(dist.get_data(0)>1.0e-20){
+                    if(xx<chisq_min+delta_chisq){
+                        n_new_good++;
+                    }
+                    if(xx<local_min){
+                        local_min=xx;
+                        for(i=0;i<dim;i++){
+                            minpt.set(i,pt.get_data(i));
+                        }
+                    }
+                    if(xx>local_max){
+                        local_max=xx;
+                    }
+                    found_box=hb_integrator.add_pt(pt, xx);
+                    if(found_box==1){
+                        dalex_tree.add(pt);
+                    }
+                 }
+                 if(xx>chisq_min+delta_chisq){
+                     for(i=0;i<dim;i++){
+                         pt1.set(i,pt.get_data(i));
+                     }
+                 }
+                 else{
+                     for(i=0;i<dim;i++){
+                         pt0.set(i,pt.get_data(i));
+                     }
+                 }
+            }
+            for(rr=0.2;rr<1.1;rr+=0.2){
+                for(i=0;i<dim;i++){
+                    pt.set(i,rr*hb_integrator.hb_list(dex)->pts(0,i)+
+                             (1.0-rr)*minpt.get_data(i));
+                }
+                xx=chifn[0](pt);
+                pts_added++;
+                dalex_tree.nn_srch(pt,1,neigh,dist);
+                if(dist.get_data(0)>1.0e-20){
+                    if(xx<chisq_min+delta_chisq){
+                        n_new_good++;
+                    }
+                    if(xx<local_min){
+                        local_min=xx;
+                    }
+                    if(xx>local_max){
+                        local_max=xx;
+                    }
+                    found_box=hb_integrator.add_pt(pt, xx);
+                    if(found_box==1){
+                        dalex_tree.add(pt);
+                    }
+                 }
+            }
+            keep_going=0;
+            if(k>0){
+                if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
+                    keep_going=1;
                 }
             }
             printf("acting on %e %e -- %e %e\n",
