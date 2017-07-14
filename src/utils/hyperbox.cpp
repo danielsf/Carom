@@ -156,6 +156,7 @@ void hyperbox::split(array_2d<double> &pts1,
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
                 xx_best=xx;
+                metric_best=metric;
             }
         }
     }
@@ -173,6 +174,7 @@ void hyperbox::split(array_2d<double> &pts1,
             if(dim_best<0 || metric<metric_best){
                 dim_best=i_dim;
                 xx_best=xx;
+                metric_best=metric;
             }
         }
     }
