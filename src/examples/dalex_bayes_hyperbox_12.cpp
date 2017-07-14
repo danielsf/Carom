@@ -156,7 +156,7 @@ class hyperbox_integrator{
              printf("done with initialization\n");
         }
 
-        void add_pt(array_1d<double> &pt, double xx){
+        int add_pt(array_1d<double> &pt, double xx){
             int box_dex=-1;
             int i,j,valid;
             for(i=0;i<hb_list.ct();i++){
@@ -166,21 +166,23 @@ class hyperbox_integrator{
                         valid=0;
                         break;
                     }
-                    if(pt.get_data(j)>hb_list(i)->min(j)){
+                    if(pt.get_data(j)>hb_list(i)->max(j)){
                         valid=0;
                         break;
                     }
                 }
                 if(valid==1){
-                    box_dex=1;
+                    box_dex=i;
                     break;
                 }
             }
             if(box_dex<0){
-                printf("could not find a box\n");
-                exit(1);
+                return 0;
             }
             add_pt(pt,xx,box_dex);
+            //printf("found a box %d\n",box_dex);
+            //exit(1);
+            return 1;
         }
 
         void add_pt(array_1d<double> &pt, double xx, int box_dex){
