@@ -188,5 +188,16 @@ void hyperbox::split(array_2d<double> &pts1,
     local_chi_sorted.get_data(local_chi_sorted.get_dim()/2),
     local_chi_sorted.get_data(local_chi_sorted.get_dim()-1),
     local_chi_sorted.get_dim());
+    double dd;
+    int j,k;
+    for(i=0;i<n_pts();i++){
+        for(j=i+1;j<n_pts();j++){
+            dd=0.0;
+            for(k=0;k<dim();k++){
+                dd+=power(_pts.get_data(i,k)-_pts.get_data(j,k),2);
+            }
+            printf("%d %d dist %e\n",i,j,dd);
+        }
+    }
     exit(1);
 }
