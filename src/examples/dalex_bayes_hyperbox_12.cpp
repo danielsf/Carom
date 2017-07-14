@@ -566,6 +566,7 @@ int main(int iargc, char *argv[]){
     minpt.set_name("minpt");
     double rr;
     int found_box;
+    double d_tol=1.0e-20;
 
     while(total_pts_added<n_new_pts){
         ln_posterior.reset_preserving_room();
@@ -684,7 +685,7 @@ int main(int iargc, char *argv[]){
             xx = chifn[0](pt1);
             pts_added++;
             dalex_tree.nn_srch(pt1,1,neigh,dist);
-            if(dist.get_data(0)>1.0e-20){
+            if(dist.get_data(0)>d_tol){
                 if(xx<chisq_min+delta_chisq){
                     n_new_good++;
                 }
@@ -711,7 +712,7 @@ int main(int iargc, char *argv[]){
                  dalex_tree.nn_srch(pt1,1,neigh,dist);
                  xx=chifn[0](pt1);
                  pts_added++;
-                 if(dist.get_data(0)>1.0e-20){
+                 if(dist.get_data(0)>d_tol){
                      if(xx<chisq_min+delta_chisq){
                          n_new_good++;
                      }
@@ -738,7 +739,7 @@ int main(int iargc, char *argv[]){
                 xx = chifn[0](pt);
                 pts_added++;
                 dalex_tree.nn_srch(pt,1,neigh,dist);
-                if(dist.get_data(0)>1.0e-20){
+                if(dist.get_data(0)>d_tol){
                     if(xx<chisq_min+delta_chisq){
                         n_new_good++;
                     }
@@ -775,7 +776,7 @@ int main(int iargc, char *argv[]){
                 xx=chifn[0](pt);
                 pts_added++;
                 dalex_tree.nn_srch(pt,1,neigh,dist);
-                if(dist.get_data(0)>1.0e-20){
+                if(dist.get_data(0)>d_tol){
                     if(xx<chisq_min+delta_chisq){
                         n_new_good++;
                     }
