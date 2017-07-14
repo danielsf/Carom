@@ -566,6 +566,7 @@ int main(int iargc, char *argv[]){
 
         t0=double(time(NULL));
         hb_integrator.split_hyperboxes();
+        printf("n boxes %d\n",hb_integrator.hb_list.ct());
         t_build_hyperbox+=double(time(NULL))-t0;
 
         posterior_chisq.reset_preserving_room();
