@@ -19,7 +19,7 @@ class DalexPlanckLikelihood: public chisquared {
             delete [] _params;
         }
 
-        virtual double operator(const array_1d<double> &params){
+        virtual double operator()(const array_1d<double> &params){
             double before = double(time(NULL));
             int i;
             _called++;
