@@ -5,7 +5,7 @@
 #include "chisq.h"
 
 chisquared::chisquared(){
-    death_knell("meaningless constructor");
+    printf("calling constructor for non-cartoon chisquared\n");
 };
 
 chisquared::chisquared(int id){
