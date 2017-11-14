@@ -79,7 +79,7 @@ void dalex_initializer::search(){
         trails.set(ip,0,i_best);
     }
 
-
+    printf("done initializing particles\n");
     double needed_temp;
     array_1d<double> needed_temp_arr,needed_temp_sorted;
     array_1d<int> needed_temp_dex;
