@@ -1,13 +1,11 @@
-DALEX_HOME = /Users/danielsf/physics/Carom/
+DALEX_HOME = /astro/users/danielsf/Dalex/
 
-LAPACK_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -llapack
-BLAS_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -lrefblas
+LAPACK_LIB =-L/astro/users/danielsf/lapack-3.5.0/ -llapack
+BLAS_LIB =-L/astro/users/danielsf/lapack-3.5.0/ -lrefblas
 
-ARPACK_LIB = -L/Users/danielsf/physics/ARPACK/ -larpack_MACOSX
+ARPACK_LIB = -L/astro/users/danielsf/ARPACK/ -larpack
 
 FORTRAN_LIB = -lgfortran
-
-R_PATH = /Users/danielsf/physics/lib/
 
 LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
