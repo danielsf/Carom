@@ -47,7 +47,6 @@ class DalexPlanckLikelihood: public chisquared {
     private:
 
         PlanckWrapper _planck_wrapper;
-        int _dim;
         double *_params;
 
 };
