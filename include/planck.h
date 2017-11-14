@@ -23,7 +23,7 @@ class DalexPlanckLikelihood: public chisquared {
             double before = double(time(NULL));
             int i;
             _called++;
-            int is_valid = 1;
+            /*int is_valid = 1;
             for(i=0;i<_dim && is_valid==1;i++){
                 if(params.get_data(i)<_mins.get_data(i)){
                     is_valid = 0;
@@ -36,7 +36,7 @@ class DalexPlanckLikelihood: public chisquared {
             if(is_valid == 0){
                 _time_spent += double(time(NULL))-before;
                 return 2.0*exception_value;
-            }
+            }*/
 
             for(i=0;i<_dim;i++){
                 _params[i] = params.get_data(i);
