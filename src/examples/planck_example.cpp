@@ -76,6 +76,8 @@ int main(int iargc, char *argv[]){
         chifn.set_max(i,max.get_data(i));
     }    
 
+    printf("chifn dim %d\n",chifn.get_dim());
+
     dalex_driver dalex_test;
     dalex_test.set_deltachi(47.41); // set delta chi^2 defining chi^2_lim
     dalex_test.set_seed(seed); // seed the random number generator
