@@ -41,7 +41,9 @@ class DalexPlanckLikelihood: public chisquared {
             for(i=0;i<_dim;i++){
                 _params[i] = params.get_data(i);
             }
-            return _planck_wrapper(_params);
+            double output = _planck_wrapper(_params);
+            _time_spent += double(time(NULL)) - before;
+            return output;
         }
 
     private:
