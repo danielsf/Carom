@@ -154,14 +154,16 @@ void dalex_initializer::search(){
 
             i_dim=_chifn->random_int()%_chifn->get_dim();
 
-            rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
+            mu=2.0*exception_value;
+            while(mu>exception_value){
+                rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
 
-            for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,_chifn->get_pt(_particles.get_data(ip),i)+
-                            rr*norm.get_data(i_dim)*bases.get_data(i_dim,i));
+                for(i=0;i<_chifn->get_dim();i++){
+                    trial.set(i,_chifn->get_pt(_particles.get_data(ip),i)+
+                                rr*norm.get_data(i_dim)*bases.get_data(i_dim,i));
+                }
+                mu=evaluate(trial,&i_found,ip,&mu_true);
             }
-            mu=evaluate(trial,&i_found,ip,&mu_true);
-
 
             accept_it=0;
 
