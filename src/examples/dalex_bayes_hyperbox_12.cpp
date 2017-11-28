@@ -1,5 +1,4 @@
 #include "hyperbox.h"
-#include "kd.h"
 #include "exampleLikelihoods.h"
 
 void pixellate(const array_1d<double> &pt,
@@ -331,6 +330,106 @@ class hyperbox_integrator{
             }
         }
 
+
+    void sample(int n_samples, double delta_chisq, jellyBeanData *chifn, char *out_name){
+
+        Ran dice(81234123);
+        array_1d<double> ln_tot_vol;
+        double tot_vol;
+        array_1d<double> ln_vol;
+        array_1d<int> ln_vol_dex;
+        array_1d<double> ln_vol_sorted;
+        int i;
+        for(i=0;i<hb_list.ct();i++){
+            if(_dalex_chisq.get_data(i)<_chisq_min+delta_chisq){
+                ln_vol_dex.add(i);
+                ln_vol.add(hb_list(i)->ln_vol());
+            }
+        }
+        sort(ln_vol,ln_vol_sorted,ln_vol_dex);
+        ln_tot_vol.set_dim(ln_vol.get_dim());
+        ln_tot_vol.set(0,ln_vol_sorted.get_data(0));
+        tot_vol=exp(ln_tot_vol.get_data(0));
+        for(i=1;i<ln_vol.get_dim();i++){
+            tot_vol += exp(ln_vol_sorted.get_data(i));
+            ln_tot_vol.set(i,log(tot_vol));
+            printf("ln_vol_sorted %d %e %e\n",ln_vol_dex.get_data(i),ln_vol_sorted.get_data(i),tot_vol);
+        }
+        for(i=0;i<ln_tot_vol.get_dim();i++){
+            ln_tot_vol.subtract_val(i,ln_tot_vol.get_data(ln_tot_vol.get_dim()-1));
+        }
+
+        int samples_taken;
+        int i_box,i_box_dex;
+        int accept_it;
+        int degen=-1;
+        array_1d<double> pt;
+        array_1d<double> next_pt;
+        double chisq=-1.0;
+        double next_chisq;
+        double roll;
+        FILE *output;
+        output = fopen(out_name, "w");
+        for(samples_taken=0;samples_taken<n_samples;samples_taken++){
+            roll = log(dice.doub());
+            for(i_box_dex=0;
+                i_box_dex<ln_tot_vol.get_dim() && roll>ln_tot_vol.get_data(i_box_dex);
+                i_box_dex++);
+
+            i_box = ln_vol_dex.get_data(i_box_dex);
+            if(_dalex_chisq.get_data(i_box)>_chisq_min+delta_chisq){
+                printf("WARNING box has %e, but %e is limit\n",
+                _dalex_chisq.get_data(i_box),_chisq_min+delta_chisq);
+            }
+
+            for(i=0;i<_dalex_pts.get_cols();i++){
+                next_pt.set(i,hb_list(i_box)->min(i)+
+                              dice.doub()*(hb_list(i_box)->max(i)-hb_list(i_box)->min(i)));
+            }
+            next_chisq = chifn[0](next_pt);
+            accept_it=0;
+            if(chisq<0.0 || next_chisq<chisq){
+                accept_it=1;
+            }
+            else{
+                roll=dice.doub();
+                if(roll<exp(-0.5*(next_chisq-chisq))){
+                    accept_it=1;
+                }
+            }
+            /*i=ln_tot_vol.get_dim()-1;
+            printf("i_box %d chisq %e next_chisq %e - %e %e\n",
+            i_box_dex,chisq,next_chisq,ln_tot_vol.get_data(i),ln_tot_vol.get_data(i-1));*/
+
+            if(accept_it==1){
+                if(degen>0){
+                    fprintf(output,"%d %e ",degen, chisq);
+                    for(i=0;i<_dalex_pts.get_cols();i++){
+                        fprintf(output,"%e ",pt.get_data(i));
+                    }
+                    fprintf(output,"\n");
+                }
+                degen=1;
+                for(i=0;i<_dalex_pts.get_cols();i++){
+                     pt.set(i,next_pt.get_data(i));
+                }
+                chisq=next_chisq;
+            }
+            else{
+                degen++;
+            }
+
+        }
+        fprintf(output,"%d %e ",degen, chisq);
+        for(i=0;i<_dalex_pts.get_cols();i++){
+            fprintf(output,"%e ",pt.get_data(i));
+        }
+        fprintf(output,"\n");
+
+        fclose(output);
+    }
+
+
     private:
         array_2d<double> _dalex_pts;
         array_1d<double> _dalex_chisq,_dx;
@@ -351,7 +450,7 @@ int main(int iargc, char *argv[]){
     in_name[0]=0;
     out_name[0]=0;
     dim=-1;
-    int n_new_pts=0;
+    int n_samples=0;
     for(i=1;i<iargc;i++){
         if(argv[i][0]=='-'){
             switch(argv[i][1]){
@@ -379,7 +478,7 @@ int main(int iargc, char *argv[]){
                     break;
                 case 'n':
                     i++;
-                    n_new_pts=atoi(argv[i]);
+                    n_samples=atoi(argv[i]);
                     break;
             }
         }
@@ -462,7 +561,7 @@ int main(int iargc, char *argv[]){
     good_xmin.set_name("good_xmin");
     good_xmax.set_name("good_xmax");
     for(i=0;i<dalex_pts.get_rows();i++){
-        if(dalex_chisq.get_data(i)<=chisq_min+delta_chisq){
+        if(dalex_chisq.get_data(i)<=chisq_min+21.03){
             for(j=0;j<dim;j++){
                 xx=dalex_pts.get_data(i,j);
                 if(j>=good_xmin.get_dim() || xx<good_xmin.get_data(j)){
@@ -501,404 +600,14 @@ int main(int iargc, char *argv[]){
         dalex_chisq.add(xx);
     }
 
-    kd_tree dalex_tree(dalex_pts,xmin,xmax);
-
-    double factor;
-    int pts_added;
-    array_1d<double> dist;
-    array_1d<int> neigh;
-    dist.set_name("dist");
-    neigh.set_name("neigh");
-    array_1d<double> ln_posterior;
-    array_1d<double> ln_vol_arr;
-    array_1d<double> sorted_ln_posterior;
-    array_1d<int> ln_posterior_dex;
-    double total_prob=0.0;
-    array_1d<double> sorted_chisq;
-    array_1d<int> chisq_dex;
-    array_1d<double> posterior_chisq;
-    double local_prob=0.0;
-    int dex;
-
-    array_1d<double> valid_vol,valid_vol_sorted;
-    array_1d<int> valid_vol_dex;
-    valid_vol.set_name("valid_vol");
-    valid_vol_sorted.set_name("valid_vol_sorted");
-    valid_vol_dex.set_name("valid_vol_dex");
-
-    double vol_max;
-    int vol_max_dex;
-    double max_valid_chisq;
-    double max_valid_vol;
-
-    FILE *out_file;
-
-    int keep_going;
-    int total_pts_added = 0;
-    double t_start=double(time(NULL));
-
-    double t_build_hyperbox=0.0;
-    double t0;
 
     hyperbox_integrator hb_integrator;
     hb_integrator.set_pts(dalex_pts, dalex_chisq, delta_chisq);
     dalex_pts.reset();
     dalex_chisq.reset();
 
-    t0=double(time(NULL));
     hb_integrator.create_hyperboxes();
     hb_integrator.split_hyperboxes();
-    t_build_hyperbox+=double(time(NULL))-t0;
-
-    int n_new_good=0;
-    double sgn;
-    double local_min,local_max;
-    double local_vol,local_chi;
-
-    array_1d<double> dir;
-    dir.set_name("dir");
-    int i_bisect;
-    array_1d<double> pt0;
-    pt0.set_name("pt0");
-    array_1d<double> pt1;
-    pt1.set_name("pt1");
-    array_1d<double> minpt;
-    minpt.set_name("minpt");
-    double rr;
-    int found_box;
-    double d_tol=1.0e-6;
-
-    while(total_pts_added<n_new_pts){
-        ln_posterior.reset_preserving_room();
-        ln_vol_arr.reset_preserving_room();
-        sorted_ln_posterior.reset_preserving_room();
-        ln_posterior_dex.reset_preserving_room();
-        sorted_chisq.reset_preserving_room();
-        chisq_dex.reset_preserving_room();
-        posterior_chisq.reset_preserving_room();
-
-        t0=double(time(NULL));
-        hb_integrator.split_hyperboxes();
-        printf("n boxes %d\n",hb_integrator.hb_list.ct());
-        t_build_hyperbox+=double(time(NULL))-t0;
-
-        posterior_chisq.reset_preserving_room();
-        for(i=0;i<hb_integrator.hb_list.ct();i++){
-            posterior_chisq.set(i,hb_integrator.hb_list(i)->pts(0,dim));
-        }
-        ln_posterior.set_name("ln_posterior");
-        ln_vol_arr.set_name("ln_vol_arr");
-        for(i=0;i<hb_integrator.hb_list.ct();i++){
-            ln_posterior.set(i,-0.5*hb_integrator.hb_list(i)->pts(0,dim)+hb_integrator.hb_list(i)->ln_vol());
-            ln_vol_arr.set(i,hb_integrator.hb_list(i)->ln_vol());
-        }
-
-        sorted_ln_posterior.set_name("sorted_ln_posterior");
-        ln_posterior_dex.set_name("ln_posterior_dex");
-        for(i=0;i<ln_posterior.get_dim();i++){
-            ln_posterior_dex.set(i,i);
-        }
-        sort(ln_posterior,sorted_ln_posterior,ln_posterior_dex);
-        total_prob=0.0;
-        for(i=0;i<ln_posterior.get_dim();i++){
-            total_prob+=exp(sorted_ln_posterior.get_data(i));
-        }
-
-
-        sorted_chisq.set_name("sorted_chisq");
-        chisq_dex.set_name("chisq_dex");
-        for(i=0;i<posterior_chisq.get_dim();i++){
-            chisq_dex.set(i,i);
-        }
-
-        sort(posterior_chisq,sorted_chisq,chisq_dex);
-
-        //spock
-        local_prob=0.0;
-        vol_max_dex=-1;
-        valid_vol.reset_preserving_room();
-        valid_vol_sorted.reset_preserving_room();
-        valid_vol_dex.reset_preserving_room();
-        max_valid_chisq=-1.0;
-        for(i=0;i<posterior_chisq.get_dim() && local_prob<0.95*total_prob;i++){
-            dex=chisq_dex.get_data(i);
-            if(posterior_chisq.get_data(dex)>max_valid_chisq){
-                max_valid_chisq=posterior_chisq.get_data(dex);
-            }
-            local_prob+=exp(ln_posterior.get_data(dex));
-            valid_vol.add(ln_vol_arr.get_data(dex));
-            valid_vol_dex.add(dex);
-            if(vol_max_dex<0 || ln_vol_arr.get_data(dex)>vol_max){
-                vol_max_dex=i;
-                vol_max=ln_vol_arr.get_data(dex);
-            }
-        }
-
-        sort(valid_vol,valid_vol_sorted,valid_vol_dex);
-        printf("max vol %e -- max chisq %e -- min chisq %e\n",
-        valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1),
-        max_valid_chisq,hb_integrator.chisq_min());
-        j=0;
-        xx=valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1);
-        for(i=0;i<valid_vol_sorted.get_dim();i++){
-            if(fabs(valid_vol_sorted.get_data(i)-xx)<1.0e-10){
-                j++;
-            }
-        }
-        printf("degen %d\n",j);
-        max_valid_vol=valid_vol_sorted.get_data(valid_vol_dex.get_dim()-1);
-
-        pt.reset_preserving_room();
-        pts_added=0;
-        factor=0.25;
-        keep_going=1;
-        for(dex=0;dex<hb_integrator.hb_list.ct();dex++){
-            if(hb_integrator.hb_list(dex)->pts(0,dim)>max_valid_chisq+0.1){
-                continue;
-            }
-
-            if(hb_integrator.hb_list(dex)->ln_vol()<max_valid_vol-0.1){
-                continue;
-            }
-
-            local_min=2.0*exception_value;
-            local_max=-2.0*exception_value;
-            local_chi=hb_integrator.hb_list(dex)->pts(0,dim);
-            local_vol=hb_integrator.hb_list(dex)->ln_vol();
-            for(i=0;i<dim;i++){
-                dir.set(i,0.5*(hb_integrator.hb_list(dex)->max(i)+
-                               hb_integrator.hb_list(dex)->min(i))-
-                          hb_integrator.hb_list(dex)->pts(0,i));
-            }
-            xx=dir.normalize();
-            if(xx<1.0e-30){
-                for(i=0;i<dim;i++){
-                    dir.set(i,normal_deviate(&dice,0.0,1.0));
-                }
-                dir.normalize();
-            }
-            xx=2.0*exception_value;
-            for(i=0;i<dim;i++){
-                pt0.set(i,hb_integrator.hb_list(dex)->pts(0,i));
-                pt1.set(i,pt0.get_data(i)+dir.get_data(i));
-            }
-            xx = chifn[0](pt1);
-            pts_added++;
-            dalex_tree.nn_srch(pt1,1,neigh,dist);
-            if(dist.get_data(0)>d_tol){
-                if(xx<chisq_min+delta_chisq){
-                    n_new_good++;
-                }
-                if(xx<local_min){
-                    local_min=xx;
-                    for(i=0;i<dim;i++){
-                            minpt.set(i,pt1.get_data(i));
-                    }
-                }
-                if(xx>local_max){
-                    local_max=xx;
-                }
-                found_box=hb_integrator.add_pt(pt1, xx);
-                if(found_box==1){
-                    dalex_tree.add(pt1);
-                }
-             }
-             rr=1.0;
-             while(xx<chisq_min+delta_chisq){
-                 rr*=2.0;
-                 for(i=0;i<dim;i++){
-                     pt1.set(i,pt0.get_data(i)+rr*dir.get_data(i));
-                 }
-                 dalex_tree.nn_srch(pt1,1,neigh,dist);
-                 xx=chifn[0](pt1);
-                 pts_added++;
-                 if(dist.get_data(0)>d_tol){
-                     if(xx<chisq_min+delta_chisq){
-                         n_new_good++;
-                     }
-                     if(xx<local_min){
-                         local_min=xx;
-                         for(i=0;i<dim;i++){
-                            minpt.set(i,pt1.get_data(i));
-                        }
-                     }
-                     if(xx>local_max){
-                         local_max=xx;
-                     }
-                     found_box=hb_integrator.add_pt(pt1, xx);
-                     if(found_box==1){
-                         dalex_tree.add(pt1);
-                     }
-                  }
-            }
-
-            for(i_bisect=0;i_bisect<20 && fabs(xx-chisq_min+delta_chisq)>0.1;i_bisect++){
-                for(i=0;i<dim;i++){
-                    pt.set(i,0.5*(pt0.get_data(i)+pt1.get_data(i)));
-                }
-                xx = chifn[0](pt);
-                pts_added++;
-                dalex_tree.nn_srch(pt,1,neigh,dist);
-                if(dist.get_data(0)>d_tol){
-                    if(xx<chisq_min+delta_chisq){
-                        n_new_good++;
-                    }
-                    if(xx<local_min){
-                        local_min=xx;
-                        for(i=0;i<dim;i++){
-                            minpt.set(i,pt.get_data(i));
-                        }
-                    }
-                    if(xx>local_max){
-                        local_max=xx;
-                    }
-                    found_box=hb_integrator.add_pt(pt, xx);
-                    if(found_box==1){
-                        dalex_tree.add(pt);
-                    }
-                 }
-                 if(xx>chisq_min+delta_chisq){
-                     for(i=0;i<dim;i++){
-                         pt1.set(i,pt.get_data(i));
-                     }
-                 }
-                 else{
-                     for(i=0;i<dim;i++){
-                         pt0.set(i,pt.get_data(i));
-                     }
-                 }
-            }
-            for(rr=0.2;rr<1.1;rr+=0.2){
-                for(i=0;i<dim;i++){
-                    pt.set(i,rr*hb_integrator.hb_list(dex)->pts(0,i)+
-                             (1.0-rr)*minpt.get_data(i));
-                }
-                xx=chifn[0](pt);
-                pts_added++;
-                dalex_tree.nn_srch(pt,1,neigh,dist);
-                if(dist.get_data(0)>d_tol){
-                    if(xx<chisq_min+delta_chisq){
-                        n_new_good++;
-                    }
-                    if(xx<local_min){
-                        local_min=xx;
-                    }
-                    if(xx>local_max){
-                        local_max=xx;
-                    }
-                    found_box=hb_integrator.add_pt(pt, xx);
-                    if(found_box==1){
-                        dalex_tree.add(pt);
-                    }
-                 }
-            }
-            keep_going=0;
-            if(k>0){
-                if(fabs(valid_vol_sorted.get_data(k-1)-max_valid_vol)<0.1){
-                    keep_going=1;
-                }
-            }
-            printf("acting on %e %e -- %e %e\n",
-            local_vol,local_chi,
-            local_min,local_max);
-
-        }
-        if(pts_added==0){
-            printf("did not add any points\n");
-            exit(1);
-        }
-        if(dalex_tree.get_pts()!=hb_integrator.get_n_pts()){
-            printf("tree and array have different n %d %d\n",
-            dalex_tree.get_pts(),hb_integrator.get_n_pts());
-            exit(1);
-        }
-        total_pts_added+=pts_added;
-        printf("ran %d in %e; build %e; estimate %e hours\n",
-        total_pts_added,double(time(NULL))-t_start,
-        t_build_hyperbox,
-        n_new_pts*(double(time(NULL))-t_start)/(3600.0*total_pts_added));
-        printf("max_valid_chisq %e\n",max_valid_chisq);
-        printf("n_new_good %d\n",n_new_good);
-    }
-
-    //need to process one last time
-
-        ln_posterior.reset_preserving_room();
-        ln_vol_arr.reset_preserving_room();
-        sorted_ln_posterior.reset_preserving_room();
-        ln_posterior_dex.reset_preserving_room();
-        sorted_chisq.reset_preserving_room();
-        chisq_dex.reset_preserving_room();
-        posterior_chisq.reset_preserving_room();
-
-        t0=double(time(NULL));
-        hb_integrator.split_hyperboxes();
-        t_build_hyperbox+=double(time(NULL))-t0;
-
-        posterior_chisq.reset_preserving_room();
-        for(i=0;i<hb_integrator.hb_list.ct();i++){
-            posterior_chisq.set(i,hb_integrator.hb_list(i)->pts(0,dim));
-        }
-        ln_posterior.set_name("ln_posterior");
-        ln_vol_arr.set_name("ln_vol_arr");
-        for(i=0;i<hb_integrator.hb_list.ct();i++){
-            ln_posterior.set(i,-0.5*hb_integrator.hb_list(i)->pts(0,dim)+hb_integrator.hb_list(i)->ln_vol());
-            ln_vol_arr.set(i,hb_integrator.hb_list(i)->ln_vol());
-        }
-
-        sorted_ln_posterior.set_name("sorted_ln_posterior");
-        ln_posterior_dex.set_name("ln_posterior_dex");
-        for(i=0;i<ln_posterior.get_dim();i++){
-            ln_posterior_dex.set(i,i);
-        }
-        sort(ln_posterior,sorted_ln_posterior,ln_posterior_dex);
-        total_prob=0.0;
-        for(i=0;i<ln_posterior.get_dim();i++){
-            total_prob+=exp(sorted_ln_posterior.get_data(i));
-        }
-
-
-        sorted_chisq.set_name("sorted_chisq");
-        chisq_dex.set_name("chisq_dex");
-        for(i=0;i<posterior_chisq.get_dim();i++){
-            chisq_dex.set(i,i);
-        }
-
-        sort(posterior_chisq,sorted_chisq,chisq_dex);
-
-
-    double min,max;
-    local_prob=0.0;
-    FILE *pt_file;
-    char pt_name[letters];
-    sprintf(pt_name,"%s_pts.sav",out_name);
-    pt_file=fopen(pt_name,"w");
-    out_file=fopen(out_name,"w");
-    for(i=0;i<posterior_chisq.get_dim();i++){
-        dex=chisq_dex.get_data(i);
-        local_prob+=exp(ln_posterior.get_data(dex));
-        fprintf(out_file,"%e %e %e ",
-                local_prob/total_prob,
-                posterior_chisq.get_data(dex)+hb_integrator.chisq_min(),
-                ln_vol_arr.get_data(dex));
-        fprintf(pt_file,"%e %e %e ",
-                local_prob/total_prob,
-                posterior_chisq.get_data(dex)+hb_integrator.chisq_min(),
-                ln_vol_arr.get_data(dex));
-        for(j=0;j<dim;j++){
-            min = hb_integrator.hb_list(dex)->min(j);
-            max = hb_integrator.hb_list(dex)->max(j);
-            xx = hb_integrator.hb_list(dex)->pts(0,j);
-            if(xx<min || xx>max){
-                printf("violated bounds %e < %e <%e\n",min,xx,max);
-                exit(1);
-            }
-            fprintf(out_file,"%e %e ",hb_integrator.hb_list(dex)->min(j),hb_integrator.hb_list(dex)->max(j));
-            fprintf(pt_file,"%e ",hb_integrator.hb_list(dex)->pts(0,j));
-        }
-        fprintf(out_file,"\n");
-        fprintf(pt_file,"\n");
-    }
-    fclose(out_file);
+    hb_integrator.sample(n_samples, delta_chisq, chifn, out_name);
 
 }
