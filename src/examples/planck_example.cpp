@@ -93,5 +93,5 @@ int main(int iargc, char *argv[]){
     dalex_test.set_outname(out_name);
     dalex_test.initialize(2*planck_dim); // randomly sample 2D points
     dalex_test.set_write_every(10000); // how often to write output
-    dalex_test.search(1700000); // sample 1,700,000 points
+    dalex_test.search(10000000); // sample 1,700,000 points
 }
