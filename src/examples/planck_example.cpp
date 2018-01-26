@@ -88,6 +88,14 @@ int main(int iargc, char *argv[]){
 
     printf("chifn dim %d\n",chifn.get_dim());
 
+    FILE *log_file;
+    if(log_name[0]!=0){
+        log_file=fopen(log_name,"a");
+        fprintf(log_file,"timing: %s\n",timing_name);
+        fprintf(log_file,"output: %s\n",out_name);
+        fclose(log_file);
+    }
+
     dalex_driver dalex_test;
     dalex_test.set_log_file_name(log_name);
     dalex_test.set_deltachi(47.41); // set delta chi^2 defining chi^2_lim
