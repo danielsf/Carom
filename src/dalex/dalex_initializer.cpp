@@ -3,6 +3,10 @@
 void dalex_initializer::search(){
     safety_check();
     int total_per=100*_chifn->get_dim();
+
+    //to speed up planck test
+    total_per = 10*_chifn->get_dim();
+
     int adjust_every=total_per/10;
     int n_groups=2;
     int n_particles=n_groups*(_chifn->get_dim()+1)+_chifn->get_dim()/2;
