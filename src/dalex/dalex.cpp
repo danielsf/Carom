@@ -2142,7 +2142,17 @@ void dalex::iterate_on_minimum(){
         find_bases();
     }
 
+    FILE *log_file;
+
     while(min_1<min_0){
+
+        if(_log_file_name[0]!=0){
+            log_file=fopen(_log_file_name, "a");
+            fprintf(log_file,"in iterate: min1 %e min0 %e diff %e\n",
+                    min_1,min_0,min_1-min_0);
+            fclose(log_file);
+        }
+
         min_0=chimin();
         min_explore(2*_chifn->get_dim(), 4*_chifn->get_dim());
         simplex_search(mindex());
@@ -2160,6 +2170,12 @@ void dalex::iterate_on_minimum(){
     ellipse local_ellipse;
 
     if(chimin()<_reset_chimin-_reset_threshold){
+
+        if(_log_file_name[0]!=0){
+            log_file = fopen(_log_file_name, "a");
+            fprintf(log_file,"finding bases: min %e\n",chimin());
+            fclose(log_file);
+        }
 
         for(i=0;i<_tendril_path.get_rows();i++){
             if(_chifn->get_fn(_tendril_path.get_data(i,0))<target()+1.0e-6){

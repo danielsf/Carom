@@ -36,6 +36,7 @@ class dalex{
         };
 
         dalex(){
+            _log_file_name[0]=0;
             _chifn=NULL;
             _reset_threshold=0.5;
             _reset_chimin=2.0*exception_value;
@@ -97,6 +98,14 @@ class dalex{
         }
 
         double get_norm(int);
+
+        void set_log_file_name(char *in){
+            int i;
+            for(i=0;i<letters-1 && in[i]!=0;i++){
+                _log_file_name[i]=in[i];
+            }
+            _log_file_name[i]=0;
+        }
 
     private:
 
@@ -233,6 +242,8 @@ class dalex{
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;
+
+        char _log_file_name[letters];
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "dalex_driver.h"
 
 dalex_driver::dalex_driver(){
+    _log_file_name[0]=0;
     _ct_dalex=0;
     _last_did_min=0;
     sprintf(_outname,"output/carom_output.sav");
@@ -11,6 +12,14 @@ dalex_driver::dalex_driver(){
 
 dalex_driver::~dalex_driver(){
     _chifn.write_pts();
+}
+
+void dalex_driver::set_log_file_name(char *in){
+    int i;
+    for(i=0;i<letters-1 && in[i]!=0;i++){
+        _log_file_name[i]=in[i];
+    }
+    _log_file_name[i]=0;
 }
 
 double dalex_driver::evaluate(array_1d<double> &pt, int *dex){
@@ -146,6 +155,7 @@ void dalex_driver::search(int limit){
     printf("called %d\n",_chifn.get_pts());
 
     _cloud.set_limit(limit);
+    _cloud.set_log_file_name(_log_file_name);
 
     while(_chifn.get_pts()<limit){
 
