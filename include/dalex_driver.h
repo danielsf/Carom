@@ -47,10 +47,14 @@ public:
     void assess_good_points(int);
     void assess_good_points(int,int);
 
+    void set_log_file_name(char*);
+
 private:
 
     chisq_wrapper _chifn;
     int _ct_dalex;
+
+    char _log_file_name[letters];
 
     dalex _cloud;
 
