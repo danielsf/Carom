@@ -13,6 +13,9 @@ int main(int iargc, char *argv[]){
     timing_name[0] = 0;
     prior_name[0] = 0;
 
+    char log_name[letters];
+    log_name[0]=0;
+
     for(i=1;i<iargc;i++){
         if(argv[i][0] == '-'){
             switch(argv[i][1]){
@@ -36,6 +39,13 @@ int main(int iargc, char *argv[]){
                         out_name[j]=argv[i][j];
                     }
                     out_name[j]=0;
+                    break;
+                case 'l':
+                    i++;
+                    for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                        log_name[j]=argv[i][j];
+                    }
+                    log_name[j]=0;
                     break;
                 case 's':
                     i++;
@@ -79,6 +89,7 @@ int main(int iargc, char *argv[]){
     printf("chifn dim %d\n",chifn.get_dim());
 
     dalex_driver dalex_test;
+    dalex_test.set_log_file_name(log_name);
     dalex_test.set_deltachi(47.41); // set delta chi^2 defining chi^2_lim
     dalex_test.set_seed(seed); // seed the random number generator
 
