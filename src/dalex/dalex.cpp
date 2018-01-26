@@ -1975,6 +1975,14 @@ void dalex::init_fill(){
 }
 
 void dalex::tendril_search(){
+
+    FILE *log_file;
+    if(_log_file_name[0]!=0){
+        log_file=fopen(_log_file_name,"a");
+        fprintf(log_file,"running tendril search - %d\n",_chifn->get_pts());
+        fclose(log_file);
+    }
+
     int pt_start=_chifn->get_pts();
     int pt_prime=_chifn->get_pts();
     array_1d<double> dir,midpt;
