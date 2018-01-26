@@ -28,14 +28,14 @@ int main(int iargc, char *argv[]){
                     break;
                 case 't':
                     i++;
-                    for(j=0;j<letters && argv[i][j]!=0;j++){
+                    for(j=0;j<letters-1 && argv[i][j]!=0;j++){
                         timing_name[j] = argv[i][j];
                     }
                     timing_name[j] = 0;
                     break;
                 case 'o':
                     i++;
-                    for(j=0;j<letters && argv[i][j]!=0;j++){
+                    for(j=0;j<letters-1 && argv[i][j]!=0;j++){
                         out_name[j]=argv[i][j];
                     }
                     out_name[j]=0;
