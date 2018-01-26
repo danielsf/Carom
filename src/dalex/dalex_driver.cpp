@@ -71,6 +71,12 @@ void dalex_driver::set_confidence_limit(double cc){
 }
 
 void dalex_driver::set_seed(int ii){
+    FILE *log_file;
+    if(_log_file_name[0]!=0){
+        log_file = fopen(_log_file_name, "a");
+        fprintf(log_file,"setting seed to %d\n",ii);
+        fclose(log_file);
+    }
     _chifn.set_seed(ii);
 }
 
