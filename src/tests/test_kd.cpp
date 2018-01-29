@@ -299,6 +299,17 @@ printf("made second tree\n");
 
 
 for(iteration=0;iteration<total_iterations;iteration++){
+
+    if(iteration>0 && iteration%500==0){
+        kd_test_2.rebalance();
+        kd_test_2.check_tree();
+        printf("rebalanced %d\n",kd_test_2.get_pts());
+        if(kd_test_2.get_diagnostic()==0){
+            printf("WARNING rebalancing failed\n");
+            exit(1);
+        }
+    }
+
     for(i=0;i<cols;i++)vector.set(i,chaos.doub());
 
     kd_test_2.nn_srch(vector,n_neigh,neigh,dd);
