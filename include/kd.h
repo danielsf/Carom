@@ -53,6 +53,7 @@ class kd_tree{
         */
         void build_tree(array_2d<double>&);
         void build_tree(array_2d<double>&,array_1d<double>&,array_1d<double>&);
+        void rebalance();
  
         /*
         These routines will set the maximum and minimum values (used for
