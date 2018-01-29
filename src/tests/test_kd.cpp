@@ -273,6 +273,109 @@ for(outerloop=0;outerloop<3;outerloop++){
 
 }//outerloop
 
+// add code to test the rebalancing of a tree
+
+data.reset();
+vector.reset();
+rows = 2000;
+cols = 33;
+data.set_dim(rows,cols);
+
+for(i=0;i<rows;i++){
+    for(j=0;j<cols;j++){
+        if(i<100){
+            data.set(i,j,chaos.doub());
+        }
+        else{
+            data.set(i,j,0.25*chaos.doub());
+        }
+    }
+}
+
+
+kd_tree kd_test_2(data);
+total_iterations=3000;
+printf("made second tree\n");
+
+
+for(iteration=0;iteration<total_iterations;iteration++){
+    for(i=0;i<cols;i++)vector.set(i,chaos.doub());
+
+    kd_test_2.nn_srch(vector,n_neigh,neigh,dd);
+
+    if(neigh.get_dim()!=n_neigh || dd.get_dim()!=n_neigh){
+        printf("WARNING neigh %d dd %d\n",neigh.get_dim(),dd.get_dim());
+        printf("shld be %d\n",n_neigh);
+        exit(1);
+    }
+
+    for(i=1;i<n_neigh;i++){
+        if(dd.get_data(i)<dd.get_data(i-1)){
+            printf("WARNING dd are out of order %e %e\n",
+                  dd.get_data(i-1),dd.get_data(i));
+                  exit(1);
+        }
+    }
+
+    for(i=0;i<n_neigh;i++){
+        dtrial=0.0;
+        for(j=0;j<cols;j++){
+            dtrial+=power(vector.get_data(j)-kd_test_2.get_pt(neigh.get_data(i),j),2);
+        }
+        dtrial=sqrt(dtrial);
+
+        err=fabs(dtrial-dd.get_data(i));
+        if(dtrial!=0.0)err=err/fabs(dtrial);
+        if(err>maxerr)maxerr=err;
+
+        if(maxerr>tol){
+            printf("WARNING returned wrong distance %e %e\n",dtrial,dd.get_data(i));
+            exit(1);
+        }
+
+    }
+    for(k=0;k<kd_test_2.get_pts();k++){
+         use_it=1;
+         for(l=0;l<neigh.get_dim();l++){
+             if(neigh.get_data(l)==k)use_it=0;
+         }
+
+         if(use_it==1){
+            dtrial=kd_test_2.distance(k,vector);
+            if(dtrial<dd.get_data(dd.get_dim()-1)){
+                printf("WARNING greatest dd %e but found %e -- iteration %d\n",
+                dd.get_data(dd.get_dim()-1),dtrial,iteration);
+
+                kd_test_2.check_tree();
+                printf("tree diagnostic is %d\n",kd_test_2.get_diagnostic());
+
+                exit(1);
+            }
+         }
+
+    }
+
+    kd_test_2.add(vector);
+
+    kd_test_2.nn_srch(vector,1,neigh,dd);
+    if(neigh.get_data(0)!=kd_test_2.get_pts()-1){
+        printf("WARNING after add did not find self\n");
+        printf("%d %d %e\n",kd_test_2.get_pts()-1,neigh.get_data(0),dd.get_data(0));
+        exit(1);
+    }
+
+    for(i=0;i<cols;i++){
+        err=fabs(vector.get_data(i)-kd_test_2.get_pt(kd_test_2.get_pts()-1,i));
+        if(vector.get_data(i)!=0.0)err=err/fabs(vector.get_data(i));
+
+        if(err>maxerr)maxerr=err;
+
+        if(maxerr>tol){
+            printf("WARNING did not add the point correctly to the tree\n");
+        }
+    }
+
+}
 
 
 printf("maxerr %e\n",maxerr);
