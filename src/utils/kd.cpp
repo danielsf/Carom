@@ -850,20 +850,12 @@ array_1d<int> &neigh, array_1d<double> &dd, int where, int wherefrom){
 void kd_tree::brute_nn_srch(const array_1d<double> &pt, int *dex_out, double *dd_out){
     int i,j,valid;
     double dd_min,dd;
-
-    int node;
-
-    node=find_node(pt);
-    dex_out[0]=node;
-    dd_out[0]=distance(pt,node);
-    dd_min=power(dd_out[0],2);
-
     for(i=0;i<get_pts();i++){
         dd=0.0;
         valid=1;
         for(j=0;j<get_dim() && valid==1;j++){
             dd+=power((pt.get_data(j)-data.get_data(i,j))/(maxs.get_data(j)-mins.get_data(j)),2);
-            if(dd>dd_min){
+            if(i>0 && dd>dd_min){
                 valid=0;
             }
         }
