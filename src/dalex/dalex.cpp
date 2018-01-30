@@ -2159,7 +2159,7 @@ void dalex::iterate_on_minimum(){
     while(min_1<min_0){
         min_0=chimin();
         n_start = _chifn->get_pts();
-        min_explore(2*_chifn->get_dim(), 4*_chifn->get_dim());
+        min_explore(2*_chifn->get_dim(), 2*_chifn->get_dim());
         n_explore = _chifn->get_pts()-n_start;
         n_start= _chifn->get_pts();
         simplex_search(mindex());
