@@ -847,6 +847,26 @@ array_1d<int> &neigh, array_1d<double> &dd, int where, int wherefrom){
     }
 }
 
+void kd_tree::brute_nn_srch(const array_1d<double> &pt, int *dex_out, double *dd_out){
+    int i,j,valid;
+    double dd_min,dd;
+    for(i=0;i<get_pts();i++){
+        dd=0.0;
+        valid=1;
+        for(j=0;j<get_dim() && valid==1;j++){
+            dd+=power((pt.get_data(j)-data.get_data(i,j))/(maxs.get_data(j)-mins.get_data(j)),2);
+            if(i>0 && dd>dd_min){
+                valid=0;
+            }
+        }
+        if(valid==1 && (i==0 || dd<dd_min)){
+            dd_min = dd;
+            dex_out[0] = i;
+        }
+    }
+    dd_out[0] = sqrt(dd_min);
+}
+
 void kd_tree::nn_srch(int dex, int kk, array_1d<int> &neigh,
 array_1d<double> &dd){
 

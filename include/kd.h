@@ -134,6 +134,7 @@ class kd_tree{
         */
         void nn_srch(const array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
         void nn_srch(int,int,array_1d<int>&,array_1d<double>&);
+        void brute_nn_srch(const array_1d<double>&, int*, double*);
         
         /*
         kernel_srch will do a neighbor search centered on a point (the first

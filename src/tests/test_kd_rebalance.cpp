@@ -123,10 +123,17 @@ int main(int iargc, char *argv[]){
     printf("rebalancing took %e\n",t_to_balance);
     t_start = double(time(NULL));
     for(i=0;i<n_samples;i++){
-        kd_test.nn_srch(random_vectors(i), 5, neigh, dd);
+        kd_test.nn_srch(random_vectors(i), 1, neigh, dd);
     }
     double t_balanced = double(time(NULL))-t_start;
-    printf("\n\nt_unbalanced %e\nt_to_balance %e\nt_balanced %e\n",
-    t_unbalanced, t_to_balance, t_balanced);
+    printf("t_balaned %e\n",t_balanced);
+    t_start = double(time(NULL));
+    for(i=0;i<n_samples;i++){
+        kd_test.brute_nn_srch(random_vectors(i), &j, &mu);
+    }
+    double t_brute = double(time(NULL))-t_start;
+
+    printf("\n\nt_unbalanced %e\nt_to_balance %e\nt_balanced %e\nt_brute %e\n",
+    t_unbalanced, t_to_balance, t_balanced,t_brute);
 
 }
