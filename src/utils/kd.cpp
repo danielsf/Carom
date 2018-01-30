@@ -739,8 +739,6 @@ double kd_tree::distance(const array_1d<double> &vv, int dex){
         printf("WARNING asked for distance to %d but pts %d\n",dex,data.get_rows());
     }
 
-    _d_check++;
-
    double dd;
    int i;
 
@@ -911,8 +909,6 @@ array_1d<double> &dd){
     nearest neighbors
     */
 
-    _d_check=0;
-
     double before=double(time(NULL));
 
     int i,j,k,l,node,where,behind;
@@ -980,7 +976,6 @@ array_1d<double> &dd){
         search_time_solo+=double(time(NULL))-before;
         search_ct_solo++;
     }
-    printf("_d_check %d of %d\n",_d_check,get_pts());
 }
 
 void kd_tree::remove(int target){

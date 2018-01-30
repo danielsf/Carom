@@ -270,7 +270,6 @@ class kd_tree{
         void reassign(int);
         void descend(int);
 
-        int _d_check;
 };
 
 
