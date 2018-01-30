@@ -330,7 +330,7 @@ void kd_tree::organize(array_1d<int> &use_in, int u_start,
     }
 
     for(i=0;i<data.get_cols();i++){
-        if(i==0 || var.get_data(i)>nn){
+        if(i==0 || var.get_data(i)<nn){
             nn=var.get_data(i);
             idim=i;
         }
