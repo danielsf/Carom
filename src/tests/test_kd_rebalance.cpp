@@ -31,10 +31,10 @@ int main(int iargc, char *argv[]){
         for(j=0;j<dim;j++){
             fscanf(input_file,"%le",&mu);
             vector.set(j,mu);
-            if(j<=min.get_dim() || mu<min.get_data(j)){
+            if(j>=min.get_dim() || mu<min.get_data(j)){
                 min.set(j,mu);
             }
-            if(j<=max.get_dim() || mu>max.get_data(j)){
+            if(j>=max.get_dim() || mu>max.get_data(j)){
                 max.set(j,mu);
             }
         }
@@ -43,6 +43,11 @@ int main(int iargc, char *argv[]){
             fscanf(input_file,"%le",&mu);
         }
     }
+
+   for(i=0;i<dim;i++){
+       printf("%e %e %e\n",min.get_data(i),max.get_data(i),
+       max.get_data(i)-min.get_data(i));
+   }
 
     kd_tree kd_test(data,min,max);
     printf("built tree\n");
