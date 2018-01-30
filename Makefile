@@ -44,6 +44,12 @@ test_kd: src/tests/test_kd.cpp object/kd.o
 	$(cc) -o bin/test_kd src/tests/test_kd.cpp object/containers.o object/goto_tools.o \
 	object/kd.o $(LIBRARIES)
 
+test_kd_rebalance: src/tests/test_kd_rebalance.cpp object/kd.o
+	$(cc) -o bin/test_kd_rebalance src/tests/test_kd_rebalance.cpp \
+	object/containers.o object/goto_tools.o \
+	object/kd.o $(LIBRARIES)
+
+
 object/eigen_wrapper.o: src/utils/eigen_wrapper.cpp include/eigen_wrapper.h object/goto_tools.o
 	$(cc) -c -o object/eigen_wrapper.o src/utils/eigen_wrapper.cpp
 
