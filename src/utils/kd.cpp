@@ -405,6 +405,8 @@ void kd_tree::organize(array_1d<int> &use_in, int u_start,
         from eating up memory with unwieldy numbers of copies of use*/
         use.reset();
 
+        //printf("splitting caused %d %d\n",inp,ct-inp-1);
+
         if(inp!=0){
            /*there will be both a left and a right branch; call organize on both*/
 
