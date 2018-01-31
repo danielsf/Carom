@@ -2155,22 +2155,33 @@ void dalex::iterate_on_minimum(){
     int n_explore=0;
     int n_simplex=0;
     int n_start;
+    double min_before_exp;
+    double min_before_simp;
+    double d_exp;
+    double d_simp;
 
     while(min_1<min_0){
         min_0=chimin();
+
         n_start = _chifn->get_pts();
+        min_before_exp=chimin();
         min_explore(2*_chifn->get_dim(), 2*_chifn->get_dim());
         n_explore = _chifn->get_pts()-n_start;
+        d_exp = chimin()-min_before_exp;
+
         n_start= _chifn->get_pts();
+        min_before_simp = chimin();
         simplex_search(mindex());
         n_simplex = _chifn->get_pts()-n_start;
+        d_simp = chimin()-min_before_simp;
         min_1=chimin();
 
         if(_log_file_name[0]!=0){
             log_file=fopen(_log_file_name, "a");
-            fprintf(log_file,"in iterate: min1 %e min0 %e diff %e ",
+            fprintf(log_file,"in iterate: min1 %.5e min0 %.5e diff %.2e ",
                     min_1,min_0,min_1-min_0);
-            fprintf(log_file,"n_exp %d n_simp %d\n",n_explore,n_simplex);
+            fprintf(log_file,"n_exp %d %.2e n_simp %d %.2e\n",
+                    n_explore,d_exp,n_simplex,d_simp);
             fclose(log_file);
         }
 
