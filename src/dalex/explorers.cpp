@@ -134,6 +134,9 @@ void explorers::sample(int n_steps){
 
 void explorers::sample(int n_steps, int with_kick){
 
+    _accepted = 0;
+    _rejected = 0;
+
     cost_fn dchifn(_chifn, _associates);
     dchifn.set_envelope(_envelope);
 
@@ -224,6 +227,7 @@ void explorers::sample(int n_steps, int with_kick){
             _req_temp.add(needed_temp);
             _scalar_steps+=1.0;
             if(accept_it==1){
+                _accepted++;
                 _scalar_acceptance+=1.0;
                 _mu_arr.set(ip,mu);
                 for(i=0;i<_chifn->get_dim();i++){
@@ -233,6 +237,9 @@ void explorers::sample(int n_steps, int with_kick){
                      _mindex=ip;
                      _mu_min=mu;
                 }
+            }
+            else{
+                _rejected++;
             }
 
         }
