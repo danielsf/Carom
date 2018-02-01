@@ -2180,8 +2180,11 @@ void dalex::iterate_on_minimum(){
             log_file=fopen(_log_file_name, "a");
             fprintf(log_file,"in iterate: min1 %.5e min0 %.5e diff %.2e ",
                     min_1,min_0,min_1-min_0);
-            fprintf(log_file,"n_exp %d %.2e n_simp %d %.2e\n",
+            fprintf(log_file,"n_exp %d %.2e n_simp %d %.2e ",
                     n_explore,d_exp,n_simplex,d_simp);
+            fprintf(log_file,"accept %d reject %d\n",
+                    _min_explorers.get_accepted(),
+                    _min_explorers.get_rejected());
             fclose(log_file);
         }
 
