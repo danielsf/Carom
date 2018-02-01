@@ -97,6 +97,14 @@ class explorers{
             _particles.add_row(pt);
         }
 
+        int get_accepted(){
+            return _accepted;
+        }
+
+        int get_rejected(){
+            return _rejected;
+        }
+
         void get_seed(array_2d<double>&);
 
         void set_norm();
@@ -124,6 +132,8 @@ class explorers{
         double _scalar_steps;
         double _envelope;
         double _target_rate;
+        int _accepted;
+        int _rejected;
 };
 
 #endif
