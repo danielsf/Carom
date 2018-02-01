@@ -116,8 +116,16 @@ int main(int iargc, char *argv[]){
     array_1d<double> dd;
     dd.set_name("dd");
     double t_start = double(time(NULL));
+
+    array_1d<int> neigh_unb;
+    array_1d<double> dd_unb;
+    neigh_unb.set_dim(n_samples);
+    dd_unb.set_dim(n_samples);
+
     for(i=0;i<n_samples;i++){
         kd_test.nn_srch(random_vectors(i), 1, neigh, dd);
+        neigh_unb.set(i,neigh.get_data(0));
+        dd_unb.set(i,dd.get_data(0));
         //printf("    got nn  %d\n",i);
     }
     double t_unbalanced = double(time(NULL))-t_start;
@@ -127,8 +135,15 @@ int main(int iargc, char *argv[]){
     double t_to_balance = double(time(NULL))-t_start;
     printf("rebalancing took %e\n",t_to_balance);
     t_start = double(time(NULL));
+
+    array_1d<int> neigh_b;
+    array_1d<double> dd_b;
+    neigh_b.set_dim(n_samples);
+    dd_b.set_dim(n_samples);
     for(i=0;i<n_samples;i++){
         kd_test.nn_srch(random_vectors(i), 1, neigh, dd);
+        neigh_b.set(i,neigh.get_data(0));
+        dd_b.set(i,dd.get_data(0));
     }
     double t_balanced = double(time(NULL))-t_start;
     printf("t_balaned %e\n",t_balanced);
@@ -140,5 +155,16 @@ int main(int iargc, char *argv[]){
 
     printf("\n\nt_unbalanced %e\nt_to_balance %e\nt_balanced %e\nt_brute %e\n",
     t_unbalanced, t_to_balance, t_balanced,t_brute);
+
+    for(i=0;i<n_samples;i++){
+        if(neigh_unb.get_data(i)!=neigh_b.get_data(i) ||
+           fabs(dd_unb.get_data(i)-dd_b.get_data(i))>1.0e-12){
+
+             printf("FINAL FAILURE\n");
+             printf("%d %d %e\n",neigh_unb.get_data(i),neigh_b.get_data(i),
+             dd_unb.get_data(i)-dd_b.get_data(i));
+             exit(1);
+         }
+    }
 
 }
