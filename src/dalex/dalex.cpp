@@ -1687,6 +1687,13 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(double factor_in){
 
+    FILE *log_file;
+    if(_log_file_name[0]!=0){
+        log_file = fopen(_log_file_name, "a");
+        fprintf(log_file,"finding tendril candidates\n");
+        fclose(log_file);
+    }
+
     printf("finding tendril candidates\n");
 
     array_1d<int> associates;
