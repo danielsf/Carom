@@ -128,7 +128,18 @@ void dalex::simplex_search(array_1d<int> &specified){
     dir.set_name("simplex_min_dir");
     double target_chi;
     double sgn;
-    for(i=0;i<_chifn->get_dim() && seed.get_rows()<_chifn->get_dim()+1;i++){
+    for(i=0;seed.get_rows()<_chifn->get_dim()+1;i++){
+        if(i<_chifn->get_dim(){
+            for(j=0;j<_chifn->get_dim();j++){
+                dir.set(j,local_ellipse.bases(i,j));
+            }
+        }
+        else{
+            for(j=0;j<_chifn->get_dim();j++){
+                 dir.set(j,_chifn->random_double());
+            }
+            dir.normalize();
+        }
         target_chi=_chifn->chimin()+0.1*_chifn->get_deltachi();
         target_chi += _chifn->random_double()*0.9*_chifn->get_deltachi();
         sgn=1.0;
@@ -136,21 +147,10 @@ void dalex::simplex_search(array_1d<int> &specified){
             sgn=-1.0;
         }
         for(j=0;j<_chifn->get_dim();j++){
-            dir.set(j,local_ellipse.bases(i,j)*sgn);
+            dir.set(j,dir.get_data(j)*sgn);
         }
         j=bisection(mindex(),dir,target_chi,0.05*_chifn->get_deltachi());
         if(j>=0 && seed_dex.contains(j)==0){
-            seed_dex.add(j);
-            seed.add_row(_chifn->get_pt(j));
-        }
-    }
-
-    while(seed.get_rows()<_chifn->get_dim()+1){
-       for(i=0;i<_chifn->get_dim();i++){
-           dir.set(i,_chifn->random_double());
-       }
-       j=bisection(mindex(),dir,target_chi,0.05*_chifn->get_deltachi());
-       if(j>=0 && seed_dex.contains(j)==0){
             seed_dex.add(j);
             seed.add_row(_chifn->get_pt(j));
         }
