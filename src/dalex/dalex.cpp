@@ -92,6 +92,8 @@ void dalex::simplex_search(array_1d<int> &specified){
     min.set_name("dalex_simplex_min");
     max.set_name("dalex_simplex_max");
     array_2d<double> seed;
+    array_1d<int> seed_dex;
+    seed_dex.set_name("dalex_simplex_seed_dex");
     seed.set_name("dalex_simplex_seed");
     array_1d<double> trial,grad;
 
@@ -105,20 +107,53 @@ void dalex::simplex_search(array_1d<int> &specified){
 
     for(i=0;i<specified.get_dim();i++){
         seed.add_row(_chifn->get_pt(specified.get_data(i)));
+        seed_dex.add(specified.get_data(i));
     }
 
-    array_1d<double> mu_arr,mu_arr_sorted;
-    array_1d<int> mu_dex;
-    for(i=0;i<_min_explorers.get_n_particles();i++){
-        mu_dex.set(i,i);
-        mu_arr.set(i,_min_explorers.get_mu(i));
+    ellipse local_ellipse;
+    array_2d<double> ellipse_pts;
+    ellipse_pts.set_name("simplex_search_ellipse_pts");
+    int i_skip=-1;
+    if(_good_points.get_dim()>5000){
+        i_skip=5;
     }
-    sort(mu_arr, mu_arr_sorted,mu_dex);
+    for(i=0;i<_good_points.get_dim();i++){
+        if(i_skip<0 || i%i_skip==0){
+            ellipse_pts.add_row(_chifn->get_pt(_good_points.get_data(i)));
+        }
+    }
+    local_ellipse.build(ellipse_pts);
 
-    for(i=0;i<_chifn->get_dim();i++){
-        j=mu_dex.get_data(i);
-        _min_explorers.get_pt(j,trial);
-            seed.add_row(trial);
+    array_1d<double> dir;
+    dir.set_name("simplex_min_dir");
+    double target_chi;
+    double sgn;
+    for(i=0;i<_chifn->get_dim() && seed.get_rows()<_chifn->get_dim()+1;i++){
+        target_chi=_chifn->chimin()+0.1*_chifn->get_deltachi();
+        target_chi += _chifn->random_double()*0.9*_chifn->get_deltachi();
+        sgn=1.0;
+        if(_chifn->random_int()%2==0){
+            sgn=-1.0;
+        }
+        for(j=0;j<_chifn->get_dim();j++){
+            dir.set(j,local_ellipse.bases(i,j)*sgn);
+        }
+        j=bisection(mindex(),dir,target_chi,0.05*_chifn->get_deltachi());
+        if(j>=0 && seed_dex.contains(j)==0){
+            seed_dex.add(j);
+            seed.add_row(_chifn->get_pt(j));
+        }
+    }
+
+    while(seed.get_rows()<_chifn->get_dim()+1){
+       for(i=0;i<_chifn->get_dim();i++){
+           dir.set(i,_chifn->random_double());
+       }
+       j=bisection(mindex(),dir,target_chi,0.05*_chifn->get_deltachi());
+       if(j>=0 && seed_dex.contains(j)==0){
+            seed_dex.add(j);
+            seed.add_row(_chifn->get_pt(j));
+        }
     }
 
     simplex_minimizer ffmin;
@@ -2159,23 +2194,13 @@ void dalex::iterate_on_minimum(){
 
     FILE *log_file;
 
-    int n_explore=0;
     int n_simplex=0;
     int n_start;
-    double min_before_exp;
     double min_before_simp;
-    double d_exp;
     double d_simp;
 
     while(min_1<min_0){
         min_0=chimin();
-
-        n_start = _chifn->get_pts();
-        min_before_exp=chimin();
-        min_explore(3*_chifn->get_dim()/2, 3*_chifn->get_dim()/2);
-        n_explore = _chifn->get_pts()-n_start;
-        d_exp = chimin()-min_before_exp;
-
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
         simplex_search(mindex());
@@ -2187,11 +2212,9 @@ void dalex::iterate_on_minimum(){
             log_file=fopen(_log_file_name, "a");
             fprintf(log_file,"in iterate: min1 %.5e min0 %.5e diff %.2e ",
                     min_1,min_0,min_1-min_0);
-            fprintf(log_file,"n_exp %d %.2e n_simp %d %.2e ",
-                    n_explore,d_exp,n_simplex,d_simp);
-            fprintf(log_file,"accept %d reject %d\n",
-                    _min_explorers.get_accepted(),
-                    _min_explorers.get_rejected());
+            fprintf(log_file,"n_simp %d %.2e ",
+                    n_simplex,d_simp);
+            fprintf(log_file,"\n");
             fclose(log_file);
         }
 
