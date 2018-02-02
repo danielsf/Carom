@@ -105,9 +105,11 @@ void dalex_initializer::search(){
     int i_dim,i_half;
     double sgn;
 
+    double bases_prob = 1.0/double(_chifn->get_dim());
+
     printf("starting steps with min %e\n",_chifn->chimin());
     for(i_step=0;i_step<total_per;i_step++){
-        if(i_step%(4*_chifn->get_dim())==0){
+        if(i_step==0 || _chifn->random_double()<bases_prob){
             bases.reset_preserving_room();
             while(bases.get_rows()!=_chifn->get_dim()){
                 for(i=0;i<_chifn->get_dim();i++){
