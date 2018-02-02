@@ -140,8 +140,8 @@ void dalex::simplex_search(array_1d<int> &specified){
             }
             dir.normalize();
         }
-        target_chi=_chifn->chimin()+0.1*_chifn->get_deltachi();
-        target_chi += _chifn->random_double()*0.9*_chifn->get_deltachi();
+        target_chi=_chifn->chimin()+_chifn->get_deltachi();
+        target_chi += _chifn->random_double()*_chifn->get_deltachi();
         sgn=1.0;
         if(_chifn->random_int()%2==0){
             sgn=-1.0;
