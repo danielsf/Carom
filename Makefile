@@ -1,28 +1,17 @@
-DALEX_HOME = /astro/users/danielsf/Dalex/
+DALEX_HOME = /Users/danielsf/physics/Carom/
 
-PLANCK_WRAPPER_DIR = /astro/users/danielsf/planck_likelihood_wrapper/
-PLANCK_DIR = /astro/users/danielsf/planckLikelihood/plc-2.0/
-CAMB_DIR = /astro/users/danielsf/CAMB/
+LAPACK_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -llapack
+BLAS_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -lrefblas
 
-LAPACK_LIB =-L/astro/users/danielsf/lapack-3.5.0/ -llapack
-BLAS_LIB =-L/astro/users/danielsf/lapack-3.5.0/ -lrefblas
-
-ARPACK_LIB = -L/astro/users/danielsf/ARPACK/ -larpack
+ARPACK_LIB = -L/Users/danielsf/physics/ARPACK/ -larpack_MACOSX
 
 FORTRAN_LIB = -lgfortran
 
+R_PATH = /Users/danielsf/physics/lib/
+
 LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
-INCLUDE = -I$(DALEX_HOME)include/ \
--I$(PLANCK_DIR)/include/ \
--I$(PLANCK_DIR)/src/ \
--I$(PLANCK_WRAPPER_DIR) -I$(CAMB_DIR)/Release/
-
-CAMB_LIB = -L$(CAMB_DIR)Release/ -lcamb_recfast -lgfortran
-
-PLANCK_OBJ = $(PLANCK_WRAPPER_DIR)planck_wrapper.o \
--L$(PLANCK_DIR)lib -lclik -lgomp \
-$(PLANCK_WRAPPER_DIR)camb_wrapper.o $(CAMB_LIB)
+INCLUDE = -I$(DALEX_HOME)include/
 
 # compilers
 cc = g++ -Wno-write-strings -O3 $(INCLUDE)
@@ -173,18 +162,6 @@ object/ellipse.o
 	object/cost_fn.o object/dalex_driver.o object/jellyBean.o object/ellipse.o \
         object/dalex.o object/dalex_initializer.o object/explorers.o \
 	$(LIBRARIES)
-
-
-planck_example: src/examples/planck_example.cpp object/dalex_driver.o \
-object/eigen_wrapper.o object/ellipse.o
-	$(cc) -o bin/planck_example src/examples/planck_example.cpp \
-	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
-	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
-	object/cost_fn.o object/dalex_driver.o object/ellipse.o \
-        object/dalex.o object/dalex_initializer.o object/explorers.o \
-	$(PLANCK_OBJ) $(LIBRARIES)
-
-
 
 
 test_opt: src/examples/test_opt.cpp object/dalex_driver.o \
