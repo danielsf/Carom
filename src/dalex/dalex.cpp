@@ -162,10 +162,10 @@ void dalex::simplex_search(array_1d<int> &specified){
         }
 
         if(pos_ct>neg_ct){
-            sgn=1.0;
+            sgn=-1.0;
         }
         else{
-            sgn=-1.0;
+            sgn=1.0;
         }
 
         for(j=0;j<_chifn->get_dim();j++){
