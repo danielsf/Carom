@@ -133,7 +133,7 @@ void dalex::simplex_search(array_1d<int> &specified){
     int k;
     double dot_product;
     for(i=0;seed.get_rows()<_chifn->get_dim()+1;i++){
-        if(i<_chifn->get_dim(){
+        if(i<_chifn->get_dim()){
             for(j=0;j<_chifn->get_dim();j++){
                 dir.set(j,local_ellipse.bases(i,j));
             }
