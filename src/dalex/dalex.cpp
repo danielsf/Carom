@@ -151,7 +151,7 @@ void dalex::simplex_search(array_1d<int> &specified){
         for(j=0;j<ellipse_pts.get_rows();j++){
             dot_product=0.0;
             for(k=0;k<_chifn->get_dim();k++){
-                dot_product+=dir.get_data(k)*(ellipse_pts.get_data(k)-_chifn->get_pt(mindex(),k));
+                dot_product+=dir.get_data(k)*(ellipse_pts.get_data(j,k)-_chifn->get_pt(mindex(),k));
             }
             if(dot_product<0.0){
                 neg_ct++;
