@@ -128,6 +128,10 @@ void dalex::simplex_search(array_1d<int> &specified){
     dir.set_name("simplex_min_dir");
     double target_chi;
     double sgn;
+    int pos_ct=0;
+    int neg_ct=0;
+    int k;
+    double dot_product;
     for(i=0;seed.get_rows()<_chifn->get_dim()+1;i++){
         if(i<_chifn->get_dim(){
             for(j=0;j<_chifn->get_dim();j++){
@@ -142,10 +146,28 @@ void dalex::simplex_search(array_1d<int> &specified){
         }
         target_chi=_chifn->chimin()+_chifn->get_deltachi();
         target_chi += _chifn->random_double()*_chifn->get_deltachi();
-        sgn=1.0;
-        if(_chifn->random_int()%2==0){
+        pos_ct=0;
+        neg_ct=0;
+        for(j=0;j<ellipse_pts.get_rows();j++){
+            dot_product=0.0;
+            for(k=0;k<_chifn->get_dim();k++){
+                dot_product+=dir.get_data(k)*(ellipse_pts.get_data(k)-_chifn->get_pt(mindex(),k));
+            }
+            if(dot_product<0.0){
+                neg_ct++;
+            }
+            else{
+                pos_ct++;
+            }
+        }
+
+        if(pos_ct>neg_ct){
+            sgn=1.0;
+        }
+        else{
             sgn=-1.0;
         }
+
         for(j=0;j<_chifn->get_dim();j++){
             dir.set(j,dir.get_data(j)*sgn);
         }
