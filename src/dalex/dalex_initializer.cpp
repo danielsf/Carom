@@ -5,7 +5,7 @@ void dalex_initializer::search(){
     int total_per=100*_chifn->get_dim();
 
     //to speed up planck test
-    total_per = 10*_chifn->get_dim();
+    total_per = 20*_chifn->get_dim();
 
     int adjust_every=total_per/10;
     int n_groups=2;
