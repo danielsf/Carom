@@ -2229,6 +2229,11 @@ void dalex::iterate_on_minimum(){
     double min_before_simp;
     double d_simp;
 
+    array_1d<double> chimin_arr;
+    chimin_arr.set_name("simplex_search_chimin_arr");
+    int max_iter=10;
+    double min_diff=1.0;
+
     while(min_1<min_0){
         min_0=chimin();
         n_start= _chifn->get_pts();
@@ -2246,6 +2251,19 @@ void dalex::iterate_on_minimum(){
                     n_simplex,d_simp);
             fprintf(log_file,"\n");
             fclose(log_file);
+        }
+
+        if(chimin_arr.get_dim()<max_iter){
+            chimin_arr.add(chimin());
+        }
+        else{
+            for(i=0;i<max_iter-1;i++){
+                chimin_arr.set(i,chimin_arr.get_data(i+1));
+            }
+            chimin_arr.set(max_iter-1,chimin());
+            if(chimin_arr.get_data(0)-chimin_arr.get_data(max_iter-1)<min_diff){
+                break;
+            }
         }
 
     }
