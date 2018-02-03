@@ -113,7 +113,7 @@ void dalex::simplex_search(array_1d<int> &specified){
     ellipse local_ellipse;
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("simplex_search_ellipse_pts");
-    int thin_to=20000;
+    int thin_to=5000;
     int n_thin=-1;
     if(_good_points.get_dim()>2*thin_to){
         n_thin=_good_points.get_dim()/thin_to;
