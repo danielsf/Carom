@@ -1931,6 +1931,13 @@ void dalex::find_tendril_candidates(double factor_in){
                 _chifn->write_pts();
                 return;
             }
+
+            if(_log_file_name[0]!=0){
+                log_file=fopen(_log_file_name, "a");
+                fprintf(log_file,"    chimin %e\n",chimin());
+                fclose(log_file);
+            }
+
         }
     }
     for(i=0;i<fn_val.get_dim();i++){
