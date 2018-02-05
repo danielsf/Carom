@@ -72,6 +72,21 @@ void dalex::search(){
 
 }
 
+void dalex::simplex_search_chain(int old_mindex){
+    array_1d<double> dir;
+    dir.set_name("dalex_simplex_search_chain_dir");
+    int i;
+    for(i=0;i<_chifn->get_dim();i++){
+        dir.set(i,_chifn->get_pt(mindex(),i)-
+                  _chifn->get_pt(old_mindex,i));
+    }
+    double chi_target;
+    chi_target=chimin()+_chifn->random_double()*_chifn->get_deltachi();
+    chi_target+=_chfn->get_deltachi();
+    i=bisection(old_mindex, dir, chi_target, 0.1*_chifn->get_deltachi());
+    simplex_search(i);
+}
+
 
 void dalex::simplex_search(){
     array_1d<int> empty;
@@ -2234,11 +2249,22 @@ void dalex::iterate_on_minimum(){
     int max_iter=10;
     double min_diff=1.0;
 
+    int old_mindex=-1;
+    int i;
+
     while(min_1<min_0){
         min_0=chimin();
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
-        simplex_search(mindex());
+        if(old_mindex<0){
+            old_mindex=mindex();
+            simplex_search(mindex());
+        }
+        else{
+            i=old_mindex;
+            old_mindex=mindex();
+            simplex_search_chain(i);
+        }
         n_simplex = _chifn->get_pts()-n_start;
         d_simp = chimin()-min_before_simp;
         min_1=chimin();

@@ -73,6 +73,7 @@ class dalex{
         }
 
         void search();
+        void simplex_search_chain(int);
         void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
