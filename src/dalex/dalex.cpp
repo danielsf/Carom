@@ -82,7 +82,7 @@ void dalex::simplex_search_chain(int old_mindex){
     }
     double chi_target;
     chi_target=chimin()+_chifn->random_double()*_chifn->get_deltachi();
-    chi_target+=_chfn->get_deltachi();
+    chi_target+=_chifn->get_deltachi();
     i=bisection(old_mindex, dir, chi_target, 0.1*_chifn->get_deltachi());
     simplex_search(i);
 }
@@ -2250,7 +2250,6 @@ void dalex::iterate_on_minimum(){
     double min_diff=1.0;
 
     int old_mindex=-1;
-    int i;
 
     while(min_1<min_0){
         min_0=chimin();
