@@ -362,7 +362,7 @@ void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex
 
     if(mu<exception_value){
         _kptr->add(pt);
-        if(_kptr->get_pts()%10000==0){
+        if(_kptr->get_pts()%100000==0){
             _kptr->rebalance();
         }
         _fn.add(mu);
