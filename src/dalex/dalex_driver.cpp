@@ -146,6 +146,7 @@ void dalex_driver::mcmc_init(){
     dalex_initializer initializer;
     initializer.set_chifn(&_chifn);
     initializer.search();
+    _chifn->write_pts();
 }
 
 void dalex_driver::search(int limit){
