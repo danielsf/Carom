@@ -199,7 +199,7 @@ double simplex_minimizer::evaluate(const array_1d<double> &pt){
     _chisquared->get_called()-_called_evaluate);*/
 
     if(fval<_min_ff){
-        if(_min_ff-fval>fabs(_min_ff*1.0e-4)){
+        if(_min_ff-fval>1.0e-1){
             _last_found=_called_evaluate;
         }
         _min_ff=fval;
