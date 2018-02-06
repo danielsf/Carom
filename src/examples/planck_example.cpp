@@ -4,7 +4,7 @@
 int main(int iargc, char *argv[]){
 
     int planck_dim = 33;
-    int seed=2399;
+    int seed=11923;
     int i,j;
     char timing_name[letters];
     char out_name[letters];
