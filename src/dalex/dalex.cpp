@@ -2255,15 +2255,7 @@ void dalex::iterate_on_minimum(){
         min_0=chimin();
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
-        if(old_mindex<0){
-            old_mindex=mindex();
-            simplex_search(mindex());
-        }
-        else{
-            i=old_mindex;
-            old_mindex=mindex();
-            simplex_search_chain(i);
-        }
+        simplex_search(mindex());
         n_simplex = _chifn->get_pts()-n_start;
         d_simp = chimin()-min_before_simp;
         min_1=chimin();
