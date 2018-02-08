@@ -1360,7 +1360,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             }
 
             if(seed.get_rows()<_chifn->get_dim()){
-                sprintf(log_message,"after looping dim; seed is %d",seed.get_rows());
+                sprintf(log_message,"after looping dim; seed is %d\n",seed.get_rows());
                 write_to_log(log_message);
                 exit(1);
             }
