@@ -108,6 +108,8 @@ class dalex{
             _log_file_name[i]=0;
         }
 
+        void write_to_log(char*);
+
     private:
 
        double distance(int i1, int i2){

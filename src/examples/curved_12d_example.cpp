@@ -12,6 +12,8 @@ double delta_chi=21.03;
 int nsamples=-1;
 char output_name[letters];
 char timing_name[letters];
+char log_name[letters];
+log_name[0]=0;
 
 int i,j;
 
@@ -35,6 +37,13 @@ for(i=1;i<iargc;i++){
                 }
                 output_name[j]=0;
                 break;
+            case 'l':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    log_name[j]=argv[i][j];
+                }
+                log_name[j]=0;
+                break;
             case 't':
                 i++;
                 for(j=0;j<letters-1 && argv[i][j]!=0;j++){
@@ -56,6 +65,8 @@ if(iargc==1 || seed<0 || nsamples<0 ||
 gaussianJellyBean12 chifn;
 
 dalex_driver dalex_test;
+
+dalex_test.set_log_file_name(log_name);
 
 // define the delta_chi^2 in chi^2_lim = chi^2_min + delta_chi^2
 dalex_test.set_deltachi(delta_chi);

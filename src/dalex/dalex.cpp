@@ -1,5 +1,16 @@
 #include "dalex.h"
 
+void dalex::write_to_log(char *msg){
+    if(_log_file_name[0]==0){
+        return;
+    }
+
+    FILE *log_file;
+    log_file = fopen(_log_file_name, "a");
+    fprintf(log_file,"%s",msg);
+    fclose(log_file);
+}
+
 void dalex::build(chisq_wrapper *cc){
 
     _chifn=cc;
@@ -1760,12 +1771,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(double factor_in){
 
-    FILE *log_file;
-    if(_log_file_name[0]!=0){
-        log_file = fopen(_log_file_name, "a");
-        fprintf(log_file,"finding tendril candidates\n");
-        fclose(log_file);
-    }
+    write_to_log("finding tendrile candidates\n");
 
     printf("finding tendril candidates\n");
 
@@ -1854,6 +1860,7 @@ void dalex::find_tendril_candidates(double factor_in){
     at_least_one.set_name("find_tendril_at_least_one");
     double factor;
     int failures;
+    char log_message[letters];
 
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -1948,11 +1955,8 @@ void dalex::find_tendril_candidates(double factor_in){
                 return;
             }
 
-            if(_log_file_name[0]!=0){
-                log_file=fopen(_log_file_name, "a");
-                fprintf(log_file,"    chimin %e\n",chimin());
-                fclose(log_file);
-            }
+            sprintf(log_message,"    chimin %e\n",chimin());
+            write_to_log(log_message);
 
         }
     }
@@ -2063,12 +2067,9 @@ void dalex::init_fill(){
 
 void dalex::tendril_search(){
 
-    FILE *log_file;
-    if(_log_file_name[0]!=0){
-        log_file=fopen(_log_file_name,"a");
-        fprintf(log_file,"running tendril search - %d\n",_chifn->get_pts());
-        fclose(log_file);
-    }
+    char log_message[letters];
+    sprintf(log_message,"running tendril search - %d\n",_chifn->get_pts());
+    write_to_log(log_message);
 
     int pt_start=_chifn->get_pts();
     int pt_prime=_chifn->get_pts();
@@ -2237,8 +2238,6 @@ void dalex::iterate_on_minimum(){
         find_bases();
     }
 
-    FILE *log_file;
-
     int n_simplex=0;
     int n_start;
     double min_before_simp;
@@ -2250,6 +2249,7 @@ void dalex::iterate_on_minimum(){
     double min_diff=1.0;
 
     int old_mindex=-1;
+    char log_message[letters];
 
     while(min_1<min_0){
         min_0=chimin();
@@ -2260,15 +2260,15 @@ void dalex::iterate_on_minimum(){
         d_simp = chimin()-min_before_simp;
         min_1=chimin();
 
-        if(_log_file_name[0]!=0){
-            log_file=fopen(_log_file_name, "a");
-            fprintf(log_file,"in iterate: min1 %.5e min0 %.5e diff %.2e ",
-                    min_1,min_0,min_1-min_0);
-            fprintf(log_file,"n_simp %d %.2e ",
-                    n_simplex,d_simp);
-            fprintf(log_file,"\n");
-            fclose(log_file);
-        }
+        sprintf(log_message,"in iterate: min1 %.5e min0 %.5e diff %.2e ",
+                min_1,min_0,min_1-min_0);
+        write_to_log(log_message);
+
+        sprintf(log_message,"n_simp %d %.2e ",
+                n_simplex,d_simp);
+        write_to_log(log_message);
+
+        write_to_log("\n");
 
         if(chimin_arr.get_dim()<max_iter){
             chimin_arr.add(chimin());
@@ -2297,11 +2297,8 @@ void dalex::iterate_on_minimum(){
 
     if(chimin()<_reset_chimin-_reset_threshold){
 
-        if(_log_file_name[0]!=0){
-            log_file = fopen(_log_file_name, "a");
-            fprintf(log_file,"finding bases: min %e\n",chimin());
-            fclose(log_file);
-        }
+        sprintf(log_message, "finding bases: min %e\n",chimin());
+        write_to_log(log_message);
 
         for(i=0;i<_tendril_path.get_rows();i++){
             if(_chifn->get_fn(_tendril_path.get_data(i,0))<target()+1.0e-6){
