@@ -14,6 +14,8 @@ char output_name[letters];
 char timing_name[letters];
 char log_name[letters];
 log_name[0]=0;
+char warm_name[letters];
+warm_name[0]=0;
 
 int i,j;
 
@@ -43,6 +45,13 @@ for(i=1;i<iargc;i++){
                     log_name[j]=argv[i][j];
                 }
                 log_name[j]=0;
+                break;
+            case 'w':
+                i++;
+                for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                    warm_name[j]=argv[i][j];
+                }
+                warm_name[j]=0;
                 break;
             case 't':
                 i++;
@@ -102,6 +111,11 @@ dalex_test.set_outname(output_name);
 dalex_test.initialize(24);
 
 // actually perform the search.
-dalex_test.search(nsamples);
+if(warm_name[0]==0){
+    dalex_test.search(nsamples);
+}
+else{
+    dalex_test.warm_start(warm_name, nsamples);
+}
 
 }

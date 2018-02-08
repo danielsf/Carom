@@ -32,6 +32,7 @@ public:
     void set_chisquared(chisquared*);
 
     void search(int);
+    void warm_start(char*, int);
     void _search(int);
 
     void mcmc_init();

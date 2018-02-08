@@ -9,9 +9,11 @@ int main(int iargc, char *argv[]){
     char timing_name[letters];
     char out_name[letters];
     char prior_name[letters];
+    char warm_name[letters];
     out_name[0] = 0;
     timing_name[0] = 0;
     prior_name[0] = 0;
+    warm_name[0] = 0;
 
     char log_name[letters];
     log_name[0]=0;
@@ -32,6 +34,13 @@ int main(int iargc, char *argv[]){
                         timing_name[j] = argv[i][j];
                     }
                     timing_name[j] = 0;
+                    break;
+                case 'w':
+                    i++;
+                    for(j=0;j<letters-1 && argv[i][j]!=0;j++){
+                        warm_name[j] = argv[i][j];
+                    }
+                    warm_name[j] = 0;
                     break;
                 case 'o':
                     i++;
@@ -112,5 +121,10 @@ int main(int iargc, char *argv[]){
     dalex_test.set_outname(out_name);
     dalex_test.initialize(2*planck_dim); // randomly sample 2D points
     dalex_test.set_write_every(10000); // how often to write output
-    dalex_test.search(10000000); // sample 1,700,000 points
+    if(warm_name[0]==0){
+        dalex_test.search(10000000); // sample 1,700,000 points
+    }
+    else{
+        dalex_test.warm_start(warm_name,10000000);
+    }
 }

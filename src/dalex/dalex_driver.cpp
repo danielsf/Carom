@@ -160,6 +160,37 @@ void dalex_driver::search(int limit){
     _search(limit);
 }
 
+void dalex_driver::warm_start(char *warm_name, int limit){
+    _chifn.set_outname(_outname);
+    _chifn.set_timingname(_timingname);
+
+    double mu;
+    int i,j;
+    char word[letters];
+    array_1d<double>pt;
+    pt.set_name("dalex_driver_warm_pt");
+    FILE *in_file;
+    in_file=fopen(warm_name, "r");
+    for(i=0;i<get_dim()+3;i++){
+        fscanf(in_file,"%s",word);
+    }
+    while(fscanf(in_file,"%le",&mu)>0){
+        pt.set(0,mu);
+        for(i=1;i<get_dim();i++){
+            fscanf(in_file,"%le",&mu);
+            pt.set(i,mu);
+        }
+        fscanf(in_file,"%le",&mu);
+        fscanf(in_file,"%d",&j);
+        _chifn.set_search_type(j);
+        _chifn.add_pt(pt,mu);
+    }
+    fclose(in_file);
+    printf("read in %d pts\n",_chifn.get_pts());
+    _search(limit);
+}
+
+
 void dalex_driver::_search(int limit){
     int pt_start;
     _cloud.set_limit(limit);
