@@ -94,6 +94,7 @@ public:
 
     double raw_evaluate(const array_1d<double>&);
     void evaluate(const array_1d<double>&, double*, int*);
+    int add_pt(const array_1d<double>&, double);
     virtual double operator()(const array_1d<double>&);
     double get_fn(int);
     double get_pt(int,int);
