@@ -149,8 +149,6 @@ void dalex_driver::mcmc_init(){
 }
 
 void dalex_driver::search(int limit){
-    int pt_start;
-
     double min0=_chifn.chimin();
     _chifn.set_outname(_outname);
     _chifn.set_timingname(_timingname);
@@ -159,7 +157,11 @@ void dalex_driver::search(int limit){
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
+    _search(limit);
+}
 
+void dalex_driver::_search(int limit){
+    int pt_start;
     _cloud.set_limit(limit);
     _cloud.set_log_file_name(_log_file_name);
 
