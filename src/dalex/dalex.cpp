@@ -1771,7 +1771,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(double factor_in){
 
-    write_to_log("finding tendrile candidates\n");
+    write_to_log("finding tendril candidates\n");
 
     printf("finding tendril candidates\n");
 
