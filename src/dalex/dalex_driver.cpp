@@ -184,6 +184,9 @@ void dalex_driver::warm_start(char *warm_name, int limit){
         fscanf(in_file,"%d",&j);
         _chifn.set_search_type(j);
         _chifn.add_pt(pt,mu);
+        if(_chifn.get_pts()%100000==0){
+            printf("read in %e pts\n",float(_chifn.get_pts()));
+        }
     }
     fclose(in_file);
     printf("read in %d pts\n",_chifn.get_pts());
