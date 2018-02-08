@@ -187,6 +187,7 @@ void dalex_driver::warm_start(char *warm_name, int limit){
     }
     fclose(in_file);
     printf("read in %d pts\n",_chifn.get_pts());
+    _chifn.rebalance();
     _search(limit);
 }
 

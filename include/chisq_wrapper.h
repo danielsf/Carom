@@ -122,6 +122,8 @@ public:
     void set_dof(int);
     int get_seed();
 
+    void rebalance();
+
     kd_tree* get_tree();
     array_1d<double>* get_fn_arr();
 
