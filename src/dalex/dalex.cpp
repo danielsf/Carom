@@ -1083,6 +1083,8 @@ void dalex::get_negative_gradient(int i_origin, cost_fn &cost, ellipse &dummy_el
 int dalex::simplex_boundary_search(const int specified, const int i_origin,
                                    ellipse_list &exclusion_zones, int *i_next){
 
+    char log_message[letters];
+
     safety_check("simplex_boundary_search");
     printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
     int pt_start=_chifn->get_pts();
@@ -1355,6 +1357,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                     seed.add_row(bisect_dir);
                     kept_dex.add(i_chosen);
                 }
+            }
+
+            if(seed.get_rows()<_chifn->get_dim()){
+                sprintf(log_message,"after looping dim; seed is %d",seed.get_rows());
+                write_to_log(log_message);
+                exit(1);
             }
 
             if(seed.get_rows()==_chifn->get_dim()){
