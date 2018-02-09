@@ -1791,6 +1791,7 @@ void dalex::find_tendril_candidates(double factor_in){
     ellipse_pts.set_name("find_tendrils_ellipse_pts");
     array_1d<double> center;
     center.set_name("find_tendrils_center");
+    int i_center;
     int i,j;
     for(i=0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
@@ -1806,6 +1807,7 @@ void dalex::find_tendril_candidates(double factor_in){
     for(i=0;i<_chifn->get_dim();i++){
         center.set(i,_chifn->get_pt(mindex(),i));
     }
+    i_center=mindex();
 
     int n_thin;
 
@@ -1870,6 +1872,13 @@ void dalex::find_tendril_candidates(double factor_in){
     int failures;
     char log_message[letters];
 
+    array_1d<double> bisection_dir,delta_dir;
+    bisection_dir.set_name("find_tendril_candidates_bisection_dir");
+    delta_dir.set_name("find_tendril_candidates_delta_dir");
+    double bisection_target;
+    array_1d<int> seed_int_list;
+    seed_int_list.set_name("find_tendril_candidates_seed_int_list");
+
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
@@ -1891,14 +1900,52 @@ void dalex::find_tendril_candidates(double factor_in){
                     factor*=0.5;
                 }
             }
-            origins.add(i_found);
-            seed.add_row(trial);
-            for(jdim=0;jdim<_chifn->get_dim();jdim++){
-                for(i=0;i<_chifn->get_dim();i++){
-                   trial.set(i,seed.get_data(0,i)+0.1*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
-                }
+
+            if(_chifn->get_fn(i_found)>target()){
+                // just naively using a multiple of the ellipse radius worked
+                origins.add(i_found);
                 seed.add_row(trial);
+                for(jdim=0;jdim<_chifn->get_dim();jdim++){
+                    for(i=0;i<_chifn->get_dim();i++){
+                       trial.set(i,seed.get_data(0,i)+0.1*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
+                    }
+                    seed.add_row(trial);
+                }
             }
+            else{
+                // alternative scheme for finding seed
+                for(i=0;i<_chifn->get_dim();i++){
+                    bisection_dir.set(i,sgn*good_ellipse.bases(idim,i));
+                    trial.set(i,bisection_dir.get_data(i));
+                }
+                trial.normalize();
+                bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
+                i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
+                if(i_found<0){
+                    printf("WARNING alternative tendril candidate seed %d\n",i_found);
+                    exit(1);
+                }
+                origins.add(i_found);
+                seed_int_list.add(i_found);
+                seed.add_row(_chifn->get_pt(i_found));
+                for(jdim=0;jdim<_chifn->get_dim();jdim++){
+                    for(i=0;i<_chifn->get_dim();i++){
+                        bisection_dir.set(i,trial.get_data(i)+0.1*good_ellipse.bases(jdim,i));
+                    }
+                    mu=bisection_target+(1.0+_chifn->random_double()*2.0)*_chifn->get_deltachi();
+                    i=bisection(i_center,bisection_dir,mu,0.1*_chifn->get_deltachi());
+                    if(i<0 || seed_int_list.contains(i)==1){
+                        printf("WARNING alternative tendril candidate seed (subsequent) %d\n",i);
+                        if(seed_int_list.contains(i)==1){
+                            printf("already contained\n");
+                        }
+                        exit(1);
+                    }
+                    seed.add_row(_chifn->get_pt(i));
+                    seed_int_list.add(i);
+                }
+            }
+
             failures=0;
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
