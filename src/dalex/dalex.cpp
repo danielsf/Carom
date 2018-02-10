@@ -1917,7 +1917,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 i_found=-1;
                 while(i_found<0 || _chifn->get_fn(i_found)<target()+_chifn->get_deltachi()){
                     for(i=0;i<_chifn->get_dim();i++){
-                        bisection_dir.set(i,_chifn->random_double());
+                        bisection_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
                         trial.set(i,bisection_dir.get_data(i));
                     }
                     trial.normalize();
