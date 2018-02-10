@@ -1914,16 +1914,19 @@ void dalex::find_tendril_candidates(double factor_in){
             }
             else{
                 // alternative scheme for finding seed
-                for(i=0;i<_chifn->get_dim();i++){
-                    bisection_dir.set(i,sgn*good_ellipse.bases(idim,i));
-                    trial.set(i,bisection_dir.get_data(i));
-                }
-                trial.normalize();
-                bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
-                i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
-                if(i_found<0){
-                    printf("WARNING alternative tendril candidate seed %d\n",i_found);
-                    exit(1);
+                i_found=-1;
+                while(i_found<0 || _chifn->get_fn(i_found)<target()+_chifn->get_deltachi()){
+                    for(i=0;i<_chifn->get_dim();i++){
+                        bisection_dir.set(i,_chifn->random_double());
+                        trial.set(i,bisection_dir.get_data(i));
+                    }
+                    trial.normalize();
+                    bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
+                    i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
+                    printf("    i_found %d\n",i_found);
+                    if(i_found>=0){
+                        printf("    %e %e\n",_chifn->get_fn(i_found),target());
+                    }
                 }
                 origins.add(i_found);
                 seed_int_list.add(i_found);
