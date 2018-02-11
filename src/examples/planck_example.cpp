@@ -99,7 +99,7 @@ int main(int iargc, char *argv[]){
 
     FILE *log_file;
     if(log_name[0]!=0){
-        log_file=fopen(log_name,"a");
+        log_file=fopen(log_name,"w");
         fprintf(log_file,"timing: %s\n",timing_name);
         fprintf(log_file,"output: %s\n",out_name);
         fclose(log_file);
