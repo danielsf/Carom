@@ -1086,15 +1086,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     char log_message[letters];
 
     safety_check("simplex_boundary_search");
-    printf("\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
+    sprintf(log_message,"\ndoing dalex.simplex_boundary_search() %d\n",_chifn->get_pts());
+    write_to_log(log_message);
     int pt_start=_chifn->get_pts();
     assess_good_points();
-    printf("specified %d origin %d\n",specified,i_origin);
-
-    if(_chifn->get_dim()>9 && specified>=0){
-        printf("    starting from %e -- %e %e\n",
-        _chifn->get_fn(specified),_chifn->get_pt(specified,6), _chifn->get_pt(specified,9));
-    }
 
     int i_node,i_pt;
     int i,j,k;
@@ -1198,7 +1193,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     cost_fn dchifn(_chifn,associates);
 
-    printf("    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
+    sprintf(log_message,"    associates %d path %d\n", associates.get_dim(),_tendril_path.get_rows());
+    write_to_log(log_message);
 
     simplex_minimizer ffmin;
     ffmin.set_chisquared(&dchifn);
@@ -1252,6 +1248,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     dummy_ellipse.build(ellipse_pts);
+    write_to_log("built ellipse\n");
 
     int i_anchor;
     array_1d<double> base_dir;
@@ -1389,8 +1386,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         exit(1);
     }
 
-    printf("fn anchor %e; %d %d %d\n",
+    sprintf(log_message,"fn anchor %e; %d %d %d\n",
     _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
+    write_to_log(log_message);
 
     _chifn->set_search_type(old_type);
 
@@ -1416,8 +1414,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
     sort(start_vals,start_vals_sorted,start_vals_dex);
     mu=start_vals_sorted.get_data(start_vals_dex.get_dim()/2);
-    printf("    starting from %e; %e; %e\n",start_min,mu,start_max);
-    printf("    starting from (delta) %e; %e; %e\n",start_min-target(),mu-target(),start_max-target());
+    sprintf(log_message,"    starting from %e; %e; %e\n",start_min,mu,start_max);
+    write_to_log(log_message);
+    sprintf(log_message,"    starting from (delta) %e; %e; %e\n",start_min-target(),mu-target(),start_max-target());
+    write_to_log(log_message);
 
     array_1d<double> minpt;
     minpt.set_name("dalex_simplex_search_minpt");
@@ -1429,6 +1429,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     ffmin.find_minimum(seed,minpt);
+
+    sprintf(log_message,"    found minimum -- chimin %e\n",chimin());
+    write_to_log(log_message);
 
     array_1d<int> path_row;
     path_row.set_name("path_row");
@@ -1499,7 +1502,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
-    printf("    filling called %d good %d\n",_chifn->get_pts()-pre_fill,n_good_fill);
+    sprintf(log_message,"    filling called %d good %d\n",_chifn->get_pts()-pre_fill,n_good_fill);
+    write_to_log(log_message);
 
     _update_good_points(pt_start);
 
@@ -1517,22 +1521,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         exit(1);
     }
 
-    if(_chifn->get_dim()>9){
-        printf("    actually found %e -- %.3e %.3e; %.3e %.3e\n",
-        _chifn->get_fn(i_next[0]),_chifn->get_pt(i_next[0],6), _chifn->get_pt(i_next[0],9),
-        _chifn->get_pt(i_next[0],0), _chifn->get_pt(i_next[0], 1));
-    }
-
-    printf("    adjusted %e from %e\n",
+    sprintf(log_message,"    adjusted %e from %e\n",
     dchifn(_chifn->get_pt(i_next[0])),_chifn->get_fn(i_next[0]));
+    write_to_log(log_message);
 
-    printf("    min is %e target %e\n",chimin(),target());
-    if(_chifn->get_dim()>9){
-       printf("    minpt at %e %e\n",
-       _chifn->get_pt(mindex(),6),
-       _chifn->get_pt(mindex(),9));
-    }
-
+    sprintf(log_message,"    min is %e target %e\n",chimin(),target());
+    write_to_log(log_message);
 
     int path_start,path_end,path_mid;
     path_start=-1;
@@ -1571,9 +1565,11 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     double dd_start,dd_mid,dd_end;
 
     if(path_start>=0 || path_end>=0 || path_mid>0){
-        printf("going to try to add to path %d %d\n",
+        sprintf(log_message,"going to try to add to path %d %d\n",
         path_start,_chifn->get_pts());
-        printf("start %d end %d\n",path_start,path_end);
+        write_to_log(log_message);
+        sprintf(log_message,"start %d end %d\n",path_start,path_end);
+        write_to_log(log_message);
 
         for(i=path_start;i<_chifn->get_pts();i++){
             dd_start=-1.0;
@@ -1779,6 +1775,8 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(double factor_in){
 
+    char log_message[letters];
+
     write_to_log("finding tendril candidates\n");
 
     printf("finding tendril candidates\n");
@@ -1870,7 +1868,6 @@ void dalex::find_tendril_candidates(double factor_in){
     at_least_one.set_name("find_tendril_at_least_one");
     double factor;
     int failures;
-    char log_message[letters];
 
     array_1d<double> bisection_dir,delta_dir;
     bisection_dir.set_name("find_tendril_candidates_bisection_dir");
@@ -1923,9 +1920,13 @@ void dalex::find_tendril_candidates(double factor_in){
                     trial.normalize();
                     bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
                     i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
-                    printf("    i_found %d\n",i_found);
-                    if(i_found>=0){
-                        printf("    %e %e\n",_chifn->get_fn(i_found),target());
+                    if(i_found<0){
+                        write_to_log("i_found<0\n");
+                    }
+                    else{
+                        sprintf(log_message,"i_found %d chisq %e min %e\n",
+                                i_found,_chifn->get_fn(i_found),chimin());
+                        write_to_log(log_message);
                     }
                 }
                 origins.add(i_found);
@@ -1954,8 +1955,9 @@ void dalex::find_tendril_candidates(double factor_in){
             evaluate(minpt,&mu,&i_found);
             failures++;
             while(_chifn->get_fn(i_found)>target() && failures<3){
-                printf("    trying again because %e > %e\n",
-                _chifn->get_fn(i_found),target());
+                sprintf(log_message,"    trying again because %e > %e\n",
+                        _chifn->get_fn(i_found),target());
+                write_to_log(log_message);
                 seed.reset_preserving_room();
                 seed.add_row(minpt);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
@@ -1978,7 +1980,9 @@ void dalex::find_tendril_candidates(double factor_in){
             cost=dchifn(minpt);
             fn_val.add(cost);
             if(_chifn->get_dim()>9){
-                printf("    got %d %e -- %e %e\n\n",particles.get_dim(),mu,minpt.get_data(6),minpt.get_data(9));
+                sprintf(log_message,"    got %d chisq %e cost %e\n\n",
+                        particles.get_dim(),mu,cost);
+                write_to_log(log_message);
             }
 
             j=0;
@@ -2029,6 +2033,8 @@ void dalex::find_tendril_candidates(double factor_in){
         _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
         _origin_candidates.set(i,-1);
     }
+    sprintf(log_message,"done finding tendrils -- chimin %e\n",chimin());
+    write_to_log(log_message);
 }
 
 
