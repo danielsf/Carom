@@ -2,6 +2,7 @@
 
 dalex_driver::dalex_driver(){
     _log_file_name[0]=0;
+    _end_pt_name[0]=0;
     _ct_dalex=0;
     _last_did_min=0;
     sprintf(_outname,"output/carom_output.sav");
@@ -126,6 +127,8 @@ void dalex_driver::set_outname(char *nn){
         _outname[i]=nn[i];
     }
     _outname[i]=0;
+    sprintf(_end_pt_name,"%s_end_pts.txt",_outname);
+    _cloud.set_end_pt_name(_end_pt_name);
 }
 
 void dalex_driver::set_timingname(char *nn){
@@ -158,6 +161,7 @@ void dalex_driver::search(int limit){
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
     _search(limit);
+    _cloud.write_to_end_pt_file(_cloud.mindex());
 }
 
 void dalex_driver::warm_start(char *warm_name, int limit){

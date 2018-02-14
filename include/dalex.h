@@ -37,6 +37,7 @@ class dalex{
 
         dalex(){
             _log_file_name[0]=0;
+            _end_pt_name[0]=0;
             _chifn=NULL;
             _reset_threshold=0.5;
             _reset_chimin=2.0*exception_value;
@@ -70,6 +71,34 @@ class dalex{
 
         void set_limit(int ii){
             _limit=ii;
+        }
+
+        void set_end_pt_name(char *word){
+            int i;
+            for(i=0;i<letters+19 && word[i]!=0;i++){
+                _end_pt_name[i]=word[i];
+            }
+            _end_pt_name[i]=0;
+            FILE *out_file;
+            out_file = fopen(_end_pt_name,"w");
+            fclose(out_file);
+        }
+
+        void write_to_end_pt_file(int dex){
+            if(_end_pt_name[0]==0){
+                return;
+            }
+            if(dex<0){
+                return;
+            }
+            FILE *out_file;
+            out_file = fopen(_end_pt_name, "a");
+            int i;
+            for(i=0;i<_chifn->get_dim();i++){
+                fprintf(out_file,"%e ",_chifn->get_pt(dex,i));
+            }
+            fprintf(out_file,"%e %d\n",_chifn->get_fn(dex),dex);
+            fclose(out_file);
         }
 
         void search();
@@ -109,6 +138,11 @@ class dalex{
         }
 
         void write_to_log(char*);
+
+        int mindex(){
+            safety_check("mindex");
+            return _chifn->mindex();
+        }
 
     private:
 
@@ -180,11 +214,6 @@ class dalex{
             return _chifn->chimin();
         }
 
-        int mindex(){
-            safety_check("mindex");
-            return _chifn->mindex();
-        }
-
         void safety_check(char *word){
             if(_chifn==NULL){
                 printf("ERROR: dalex called %s but _chifn is NULL\n", word);
@@ -247,6 +276,7 @@ class dalex{
         ellipse_sampler _ellipse_sampler;
 
         char _log_file_name[letters];
+        char _end_pt_name[letters+20];
 };
 
 #endif

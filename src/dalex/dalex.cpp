@@ -1457,6 +1457,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         evaluate(minpt,&mu,i_next);
     }
 
+    write_to_end_pt_file(i_next[0]);
+
     int pre_fill=_chifn->get_pts();
     array_1d<double> perp_dir;
     array_1d<double> trial_dir;
@@ -1900,6 +1902,7 @@ void dalex::find_tendril_candidates(double factor_in){
 
             if(_chifn->get_fn(i_found)>target()){
                 // just naively using a multiple of the ellipse radius worked
+                write_to_end_pt_file(i_found);
                 origins.add(i_found);
                 seed.add_row(trial);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
@@ -1929,6 +1932,7 @@ void dalex::find_tendril_candidates(double factor_in){
                         write_to_log(log_message);
                     }
                 }
+                write_to_end_pt_file(i_found);
                 origins.add(i_found);
                 seed_int_list.add(i_found);
                 seed.add_row(_chifn->get_pt(i_found));
@@ -1977,6 +1981,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 at_least_one.add(i_found);
             }
             particles.add(i_found);
+            write_to_end_pt_file(i_found);
             cost=dchifn(minpt);
             fn_val.add(cost);
             if(_chifn->get_dim()>9){

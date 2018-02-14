@@ -61,6 +61,7 @@ private:
     dalex _cloud;
 
     char _outname[letters],_timingname[letters];
+    char _end_pt_name[letters+20];
 
     array_1d<int> _good_points;
 
