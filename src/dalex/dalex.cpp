@@ -1564,6 +1564,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         path_mid=path_dist_dex.get_data(path_dist.get_dim()/2);
     }
 
+    //spock: consider adding path_mid
+
     double dd_start,dd_mid,dd_end;
 
     if(path_start>=0 || path_end>=0 || path_mid>0){
