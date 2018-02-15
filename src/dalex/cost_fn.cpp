@@ -59,6 +59,12 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
         }
     }
 
+    for(i=0;i<_chifn->get_dim();i++){
+        if(norm.get_data(i)<1.0e-20){
+            norm.set(i,1.0);
+        }
+    }
+
     array_1d<double> norm_sorted;
     array_1d<int> norm_dex;
     norm_sorted.set_name("cost_fn_build_norm_sorted");
