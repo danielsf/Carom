@@ -35,7 +35,6 @@ class cost_fn : public function_wrapper{
 
     private:
         array_1d<int> _associates;
-        array_1d<double> _median_associate;
         double _scalar_norm;
         chisq_wrapper *_chifn;
         int _called;

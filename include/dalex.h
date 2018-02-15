@@ -65,6 +65,9 @@ class dalex{
 
             _minimizers.set_name("dalex_minimizers");
             _tendril_init=0;
+
+            _particle_candidates.set_name("_particle_candidates");
+            _origin_candidates.set_name("_origin_candidates");
         };
 
         void build(chisq_wrapper*);
