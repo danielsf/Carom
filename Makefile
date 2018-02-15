@@ -174,6 +174,16 @@ object/ellipse.o
         object/dalex.o object/dalex_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
+quad: src/examples/quadratic_example.cpp object/dalex_driver.o \
+object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
+object/ellipse.o
+	$(cc) -o bin/quad src/examples/quadratic_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/cost_fn.o object/dalex_driver.o object/jellyBean.o object/ellipse.o \
+        object/dalex.o object/dalex_initializer.o object/explorers.o \
+	$(LIBRARIES)
+
 test_opt: src/examples/test_opt.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o
 	$(cc) -o bin/test_opt src/examples/test_opt.cpp \
