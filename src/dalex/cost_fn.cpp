@@ -33,6 +33,9 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 
     array_1d<double> norm;
     array_1d<double> min,max;
+    norm.set_name("cost_fn_build_norm");
+    min.set_name("cost_fn_build_min");
+    max.set_name("cost_fn_build_max");
     int j;
     for(i=0;i<_associates.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
