@@ -15,15 +15,15 @@ double distance_sq(const array_1d<double> &pt1,
     for(i=0;i<pt1.get_dim();i++){
         mu+=power((pt1.get_data(i)-pt2.get_data(i))/ell.get_data(i),2);
     }
-    return mu;
+    return sqrt(mu);
 }
 
 
-class gp{
+class GaussianProcess{
 
     public:
 
-        gp(array_2d<double> &pts, array_1d<double> &fn){
+        GaussianProcess(array_2d<double> &pts, array_1d<double> &fn){
             _pts.set_name("gp_pts");
             _fn.set_name("gp_fn");
             _cov_inv.set_name("gp_cov_inv");
@@ -35,12 +35,13 @@ class gp{
             _fn_mean = 0.0;
             for(i=0;i<pts.get_rows();i++){
                 _fn.set(i,fn.get_data(i));
-                _fn_mean += fn.get_data(i);
+                _fn_mean+=fn.get_data(i);
                 for(j=0;j<pts.get_cols();j++){
                     _pts.set(i,j,pts.get_data(i,j));
                 }
             }
-            _fn_mean =_fn_mean/double(fn.get_dim());
+            _fn_mean = _fn_mean/double(pts.get_rows());
+            _fn_mean=95.3;
         }
     
         void build_cov_inv(array_1d<double> &ell, double nugget){
@@ -50,6 +51,7 @@ class gp{
             int i,j;
             double ddsq;
             array_2d<double> cov;
+            cov.set_dim(_pts.get_rows(),_pts.get_rows());
 
             for(i=0;i<_pts.get_cols();i++){
                 _ell.set(i,ell.get_data(i));
@@ -68,7 +70,7 @@ class gp{
             invert_lapack(cov, _cov_inv, 0);
         }
 
-        double operator()(array_1d<double> &pt){
+        double operator()(const array_1d<double> &pt){
             _cq.reset_preserving_room();
             _cq.set_dim(_pts.get_rows());
             int i;
@@ -83,6 +85,12 @@ class gp{
                 for(j=0;j<_pts.get_rows();j++){
                     ans += _cq.get_data(i)*_cov_inv.get_data(i,j)*(_fn.get_data(j)-_fn_mean);
                 }
+            }
+            if(fabs(ans-95.3)<1.0e-4){
+                for(i=0;i<_pts.get_rows();i++){
+                    printf("%e %e\n",_cq.get_data(i),distance_sq(pt,_pts(i),_ell));
+                }
+                exit(1);
             }
             return ans;
         }
@@ -145,41 +153,71 @@ int main(int iargc, char *argv[]){
     }
     fclose(in_file);
 
-    array_2d<double> matrix;
-    matrix.set_dim(pts.get_rows(),pts.get_rows());
-    array_1d<double> ell; 
-    for(i=0;i<dim;i++){
-        ell.set(i,0.1*(max.get_data(i)-min.get_data(i)));
-        if(ell.get_data(i)<1.0e-10){
-           printf("WARNING ell %d %e\n",i,ell.get_data(i));
-           exit(1);
+    Ran chaos(99);
+
+    array_2d<double> test_pts;
+    array_1d<double> test_fn;
+    char word[letters];
+    double roll;
+    int n_total_rows=0;
+    int as_test;
+    in_file = fopen("output/test_180214/output.txt", "r");
+    for(i=0;i<dim+3;i++){fscanf(in_file,"%s",word);}
+    printf("last word %s\n",word);
+    while(fscanf(in_file,"%le",&mu)>0){
+        n_total_rows++;
+        row.set(0,mu);
+        for(i=1;i<dim;i++){
+            fscanf(in_file,"%le",&mu);
+            row.set(i,mu);
         }
-    }   
-
-    array_2d<double> matrix_inverse;
-    for(i=0;i<pts.get_rows();i++){
-        matrix.set(i,i,1.1);
-        for(j=i+1;j<pts.get_rows();j++){
-            mu = distance_sq(pts(i), pts(j), ell);
-            matrix.set(i,j,exp(-0.5*mu));
-            matrix.set(j,i,exp(-0.5*mu));
+        fscanf(in_file,"%le",&mu);
+        fscanf(in_file,"%d",&j);
+        as_test = 0;
+        if(mu<200.0){
+            roll = chaos.doub();
+            if(roll<0.01){
+                as_test=1;
+            }
+        }
+        if(as_test==1){
+            test_pts.add_row(row);
+            test_fn.add(mu);
+        }
+        else{
+            if(mu<200.0){
+                roll = chaos.doub();
+                if(roll<0.001){
+                    pts.add_row(row);
+                    fn.add(mu);
+                }
+            }
         }
     }
+    fclose(in_file);
+    printf("total rows %d test rows %d\n",n_total_rows, test_pts.get_rows());
+    printf("gp pts %d\n",pts.get_rows());
 
-    double t_start = double(time(NULL));
-    invert_lapack(matrix, matrix_inverse, 0);
-    printf("inverting %d by %d took %e\n",pts.get_rows(),pts.get_rows(),
-           double(time(NULL))-t_start);
 
+    GaussianProcess gp(pts, fn);
+
+
+    double ell_factor = 0.1;
+    double nugget = 0.01;
+    array_1d<double> ell;
     for(i=0;i<dim;i++){
-        printf("%.3e ",matrix_inverse.get_data(0,i));
+        ell.set(i,2.0);
     }
-    printf("\n");
-    for(i=0;i<dim;i++){
-        printf("%.3e ",matrix.get_data(0,i));
+    printf("building cov inv\n");
+    gp.build_cov_inv(ell,nugget);
+    printf("built covinv\n");
+    FILE *out_file;
+    out_file=fopen("junk.txt", "w");
+    fprintf(out_file,"# truth fit delta\n");
+    for(i=0;i<test_pts.get_rows();i++){
+        mu=gp(test_pts(i));
+        fprintf(out_file,"%e %e %e\n",test_fn.get_data(i),mu,fabs(test_fn.get_data(i)-mu));
     }
-    printf("\n");
+    fclose(out_file);
 
-    double err=check_inversion(matrix, matrix_inverse);
-    printf("maxerr %e\n",err);
 }
