@@ -2077,16 +2077,34 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 }
             }
         }
-        dchifn.build(_chifn,associates,1);
-        for(i=0;i<_particle_candidates.get_dim();i++){
-            if(_particle_candidates.get_data(i)<0){
-                cost_val.add(2.0*exception_value);
+
+        if(associates.get_dim()>0){
+            dchifn.build(_chifn,associates,1);
+            for(i=0;i<_particle_candidates.get_dim();i++){
+                if(_particle_candidates.get_data(i)<0){
+                    cost_val.add(2.0*exception_value);
+                }
+                else{
+                    cost_val.add(dchifn(_chifn->get_pt(_particle_candidates.get_data(i))));
+                }
+                cost_val_dex.add(i);
             }
-            else{
-                cost_val.add(dchifn(_chifn->get_pt(_particle_candidates.get_data(i))));
-            }
-            cost_val_dex.add(i);
         }
+        else{
+            // if no associates, just choose particle that is
+            // farthest away from distance
+            for(i=0;i<_particle_candidates.get_dim();i++){
+                if(_particle_candidates.get_data(i)<0){
+                   cost_val.add(2.0*exception_value);
+                }
+                else{
+                    cost_val.add(-1.0*_chifn->distance(mindex(),
+                                 _particle_candidates.get_data(i)));
+                }
+                cost_val_dex.add(i);
+            }
+        }
+
         sort(cost_val, cost_val_sorted, cost_val_dex);
 
         for(i=0;i<_particle_candidates.get_dim();i++){
