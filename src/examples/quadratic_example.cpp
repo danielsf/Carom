@@ -33,12 +33,17 @@ class quadratic_fitter : public function_wrapper{
             return _best_aa;
         }
 
+        double get_v(int i){
+            return _best_v.get_data(i);
+        }
+
     private:
         array_2d<double> _pts;
         array_1d<double> _fn;
         array_1d<double> _work_v;
         array_1d<double> _dotprod;
         array_1d<double> _sigma;
+        array_1d<double> _best_v;
         double _fn_min;
         int _min_dex;
         int _called;
@@ -131,6 +136,9 @@ double quadratic_fitter::operator()(const array_1d<double> &theta){
     if(err<_best_err){
         _best_err=err;
         _best_aa=aa;
+        for(i=0;i<_dim;i++){
+            _best_v.set(i,_work_v.get_data(i));
+        }
     }
 
     return err;
@@ -262,12 +270,28 @@ int main(int iargc, char *argv[]){
         }
     }
 
-    for(i=0;i<fn.get_dim();i++){
+    double aa;
+    array_1d<double> dir;
+    for(i=0;i<dim;i++){
+        dir.set(i,q_fit.get_v(i));
+        printf("    %e\n",dir.get_data(i));
+    }
+    aa=q_fit.get_aa();
+    for(i=0;i<pts.get_rows();i++){
         dot_product.set(i,0.0);
         for(j=0;j<dim;j++){
-            //dot_product.add_val(power(pts.get_data
+            dot_product.add_val(i,(pts.get_data(i,j)-pts.get_data(min_dex,j))*dir.get_data(j));
         }
     }
+
+    FILE *out_file;
+    out_file=fopen("quad_test_output.txt", "w");
+    for(i=0;i<pts.get_rows();i++){
+        mu=fn.get_data(min_dex)+aa*dot_product.get_data(i)*dot_product.get_data(i);
+        fprintf(out_file,"%e %e %e\n",fn.get_data(i),mu,dot_product.get_data(i));
+    }
+    fclose(out_file);
+
     printf("%d\n",sigma.get_dim());
 
 }
