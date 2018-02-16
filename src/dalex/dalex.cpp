@@ -1564,6 +1564,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         path_mid=path_dist_dex.get_data(path_dist.get_dim()/2);
     }
 
+    printf("    writing mid pt %d\n",path_mid);
     write_to_end_pt_file(path_mid);
 
     double dd_start,dd_mid,dd_end;
