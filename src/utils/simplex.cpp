@@ -91,6 +91,8 @@ void simplex_minimizer::set_minmax(array_1d<double> &min, array_1d<double> &max)
     }
 
     int i;
+    _origin.reset_preserving_room();
+    _transform.reset_preserving_room();
     _origin.set_dim(min.get_dim());
     _transform.set_dim(min.get_dim());
     for(i=0;i<min.get_dim();i++){
