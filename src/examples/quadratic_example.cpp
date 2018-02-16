@@ -262,10 +262,14 @@ int main(int iargc, char *argv[]){
     gaussianJellyBean12 chifn;
     int i,j;
 
+    array_2d<double> out_dir;
+    array_1d<double> aa;
+
     char data_name[letters];
     sprintf(data_name,"output/test_180214/output.txt_end_pts.txt");
 
     int dim=12;
+    out_dir.set_cols(dim);
 
     array_2d<double> pts;
     array_1d<double> row;
@@ -381,24 +385,23 @@ int main(int iargc, char *argv[]){
         }
     }
 
-    double aa;
-    array_1d<double> dir;
     for(i=0;i<dim;i++){
-        dir.set(i,q_fit.get_v(i));
-        printf("    %e\n",dir.get_data(i));
+        out_dir.set(0,i,q_fit.get_v(i));
+        printf("    %e\n",out_dir.get_data(0,i));
     }
-    aa=q_fit.get_aa();
+
+    aa.add(q_fit.get_aa());
     for(i=0;i<pts.get_rows();i++){
         dot_product.set(i,0.0);
         for(j=0;j<dim;j++){
-            dot_product.add_val(i,(pts.get_data(i,j)-pts.get_data(min_dex,j))*dir.get_data(j));
+            dot_product.add_val(i,(pts.get_data(i,j)-pts.get_data(min_dex,j))*out_dir.get_data(0,j));
         }
     }
 
     FILE *out_file;
     out_file=fopen("quad_test_output.txt", "w");
     for(i=0;i<pts.get_rows();i++){
-        mu=fn.get_data(min_dex)+aa*dot_product.get_data(i)*dot_product.get_data(i);
+        mu=fn.get_data(min_dex)+aa.get_data(0)*dot_product.get_data(i)*dot_product.get_data(i);
         fprintf(out_file,"%e %e %e\n",fn.get_data(i),mu,dot_product.get_data(i));
     }
     fclose(out_file);
