@@ -111,7 +111,7 @@ int main(int iargc, char *argv[]){
     int i,j;
 
     char data_name[letters];
-    sprintf(data_name,"output/test_180214/output.txt_end_pts.txt");
+    sprintf(data_name,"output/test_180214/output_midpt.txt_end_pts.txt");
 
     int dim=12;
 
@@ -184,7 +184,7 @@ int main(int iargc, char *argv[]){
             test_pts.add_row(row);
             test_fn.add(mu);
         }
-        else{
+        /*else{
             if(mu<200.0){
                 roll = chaos.doub();
                 if(roll<0.001){
@@ -192,7 +192,7 @@ int main(int iargc, char *argv[]){
                     fn.add(mu);
                 }
             }
-        }
+        }*/
     }
     fclose(in_file);
     printf("total rows %d test rows %d\n",n_total_rows, test_pts.get_rows());
