@@ -322,6 +322,35 @@ int main(int iargc, char *argv[]){
     }
     fclose(in_file);
 
+    int min_dex;
+    double fn_min;
+
+    for(i=0;i<fn.get_dim();i++){
+        if(i==0 || fn.get_data(i)<fn_min){
+            fn_min=fn.get_data(i);
+            min_dex=i;
+        }
+    }
+
+    /*array_1d<double> dd,dd_sorted;
+    array_1d<int> dd_dex;
+    for(i=0;i<pts.get_rows();i++){
+        mu=0.0;
+        for(j=0;j<dim;j++){
+            mu+=power(pts.get_data(i,j)-pts.get_data(min_dex,j),2);
+        }
+        dd.add(mu);
+        dd_dex.add(i);
+    }
+    sort(dd,dd_sorted,dd_dex);
+    for(i=0;i<pts.get_rows();i++){
+        if(dd.get_data(i)<dd_sorted.get_data(10)){
+            sigma.set(i,1.0);
+        }
+    }*/
+    printf("penultimate %e\n",sigma.get_data(sigma.get_dim()-2));
+
+
     quadratic_fitter q_fit;
     q_fit.set_data(pts,fn,sigma);
 
@@ -334,8 +363,6 @@ int main(int iargc, char *argv[]){
 
     int i_dir;
 
-    int min_dex;
-    double fn_min;
     int active_dim;
 
     array_1d<double> minpt;
@@ -434,14 +461,6 @@ int main(int iargc, char *argv[]){
     array_1d<double> dot_product;
 
 
-    for(i=0;i<fn.get_dim();i++){
-        if(i==0 || fn.get_data(i)<fn_min){
-            fn_min=fn.get_data(i);
-            min_dex=i;
-        }
-    }
-
-
     for(i=0;i<pts.get_rows();i++){
         dot_product.set(i,0.0);
         for(j=0;j<dim;j++){
@@ -466,6 +485,12 @@ int main(int iargc, char *argv[]){
             fprintf(out_file,"%e ",out_dir.get_data(i,j));
         }
         fprintf(out_file,"\n");
+    }
+    fclose(out_file);
+
+    out_file = fopen("quad_wgts.txt", "w");
+    for(i=0;i<sigma.get_dim();i++){
+        fprintf(out_file,"%e\n",sigma.get_data(i));
     }
     fclose(out_file);
 
