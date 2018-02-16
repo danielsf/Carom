@@ -11,12 +11,13 @@ class quadratic_fitter : public function_wrapper{
 
         quadratic_fitter(){
             _pts.set_name("quadratic_fitter_pts");
+            _pts_raw.set_name("quadratic_fitter_pts_raw");
             _fn.set_name("quadratic_fitter_fn");
+            _fn_raw.set_name("quadrattic_fitter_fn_raw");
             _work_v.set_name("quadratic_fitter_work_v");
             _work_rot.set_name("quadratic_fitter_work_rot");
             _dotprod.set_name("quadratic_fitter_dot_prod");
             _sigma.set_name("quadratic_fitter_sigma");
-            _prior_bases.set_name("quadratic_fitter_prior_bases");
             _random_bases.set_name("quadratic_fitter_random_bases");
             _called=0;
             chaos = new Ran(182311);
@@ -31,6 +32,8 @@ class quadratic_fitter : public function_wrapper{
         void set_data(array_2d<double>&, array_1d<double>&,
                       array_1d<double>&);
 
+        void set_prior_dir(array_2d<double>&, array_1d<double>&);
+
         virtual double operator()(const array_1d<double>&);
 
         double get_aa(){
@@ -42,14 +45,13 @@ class quadratic_fitter : public function_wrapper{
         }
 
     private:
-        array_2d<double> _pts;
-        array_1d<double> _fn;
+        array_2d<double> _pts,_pts_raw;
+        array_1d<double> _fn,_fn_raw;
         array_1d<double> _work_v;
         array_1d<double> _work_rot;
         array_1d<double> _dotprod;
         array_1d<double> _sigma;
         array_1d<double> _best_v;
-        array_2d<double> _prior_bases;
         array_2d<double> _random_bases;
         Ran *chaos;
         double _fn_min;
@@ -66,12 +68,13 @@ void quadratic_fitter::set_data(array_2d<double> &pts,
                                 array_1d<double> &sigma){
 
     _pts.reset();
+    _pts_raw.reset();
     _fn.reset_preserving_room();
+    _fn_raw.reset_preserving_room();
     _called=0;
     _dim = pts.get_cols();
     _dotprod.reset();
     _dotprod.set_dim(_pts.get_rows());
-    _prior_bases.reset();
     _random_bases.reset();
     _random_bases.set_dim(_dim,_dim);
     _best_err=2.0*exception_value;
@@ -79,21 +82,102 @@ void quadratic_fitter::set_data(array_2d<double> &pts,
     int i;
     for(i=0;i<pts.get_rows();i++){
         _dotprod.set(i,0.0);
+        _pts_raw.add_row(pts(i));
         _pts.add_row(pts(i));
         _fn.add(fn.get_data(i));
+        _fn_raw.add(fn.get_data(i));
         _sigma.add(sigma.get_data(i));
         if(i==0 || fn.get_data(i)<_fn_min){
             _min_dex=i;
             _fn_min=fn.get_data(i);
         }
     }
+
+    array_1d<double> min_pt;
+    min_pt.set_name("quadratic_fitter_set_data_min_pt");
+    for(i=0;i<_dim;i++){
+        min_pt.set(i,_pts.get_data(_min_dex,i));
+    }
+
     int j;
+
+    for(i=0;i<_pts.get_rows();i++){
+        for(j=0;j<_dim;j++){
+            _pts_raw.subtract_val(i,j,min_pt.get_data(j));
+            _pts.subtract_val(i,j,min_pt.get_data(j));
+        }
+        _fn.subtract_val(i,_fn_min);
+        _fn_raw.subtract_val(i,_fn_min);
+    }
+
     for(i=0;i<_dim;i++){
         for(j=0;j<_dim;j++){
             _random_bases.set(i,j,0.0);
         }
         _random_bases.set(i,i,1.0);
     }
+}
+
+void quadratic_fitter::set_prior_dir(array_2d<double> &prior_dir, array_1d<double> &aa){
+    _best_err=2.0*exception_value;
+    _work_rot.reset();
+    _work_v.reset();
+    _pts.reset();
+    _fn.reset();
+    _random_bases.reset();
+
+    int i,j,k;
+    for(i=0;i<_pts_raw.get_rows();i++){
+        _pts.add_row(_pts_raw(i));
+        _fn.add(_fn_raw.get_data(i));
+    }
+
+    double mu;
+    for(i=0;i<_pts.get_rows();i++){
+        for(j=0;j<prior_dir.get_rows();j++){
+            mu=0.0;
+            for(k=0;k<_dim;k++){
+                mu+=prior_dir.get_data(j,k)*_pts.get_data(i,k);
+            }
+            for(k=0;k<_dim;k++){
+                _pts.subtract_val(i,k,mu*prior_dir.get_data(j,k));
+            }
+            _fn.subtract_val(i,mu*mu*aa.get_data(j));
+        }
+    }
+
+    array_1d<double> trial_basis;
+    trial_basis.set_name("quadratic_fitter_trial_basis");
+
+    _random_bases.set_cols(_dim);
+    while(_random_bases.get_rows()<_dim){
+        for(i=0;i<_dim;i++){
+            trial_basis.set(i,normal_deviate(chaos,0.0,1.0));
+        }
+        for(i=0;i<prior_dir.get_rows();i++){
+            mu=0.0;
+            for(j=0;j<_dim;j++){
+                mu+=trial_basis.get_data(j)*prior_dir.get_data(i,j);
+            }
+            for(j=0;j<_dim;j++){
+                trial_basis.subtract_val(j,mu*prior_dir.get_data(i,j));
+            }
+        }
+        for(i=0;i<_random_bases.get_rows();i++){
+            mu=0.0;
+            for(j=0;j<_dim;j++){
+                mu+=trial_basis.get_data(j)*_random_bases.get_data(i,j);
+            }
+            for(j=0;j<_dim;j++){
+                trial_basis.subtract_val(j,mu*_random_bases.get_data(i,j));
+            }
+        }
+        mu=trial_basis.normalize();
+        if(mu>1.0e-20){
+            _random_bases.add_row(trial_basis);
+        }
+    }
+
 }
 
 double quadratic_fitter::operator()(const array_1d<double> &theta){
@@ -123,7 +207,7 @@ double quadratic_fitter::operator()(const array_1d<double> &theta){
 
     for(i=0;i<_dim;i++){
         _work_v.set(i,0.0);
-        for(j=0;j<_dim;j++){
+        for(j=0;j<_random_bases.get_rows();j++){
             _work_v.add_val(i,_work_rot.get_data(j)*_random_bases.get_data(j,i));
         }
     }
@@ -141,14 +225,14 @@ double quadratic_fitter::operator()(const array_1d<double> &theta){
     for(i=0;i<_pts.get_rows();i++){
         mu=0.0;
         for(j=0;j<_dim;j++){
-            mu+=(_pts.get_data(i,j)-_pts.get_data(_min_dex,j))*_work_v.get_data(j);
+            mu+=_pts.get_data(i,j)*_work_v.get_data(j);
         }
         _dotprod.set(i,mu*mu);
     }
 
     double aa=0.0;
     for(i=0;i<_dotprod.get_dim();i++){
-        aa+=(_fn.get_data(i)-_fn_min)*_dotprod.get_data(i)/power(_sigma.get_data(i),2);
+        aa+=_fn.get_data(i)*_dotprod.get_data(i)/power(_sigma.get_data(i),2);
     }
     double denom=0.0;
     for(i=0;i<_dotprod.get_dim();i++){
@@ -157,7 +241,7 @@ double quadratic_fitter::operator()(const array_1d<double> &theta){
     aa/=denom;
     double err=0.0;
     for(i=0;i<_dotprod.get_dim();i++){
-        err+=power((_fn.get_data(i)-_fn_min-aa*_dotprod.get_data(i))/_sigma.get_data(i),2);
+        err+=power((_fn.get_data(i)-aa*_dotprod.get_data(i))/_sigma.get_data(i),2);
     }
 
     if(err<_best_err){
