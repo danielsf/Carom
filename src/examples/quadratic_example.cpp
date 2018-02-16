@@ -348,36 +348,10 @@ int main(int iargc, char *argv[]){
     array_1d<double> minpt;
     ffmin.find_minimum(seed,minpt);
 
-    array_1d<double> true_dir;
-    for(i=0;i<dim;i++){
-        true_dir.set(i,1.0);
-    }
-    double cos_theta,sin_theta;
-
-    for(i=0;i<dim-1;i++){
-        sin_theta=sin(minpt.get_data(i));
-        cos_theta=cos(minpt.get_data(i));
-        true_dir.multiply_val(i,sin_theta);
-        for(j=i+1;j<dim;j++){
-            true_dir.multiply_val(j,cos_theta);
-        }
-
-    }
-
-    mu=0.0;
-
-    for(i=0;i<dim;i++){
-        mu+=true_dir.get_data(i)*true_dir.get_data(i);
-    }
-
-    if(fabs(mu-1.0)>1.0e-5){
-       printf("failed %e\n",mu);
-       exit(1);
-    }
-
     int min_dex;
     double fn_min;
     array_1d<double> dot_product;
+
     for(i=0;i<fn.get_dim();i++){
         if(i==0 || fn.get_data(i)<fn_min){
             fn_min=fn.get_data(i);
