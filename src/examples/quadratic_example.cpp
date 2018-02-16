@@ -150,7 +150,7 @@ void quadratic_fitter::set_prior_dir(array_2d<double> &prior_dir, array_1d<doubl
     trial_basis.set_name("quadratic_fitter_trial_basis");
 
     _random_bases.set_cols(_dim);
-    while(_random_bases.get_rows()<_dim){
+    while(_random_bases.get_rows()<_dim-prior_dir.get_rows()){
         for(i=0;i<_dim;i++){
             trial_basis.set(i,normal_deviate(chaos,0.0,1.0));
         }
@@ -185,22 +185,25 @@ double quadratic_fitter::operator()(const array_1d<double> &theta){
     if(_work_v.get_dim()!=_dim){
         _work_v.reset();
         _work_v.set_dim(_dim);
-        _work_rot.reset();
-        _work_rot.set_dim(_dim);
     }
+    if(_work_rot.get_dim()!=theta.get_dim()+1){
+       _work_rot.reset();
+       _work_rot.set_dim(theta.get_dim()+1);
+    }
+
     int i,j;
-    for(i=0;i<_dim;i++){
+    for(i=0;i<theta.get_dim()+1;i++){
         _work_rot.set(i,1.0);
     }
 
     double sin_theta;
     double cos_theta;
 
-    for(i=0;i<_dim-1;i++){
+    for(i=0;i<theta.get_dim();i++){
         sin_theta=sin(theta.get_data(i));
         cos_theta=cos(theta.get_data(i));
         _work_rot.multiply_val(i,sin_theta);
-        for(j=i+1;j<_dim;j++){
+        for(j=i+1;j<theta.get_dim()+1;j++){
             _work_rot.multiply_val(j,cos_theta);
         }
     }
@@ -310,7 +313,7 @@ int main(int iargc, char *argv[]){
         fscanf(in_file,"%le",&mu);
         fn.add(mu);
         if(mu>known_min+deltachi){
-            sigma.add(1.0+(mu-known_min)/deltachi);
+            sigma.add(1.0+(mu-known_min)/5.0);
         }
         else{
             sigma.add(1.0);
@@ -325,32 +328,111 @@ int main(int iargc, char *argv[]){
     array_1d<double> th_min,th_max;
     array_2d<double> seed;
 
-    for(i=0;i<dim-1;i++){
-        th_min.set(i,0.0);
-        th_max.set(i,2.0*pi);
-    }
+
 
     Ran chaos(99);
-    seed.set_dim(dim,dim-1);
-    for(i=0;i<dim;i++){
-        for(j=0;j<dim-1;j++){
-            seed.set(i,j,pi+2.0*(chaos.doub()-0.5)*pi);
-        }
-    }
 
-    simplex_minimizer ffmin;
-    ffmin.set_chisquared(&q_fit);
-    ffmin.set_minmax(th_min,th_max);
-    ffmin.set_dice(&chaos);
-    ffmin.use_gradient();
-    ffmin.set_abort_max_factor(10000);
-
-    array_1d<double> minpt;
-    ffmin.find_minimum(seed,minpt);
+    int i_dir;
 
     int min_dex;
     double fn_min;
+    int active_dim;
+
+    array_1d<double> minpt;
+
+    simplex_minimizer *ffmin;
+    ffmin = NULL;
+
+    active_dim=dim;
+    for(i_dir=0;i_dir<dim-1;i_dir++){
+        active_dim--;
+        printf("active dim %d\n",active_dim);
+
+        if(ffmin != NULL){
+            delete ffmin;
+        }
+
+        if(out_dir.get_rows()>0){
+            q_fit.set_prior_dir(out_dir,aa);
+        }
+
+        th_min.reset();
+        th_max.reset();
+        for(i=0;i<active_dim;i++){
+            th_min.set(i,0.0);
+            th_max.set(i,2.0*pi);
+        }
+
+        ffmin = new simplex_minimizer;
+        ffmin->set_chisquared(&q_fit);
+        ffmin->set_minmax(th_min,th_max);
+        ffmin->set_dice(&chaos);
+        ffmin->use_gradient();
+        ffmin->set_abort_max_factor(10000);
+
+        minpt.reset_preserving_room();
+        seed.reset();
+        seed.set_dim(active_dim+1,active_dim);
+
+        for(i=0;i<seed.get_rows();i++){
+            for(j=0;j<seed.get_cols();j++){
+                seed.set(i,j,pi+2.0*(chaos.doub()-0.5)*pi);
+            }
+        }
+
+        ffmin->find_minimum(seed,minpt);
+
+        for(i=0;i<dim;i++){
+            out_dir.set(i_dir,i,q_fit.get_v(i));
+        }
+
+        aa.add(q_fit.get_aa());
+    }
+
+    if(out_dir.get_rows()!=dim-1){
+        printf("WARNING only got %d dir\n",out_dir.get_rows());
+        exit(1);
+    }
+
+    array_1d<double> trial;
+    for(i=0;i<dim;i++){
+        trial.set(i,normal_deviate(&chaos,0.0,1.0));
+    }
+    for(i=0;i<out_dir.get_rows();i++){
+        mu=0.0;
+        for(j=0;j<dim;j++){
+            mu+=out_dir.get_data(i,j)*trial.get_data(j);
+        }
+        for(j=0;j<dim;j++){
+            trial.subtract_val(j,mu*out_dir.get_data(i,j));
+        }
+    }
+    trial.normalize();
+    out_dir.add_row(trial);
+    int k;
+    for(i=0;i<dim;i++){
+        mu=0.0;
+        for(j=0;j<dim;j++){
+            mu+=out_dir.get_data(i,j)*out_dir.get_data(i,j);
+        }
+        if(fabs(mu-1.0)>1.0e-5){
+            printf("WARNING normsq of %d %e\n",i,mu);
+            exit(1);
+        }
+        for(j=i+1;j<dim;j++){
+            mu=0.0;
+            for(k=0;k<dim;k++){
+                mu+=out_dir.get_data(i,k)*out_dir.get_data(j,k);
+            }
+            if(fabs(mu)>1.0e-5){
+                printf("WARNING %d dot %d %e\n",i,j,mu);
+                exit(1);
+            }
+        }
+    }
+
     array_1d<double> dot_product;
+
 
     for(i=0;i<fn.get_dim();i++){
         if(i==0 || fn.get_data(i)<fn_min){
@@ -359,18 +441,14 @@ int main(int iargc, char *argv[]){
         }
     }
 
-    for(i=0;i<dim;i++){
-        out_dir.set(0,i,q_fit.get_v(i));
-        printf("    %e\n",out_dir.get_data(0,i));
-    }
 
-    aa.add(q_fit.get_aa());
     for(i=0;i<pts.get_rows();i++){
         dot_product.set(i,0.0);
         for(j=0;j<dim;j++){
             dot_product.add_val(i,(pts.get_data(i,j)-pts.get_data(min_dex,j))*out_dir.get_data(0,j));
         }
     }
+
 
     FILE *out_file;
     out_file=fopen("quad_test_output.txt", "w");
@@ -381,5 +459,14 @@ int main(int iargc, char *argv[]){
     fclose(out_file);
 
     printf("%d\n",sigma.get_dim());
+
+    out_file = fopen("quad_bases.txt", "w");
+    for(i=0;i<out_dir.get_rows();i++){
+        for(j=0;j<out_dir.get_cols();j++){
+            fprintf(out_file,"%e ",out_dir.get_data(i,j));
+        }
+        fprintf(out_file,"\n");
+    }
+    fclose(out_file);
 
 }
