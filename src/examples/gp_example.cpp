@@ -29,21 +29,29 @@ class GaussianProcess{
             _cov_inv.set_name("gp_cov_inv");
             _ell.set_name("gp_ell");
             _cq.set_name("gp_cq");
+            _mean_bases.set_name("gp_mean_bases");
+            _mean_coeffs.set_name("gp_mean_coeffs");
+            _fn_mean.set_name("gp_fn_mean");
             int i,j;
             _pts.set_dim(pts.get_rows(), pts.get_cols());
             _fn.set_dim(pts.get_rows());
-            _fn_mean = 0.0;
+            _min_dex=-1;
             for(i=0;i<pts.get_rows();i++){
                 _fn.set(i,fn.get_data(i));
-                _fn_mean+=fn.get_data(i);
                 for(j=0;j<pts.get_cols();j++){
                     _pts.set(i,j,pts.get_data(i,j));
                 }
+                if(_min_dex<0 || fn.get_data(i)<fn.get_data(_min_dex)){
+                    _min_dex=i;
+                }
             }
-            _fn_mean = _fn_mean/double(pts.get_rows());
-            _fn_mean=95.3;
+
+            for(i=0;i<pts.get_rows();i++){
+                _fn_mean.set(i,_mean(pts(i)));
+            }
+
         }
-    
+
         void build_cov_inv(array_1d<double> &ell, double nugget){
 
             _cov_inv.set_dim(_pts.get_rows(),_pts.get_rows());
@@ -79,11 +87,11 @@ class GaussianProcess{
                 ddsq = distance_sq(pt,_pts(i),_ell);
                 _cq.set(i,exp(-0.5*ddsq));
             }
-            double ans=_fn_mean;
+            double ans=_mean(pt);
             int j;
             for(i=0;i<_pts.get_rows();i++){
                 for(j=0;j<_pts.get_rows();j++){
-                    ans += _cq.get_data(i)*_cov_inv.get_data(i,j)*(_fn.get_data(j)-_fn_mean);
+                    ans += _cq.get_data(i)*_cov_inv.get_data(i,j)*(_fn.get_data(j)-_fn_mean.get_data(j));
                 }
             }
             if(fabs(ans-95.3)<1.0e-4){
@@ -95,14 +103,67 @@ class GaussianProcess{
             return ans;
         }
 
+        double _mean(const array_1d<double> &pt){
+            if(_mean_bases.get_rows()==0){
+                _load_mean_model();
+            }
+            double ans=0.0;
+            double mu;
+            int i,j;
+            for(i=0;i<pt.get_dim();i++){
+                mu=0.0;
+                for(j=0;j<pt.get_dim();j++){
+                    mu+=(pt.get_data(j)-_pts.get_data(_min_dex,j))*_mean_bases.get_data(i,j);
+                }
+                ans += mu*mu*_mean_coeffs.get_data(i);
+            }
+            ans += _fn.get_data(_min_dex);
+            return ans;
+        }
+
     private:
         array_2d<double> _pts;
         array_1d<double> _fn;
         array_2d<double> _cov_inv;
         array_1d<double> _ell;
         array_1d<double> _cq;
+        array_1d<double> _fn_mean;
         double _nugget;
-        double _fn_mean;
+        int _min_dex;
+        array_2d<double> _mean_bases;
+        array_1d<double> _mean_coeffs;
+
+        void _load_mean_model(){
+            FILE *in_file;
+            in_file = fopen("output/test_180214/quad_bases.txt", "r");
+            int i,j,k;
+            double mu;
+            _mean_bases.reset();
+            _mean_bases.set_dim(_pts.get_cols(),_pts.get_cols());
+            for(i=0;i<_pts.get_cols();i++){
+                for(j=0;j<_pts.get_cols();j++){
+                    k=fscanf(in_file,"%le",&mu);
+                    if(k!=1){
+                        printf("WARNING did not read in basis %d %d\n",i,j);
+                        exit(1);
+                    }
+                    _mean_bases.set(i,j,mu);
+                }
+            }
+            fclose(in_file);
+            _mean_coeffs.reset();
+            in_file=fopen("output/test_180214/quad_a_wgts.txt", "r");
+            for(i=0;i<_pts.get_cols();i++){
+                k=fscanf(in_file,"%le",&mu);
+                if(k!=1){
+                    printf("WARNING did not read in basis coeff %d\n",i);
+                    exit(1);
+                }
+                _mean_coeffs.set(i,mu);
+            }
+        }
+
+
 
 };
 
@@ -203,10 +264,11 @@ int main(int iargc, char *argv[]){
 
 
     double ell_factor = 0.1;
-    double nugget = 0.01;
+    double nugget = 0.1;
+    double mean;
     array_1d<double> ell;
     for(i=0;i<dim;i++){
-        ell.set(i,2.0);
+        ell.set(i,0.5);
     }
     printf("building cov inv\n");
     gp.build_cov_inv(ell,nugget);
@@ -216,7 +278,8 @@ int main(int iargc, char *argv[]){
     fprintf(out_file,"# truth fit delta\n");
     for(i=0;i<test_pts.get_rows();i++){
         mu=gp(test_pts(i));
-        fprintf(out_file,"%e %e %e\n",test_fn.get_data(i),mu,fabs(test_fn.get_data(i)-mu));
+        mean = gp._mean(test_pts(i));
+        fprintf(out_file,"%e %e %e %e\n",test_fn.get_data(i),mu,mean,fabs(test_fn.get_data(i)-mu));
     }
     fclose(out_file);
 
