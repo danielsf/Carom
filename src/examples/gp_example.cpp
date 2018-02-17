@@ -63,7 +63,7 @@ class GaussianProcess{
             cov.set_dim(_pts.get_rows(),_pts.get_rows());
 
             for(i=0;i<_pts.get_cols();i++){
-                _ell.set(i,ell.get_data(i));
+                _ell.set(i,raiseup(10.0,ell.get_data(i)));
             }
 
             _nugget=nugget;
@@ -203,6 +203,7 @@ class gp_optimizer : public function_wrapper{
                 _fn.add(f.get_data(i));
             }
             _min_rms=2.0*exception_value;
+            _best_err=2.0*exception_value;
         }
 
         virtual double operator()(const array_1d<double> &ell){
@@ -210,15 +211,30 @@ class gp_optimizer : public function_wrapper{
             double err =0.0;
             double mu;
             int i;
+            double delta;
+            int mis_char=0;
             for(i=0;i<_pts.get_rows();i++){
                 mu=gp[0](_pts(i));
-                err += power(mu-_fn.get_data(i),2);
+                delta = power(mu-_fn.get_data(i),2);
+                if(_fn.get_data(i)<116.0 && mu>116.0){
+                    err+=4.0*delta;
+                    mis_char++;
+                }
+                else if(_fn.get_data(i)>116.0 && mu<116.0){
+                    err += 4.0*delta;
+                    mis_char++;
+                }
+                else{
+                    err+=delta/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                }
             }
             double rms=sqrt(err/_pts.get_rows());
-            if(rms<_min_rms){
-                _min_rms=rms;
+            if(err<_best_err){
+                _best_err=err;
+                _best_mis_char=mis_char;
+
             }
-            printf("err %e rms %e\n",err,_min_rms);
+            printf("err %e best %e - %d\n",err,_best_err,_best_mis_char);
             return err;
         }
 
@@ -228,6 +244,8 @@ class gp_optimizer : public function_wrapper{
         array_2d<double> _pts;
         array_1d<double> _fn;
         double _min_rms;
+        int _best_mis_char;
+        double _best_err;
 
 };
 
