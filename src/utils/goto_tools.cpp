@@ -13,6 +13,10 @@ void transcribe(char *w1, char *w2){
     w2[i]=0;
 }
 
+double raiseup(double ii, double jj){
+    return exp(jj*log(ii));
+}
+
 double normal_deviate(Ran *chaos, double mu, double sig){
 
  int i;
