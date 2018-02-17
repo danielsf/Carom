@@ -52,9 +52,10 @@ class GaussianProcess{
 
         }
 
-        void build_cov_inv(array_1d<double> &ell, double nugget){
+        void build_cov_inv(const array_1d<double> &ell, double nugget){
 
             _cov_inv.set_dim(_pts.get_rows(),_pts.get_rows());
+            _cov_vector.reset_preserving_room();
 
             int i,j;
             double ddsq;
@@ -76,6 +77,13 @@ class GaussianProcess{
                 }
             }
             invert_lapack(cov, _cov_inv, 0);
+
+            for(i=0;i<_pts.get_rows();i++){
+                _cov_vector.set(i,0.0);
+                for(j=0;j<_pts.get_rows();j++){
+                    _cov_vector.add_val(i,_cov_inv.get_data(i,j)*(_fn.get_data(j)-_mean(_pts(j))));
+                }
+            }
         }
 
         double operator()(const array_1d<double> &pt){
@@ -90,9 +98,7 @@ class GaussianProcess{
             double ans=_mean(pt);
             int j;
             for(i=0;i<_pts.get_rows();i++){
-                for(j=0;j<_pts.get_rows();j++){
-                    ans += _cq.get_data(i)*_cov_inv.get_data(i,j)*(_fn.get_data(j)-_fn_mean.get_data(j));
-                }
+                ans += _cq.get_data(i)*_cov_vector.get_data(i);
             }
             if(fabs(ans-95.3)<1.0e-4){
                 for(i=0;i<_pts.get_rows();i++){
@@ -128,6 +134,7 @@ class GaussianProcess{
         array_1d<double> _ell;
         array_1d<double> _cq;
         array_1d<double> _fn_mean;
+        array_1d<double> _cov_vector;
         double _nugget;
         int _min_dex;
         array_2d<double> _mean_bases;
@@ -166,6 +173,64 @@ class GaussianProcess{
 
 
 };
+
+class gp_optimizer : public function_wrapper{
+
+    public:
+        gp_optimizer(){
+            gp=NULL;
+            _called=0;
+            _pts.set_name("gp_opt_pts");
+            _fn.set_name("gp_opt_fn");
+        }
+
+        ~gp_optimizer(){}
+
+        virtual int get_called(){
+            return _called;
+        }
+
+        void set_gp(GaussianProcess *gp_in){
+            gp=gp_in;
+        }
+
+        void set_data(array_2d<double> &p, array_1d<double> &f){
+            _pts.reset();
+            _fn.reset();
+            int i,j;
+            for(i=0;i<p.get_rows();i++){
+                _pts.add_row(p(i));
+                _fn.add(f.get_data(i));
+            }
+            _min_rms=2.0*exception_value;
+        }
+
+        virtual double operator()(const array_1d<double> &ell){
+            gp->build_cov_inv(ell, raiseup(10.0,ell.get_data(ell.get_dim()-1)));
+            double err =0.0;
+            double mu;
+            int i;
+            for(i=0;i<_pts.get_rows();i++){
+                mu=gp[0](_pts(i));
+                err += power(mu-_fn.get_data(i),2);
+            }
+            double rms=sqrt(err/_pts.get_rows());
+            if(rms<_min_rms){
+                _min_rms=rms;
+            }
+            printf("err %e rms %e\n",err,_min_rms);
+            return err;
+        }
+
+    private:
+        GaussianProcess *gp;
+        int _called;
+        array_2d<double> _pts;
+        array_1d<double> _fn;
+        double _min_rms;
+
+};
+
 
 int main(int iargc, char *argv[]){
     gaussianJellyBean12 chifn;
@@ -262,20 +327,42 @@ int main(int iargc, char *argv[]){
 
     GaussianProcess gp(pts, fn);
 
+    gp_optimizer gp_opt;
+    gp_opt.set_gp(&gp);
+    gp_opt.set_data(test_pts, test_fn);
 
-    double ell_factor = 0.1;
-    double nugget = 0.1;
-    double mean;
-    array_1d<double> ell;
-    for(i=0;i<dim;i++){
-        ell.set(i,0.5);
+    array_2d<double> seed;
+    seed.set_dim(dim+2,dim+1);
+    for(i=0;i<dim+2;i++){
+        for(j=0;j<dim;j++){
+            seed.set(i,j,3.0*chaos.doub()+0.5);
+        }
+        seed.set(i,dim,-1.0*chaos.doub());
     }
+
+    simplex_minimizer ffmin;
+    ffmin.set_dice(&chaos);
+    ffmin.use_gradient();
+    ffmin.set_chisquared(&gp_opt);
+    ffmin.set_abort_max_factor(100);
+    array_1d<double> ell;
+
+    ffmin.find_minimum(seed,ell);
+
+    double nugget = 0.01;
+    double mean;
+
     printf("building cov inv\n");
-    gp.build_cov_inv(ell,nugget);
+    gp.build_cov_inv(ell,raiseup(10.0,ell.get_data(ell.get_dim()-1)));
     printf("built covinv\n");
     FILE *out_file;
     out_file=fopen("junk.txt", "w");
     fprintf(out_file,"# truth fit delta\n");
+    fprintf(out_file,"# ");
+    for(i=0;i<ell.get_dim();i++){
+        fprintf(out_file,"%e ",ell.get_data(i));
+    }
+    fprintf(out_file,"\n");
     for(i=0;i<test_pts.get_rows();i++){
         mu=gp(test_pts(i));
         mean = gp._mean(test_pts(i));
