@@ -286,6 +286,7 @@ class gp_optimizer : public function_wrapper{
             int i;
             double delta,delta_mean;
             int mis_char=0;
+            double wgt;
             for(i=0;i<_pts.get_rows();i++){
                 mu=gp[0](_pts(i));
                 mu_mean=gp[0]._mean(_pts(i));
@@ -293,13 +294,19 @@ class gp_optimizer : public function_wrapper{
                 delta_mean=power(mu_mean-_fn.get_data(i),2);
                 if(_fn.get_data(i)<116.0 && mu>116.0){
                     mis_char++;
+                    wgt=1.0;
                 }
                 else if(_fn.get_data(i)>116.0 && mu<116.0){
                     mis_char++;
+                    wgt=1.0;
                 }
-                err+=delta/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                else{
+                    wgt=1.0/power(1.0+(_fn.get_data(i)-95.0)/5.0,2)
+                }
 
-                err_mean+=delta_mean/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                err+=delta*wgt;
+
+                err_mean+=delta_mean*wgt;
 
             }
             double rms=sqrt(err/_pts.get_rows());
