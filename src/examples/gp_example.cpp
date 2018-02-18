@@ -95,8 +95,8 @@ class GaussianProcess{
                 cov.set(i,i,1.0+_nugget);
                 for(j=i+1;j<_pts.get_rows();j++){
                     ddsq = cov_distance_sq(i,j);
-                    cov.set(i,j,exp(-0.5*ddsq));
-                    cov.set(j,i,exp(-0.5*ddsq));
+                    cov.set(i,j,exp(-0.5*sqrt(ddsq)));
+                    cov.set(j,i,exp(-0.5*sqrt(ddsq)));
                 }
             }
             invert_lapack(cov, _cov_inv, 0);
@@ -161,7 +161,7 @@ class GaussianProcess{
             double ans=_mean(pt);
             for(i=0;i<_pts.get_rows();i++){
                 ddsq = cov_distance_sq(pt,i);
-                _cq.set(i,exp(-0.5*ddsq));
+                _cq.set(i,exp(-0.5*sqrt(ddsq)));
             }
             int j;
             for(i=0;i<_pts.get_rows();i++){
@@ -257,6 +257,7 @@ class gp_optimizer : public function_wrapper{
 
         void reset_called(){
             _called=0;
+            _best_err=2.0*exception_value;
         }
 
         void set_gp(GaussianProcess *gp_in){
@@ -276,6 +277,7 @@ class gp_optimizer : public function_wrapper{
         }
 
         virtual double operator()(const array_1d<double> &ell){
+            _called++;
             gp->build_cov_inv(ell);
             double err =0.0;
             double err_mean=0.0;
@@ -505,7 +507,7 @@ int main(int iargc, char *argv[]){
             if(pool_fn.get_data(i)>116.0 && mu<100.0){
                 use_it=1;
             }
-            if(pool_fn.get_data(i)<100.0 && mu>105.0){
+            if(pool_fn.get_data(i)<110.0 && fabs(mu-pool_fn.get_data(i))>1.0){
                 use_it=1;
             }
             if(use_it==1){
