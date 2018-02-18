@@ -443,6 +443,18 @@ int main(int iargc, char *argv[]){
 
     printf("gp pts %d\n",gp_pts.get_rows());
 
+    array_1d<double> ell;
+    array_2d<double> seed;
+
+
+    double mean;
+
+    double err=0.0;
+    double err_mean=0.0;
+
+    FILE *out_file;
+    simplex_minimizer *ffmin;
+
 
     GaussianProcess gp;
     gp.build(gp_pts, gp_fn);
@@ -451,7 +463,6 @@ int main(int iargc, char *argv[]){
     gp_opt.set_gp(&gp);
     gp_opt.set_data(test_pts, test_fn);
 
-    array_2d<double> seed;
     seed.set_dim(dim+2,dim+1);
     for(i=0;i<dim+2;i++){
         for(j=0;j<dim;j++){
@@ -460,25 +471,20 @@ int main(int iargc, char *argv[]){
         seed.set(i,dim,-1.0*chaos.doub());
     }
 
-    simplex_minimizer ffmin;
-    ffmin.set_dice(&chaos);
-    ffmin.use_gradient();
-    ffmin.set_chisquared(&gp_opt);
-    ffmin.set_abort_max_factor(10);
-    array_1d<double> ell;
+    ffmin = new simplex_minimizer;
+    ffmin->set_dice(&chaos);
+    ffmin->use_gradient();
+    ffmin->set_chisquared(&gp_opt);
+    ffmin->set_abort_max_factor(10);
 
-    ffmin.find_minimum(seed,ell);
+    ffmin->find_minimum(seed,ell);
 
-    double nugget = 0.01;
-    double mean;
-
-    double err=0.0;
-    double err_mean=0.0;
+    err=0.0;
+    err_mean=0.0;
 
     printf("building cov inv\n");
     gp.build_cov_inv(ell,raiseup(10.0,ell.get_data(ell.get_dim()-1)));
     printf("built covinv\n");
-    FILE *out_file;
     out_file=fopen("junk.txt", "w");
     fprintf(out_file,"# truth fit delta\n");
     fprintf(out_file,"# ");
