@@ -72,11 +72,13 @@ class GaussianProcess{
 
         }
 
-        void build_cov_inv(const array_1d<double> &ell, double nugget){
+        void build_cov_inv(const array_1d<double> &ell){
 
             _cov_inv.set_dim(_pts.get_rows(),_pts.get_rows());
             _cov_vector.reset_preserving_room();
             _proj_arr.reset();
+
+            double nugget=raiseup(10.0,ell.get_data(ell.get_dim()-1));
 
             int i,j;
             double ddsq;
@@ -253,6 +255,10 @@ class gp_optimizer : public function_wrapper{
             return _called;
         }
 
+        void reset_called(){
+            _called=0;
+        }
+
         void set_gp(GaussianProcess *gp_in){
             gp=gp_in;
         }
@@ -270,7 +276,7 @@ class gp_optimizer : public function_wrapper{
         }
 
         virtual double operator()(const array_1d<double> &ell){
-            gp->build_cov_inv(ell, raiseup(10.0,ell.get_data(ell.get_dim()-1)));
+            gp->build_cov_inv(ell);
             double err =0.0;
             double err_mean=0.0;
             double mu;
@@ -454,36 +460,69 @@ int main(int iargc, char *argv[]){
 
     FILE *out_file;
     simplex_minimizer *ffmin;
+    ffmin = NULL;
 
 
     GaussianProcess gp;
-    gp.build(gp_pts, gp_fn);
 
     gp_optimizer gp_opt;
     gp_opt.set_gp(&gp);
     gp_opt.set_data(test_pts, test_fn);
 
-    seed.set_dim(dim+2,dim+1);
-    for(i=0;i<dim+2;i++){
-        for(j=0;j<dim;j++){
-            seed.set(i,j,3.0*(chaos.doub()-0.5));
+    int iteration;
+    int use_it=0;
+    int added;
+    for(iteration=0;iteration<2;iteration++){
+
+        gp_opt.reset_called();
+        gp.build(gp_pts, gp_fn);
+
+        seed.set_dim(dim+2,dim+1);
+        for(i=0;i<dim+2;i++){
+            for(j=0;j<dim;j++){
+                seed.set(i,j,3.0*(chaos.doub()-0.5));
+            }
+            seed.set(i,dim,-1.0*chaos.doub());
         }
-        seed.set(i,dim,-1.0*chaos.doub());
+
+        if(ffmin != NULL){
+            delete ffmin;
+        }
+
+        ffmin = new simplex_minimizer;
+        ffmin->set_dice(&chaos);
+        ffmin->use_gradient();
+        ffmin->set_chisquared(&gp_opt);
+        ffmin->set_abort_max_factor(10);
+
+        ffmin->find_minimum(seed,ell);
+
+        gp.build_cov_inv(ell);
+        added=0;
+        for(i=0;i<pool_pts.get_rows();i++){
+            mu=gp(pool_pts(i));
+            use_it=0;
+            if(pool_fn.get_data(i)>116.0 && mu<100.0){
+                use_it=1;
+            }
+            if(pool_fn.get_data(i)<100.0 && mu>105.0){
+                use_it=1;
+            }
+            if(use_it==1){
+                added++;
+                gp_pts.add_row(pool_pts(i));
+                gp_fn.add(pool_fn.get_data(i));
+            }
+        }
+        printf("added %d\n",added);
+
     }
-
-    ffmin = new simplex_minimizer;
-    ffmin->set_dice(&chaos);
-    ffmin->use_gradient();
-    ffmin->set_chisquared(&gp_opt);
-    ffmin->set_abort_max_factor(10);
-
-    ffmin->find_minimum(seed,ell);
 
     err=0.0;
     err_mean=0.0;
 
     printf("building cov inv\n");
-    gp.build_cov_inv(ell,raiseup(10.0,ell.get_data(ell.get_dim()-1)));
+    gp.build_cov_inv(ell);
     printf("built covinv\n");
     out_file=fopen("junk.txt", "w");
     fprintf(out_file,"# truth fit delta\n");
