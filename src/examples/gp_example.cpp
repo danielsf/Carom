@@ -309,9 +309,8 @@ class gp_optimizer : public function_wrapper{
             if(err<_best_err){
                 _best_err=err;
                 _best_mis_char=mis_char;
-
+                printf("err %.3e err_mean %.3e best %e - %d\n",err,err_mean,_best_err,_best_mis_char);
             }
-            printf("err %.3e err_mean %.3e best %e - %d\n",err,err_mean,_best_err,_best_mis_char);
             return err;
         }
 
@@ -336,9 +335,9 @@ int main(int iargc, char *argv[]){
 
     int dim=12;
 
-    array_2d<double> pts;
+    array_2d<double> gp_pts;
     array_1d<double> row;
-    array_1d<double> fn,min,max;
+    array_1d<double> gp_fn,min,max;
 
     for(i=0;i<dim;i++){
         min.set(i,2.0*exception_value);
@@ -367,9 +366,9 @@ int main(int iargc, char *argv[]){
                 max.set(i,mu);
             }
         }
-        pts.add_row(row);
+        gp_pts.add_row(row);
         fscanf(in_file,"%le",&mu);
-        fn.add(mu);
+        gp_fn.add(mu);
         fscanf(in_file,"%d",&j);
     }
     fclose(in_file);
@@ -378,6 +377,13 @@ int main(int iargc, char *argv[]){
 
     array_2d<double> test_pts;
     array_1d<double> test_fn;
+
+    array_2d<double> final_pts;
+    array_1d<double> final_fn;
+
+    array_2d<double> pool_pts;
+    array_1d<double> pool_fn;
+
     char word[letters];
     double roll;
     int n_total_rows=0;
@@ -405,6 +411,22 @@ int main(int iargc, char *argv[]){
             test_pts.add_row(row);
             test_fn.add(mu);
         }
+        else{
+            if(mu<200.0){
+                roll = chaos.doub();
+                if(roll<0.05){
+                    final_pts.add_row(row);
+                    final_fn.add(mu);
+                }
+                else{
+                    roll = chaos.doub();
+                    if(roll<0.01){
+                        pool_pts.add_row(row);
+                        pool_fn.add(mu);
+                    }
+                }
+            }
+        }
         /*else{
             if(mu<200.0){
                 roll = chaos.doub();
@@ -416,12 +438,14 @@ int main(int iargc, char *argv[]){
         }*/
     }
     fclose(in_file);
-    printf("total rows %d test rows %d\n",n_total_rows, test_pts.get_rows());
-    printf("gp pts %d\n",pts.get_rows());
+    printf("test %d pool %d final %d\n",
+    test_pts.get_rows(),pool_pts.get_rows(),final_pts.get_rows());
+
+    printf("gp pts %d\n",gp_pts.get_rows());
 
 
     GaussianProcess gp;
-    gp.build(pts, fn);
+    gp.build(gp_pts, gp_fn);
 
     gp_optimizer gp_opt;
     gp_opt.set_gp(&gp);
@@ -440,7 +464,7 @@ int main(int iargc, char *argv[]){
     ffmin.set_dice(&chaos);
     ffmin.use_gradient();
     ffmin.set_chisquared(&gp_opt);
-    ffmin.set_abort_max_factor(100);
+    ffmin.set_abort_max_factor(10);
     array_1d<double> ell;
 
     ffmin.find_minimum(seed,ell);
@@ -462,14 +486,14 @@ int main(int iargc, char *argv[]){
         fprintf(out_file,"%e ",ell.get_data(i));
     }
     fprintf(out_file,"\n");
-    for(i=0;i<test_pts.get_rows();i++){
-        mu=gp(test_pts(i));
-        mean = gp._mean(test_pts(i));
-        err+=power(mu-test_fn.get_data(i),2);
-        err_mean+=power(mean-test_fn.get_data(i),2);
-        fprintf(out_file,"%e %e %e %e -- ",test_fn.get_data(i),mu,mean,fabs(test_fn.get_data(i)-mu));
+    for(i=0;i<final_pts.get_rows();i++){
+        mu=gp(final_pts(i));
+        mean = gp._mean(final_pts(i));
+        err+=power(mu-final_fn.get_data(i),2);
+        err_mean+=power(mean-final_fn.get_data(i),2);
+        fprintf(out_file,"%e %e %e %e -- ",final_fn.get_data(i),mu,mean,fabs(final_fn.get_data(i)-mu));
         for(j=0;j<dim;j++){
-            fprintf(out_file,"%e ",test_pts.get_data(i,j));
+            fprintf(out_file,"%e ",final_pts.get_data(i,j));
         }
         fprintf(out_file,"\n");
     }
