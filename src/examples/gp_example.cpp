@@ -32,6 +32,8 @@ class GaussianProcess{
             _mean_bases.set_name("gp_mean_bases");
             _mean_coeffs.set_name("gp_mean_coeffs");
             _fn_mean.set_name("gp_fn_mean");
+            _proj_1.set_name("gp_proj_1");
+            _proj_arr.set_name("gp_proj_2");
             int i,j;
             _pts.set_dim(pts.get_rows(), pts.get_cols());
             _fn.set_dim(pts.get_rows());
@@ -56,6 +58,7 @@ class GaussianProcess{
 
             _cov_inv.set_dim(_pts.get_rows(),_pts.get_rows());
             _cov_vector.reset_preserving_room();
+            _proj_arr.reset();
 
             int i,j;
             double ddsq;
@@ -71,7 +74,7 @@ class GaussianProcess{
             for(i=0;i<_pts.get_rows();i++){
                 cov.set(i,i,1.0+_nugget);
                 for(j=i+1;j<_pts.get_rows();j++){
-                    ddsq = distance_sq(_pts(i), _pts(j), _ell);
+                    ddsq = cov_distance_sq(i,j);
                     cov.set(i,j,exp(-0.5*ddsq));
                     cov.set(j,i,exp(-0.5*ddsq));
                 }
@@ -86,26 +89,65 @@ class GaussianProcess{
             }
         }
 
+        void _build_proj(){
+           int i,j,k;
+           _proj_arr.set_dim(_pts.get_rows(),_pts.get_cols());
+           for(i=0;i<_pts.get_rows();i++){
+               for(j=0;j<_pts.get_cols();j++){
+                   _proj_arr.set(i,j,0.0);
+                   for(k=0;k<_pts.get_cols();k++){
+                       _proj_arr.add_val(i,j,(_pts.get_data(i,k)-_pts.get_data(_min_dex,k))*
+                                              _mean_bases.get_data(j,k));
+                   }
+               }
+           }
+        }
+
+        double cov_distance_sq(int d1, int d2){
+           if(_proj_arr.get_rows()==0){
+               _build_proj();
+           }
+           int i;
+           double ans=0.0;
+           for(i=0;i<_pts.get_cols();i++){
+               ans+=power((_proj_arr.get_data(d1,i)-_proj_arr.get_data(d2,i))/_ell.get_data(i),2);
+           }
+           return ans;
+        }
+
+        double cov_distance_sq(const array_1d<double> &pt, int dex){
+            int i,j;
+            if(_proj_arr.get_rows()==0){
+               _build_proj();
+            }
+            /*for(i=0;i<_pts.get_cols();i++){
+                _proj_1.set(i,0.0);
+                for(j=0;j<_pts.get_cols();j++){
+                    _proj_1.add_val(i,(pt.get_data(j)-_pts.get_data(_min_dex,j))*_mean_bases.get_data(i,j));
+                }
+            }*/
+            double ans=0.0;
+            for(i=0;i<_pts.get_cols();i++){
+                ans+=power((_proj_1.get_data(i)-_proj_arr.get_data(dex,i))/_ell.get_data(i),2);
+            }
+            return ans;
+        }
+
         double operator()(const array_1d<double> &pt){
             _cq.reset_preserving_room();
             _cq.set_dim(_pts.get_rows());
             int i;
             double ddsq;
+            double ans=_mean(pt);
             for(i=0;i<_pts.get_rows();i++){
-                ddsq = distance_sq(pt,_pts(i),_ell);
+                ddsq = cov_distance_sq(pt,i);
                 _cq.set(i,exp(-0.5*ddsq));
             }
-            double ans=_mean(pt);
             int j;
             for(i=0;i<_pts.get_rows();i++){
                 ans += _cq.get_data(i)*_cov_vector.get_data(i);
             }
-            if(fabs(ans-95.3)<1.0e-4){
-                for(i=0;i<_pts.get_rows();i++){
-                    printf("%e %e\n",_cq.get_data(i),distance_sq(pt,_pts(i),_ell));
-                }
-                exit(1);
-            }
+
             return ans;
         }
 
@@ -121,6 +163,7 @@ class GaussianProcess{
                 for(j=0;j<pt.get_dim();j++){
                     mu+=(pt.get_data(j)-_pts.get_data(_min_dex,j))*_mean_bases.get_data(i,j);
                 }
+                _proj_1.set(i,mu);
                 ans += mu*mu*_mean_coeffs.get_data(i);
             }
             ans += _fn.get_data(_min_dex);
@@ -139,6 +182,8 @@ class GaussianProcess{
         int _min_dex;
         array_2d<double> _mean_bases;
         array_1d<double> _mean_coeffs;
+        array_1d<double> _proj_1;
+        array_2d<double> _proj_arr;
 
         void _load_mean_model(){
             FILE *in_file;
@@ -209,13 +254,17 @@ class gp_optimizer : public function_wrapper{
         virtual double operator()(const array_1d<double> &ell){
             gp->build_cov_inv(ell, raiseup(10.0,ell.get_data(ell.get_dim()-1)));
             double err =0.0;
+            double err_mean=0.0;
             double mu;
+            double mu_mean;
             int i;
-            double delta;
+            double delta,delta_mean;
             int mis_char=0;
             for(i=0;i<_pts.get_rows();i++){
                 mu=gp[0](_pts(i));
+                mu_mean=gp[0]._mean(_pts(i));
                 delta = power(mu-_fn.get_data(i),2);
+                delta_mean=power(mu_mean-_fn.get_data(i),2);
                 if(_fn.get_data(i)<116.0 && mu>116.0){
                     err+=4.0*delta;
                     mis_char++;
@@ -227,6 +276,16 @@ class gp_optimizer : public function_wrapper{
                 else{
                     err+=delta/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
                 }
+
+                if(_fn.get_data(i)<116.0 && mu_mean>116.0){
+                    err_mean+=4.0*delta_mean;
+                }
+                else if(_fn.get_data(i)>116.0 && mu_mean<116.0){
+                    err_mean += 4.0*delta_mean;
+                }
+                else{
+                    err_mean+=delta_mean/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                }
             }
             double rms=sqrt(err/_pts.get_rows());
             if(err<_best_err){
@@ -234,7 +293,7 @@ class gp_optimizer : public function_wrapper{
                 _best_mis_char=mis_char;
 
             }
-            printf("err %e best %e - %d\n",err,_best_err,_best_mis_char);
+            printf("err %.3e err_mean %.3e best %e - %d\n",err,err_mean,_best_err,_best_mis_char);
             return err;
         }
 
@@ -353,7 +412,7 @@ int main(int iargc, char *argv[]){
     seed.set_dim(dim+2,dim+1);
     for(i=0;i<dim+2;i++){
         for(j=0;j<dim;j++){
-            seed.set(i,j,3.0*chaos.doub()+0.5);
+            seed.set(i,j,3.0*(chaos.doub()-0.5));
         }
         seed.set(i,dim,-1.0*chaos.doub());
     }
@@ -370,6 +429,9 @@ int main(int iargc, char *argv[]){
     double nugget = 0.01;
     double mean;
 
+    double err=0.0;
+    double err_mean=0.0;
+
     printf("building cov inv\n");
     gp.build_cov_inv(ell,raiseup(10.0,ell.get_data(ell.get_dim()-1)));
     printf("built covinv\n");
@@ -384,8 +446,15 @@ int main(int iargc, char *argv[]){
     for(i=0;i<test_pts.get_rows();i++){
         mu=gp(test_pts(i));
         mean = gp._mean(test_pts(i));
-        fprintf(out_file,"%e %e %e %e\n",test_fn.get_data(i),mu,mean,fabs(test_fn.get_data(i)-mu));
+        err+=power(mu-test_fn.get_data(i),2);
+        err_mean+=power(mean-test_fn.get_data(i),2);
+        fprintf(out_file,"%e %e %e %e -- ",test_fn.get_data(i),mu,mean,fabs(test_fn.get_data(i)-mu));
+        for(j=0;j<dim;j++){
+            fprintf(out_file,"%e ",test_pts.get_data(i,j));
+        }
+        fprintf(out_file,"\n");
     }
     fclose(out_file);
+    printf("err %e err_mean %e\n",err,err_mean);
 
 }
