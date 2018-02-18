@@ -23,7 +23,9 @@ class GaussianProcess{
 
     public:
 
-        GaussianProcess(array_2d<double> &pts, array_1d<double> &fn){
+        ~GaussianProcess(){}
+
+        GaussianProcess(){
             _pts.set_name("gp_pts");
             _fn.set_name("gp_fn");
             _cov_inv.set_name("gp_cov_inv");
@@ -34,7 +36,23 @@ class GaussianProcess{
             _fn_mean.set_name("gp_fn_mean");
             _proj_1.set_name("gp_proj_1");
             _proj_arr.set_name("gp_proj_2");
+       }
+
+        void build(array_2d<double> &pts, array_1d<double> &fn){
             int i,j;
+            _pts.reset();
+            _fn.reset();
+            _proj_arr.reset();
+            _cov_inv.reset();
+            _ell.reset();
+            _cq.reset();
+            _fn_mean.reset();
+            _cov_vector.reset();
+            _mean_bases.reset();
+            _mean_coeffs.reset();
+            _proj_1.reset();
+            _proj_arr.reset();
+
             _pts.set_dim(pts.get_rows(), pts.get_cols());
             _fn.set_dim(pts.get_rows());
             _min_dex=-1;
@@ -402,7 +420,8 @@ int main(int iargc, char *argv[]){
     printf("gp pts %d\n",pts.get_rows());
 
 
-    GaussianProcess gp(pts, fn);
+    GaussianProcess gp;
+    gp.build(pts, fn);
 
     gp_optimizer gp_opt;
     gp_opt.set_gp(&gp);
