@@ -292,26 +292,15 @@ class gp_optimizer : public function_wrapper{
                 delta = power(mu-_fn.get_data(i),2);
                 delta_mean=power(mu_mean-_fn.get_data(i),2);
                 if(_fn.get_data(i)<116.0 && mu>116.0){
-                    err+=4.0*delta;
                     mis_char++;
                 }
                 else if(_fn.get_data(i)>116.0 && mu<116.0){
-                    err += 4.0*delta;
                     mis_char++;
                 }
-                else{
-                    err+=delta/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
-                }
+                err+=delta/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
 
-                if(_fn.get_data(i)<116.0 && mu_mean>116.0){
-                    err_mean+=4.0*delta_mean;
-                }
-                else if(_fn.get_data(i)>116.0 && mu_mean<116.0){
-                    err_mean += 4.0*delta_mean;
-                }
-                else{
-                    err_mean+=delta_mean/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
-                }
+                err_mean+=delta_mean/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+
             }
             double rms=sqrt(err/_pts.get_rows());
             if(err<_best_err){
