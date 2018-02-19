@@ -366,15 +366,7 @@ class gp_optimizer : public function_wrapper{
                     wgt=0.0;
                 }
                 else{
-                    if(_fn.get_data(i)>116.0 && mu<116.0){
-                        wgt=1.0;
-                    }
-                    else if (_fn.get_data(i)<116.0 && mu>116.0){
-                        wgt=1.0;
-                    }
-                    else{
-                        wgt=1.0/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
-                    }
+                    wgt=1.0;
                 }
 
                 err+=delta*wgt;
@@ -390,7 +382,7 @@ class gp_optimizer : public function_wrapper{
                 err,err_mean,_best_err,_best_mis_char,ell.get_data(ell.get_dim()-1),
                 gp->_failed_cut,gp->_passed_cut);
             }
-            return err;
+            return err+100.0*mis_char;
         }
 
     private:
