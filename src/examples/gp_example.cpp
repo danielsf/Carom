@@ -366,7 +366,15 @@ class gp_optimizer : public function_wrapper{
                     wgt=0.0;
                 }
                 else{
-                    wgt=1.0;
+                    if(_fn.get_data(i)>116.0 && mu<116.0){
+                        wgt=1.0;
+                    }
+                    else if (_fn.get_data(i)<116.0 && mu>116.0){
+                        wgt=1.0;
+                    }
+                    else{
+                        wgt=1.0/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                    }
                 }
 
                 err+=delta*wgt;
