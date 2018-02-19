@@ -355,14 +355,18 @@ class gp_optimizer : public function_wrapper{
                 delta_mean=power(mu_mean-_fn.get_data(i),2);
                 if(_fn.get_data(i)<116.0 && mu>116.0){
                     mis_char++;
-                    wgt=1.0;
+                    //wgt=1.0;
                 }
                 else if(_fn.get_data(i)>116.0 && mu<116.0){
                     mis_char++;
-                    wgt=1.0;
+                    //wgt=1.0;
+                }
+
+                if(_fn.get_data(i)>120.0 && mu>120.0){
+                    wgt=0.0;
                 }
                 else{
-                    wgt=1.0/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                    wgt=1.0;
                 }
 
                 err+=delta*wgt;
