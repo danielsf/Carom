@@ -11,7 +11,6 @@ template class array_1d<double>;
 template <typename T>
 void merge_sort(array_1d<T> &in, array_1d<int> &dexes,
                 int start, int end){
-
     if(end>=dexes.get_dim()){
         printf("WARNING in merge_sort end is %d but dexes has %d\n",
         end,dexes.get_dim());
@@ -27,8 +26,6 @@ void merge_sort(array_1d<T> &in, array_1d<int> &dexes,
     int i1,i2,el;
 
     el=end-start+1;
-
-
     if(el<2){
         return;
     }
