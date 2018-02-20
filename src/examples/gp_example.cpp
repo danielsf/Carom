@@ -123,16 +123,46 @@ class GaussianProcess{
             sort(dist_to_sort, dist_sorted, dist_dex);
             double frac = raiseup(10.0,ell.get_data(ell.get_dim()-1));
             int cutoff_dex;
+            double subtract_off;
             if(frac<0.0){
                 _cutoff=0.0;
+            }
+            if(frac>1.0){
+                subtract_off=2.0;
+                while(subtract_off<frac){
+                    subtract_off+=1.0;
+                }
+                frac=subtract_off-frac;
+                if(frac<0.0 || frac>1.001){
+                    printf("WARNING frac norm failed\n");
+                    printf("log %e\n",ell.get_data(ell.get_dim()-1));
+                    printf("subtract %e\n",subtract_off);
+                    printf("frac %e\n",frac);
+                    exit(1);
+                }
             }
             else if(frac>1.0){
                 _cutoff=dist_sorted.get_data(dist_sorted.get_dim()-1);
             }
+            else if(frac<0.0){
+                _cutoff=-1.0;
+            }
             else{
                 cutoff_dex = int(dist_sorted.get_dim()*frac);
                 if(cutoff_dex>=dist_sorted.get_dim()){
+                    if(cutoff_dex>dist_sorted.get_dim()){
+                        printf("WARNING got cut_off_dex %d out of %d\n",
+                        cutoff_dex,dist_sorted.get_dim());
+                        printf("log %e\n",ell.get_data(ell.get_dim()-1));
+                        printf("frac %e\n",frac);
+                        exit(1);
+                    }
                     cutoff_dex=dist_sorted.get_dim()-1;
+                }
+                if(cutoff_dex<0){
+                    printf("WARNING got cut_off dex<0\n");
+                    printf("log %e\n",ell.get_data(ell.get_dim()-1));
+                    exit(1);
                 }
                 _cutoff=dist_sorted.get_data(cutoff_dex);
             }
