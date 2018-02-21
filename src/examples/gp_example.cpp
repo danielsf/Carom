@@ -121,27 +121,27 @@ class GaussianProcess{
             }
 
             sort(dist_to_sort, dist_sorted, dist_dex);
-            double frac = raiseup(10.0,ell.get_data(ell.get_dim()-1));
-            int cutoff_dex;
+            double log_frac = ell.get_data(ell.get_dim()-1);
             double subtract_off;
-            if(frac<0.0){
-                _cutoff=0.0;
-            }
-            if(frac>1.0){
-                subtract_off=2.0;
-                while(subtract_off<frac){
+            if(log_frac>0.0){
+                subtract_off=0.0;
+                while(log_frac-subtract_off>1.0){
                     subtract_off+=1.0;
                 }
-                frac=subtract_off-frac;
-                if(frac<0.0 || frac>1.001){
-                    printf("WARNING frac norm failed\n");
-                    printf("log %e\n",ell.get_data(ell.get_dim()-1));
-                    printf("subtract %e\n",subtract_off);
-                    printf("frac %e\n",frac);
+                log_frac=subtract_off-log_frac;
+                if(log_frac>0.0){
+                    printf("WARNING could not renormalize log_frac\n");
+                    printf("ell %e\n",ell.get_data(ell.get_dim()-1));
+                    printf("log_frac %e\n",log_frac);
+                    printf("subtract_off %e\n",subtract_off);
                     exit(1);
                 }
             }
-            else if(frac>1.0){
+
+
+            double frac = raiseup(10.0,log_frac);
+            int cutoff_dex;
+            if(frac>1.0){
                 _cutoff=dist_sorted.get_data(dist_sorted.get_dim()-1);
             }
             else if(frac<0.0){
