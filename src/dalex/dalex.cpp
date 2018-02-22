@@ -1423,7 +1423,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         exit(1);
     }
 
-    sprintf(log_message,"fn anchor %e; %d %d %d\n",
+    sprintf(log_message,"got seeds; fn anchor %e; %d %d %d\n",
     _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
     write_to_log(log_message);
 
