@@ -1293,6 +1293,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     double local_target,tt;
     double dd,avg_dd;
+    int bad_iterations;
 
     if(specified>=0){
         i_anchor=specified;
@@ -1309,23 +1310,56 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 }
                 i_bisect1=i_anchor;
                 tt=local_target;
-                while(i_bisect1==i_anchor){
+                bad_iterations=0;
+                while(i_bisect1==i_anchor && bad_iterations<10){
                     i_bisect1=bisection(i_anchor,bisect_dir,tt,0.001);
                     tt+=0.5*(target()-chimin());
+                    bad_iterations++;
                 }
+
+                if(i_bisect1==i_anchor){
+                    bad_iterations=0;
+                    while(i_bisect1==i_anchor){
+                        for(j=0;j<_chifn->get_dim();j++){
+                            bisect_dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
+                        }
+                        i_bisect1=bisection(i_anchor,bisect_dir,local_target,0.001);
+                        bad_iterations++;
+                        if(bad_iterations%50==0){
+                            sprintf(log_message,"    bad_iterations on i_bisect1 %d\n",bad_iterations);
+                            write_to_log(log_message);
+                        }
+                    }
+                }
+
                 for(j=0;j<_chifn->get_dim();j++){
                     bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
                 }
 
-                // note the bug below; i_bisect2 does not get used
-                // because it will never be set to i_bisect2 != i_anchor
-                // this seems to have not hurt performance
                 i_bisect2=i_anchor;
                 tt=local_target;
-                while(i_bisect1==i_anchor){
+                bad_iterations=0;
+                while(i_bisect2==i_anchor && bad_iterations<10){
                     i_bisect2=bisection(i_anchor,bisect_dir,tt,0.001);
                     tt+=0.5*(target()-chimin());
+                    bad_iterations++;
                 }
+
+                if(i_bisect2==i_anchor){
+                    bad_iterations=0;
+                    while(i_bisect1==i_anchor){
+                        for(j=0;j<_chifn->get_dim();j++){
+                            bisect_dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
+                        }
+                        i_bisect2=bisection(i_anchor,bisect_dir,local_target,0.001);
+                        bad_iterations++;
+                        if(bad_iterations%50==0){
+                            sprintf(log_message,"    bad_iterations on i_bisect2 %d\n",bad_iterations);
+                            write_to_log(log_message);
+                        }
+                    }
+                }
+
                 mu1=dchifn(_chifn->get_pt(i_bisect1));
                 mu2=dchifn(_chifn->get_pt(i_bisect2));
 
