@@ -1268,7 +1268,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
             }
         }
     }
-    base_dir.normalize();
+
+    double base_dir_norm = base_dir.normalize();
+    sprintf(log_message,"base_dir_norm %e\n",base_dir_norm);
+    write_to_log(log_message);
 
     i_anchor=specified;
 
