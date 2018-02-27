@@ -1891,9 +1891,8 @@ void dalex::find_tendril_candidates(double factor_in){
     double mu;
     int i_found;
 
-    array_1d<int> particles,origins;
+    array_1d<int> particles;
     particles.set_name("find_tendrils_particles");
-    origins.set_name("find_tendrils_origins");
     array_1d<double> fn_val;
     fn_val.set_name("find_tendrils_fn_val");
     array_1d<int> fn_val_dex;
@@ -1942,7 +1941,6 @@ void dalex::find_tendril_candidates(double factor_in){
             if(_chifn->get_fn(i_found)>target()){
                 // just naively using a multiple of the ellipse radius worked
                 write_to_end_pt_file(i_found);
-                origins.add(i_found);
                 seed.add_row(trial);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
                     for(i=0;i<_chifn->get_dim();i++){
@@ -1968,7 +1966,6 @@ void dalex::find_tendril_candidates(double factor_in){
                                 i_found,_chifn->get_fn(i_found),chimin());
                         write_to_log(log_message);
                         if(seed.get_rows()==0){
-                            origins.add(i_found);
                             write_to_end_pt_file(i_found);
                         }
                         seed.add_row(_chifn->get_pt(i_found));
