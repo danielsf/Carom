@@ -1953,8 +1953,9 @@ void dalex::find_tendril_candidates(double factor_in){
             }
             else{
                 // alternative scheme for finding seed
-                i_found=-1;
-                while(i_found<0 || _chifn->get_fn(i_found)<target()+_chifn->get_deltachi()){
+                write_to_log("doing alternative seed in find_tendril_candidates\n");
+                seed_int_list.reset_preserving_room();
+                while(seed.get_rows()<_chifn->get_dim()+1){
                     for(i=0;i<_chifn->get_dim();i++){
                         bisection_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
                         trial.set(i,bisection_dir.get_data(i));
@@ -1962,35 +1963,18 @@ void dalex::find_tendril_candidates(double factor_in){
                     trial.normalize();
                     bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
                     i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
-                    if(i_found<0){
-                        write_to_log("i_found<0\n");
-                    }
-                    else{
+                    if(i_found>=0 && seed_int_list.contains(i_found)==0){
                         sprintf(log_message,"i_found %d chisq %e min %e\n",
                                 i_found,_chifn->get_fn(i_found),chimin());
                         write_to_log(log_message);
-                    }
-                }
-                write_to_end_pt_file(i_found);
-                origins.add(i_found);
-                seed_int_list.add(i_found);
-                seed.add_row(_chifn->get_pt(i_found));
-                for(jdim=0;jdim<_chifn->get_dim();jdim++){
-                    for(i=0;i<_chifn->get_dim();i++){
-                        bisection_dir.set(i,trial.get_data(i)+0.1*good_ellipse.bases(jdim,i));
-                    }
-                    mu=bisection_target+(1.0+_chifn->random_double()*2.0)*_chifn->get_deltachi();
-                    i=bisection(i_center,bisection_dir,mu,0.1*_chifn->get_deltachi());
-                    if(i<0 || seed_int_list.contains(i)==1){
-                        printf("WARNING alternative tendril candidate seed (subsequent) %d\n",i);
-                        if(seed_int_list.contains(i)==1){
-                            printf("already contained\n");
+                        if(seed.get_rows()==0){
+                            origins.add(i_found);
+                            write_to_end_pt_file(i_found);
                         }
-                        exit(1);
+                        seed.add_row(_chifn->get_pt(i_found));
                     }
-                    seed.add_row(_chifn->get_pt(i));
-                    seed_int_list.add(i);
                 }
+                write_to_log("    done doing alternative seed in find_tendril_candidates\n");
             }
 
             failures=0;
