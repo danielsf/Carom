@@ -1961,7 +1961,8 @@ void dalex::find_tendril_candidates(double factor_in){
                     trial.normalize();
                     bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
                     i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
-                    if(i_found>=0 && seed_int_list.contains(i_found)==0){
+                    if(i_found>=0 && seed_int_list.contains(i_found)==0 &&
+                       _chifn->get_fn(i_found)>target()){
                         sprintf(log_message,"i_found %d chisq %e min %e\n",
                                 i_found,_chifn->get_fn(i_found),chimin());
                         write_to_log(log_message);
@@ -1969,6 +1970,7 @@ void dalex::find_tendril_candidates(double factor_in){
                             write_to_end_pt_file(i_found);
                         }
                         seed.add_row(_chifn->get_pt(i_found));
+                        seed_int_list.add(i_found);
                     }
                 }
                 write_to_log("    done doing alternative seed in find_tendril_candidates\n");
