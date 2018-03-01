@@ -575,7 +575,8 @@ int main(int iargc, char *argv[]){
     int iteration;
     int use_it=0;
     int added;
-    for(iteration=0;iteration<2;iteration++){
+    int max_iterations=2;
+    for(iteration=0;iteration<max_iterations;iteration++){
 
         gp_opt.reset_called();
         gp.build(gp_pts, gp_fn);
@@ -601,24 +602,26 @@ int main(int iargc, char *argv[]){
 
         ffmin->find_minimum(seed,ell);
 
-        gp.build_cov_inv(ell);
-        added=0;
-        for(i=0;i<pool_pts.get_rows();i++){
-            mu=gp(pool_pts(i));
-            use_it=0;
-            if(pool_fn.get_data(i)>116.0 && mu<100.0){
-                use_it=1;
+        if(iteration<max_iterations-1){
+            gp.build_cov_inv(ell);
+            added=0;
+            for(i=0;i<pool_pts.get_rows();i++){
+                mu=gp(pool_pts(i));
+                use_it=0;
+                if(pool_fn.get_data(i)>116.0 && mu<100.0){
+                    use_it=1;
+                }
+                if(pool_fn.get_data(i)<110.0 && fabs(mu-pool_fn.get_data(i))>1.0){
+                    use_it=1;
+                }
+                if(use_it==1){
+                    added++;
+                    gp_pts.add_row(pool_pts(i));
+                    gp_fn.add(pool_fn.get_data(i));
+                }
             }
-            if(pool_fn.get_data(i)<110.0 && fabs(mu-pool_fn.get_data(i))>1.0){
-                use_it=1;
-            }
-            if(use_it==1){
-                added++;
-                gp_pts.add_row(pool_pts(i));
-                gp_fn.add(pool_fn.get_data(i));
-            }
+            printf("added %d == cutoff %e\n",added,ell.get_data(ell.get_dim()-1));
         }
-        printf("added %d == cutoff %e\n",added,ell.get_data(ell.get_dim()-1));
 
     }
 
