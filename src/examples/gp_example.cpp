@@ -643,7 +643,11 @@ int main(int iargc, char *argv[]){
         mean = gp._mean(final_pts(i));
         err+=power(mu-final_fn.get_data(i),2);
         err_mean+=power(mean-final_fn.get_data(i),2);
-        fprintf(out_file,"%e %e %e %e -- ",final_fn.get_data(i),mu,mean,fabs(final_fn.get_data(i)-mu));
+        fprintf(out_file,"%e %e %e %e %e -- ",
+                final_fn.get_data(i),mu,mean,
+                fabs(final_fn.get_data(i)-mu),
+                fabs(final_fn.get_data(i)-mean));
+
         for(j=0;j<dim;j++){
             fprintf(out_file,"%e ",final_pts.get_data(i,j));
         }
