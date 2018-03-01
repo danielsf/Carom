@@ -124,11 +124,7 @@ class GaussianProcess{
             double log_frac = ell.get_data(ell.get_dim()-1);
             double subtract_off;
             if(log_frac>0.0){
-                subtract_off=0.0;
-                while(log_frac-subtract_off>1.0){
-                    subtract_off+=1.0;
-                }
-                log_frac=subtract_off-log_frac;
+                log_frac*=-1.0;
                 if(log_frac>0.0){
                     printf("WARNING could not renormalize log_frac\n");
                     printf("ell %e\n",ell.get_data(ell.get_dim()-1));
