@@ -400,7 +400,7 @@ class gp_optimizer : public function_wrapper{
                         wgt=1.0;
                     }
                     else{
-                        wgt=1.0/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
+                        wgt=1.0/power(1.0+(_fn.get_data(i)-116.0)/5.0,2);
                     }
                 }
 
