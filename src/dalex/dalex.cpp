@@ -271,11 +271,13 @@ int dalex::bisection(const array_1d<double>& lowball_in, const array_1d<double>&
     trial.set_name("dalex_bisection_trial");
     lowball.set_name("dalex_bisection_lowball");
     highball.set_name("dalex_bisection_highball");
-    int i_found,ii,jj,i_trial;
+    int i_found,ii,i_low_0,jj,i_trial;
+    double mu_found;
 
     double mu,flow,fhigh;
     evaluate(lowball_in, &flow, &ii);
     evaluate(highball_in, &fhigh, &jj);
+    i_low_0=ii;
 
     if(flow>local_target){
         printf("WARNING flow is greater than target %e %e\n",flow,local_target);
@@ -283,7 +285,7 @@ int dalex::bisection(const array_1d<double>& lowball_in, const array_1d<double>&
         exit(1);
     }
 
-    i_found=ii;
+    i_found=-1;
 
     for(ii=0;ii<_chifn->get_dim();ii++){
         lowball.set(ii,lowball_in.get_data(ii));
@@ -319,9 +321,14 @@ int dalex::bisection(const array_1d<double>& lowball_in, const array_1d<double>&
             }
         }
 
-        if(fabs(mu-local_target)<fabs(_chifn->get_fn(i_found)-local_target)){
+        if(i_found<0 || fabs(mu-local_target)<fabs(mu_found-local_target)){
             i_found=i_trial;
+            mu_found=mu;
         }
+    }
+
+    if(i_found<0){
+        i_found=i_low_0;
     }
 
     return i_found;
