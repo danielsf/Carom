@@ -115,8 +115,8 @@ class GaussianProcess{
                     dist_arr.set(j,i,dd);
                     dist_to_sort.add(dd);
                     dist_dex.add(dist_to_sort.get_dim()-1);
-                    cov.set(i,j,exp(-0.5*dd));
-                    cov.set(j,i,exp(-0.5*dd));
+                    cov.set(i,j,exp(-0.5*ddsq));
+                    cov.set(j,i,exp(-0.5*ddsq));
                 }
             }
 
@@ -240,7 +240,7 @@ class GaussianProcess{
                 ddsq = cov_distance_sq(pt,i);
                 dd=sqrt(ddsq);
                 if(dd<_cutoff){
-                    _cq.set(i,exp(-0.5*dd));
+                    _cq.set(i,exp(-0.5*ddsq));
                 }
                 else{
                     _cq.set(i,0.0);
