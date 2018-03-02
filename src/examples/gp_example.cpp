@@ -343,6 +343,10 @@ class gp_optimizer : public function_wrapper{
             return _called;
         }
 
+        void set_t_start(){
+            _t_start=double(time(NULL));
+        }
+
         void reset_called(){
             _called=0;
             _best_err=2.0*exception_value;
@@ -605,6 +609,7 @@ int main(int iargc, char *argv[]){
         ffmin->set_dice(&chaos);
         ffmin->use_gradient();
         ffmin->set_chisquared(&gp_opt);
+        gp_opt.set_t_start();
         ffmin->set_abort_max_factor(10);
 
         ffmin->find_minimum(seed,ell);
