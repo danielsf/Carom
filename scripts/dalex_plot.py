@@ -28,7 +28,7 @@ if args.in_file is None:
 if args.out_dir is None:
     raise RuntimeError('must specify out_dir')
 if args.d is None:
-    raise RutnimeError('must specify d')
+    raise RuntimeError('must specify d')
 
 if not os.path.isdir(args.out_dir):
     os.mkdir(args.out_dir)
