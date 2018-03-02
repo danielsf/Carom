@@ -1564,7 +1564,20 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         path_mid=path_dist_dex.get_data(path_dist.get_dim()/2);
     }
 
-    printf("    writing mid pt %d\n",path_mid);
+    int i_best_mid=-1;
+    double mu_best_mid;
+    double mid_target = target()+_chifn->get_deltachi();
+    for(i=pt_start;i<_chifn->get_pts();i++){
+        if(i_best_mid<0 ||
+           fabs(_chifn->get_fn(i)-mid_target)<fabs(mu_best_mid-mid_target)){
+
+            i_best_mid=i;
+            mu_best_mid=_chifn->get_fn(i);
+        }
+    }
+
+    printf("    writing mid pt %d %e\n",i_best_mid,_chifn->get_fn(i_best_mid));
+    write_to_end_pt_file(i_best_mid);
     write_to_end_pt_file(path_mid);
 
     double dd_start,dd_mid,dd_end;
@@ -1881,9 +1894,15 @@ void dalex::find_tendril_candidates(double factor_in){
     array_1d<int> seed_int_list;
     seed_int_list.set_name("find_tendril_candidates_seed_int_list");
 
+    int i_start_end;
+    int i_best_end;
+    double mu_best_end;
+    double end_target;
+
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+            i_start_end=_chifn->get_pts();
             pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
             i_found=-1;
@@ -1905,7 +1924,6 @@ void dalex::find_tendril_candidates(double factor_in){
 
             if(_chifn->get_fn(i_found)>target()){
                 // just naively using a multiple of the ellipse radius worked
-                write_to_end_pt_file(i_found);
                 origins.add(i_found);
                 seed.add_row(trial);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
@@ -1935,7 +1953,6 @@ void dalex::find_tendril_candidates(double factor_in){
                         write_to_log(log_message);
                     }
                 }
-                write_to_end_pt_file(i_found);
                 origins.add(i_found);
                 seed_int_list.add(i_found);
                 seed.add_row(_chifn->get_pt(i_found));
@@ -1980,6 +1997,20 @@ void dalex::find_tendril_candidates(double factor_in){
                 ffmin.do_not_use_gradient();
                 failures++;
             }
+
+            i_best_end=-1;
+            end_target=target()+_chifn->get_deltachi();
+            for(i=i_start_end;i<_chifn->get_pts();i++){
+                if(i_best_end<0 ||
+                   fabs(_chifn->get_fn(i)-end_target)<fabs(mu_best_end-end_target)){
+
+                    i_best_end=i;
+                    mu_best_end=_chifn->get_fn(i);
+                }
+            }
+
+            write_to_end_pt_file(i_best_end);
+
             if(_chifn->get_fn(i_found)<target()){
                 at_least_one.add(i_found);
             }
