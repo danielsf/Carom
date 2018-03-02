@@ -368,6 +368,20 @@ class gp_optimizer : public function_wrapper{
             _best_err=2.0*exception_value;
         }
 
+        double _wgt(double true_val, double model_val){
+            if(true_val>120.0 && model_val>120.0){
+                    return 0.0;
+            }
+
+            if(true_val>116.0 && model_val<116.0){
+                return 1.0;
+            }
+            else if (true_val<116.0 && model_val>116.0){
+                return 1.0;
+            }
+            return 1.0/power(1.0+(true_val-95.0)/5.0,2);
+        }
+
         virtual double operator()(const array_1d<double> &ell){
             _called++;
             gp->build_cov_inv(ell);
@@ -378,7 +392,7 @@ class gp_optimizer : public function_wrapper{
             int i;
             double delta,delta_mean;
             int mis_char=0;
-            double wgt;
+            double wgt,wgt_mean;
             if(_t_start<0.0){
                 _t_start=double(time(NULL));
             }
@@ -396,24 +410,11 @@ class gp_optimizer : public function_wrapper{
                     //wgt=1.0;
                 }
 
-                if(_fn.get_data(i)>120.0 && mu>120.0){
-                    wgt=0.0;
-                }
-                else{
-                    if(_fn.get_data(i)>116.0 && mu<116.0){
-                        wgt=1.0;
-                    }
-                    else if (_fn.get_data(i)<116.0 && mu>116.0){
-                        wgt=1.0;
-                    }
-                    else{
-                        wgt=1.0/power(1.0+(_fn.get_data(i)-95.0)/5.0,2);
-                    }
-                }
+                wgt = _wgt(_fn.get_data(i), mu);
+                wgt_mean = _wgt(_fn.get_data(i), mu_mean);
 
                 err+=delta*wgt;
-
-                err_mean+=delta_mean*wgt;
+                err_mean+=delta_mean*wgt_mean;
 
             }
             _eval_ct += _pts.get_rows();
