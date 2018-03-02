@@ -286,6 +286,7 @@ int dalex::bisection(const array_1d<double>& lowball_in, const array_1d<double>&
     }
 
     i_found=-1;
+    mu_found=2.0*exception_value;
 
     for(ii=0;ii<_chifn->get_dim();ii++){
         lowball.set(ii,lowball_in.get_data(ii));
@@ -295,7 +296,7 @@ int dalex::bisection(const array_1d<double>& lowball_in, const array_1d<double>&
     int ct;
     double wgt_low;
     for(ct=0;ct<20 &&
-       (ct<5 || fabs(_chifn->get_fn(i_found)-local_target)>tol); ct++){
+       (ct<5 || fabs(mu_found-local_target)>tol); ct++){
 
         wgt_low=(fhigh-local_target)/(fhigh-flow);
         if(wgt_low<0.25 || wgt_low>0.75){
