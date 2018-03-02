@@ -453,7 +453,7 @@ int main(int iargc, char *argv[]){
     int i,j;
 
     char data_name[letters];
-    sprintf(data_name,"output/test_180214/output_midpt.txt_end_pts.txt");
+    sprintf(data_name,"output/test_180302/output_burst.txt_end_pts.txt");
 
     int dim=12;
 
