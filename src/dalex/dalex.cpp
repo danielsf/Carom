@@ -233,6 +233,13 @@ int dalex::bisection(int ilow, const array_1d<double> &dir, double local_target,
     double rr=1.0;
     int ii,i_found;
     double mu=-2.0*exception_value;
+
+    if(_chifn->get_fn(ilow)>local_target){
+        printf("WARNING in bisection(i, dir), chifn(ilow) %e > target %e\n",
+               _chifn->get_fn(ilow), local_target);
+        exit(1);
+    }
+
     for(ii=0;ii<_chifn->get_dim();ii++){
         trial_high.set(ii,_chifn->get_pt(ilow,ii));
     }
