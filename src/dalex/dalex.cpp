@@ -1340,7 +1340,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                         i_bisect1=bisection(i_anchor,bisect_dir,local_target,0.001);
                         bad_iterations++;
                         if(bad_iterations%50==0){
-                            sprintf(log_message,"    bad_iterations on i_bisect1 %d\n",bad_iterations);
+                            sprintf(log_message,"    bad_iterations on i_bisect1 %d -- %e %e\n",
+                            bad_iterations,_chifn->get_fn(i_anchor),local_target);
                             write_to_log(log_message);
                         }
                     }
@@ -1368,7 +1369,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                         i_bisect2=bisection(i_anchor,bisect_dir,local_target,0.001);
                         bad_iterations++;
                         if(bad_iterations%50==0){
-                            sprintf(log_message,"    bad_iterations on i_bisect2 %d\n",bad_iterations);
+                            sprintf(log_message,"    bad_iterations on i_bisect2 %d -- %e %e\n",
+                            bad_iterations,_chifn->get_fn(i_anchor), local_target);
                             write_to_log(log_message);
                         }
                     }
