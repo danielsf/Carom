@@ -374,6 +374,7 @@ class gp_optimizer : public function_wrapper{
             double delta,delta_mean;
             int mis_char=0;
             double wgt;
+            double t_start=double(time(NULL));
             for(i=0;i<_pts.get_rows();i++){
                 mu=gp[0](_pts(i));
                 mu_mean=gp[0]._mean(_pts(i));
@@ -409,12 +410,16 @@ class gp_optimizer : public function_wrapper{
 
             }
             double rms=sqrt(err/_pts.get_rows());
+            double elapsed;
+            double time_per;
             if(err<_best_err){
+                elapsed = double(time(NULL))-t_start;
+                time_per = elapsed/float(_pts.get_rows());
                 _best_err=err;
                 _best_mis_char=mis_char;
-                printf("err %.3e err_mean %.3e best %e - %d log_cutoff %.2e -- %d %d\n",
+                printf("err %.3e err_mean %.3e best %e - %d log_cutoff %.2e -- %d %d %.2e\n",
                 err,err_mean,_best_err,_best_mis_char,ell.get_data(ell.get_dim()-1),
-                gp->_failed_cut,gp->_passed_cut);
+                gp->_failed_cut,gp->_passed_cut,time_per);
             }
             return err;
         }
