@@ -334,6 +334,7 @@ class gp_optimizer : public function_wrapper{
             _called=0;
             _pts.set_name("gp_opt_pts");
             _fn.set_name("gp_opt_fn");
+            _t_start=-1.0;
         }
 
         ~gp_optimizer(){}
@@ -374,7 +375,9 @@ class gp_optimizer : public function_wrapper{
             double delta,delta_mean;
             int mis_char=0;
             double wgt;
-            double t_start=double(time(NULL));
+            if(_t_start<0.0){
+                _t_start=double(time(NULL));
+            }
             for(i=0;i<_pts.get_rows();i++){
                 mu=gp[0](_pts(i));
                 mu_mean=gp[0]._mean(_pts(i));
@@ -409,12 +412,13 @@ class gp_optimizer : public function_wrapper{
                 err_mean+=delta_mean*wgt;
 
             }
+            _eval_ct += _pts.get_rows();
             double rms=sqrt(err/_pts.get_rows());
             double elapsed;
             double time_per;
             if(err<_best_err){
-                elapsed = double(time(NULL))-t_start;
-                time_per = elapsed/float(_pts.get_rows());
+                elapsed = double(time(NULL))-_t_start;
+                time_per = elapsed/float(_eval_ct);
                 _best_err=err;
                 _best_mis_char=mis_char;
                 printf("err %.3e err_mean %.3e best %e - %d log_cutoff %.2e -- %d %d %.2e %.2e\n",
@@ -432,6 +436,8 @@ class gp_optimizer : public function_wrapper{
         double _min_rms;
         int _best_mis_char;
         double _best_err;
+        double _t_start;
+        int _eval_ct;
 
 };
 
