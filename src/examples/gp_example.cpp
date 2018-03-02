@@ -88,17 +88,13 @@ class GaussianProcess{
             double nugget=raiseup(10.0,ell.get_data(ell.get_dim()-2));
             array_2d<double> dist_arr;
             dist_arr.set_name("dist_arr");
-            array_1d<double> dist_to_sort,dist_sorted;
-            array_1d<int> dist_dex;
-            dist_to_sort.set_name("dist_to_sort");
-            dist_sorted.set_name("dist_sorted");
-            dist_dex.set_name("dist_dex");
             dist_arr.set_dim(_pts.get_rows(),_pts.get_rows());
 
             int i,j;
-            double ddsq,dd;
+            double ddsq,dd,dist_max;
             array_2d<double> cov;
             cov.set_dim(_pts.get_rows(),_pts.get_rows());
+            dist_max=-1.0;
 
             for(i=0;i<_pts.get_cols();i++){
                 _ell.set(i,raiseup(10.0,ell.get_data(i)));
@@ -113,14 +109,14 @@ class GaussianProcess{
                     dd=sqrt(ddsq);
                     dist_arr.set(i,j,dd);
                     dist_arr.set(j,i,dd);
-                    dist_to_sort.add(dd);
-                    dist_dex.add(dist_to_sort.get_dim()-1);
+                    if(dd>dist_max){
+                        dist_max=dd;
+                    }
                     cov.set(i,j,exp(-0.5*dd));
                     cov.set(j,i,exp(-0.5*dd));
                 }
             }
 
-            sort(dist_to_sort, dist_sorted, dist_dex);
             double log_frac = ell.get_data(ell.get_dim()-1);
             double subtract_off;
             if(log_frac>0.0){
@@ -136,31 +132,11 @@ class GaussianProcess{
 
 
             double frac = raiseup(10.0,log_frac);
-            int cutoff_dex;
-            if(frac>1.0){
-                _cutoff=dist_sorted.get_data(dist_sorted.get_dim()-1);
-            }
-            else if(frac<0.0){
+            if(frac<0.0){
                 _cutoff=-1.0;
             }
             else{
-                cutoff_dex = int(dist_sorted.get_dim()*frac);
-                if(cutoff_dex>=dist_sorted.get_dim()){
-                    if(cutoff_dex>dist_sorted.get_dim()){
-                        printf("WARNING got cut_off_dex %d out of %d\n",
-                        cutoff_dex,dist_sorted.get_dim());
-                        printf("log %e\n",ell.get_data(ell.get_dim()-1));
-                        printf("frac %e\n",frac);
-                        exit(1);
-                    }
-                    cutoff_dex=dist_sorted.get_dim()-1;
-                }
-                if(cutoff_dex<0){
-                    printf("WARNING got cut_off dex<0\n");
-                    printf("log %e\n",ell.get_data(ell.get_dim()-1));
-                    exit(1);
-                }
-                _cutoff=dist_sorted.get_data(cutoff_dex);
+                _cutoff=frac*dist_max;
             }
             for(i=0;i<_pts.get_rows();i++){
                 for(j=i+1;j<_pts.get_rows();j++){
@@ -600,7 +576,7 @@ int main(int iargc, char *argv[]){
                 seed.set(i,j,3.0*(chaos.doub()-0.5));
             }
             seed.set(i,dim,-1.0*chaos.doub());
-            seed.set(i,dim+1,-1.0*chaos.doub());
+            seed.set(i,dim+1,-3.0*chaos.doub());
         }
 
         if(ffmin != NULL){
