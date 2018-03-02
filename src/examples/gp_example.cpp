@@ -417,9 +417,9 @@ class gp_optimizer : public function_wrapper{
                 time_per = elapsed/float(_pts.get_rows());
                 _best_err=err;
                 _best_mis_char=mis_char;
-                printf("err %.3e err_mean %.3e best %e - %d log_cutoff %.2e -- %d %d %.2e\n",
+                printf("err %.3e err_mean %.3e best %e - %d log_cutoff %.2e -- %d %d %.2e %.2e\n",
                 err,err_mean,_best_err,_best_mis_char,ell.get_data(ell.get_dim()-1),
-                gp->_failed_cut,gp->_passed_cut,time_per);
+                gp->_failed_cut,gp->_passed_cut,elapsed,time_per);
             }
             return err;
         }
