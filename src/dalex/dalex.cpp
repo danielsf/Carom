@@ -1469,12 +1469,15 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     double step;
     double rr;
     int n_good_fill=0;
+    int fill_end;
+    double mu_fill_end;
     if(i_next[0]!=specified){
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(i_next[0],i)-_chifn->get_pt(specified,i));
         }
         base_norm=base_dir.normalize();
         for(iteration=0;iteration<2*_chifn->get_dim();iteration++){
+            fill_end=-1;
             for(i=0;i<_chifn->get_dim();i++){
                 perp_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
             }
@@ -1500,7 +1503,12 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                 if(mu<target()){
                     n_good_fill++;
                 }
+                if(fill_end<0 || fabs(mu-target())<fabs(mu_fill_end-target())){
+                    fill_end=i;
+                    mu_fill_end=mu;
+                }
             }
+            write_to_end_pt_file(fill_end);
         }
     }
 
