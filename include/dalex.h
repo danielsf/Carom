@@ -68,6 +68,8 @@ class dalex{
 
             _particle_candidates.set_name("_particle_candidates");
             _origin_candidates.set_name("_origin_candidates");
+
+            _written_to_end_pt_file.set_name("_written_to_end_pt_file");
         };
 
         void build(chisq_wrapper*);
@@ -91,6 +93,9 @@ class dalex{
             if(_end_pt_name[0]==0){
                 return;
             }
+            if(_written_to_end_pt_file.contains(dex)==1){
+                return;
+            }
             if(dex<0){
                 return;
             }
@@ -102,6 +107,7 @@ class dalex{
             }
             fprintf(out_file,"%e %d\n",_chifn->get_fn(dex),dex);
             fclose(out_file);
+            _written_to_end_pt_file.add(dex);
         }
 
         void search();
@@ -274,6 +280,8 @@ class dalex{
         int _strikes,_strikeouts;
         int _has_struck;
         int _tendril_init;
+
+        array_1d<int> _written_to_end_pt_file;
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;
