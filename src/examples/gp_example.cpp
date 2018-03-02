@@ -345,6 +345,7 @@ class gp_optimizer : public function_wrapper{
 
         void set_t_start(){
             _t_start=double(time(NULL));
+            _eval_ct=0;
         }
 
         void reset_called(){
