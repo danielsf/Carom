@@ -269,7 +269,7 @@ int main(int iargc, char *argv[]){
     array_1d<double> aa;
 
     char data_name[letters];
-    sprintf(data_name,"output/test_180214/output_midpt.txt_end_pts.txt");
+    sprintf(data_name,"output/test_180302/output_delta.txt_end_pts.txt");
 
     int dim=12;
     out_dir.set_cols(dim);
