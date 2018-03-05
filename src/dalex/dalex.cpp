@@ -1345,6 +1345,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                             bad_iterations,_chifn->get_fn(i_anchor),local_target);
                             write_to_log(log_message);
                         }
+                        if(bad_iterations>200){
+                            printf("WARNING 200 bad iterations on i_bisect1\n");
+                            exit(1);
+                        }
                     }
                 }
 
@@ -1373,6 +1377,10 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
                             sprintf(log_message,"    bad_iterations on i_bisect2 %d -- %e %e\n",
                             bad_iterations,_chifn->get_fn(i_anchor), local_target);
                             write_to_log(log_message);
+                        }
+                        if(bad_iterations>200){
+                            printf("WARNING 200 bad iterations on i_bisect2\n");
+                            exit(1);
                         }
                     }
                 }
