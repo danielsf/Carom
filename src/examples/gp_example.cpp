@@ -294,7 +294,7 @@ class GaussianProcess{
 
         void _load_mean_model(){
             FILE *in_file;
-            in_file = fopen("output/test_180214/quad_bases.txt", "r");
+            in_file = fopen("output/test_180302/quad_bases.txt", "r");
             int i,j,k;
             double mu;
             _mean_bases.reset();
@@ -311,7 +311,7 @@ class GaussianProcess{
             }
             fclose(in_file);
             _mean_coeffs.reset();
-            in_file=fopen("output/test_180214/quad_a_wgts.txt", "r");
+            in_file=fopen("output/test_180302/quad_a_wgts.txt", "r");
             for(i=0;i<_pts.get_cols();i++){
                 k=fscanf(in_file,"%le",&mu);
                 if(k!=1){
