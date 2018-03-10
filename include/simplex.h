@@ -61,6 +61,8 @@ private:
     int _il,_ih,_called_cost,_freeze_temp,_use_gradient;
     int _freeze_called,_last_called_gradient;
     int _last_found,_called_evaluate,_abort_max_factor;
+    double _ff_last_found;
+    double _last_found_tol;
     int _last_cooled_off;
     int _is_a_model;
     int _limit;

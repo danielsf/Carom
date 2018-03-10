@@ -19,6 +19,7 @@ simplex_minimizer::simplex_minimizer(double aa, double bb, double gg){
 simplex_minimizer::~simplex_minimizer(){}
 
 void simplex_minimizer::initialize(){
+    _last_found_tol=1.0e-4;
     _cost=NULL;
     _chisquared=NULL;
     _dice=NULL;
@@ -199,8 +200,9 @@ double simplex_minimizer::evaluate(const array_1d<double> &pt){
     _chisquared->get_called()-_called_evaluate);*/
 
     if(fval<_min_ff){
-        if(_min_ff-fval>fabs(_min_ff*1.0e-4)){
+        if(_ff_last_found-fval>fabs(_ff_last_found*_last_found_tol)){
             _last_found=_called_evaluate;
+            _ff_last_found=fval;
         }
         _min_ff=fval;
         //printf("    setting min %e\n",_min_ff);
@@ -343,6 +345,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
 
 
     _min_ff=2.0*exception_value;
+    _ff_last_found=_min_ff;
     _true_min_ff=2.0*exception_value;
     _min_pt.reset();
     _pstar.reset();
