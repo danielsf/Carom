@@ -2385,7 +2385,9 @@ void dalex::iterate_on_minimum(){
     int old_mindex=-1;
     char log_message[letters];
 
-    while(min_1<min_0){
+    double d_min=0.01*_chifn->get_deltachi();
+
+    while(min_1<min_0-d_min){
         min_0=chimin();
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
