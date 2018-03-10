@@ -257,7 +257,6 @@ class dalex{
 
         /////code related to minimizers
         array_1d<int> _minimizers;
-        void refine_minimum();
         void iterate_on_minimum();
 
         //////code related to tendrils
