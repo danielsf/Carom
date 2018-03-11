@@ -85,7 +85,7 @@ def marginalize(data_x, data_y, density_in, prob=0.95):
     return x_out[dexes], y_out[dexes]
 
 
-def raw_bayes(data_x, data_y, density_in, prob=0.95):
+def raw_bayes(data_x, data_y, density_in, prob=0.95, chisq=None):
 
     sorted_density = np.sort(density_in)
     total_sum = density_in.sum()
@@ -97,6 +97,11 @@ def raw_bayes(data_x, data_y, density_in, prob=0.95):
             break
 
     dexes = np.where(density_in>=cutoff)
+    if chisq is not None:
+        chisq_valid = chisq[dexes]
+        print('maximum Multinest chisquared %e' % (chisq_valid.max()))
+        print('median Multinest chisquared %e' % (np.median(chisq_valid)))
+        print('min Multinest chisquared %e' % (chisq_valid.min()))
     return data_x[dexes], data_y[dexes]
 
 
@@ -166,13 +171,16 @@ def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None,
 
     if data is None:
         ref_data = load_multinest_data(file_name, dim)
+        chisq_pass = ref_data['chisq']
 
     else:
         ref_data = data
+        chisq_pass = None
 
     ref_x, ref_y = raw_bayes(ref_data['x%d' % ix],
                                ref_data['x%d' % iy],
-                               ref_data['degen'])
+                               ref_data['degen'],
+                               chisq=chisq_pass)
 
     if downsample is None:
         return ref_x, ref_y, ref_data
