@@ -2,6 +2,7 @@
 
 void dalex::write_to_log(char *msg){
     if(_log_file_name[0]==0){
+        printf("%s",msg);
         return;
     }
 
