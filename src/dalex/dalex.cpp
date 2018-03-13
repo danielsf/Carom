@@ -2105,7 +2105,7 @@ void dalex::find_tendril_candidates(double factor_in){
 
     double min_0=chimin();
     ffmin_2.find_minimum(simplex_seed,new_min_pt);
-    if(chimin()<min_0-0.1){
+    if(chimin()<min_0){
         iterate_on_minimum();
     }
     _chifn->write_pts();
