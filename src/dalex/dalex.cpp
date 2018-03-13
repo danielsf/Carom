@@ -2088,6 +2088,28 @@ void dalex::find_tendril_candidates(double factor_in){
     }
     sprintf(log_message,"done finding tendrils -- chimin %e\n",chimin());
     write_to_log(log_message);
+
+    array_2d<double> simplex_seed;
+    seed.set_name("find_candidates_simplex_seed");
+    for(i=0;i<_chifn->get_dim()+1;i++){
+        simplex_seed.add_row(_chifn->get_pt(particles.get_data(fn_val_dex.get_data(i))));
+    }
+
+    array_1d<double> new_min_pt;
+
+    simplex_minimizer ffmin_2;
+    ffmin_2.set_chisquared(_chifn);
+    ffmin_2.set_minmax(min,max);
+    ffmin_2.set_dice(_chifn->get_dice());
+    ffmin_2.use_gradient();
+
+    double min_0=chimin();
+    ffmin_2.find_minimum(simplex_seed,new_min_pt);
+    if(chimin()<min_0-0.1){
+        iterate_on_minimum();
+    }
+    _chifn->write_pts();
+
 }
 
 
