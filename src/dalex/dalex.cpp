@@ -2387,12 +2387,32 @@ void dalex::iterate_on_minimum(){
     char log_message[letters];
 
     double d_min=0.01*_chifn->get_deltachi();
+    array_1d<double> dir;
+    dir.set_name("iterate_one_minimum_dir");
+    double target_chi;
+    int center_dex;
+    int failures;
 
     while(min_1<min_0-d_min){
         min_0=chimin();
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
-        simplex_search(mindex());
+        center_dex=mindex();
+        failures=0;
+        while(center_dex==mindex() || _chifn->get_fn(center_dex)>target()){
+            failures++;
+            if(failures>100){
+                sprintf(log_message,"WARNING random center dex failed %d\n",failures);
+                write_to_log(log_message);
+            }
+            for(i=0;i<_chifn->get_dim();i++){
+                dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+            dir.normalize();
+            target_chi=chimin()+_chifn->random_double()*_chifn->get_deltachi();
+            center_dex=bisection(mindex(),dir,target_chi,0.01);
+        }
+        simplex_search(center_dex);
         n_simplex = _chifn->get_pts()-n_start;
         d_simp = chimin()-min_before_simp;
         min_1=chimin();
