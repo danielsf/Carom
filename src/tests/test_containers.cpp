@@ -1234,6 +1234,34 @@ nn=sqrt(nn);
 assert_equal(nn,1.0,1.0e-6,"normalizing");
 printf("\n\nall tests passed -- maxerr %e\n",maxerr);
 
+nn=power(2.0,3);
+if(fabs(nn-8.0)>1.0e-20){
+    printf("FAILED 2^3 %e\n",nn);
+    exit(1);
+}
 
+nn=power(2.0,0);
+if(fabs(nn-1.0)>1.0e-20){
+    printf("FAILED 2^0 %e\n",nn);
+    exit(1);
+}
+
+
+nn=power(3.0,-4);
+if(fabs(nn-(1.0/81.0))>1.0e-20){
+    printf("FAILED 3^-4 %e\n",nn);
+    exit(1);
+}
+
+nn=2.75;
+i=int(nn);
+printf("%d\n",i);
+
+nn=-3.75;
+i=int(nn);
+printf("%d\n",i);
+
+i=int(log10(0.009));
+printf("%d\n",i);
 }
 
