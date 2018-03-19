@@ -2409,6 +2409,9 @@ void dalex::iterate_on_minimum(){
     char log_message[letters];
 
     double d_min=0.01*_chifn->get_deltachi();
+    if(d_min>0.1){
+        d_min=0.1;
+    }
 
     while(min_1<min_0-d_min){
         min_0=chimin();
