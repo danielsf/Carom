@@ -690,7 +690,7 @@ void simplex_minimizer::gradient_minimizer(){
     array_1d<double> gradient;
     gradient.set_name("simplex_gradient");
 
-    double step,dd;
+    double step,dd,mean_step;
     int i,j,k;
     step=-1.0;
 
@@ -712,7 +712,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
     }
     sort(step_val,step_val_sorted,step_val_dex);
-    step=step_val_sorted.get_data(step_val.get_dim()/2);
+    mean_step=step_val_sorted.get_data(step_val.get_dim()/2);
 
     calculate_gradient(_pts(_il), gradient);
     gradient.normalize();
@@ -724,6 +724,7 @@ void simplex_minimizer::gradient_minimizer(){
     array_1d<double> perturbation;
     double mu;
     for(i=0;i<_pts.get_rows();i++){
+        step=normal_deviate(_dice,mean_step,mean_step);
         if(i!=_il){
             for(j=0;j<_pts.get_cols();j++){
                 perturbation.set(j,normal_deviate(_dice,0.0,1.0));
@@ -735,7 +736,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
         else{
             for(j=0;j<_pts.get_cols();j++){
-                _pts.add_val(i,j,step*0.5*gradient.get_data(j));
+                _pts.add_val(i,j,mean_step*0.5*gradient.get_data(j));
             }
         }
         mu=evaluate(_pts(i));
