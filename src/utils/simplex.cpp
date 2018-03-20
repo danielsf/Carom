@@ -694,6 +694,12 @@ void simplex_minimizer::gradient_minimizer(){
     int i,j,k;
     step=-1.0;
 
+    // could this be a median?
+    array_1d<double> step_val,step_val_sorted;
+    array_1d<int> step_val_dex;
+    step_val.set_name("simplex_grad_step_val");
+    step_val_sorted.set_name("simplex_grad_step_val_sorted");
+    step_val_dex.set_name("simplex_grad_step_val_dex");
     for(i=0;i<_pts.get_rows();i++){
         for(j=i+1;j<_pts.get_rows();j++){
             dd=0.0;
@@ -701,11 +707,12 @@ void simplex_minimizer::gradient_minimizer(){
                 dd+=power(_pts.get_data(i,k)-_pts.get_data(j,k),2);
             }
             dd=sqrt(dd);
-            if(dd>step){
-                step=dd;
-            }
+            step_val.add(dd);
+            step_val_dex.add(step_val.get_dim()-1);
         }
     }
+    sort(step_val,step_val_sorted,step_val_dex);
+    step=step_val_sorted.get_data(step_val.get_dim()/2);
 
     calculate_gradient(_pts(_il), gradient);
     gradient.normalize();
