@@ -1964,7 +1964,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 }
             }
 
-            if(_chifn->get_fn(i_found)>target()){
+            if(_chifn->get_fn(i_found)>chimin()+0.1*_chifn->get_deltachi()){
                 // just naively using a multiple of the ellipse radius worked
                 write_to_end_pt_file(i_found);
                 seed.add_row(trial);
