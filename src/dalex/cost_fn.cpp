@@ -18,6 +18,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     _pt_cache.set_name("dchi_interior_pt_cache");
     _fn_cache.set_name("dchi_interior_fn_cache");
     _associates.set_name("dchi_interior_fn_associates");
+    _relative_norm.set_name("dchi_interior_relative_norm");
 
     _associates.reset_preserving_room();
     _fn_cache.reset_preserving_room();
@@ -36,6 +37,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     norm.set_name("cost_fn_build_norm");
     min.set_name("cost_fn_build_min");
     max.set_name("cost_fn_build_max");
+    double norm_max;
     int j;
     for(i=0;i<_associates.get_dim();i++){
         for(j=0;j<_chifn->get_dim();j++){
@@ -79,6 +81,29 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     else{
         _scalar_norm=norm_sorted.get_data(0);
     }
+
+    _relative_norm.set_dim(_chifn->get_dim());
+
+    for(i=0;i<_chifn->get_dim()/4;i++){
+        _relative_norm.set(norm_dex.get_data(i), 0.5);
+    }
+    for(;i<_chifn->get_dim()/2;i++){
+        _relative_norm.set(norm_dex.get_data(i), 0.71);
+    }
+    for(;i<(_chifn->get_dim()*3)/4;i++){
+        _relative_norm.set(norm_dex.get_data(i), 0.87);
+    }
+    for(;i<_chifn->get_dim();i++){
+        _relative_norm.set(norm_dex.get_data(i), 1.0);
+    }
+
+    for(i=0;i<_chifn->get_dim();i++){
+        if(_relative_norm.get_data(i)<0.1){
+            printf("WARNING relative norm %d %e\n",i,_relative_norm.get_data(i));
+            exit(1);
+        }
+    }
+
 }
 
 
@@ -92,7 +117,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
-            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
+            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/(_scalar_norm*_relative_norm.get_data(j)),2);
         }
         if(dd>1.0e-20){
             dd_avg += 1.0/sqrt(dd);

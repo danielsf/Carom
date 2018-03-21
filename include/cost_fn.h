@@ -42,6 +42,7 @@ class cost_fn : public function_wrapper{
 
         array_1d<int> _pt_cache;
         array_1d<double> _fn_cache;
+        array_1d<double> _relative_norm;
 
 };
 
