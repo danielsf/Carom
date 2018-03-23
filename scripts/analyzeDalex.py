@@ -110,7 +110,7 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
     x_out = np.ones(len(data_x))*data_x[-1]
     y_out = np.ones(len(data_y))*data_y[-1]
 
-    tol = 0.0025
+    tol = 0.001
 
     i_x_min = np.argmin(data_x)
     i_x_max = np.argmax(data_x)
