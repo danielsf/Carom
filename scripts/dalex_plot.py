@@ -75,8 +75,8 @@ for ix_dex in range(0,len(args.x),2):
 
         plt.figsize = (30,30)
         if control_x is not None:
-            plt.scatter(control_x, control_y, marker='o', color='k', s=10)
-        plt.scatter(dx, dy, marker='x', color='r', s=10)
+            plt.scatter(control_x, control_y, marker='o', color='k', s=5)
+        plt.scatter(dx, dy, marker='x', color='r', s=5)
         plt.xlabel('$\\theta_{%d}$' % ix)
         plt.ylabel('$\\theta_{%d}$' % iy)
 
