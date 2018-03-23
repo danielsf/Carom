@@ -85,13 +85,13 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     _relative_norm.set_dim(_chifn->get_dim());
 
     for(i=0;i<_chifn->get_dim()/4;i++){
-        _relative_norm.set(norm_dex.get_data(i), 0.71);
+        _relative_norm.set(norm_dex.get_data(i), 0.5);
     }
     for(;i<_chifn->get_dim()/2;i++){
-        _relative_norm.set(norm_dex.get_data(i), 0.82);
+        _relative_norm.set(norm_dex.get_data(i), 0.71);
     }
     for(;i<(_chifn->get_dim()*3)/4;i++){
-        _relative_norm.set(norm_dex.get_data(i), 0.91);
+        _relative_norm.set(norm_dex.get_data(i), 0.87);
     }
     for(;i<_chifn->get_dim();i++){
         _relative_norm.set(norm_dex.get_data(i), 1.0);
