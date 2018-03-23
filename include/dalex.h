@@ -109,7 +109,8 @@ class dalex{
         void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
-        int simplex_boundary_search(const int, const int, ellipse_list&, int*);
+        int simplex_boundary_search(const int, const int,
+                                    ellipse_list&, int*, int);
         int _exploration_simplex(int,int,array_1d<int>&);
         void tendril_search();
         void init_fill();
