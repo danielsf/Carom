@@ -14,6 +14,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 
     printf("building cost_fn with %d associates\n",aa.get_dim());
     _called=0;
+    _use_relative_norm=1;
 
     _pt_cache.set_name("dchi_interior_pt_cache");
     _fn_cache.set_name("dchi_interior_fn_cache");
@@ -116,8 +117,15 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
 
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
-        for(j=0;j<_chifn->get_dim();j++){
-            dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/(_scalar_norm*_relative_norm.get_data(j)),2);
+        if(_use_relative_norm==1){
+            for(j=0;j<_chifn->get_dim();j++){
+                dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/(_scalar_norm*_relative_norm.get_data(j)),2);
+            }
+        }
+        else{
+            for(j=0;j<_chifn->get_dim();j++){
+                dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
+            }
         }
         if(dd>1.0e-20){
             dd_avg += 1.0/sqrt(dd);

@@ -33,12 +33,21 @@ class cost_fn : public function_wrapper{
 
         }
 
+        void use_relative_norm(){
+            _use_relative_norm=1;
+        }
+
+        void do_not_use_relative_norm(){
+            _use_relative_norm=0;
+        }
+
     private:
         array_1d<int> _associates;
         double _scalar_norm;
         chisq_wrapper *_chifn;
         int _called;
         double _envelope;
+        int _use_relative_norm;
 
         array_1d<int> _pt_cache;
         array_1d<double> _fn_cache;
