@@ -2425,7 +2425,10 @@ void dalex::iterate_on_minimum(){
         d_min=0.1;
     }
 
-    while(min_1<min_0-d_min){
+    int strikes=0;
+    int mindex_0 = mindex();
+
+    while(strikes<3){
         min_0=chimin();
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
@@ -2433,6 +2436,16 @@ void dalex::iterate_on_minimum(){
         n_simplex = _chifn->get_pts()-n_start;
         d_simp = chimin()-min_before_simp;
         min_1=chimin();
+
+        if(mindex() == mindex_0){
+            strikes=3;
+        }
+        else if(min_1<min_0-d_min){
+            strikes=0;
+        }
+        else{
+            strikes++;
+        }
 
         sprintf(log_message,"in iterate: min1 %.5e min0 %.5e diff %.2e ",
                 min_1,min_0,min_1-min_0);
