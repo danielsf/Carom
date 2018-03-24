@@ -1861,9 +1861,7 @@ void dalex::find_tendril_candidates(double factor_in){
     associates_raw.set_name("find_tendril_associates_raw");
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("find_tendrils_ellipse_pts");
-    array_1d<double> center;
-    center.set_name("find_tendrils_center");
-    int i_center;
+
     int i,j;
     for(i=0;i<_chifn->get_pts();i++){
         if(_chifn->get_fn(i)<target()){
@@ -1876,10 +1874,6 @@ void dalex::find_tendril_candidates(double factor_in){
         printf("CANNOT find tendrils; not good points\n");
         exit(1);
     }
-    for(i=0;i<_chifn->get_dim();i++){
-        center.set(i,_chifn->get_pt(mindex(),i));
-    }
-    i_center=mindex();
 
     int n_thin;
 
@@ -1897,7 +1891,14 @@ void dalex::find_tendril_candidates(double factor_in){
     }
 
     ellipse good_ellipse;
-    good_ellipse.build(center,ellipse_pts);
+    good_ellipse.do_not_use_geo_center();
+    good_ellipse.build(ellipse_pts);
+
+    array_1d<double> center;
+    center.set_name("find_tendrils_center");
+    for(i=0;i<_chifn->get_dim();i++){
+        center.set(i,good_ellipse.center(i));
+    }
 
     cost_fn dchifn(_chifn,associates,0);
     double envelope=0.25*(target()-chimin());
@@ -1956,7 +1957,7 @@ void dalex::find_tendril_candidates(double factor_in){
             seed.reset_preserving_room();
             i_found=-1;
             factor=factor_in;
-            while(i_found<0){
+            while(i_found<0 && factor>1.0e-10){
                 printf("    running with factor %e\n",factor);
                 for(i=0;i<_chifn->get_dim();i++){
                     trial.set(i,center.get_data(i)+sgn*factor*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
@@ -1971,7 +1972,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 }
             }
 
-            if(_chifn->get_fn(i_found)>chimin()+0.1*_chifn->get_deltachi()){
+            if(i_found>=0 && _chifn->get_fn(i_found)>chimin()+0.1*_chifn->get_deltachi()){
                 // just naively using a multiple of the ellipse radius worked
                 write_to_end_pt_file(i_found);
                 seed.add_row(trial);
@@ -1992,8 +1993,8 @@ void dalex::find_tendril_candidates(double factor_in){
                         trial.set(i,bisection_dir.get_data(i));
                     }
                     trial.normalize();
-                    bisection_target=_chifn->get_fn(i_center)+10.0*_chifn->get_deltachi();
-                    i_found=bisection(i_center, bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
+                    bisection_target=_chifn->get_fn(mindex())+10.0*_chifn->get_deltachi();
+                    i_found=bisection(mindex(), bisection_dir, bisection_target, 0.1*_chifn->get_deltachi());
                     if(i_found>=0 && seed_int_list.contains(i_found)==0 &&
                        _chifn->get_fn(i_found)>target()){
                         sprintf(log_message,"i_found %d chisq %e min %e\n",
