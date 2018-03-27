@@ -1900,6 +1900,7 @@ void dalex::find_tendril_candidates(double factor_in){
     good_ellipse.build(center,ellipse_pts);
 
     cost_fn dchifn(_chifn,associates,0);
+    dchifn.do_not_use_relative_norm();
     double envelope=0.25*(target()-chimin());
     if(envelope<2.0){
         envelope=2.0;
