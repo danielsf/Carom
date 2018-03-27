@@ -1950,8 +1950,6 @@ void dalex::find_tendril_candidates(double factor_in){
     array_1d<int> seed_int_list;
     seed_int_list.set_name("find_tendril_candidates_seed_int_list");
 
-    double cardinal_dd;
-
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
         for(sgn=-1.0;sgn<1.1;sgn+=2.0){
@@ -1975,12 +1973,12 @@ void dalex::find_tendril_candidates(double factor_in){
             }
 
             if(_chifn->get_fn(i_found)>chimin()+0.1*_chifn->get_deltachi()){
+                // just naively using a multiple of the ellipse radius worked
                 write_to_end_pt_file(i_found);
                 seed.add_row(trial);
-                cardinal_dd = cardinal_distance(mindex(), i_found);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
                     for(i=0;i<_chifn->get_dim();i++){
-                       trial.set(i,seed.get_data(0,i)+0.01*cardinal_dd*good_ellipse.bases(jdim,i));
+                       trial.set(i,seed.get_data(0,i)+0.1*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
                     }
                     seed.add_row(trial);
                 }
