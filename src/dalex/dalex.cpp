@@ -1979,7 +1979,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 cardinal_dd = cardinal_distance(mindex(), i_found);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
                     for(i=0;i<_chifn->get_dim();i++){
-                       trial.set(i,seed.get_data(0,i)+0.01*cardinal_dd*good_ellipse.bases(jdim,i));
+                       trial.set(i,seed.get_data(0,i)+0.1*cardinal_dd*good_ellipse.bases(jdim,i));
                     }
                     seed.add_row(trial);
                 }
