@@ -678,23 +678,21 @@ void dalex::find_bases(){
     }
 
     int k;
-    array_1d<double> min,max,focused_min,focused_max;
-    min.set_name("find_bases_min");
-    max.set_name("find_bases_max");
+    array_1d<double> focused_min,focused_max;
     focused_min.set_name("find_bases_focused_min");
     focused_max.set_name("find_bases_focused_max");
+
+    array_1d<double> norm_dir;
+    norm_dir.set_name("find_bases_norm_dir");
+    int i_found_pos;
+    int i_found_neg;
+
     if(changed_bases==1){
         for(i=0;i<_good_points.get_dim();i++){
             for(j=0;j<_chifn->get_dim();j++){
                 mu=0.0;
                 for(k=0;k<_chifn->get_dim();k++){
                     mu+=_chifn->get_pt(_good_points.get_data(i),k)*_basis_vectors.get_data(j,k);
-                }
-                if(i==0 || mu<min.get_data(j)){
-                    min.set(j,mu);
-                }
-                if(i==0 || mu>max.get_data(j)){
-                    max.set(j,mu);
                 }
 
                 if(_basis_associates.contains(_good_points.get_data(i))==1){
@@ -708,15 +706,33 @@ void dalex::find_bases(){
             }
         }
         for(i=0;i<_chifn->get_dim();i++){
-            _basis_norm.set(i,max.get_data(i)-min.get_data(i));
-            if(_basis_norm.get_data(i)<1.0e-20){
-                _basis_norm.set(i,1.0);
-            }
-
             _basis_associate_norm.set(i,focused_max.get_data(i)-focused_min.get_data(i));
             if(_basis_associate_norm.get_data(i)<1.0e-20){
                 printf("WARNING basis associate norm %d %e\n",
                 i,_basis_associate_norm.get_data(i));
+            }
+        }
+
+        for(i=0;i<_chifn->get_dim();i++){
+            for(j=0;j<_chifn->get_dim();j++){
+                norm_dir.set(j,_basis_vectors.get_data(i,j));
+            }
+            i_found_pos=bisection(mindex(),norm_dir,target(),0.01);
+            for(j=0;j<_chifn->get_dim();j++){
+                norm_dir.set(j,-1.0*_basis_vectors.get_data(i,j));
+            }
+            i_found_neg=bisection(mindex(),norm_dir,target(),0.01);
+            if(i_found_pos==i_found_neg && i_found_pos!=mindex()){
+                printf("Something is wrong ipos %d ineg %d mindex %d\n",
+                i_found_pos,i_found_neg,mindex());
+                exit(1);
+            }
+            mu=cardinal_distance(i_found_pos,i_found_neg);
+            if(mu>1.0e-20){
+                _basis_norm.set(i,0.5*mu);
+            }
+            else{
+                _basis_norm.set(i,1.0);
             }
         }
 
