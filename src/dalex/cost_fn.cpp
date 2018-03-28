@@ -83,7 +83,7 @@ void cost_fn::_set_scalar_norm(){
     }
 
     one_over_mean = one_over_mean/float(_chifn->get_dim());
-    _scalar_norm = 1.0/one_over_mean;
+    _scalar_norm = 0.5/one_over_mean;
 
     printf("scalar norm min max %e %e\n",
     min_range,max_range);
