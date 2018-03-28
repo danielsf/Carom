@@ -51,16 +51,12 @@ void cost_fn::_set_d_params(){
 
 void cost_fn::_set_scalar_norm(){
 
-    array_1d<double> norm;
-    array_1d<double> norm_sorted;
-    array_1d<int> norm_dex;
-    norm_sorted.set_name("cost_fn_build_norm_sorted");
-    norm_dex.set_name("cost_fn_build_norm_dex");
-    norm.set_name("cost_fn_build_norm");
+    double min_range,max_range;
 
-    double min,max;
+    double min,max,one_over_mean;
     int i;
     int idim,ipt;
+    one_over_mean=0.0;
     for(idim=0;idim<_chifn->get_dim();idim++){
         min=2.0*exception_value;
         max=-2.0*exception_value;
@@ -74,26 +70,23 @@ void cost_fn::_set_scalar_norm(){
         }
 
         if(max-min>1.0e-20){
-            norm.set(idim,max-min);
+            one_over_mean += 1.0/(max-min);
         }
-        else{
-            norm.set(idim,1.0);
+
+        if(idim==0 || max-min<min_range){
+            min_range=max-min;
         }
+        if(idim==0 || max-min > max_range){
+            max_range=max-min;
+        }
+
     }
 
-    for(i=0;i<norm.get_dim();i++){
-        norm_dex.add(i);
-    }
-    sort(norm, norm_sorted, norm_dex);
+    one_over_mean = one_over_mean/float(_chifn->get_dim());
+    _scalar_norm = 1.0/one_over_mean;
 
-    if(_min_or_med==1){
-        _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
-    }
-    else{
-        _scalar_norm=norm_sorted.get_data(0);
-    }
     printf("scalar norm min max %e %e\n",
-    norm_sorted.get_data(0),norm_sorted.get_data(norm_dex.get_dim()-1));
+    min_range,max_range);
 }
 
 
