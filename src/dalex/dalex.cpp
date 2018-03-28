@@ -1921,7 +1921,7 @@ void dalex::find_tendril_candidates(double factor_in){
     ellipse good_ellipse;
     good_ellipse.build(center,ellipse_pts);
 
-    cost_fn dchifn(_chifn,associates,0);
+    cost_fn dchifn(_chifn,associates,1);
     dchifn.set_bases(_basis_vectors);
     printf("in find_tendril_candidates\n");
     dchifn.set_relative_norms(_basis_norm);
@@ -2095,7 +2095,7 @@ void dalex::find_tendril_candidates(double factor_in){
                         }
                     }
                 }
-                dchifn.build(_chifn,associates,0);
+                dchifn.build(_chifn,associates,1);
             }
 
             if(_limit>0 && _chifn->get_pts()>_limit){
