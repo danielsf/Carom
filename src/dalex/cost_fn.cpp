@@ -16,11 +16,15 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     _called=0;
     _use_relative_norm=1;
 
+    _bases.set_name("dchi_interior_bases");
+    _projected_associates.set_name("dchi_interior_projected_associates");
+    _pt_projected.set_name("dchi_interior_pt_projected");
     _pt_cache.set_name("dchi_interior_pt_cache");
     _fn_cache.set_name("dchi_interior_fn_cache");
     _associates.set_name("dchi_interior_fn_associates");
     _relative_norm.set_name("dchi_interior_relative_norm");
 
+    _projected_associates.reset();
     _associates.reset_preserving_room();
     _fn_cache.reset_preserving_room();
     _pt_cache.reset_preserving_room();
@@ -33,72 +37,98 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
         _associates.add(aa.get_data(i));
     }
 
+    _min_or_med=min_or_med;
+}
+
+
+void cost_fn::_set_d_params(){
+    printf("in set d params\n");
+    _project_associates();
+    printf("projected\n");
+    _set_scalar_norm();
+    printf("    scalar norm %e\n",_scalar_norm);
+}
+
+void cost_fn::_set_scalar_norm(){
+
     array_1d<double> norm;
-    array_1d<double> min,max;
-    norm.set_name("cost_fn_build_norm");
-    min.set_name("cost_fn_build_min");
-    max.set_name("cost_fn_build_max");
-    double norm_max;
-    int j;
-    for(i=0;i<_associates.get_dim();i++){
-        for(j=0;j<_chifn->get_dim();j++){
-            if(i==0 || _chifn->get_pt(_associates.get_data(i),j)<min.get_data(j)){
-                min.set(j,_chifn->get_pt(_associates.get_data(i),j));
-            }
-            if(i==0 || _chifn->get_pt(_associates.get_data(i),j)>max.get_data(j)){
-                max.set(j,_chifn->get_pt(_associates.get_data(i),j));
-            }
-        }
-    }
-
-    if(min.get_dim()>0){
-        for(i=0;i<_chifn->get_dim();i++){
-            norm.set(i,max.get_data(i)-min.get_data(i));
-        }
-    }
-    else{
-        for(i=0;i<_chifn->get_dim();i++){
-            norm.set(i,1.0);
-        }
-    }
-
-    for(i=0;i<_chifn->get_dim();i++){
-        if(norm.get_data(i)<1.0e-20){
-            norm.set(i,1.0);
-        }
-    }
-
     array_1d<double> norm_sorted;
     array_1d<int> norm_dex;
     norm_sorted.set_name("cost_fn_build_norm_sorted");
     norm_dex.set_name("cost_fn_build_norm_dex");
+    norm.set_name("cost_fn_build_norm");
+
+    double min,max;
+    int i;
+    int idim,ipt;
+    for(idim=0;idim<_chifn->get_dim();idim++){
+        min=2.0*exception_value;
+        max=-2.0*exception_value;
+        for(ipt=0;ipt<_associates.get_dim();ipt++){
+            if(_projected_associates.get_data(ipt,idim)<min){
+                min=_projected_associates.get_data(ipt,idim);
+            }
+            if(_projected_associates.get_data(ipt,idim)>max){
+                max=_projected_associates.get_data(ipt,idim);
+            }
+        }
+
+        if(max-min>1.0e-20){
+            norm.set(idim,max-min);
+        }
+        else{
+            norm.set(idim,1.0);
+        }
+    }
+
     for(i=0;i<norm.get_dim();i++){
         norm_dex.add(i);
     }
     sort(norm, norm_sorted, norm_dex);
-    if(min_or_med==1){
+
+    if(_min_or_med==1){
         _scalar_norm=norm_sorted.get_data(norm_dex.get_dim()/2);
     }
     else{
         _scalar_norm=norm_sorted.get_data(0);
     }
+    printf("scalar norm min max %e %e\n",
+    norm_sorted.get_data(0),norm_sorted.get_data(norm_dex.get_dim()-1));
+}
 
-    _relative_norm.set_dim(_chifn->get_dim());
 
-    for(i=0;i<_chifn->get_dim()/4;i++){
+void cost_fn::set_relative_norms(const array_1d<double> &n_in){
+    _relative_norm.reset_preserving_room();
+
+    array_1d<double> norm,norm_sorted;
+    array_1d<int> norm_dex;
+    int i;
+    for(i=0;i<n_in.get_dim();i++){
+        norm.set(i,n_in.get_data(i));
+        norm_dex.set(i,i);
+    }
+    sort(norm,norm_sorted,norm_dex);
+    for(i=0;i<norm.get_dim();i++){
+        printf("    norm %e -- %e %e\n",norm.get_data(i),
+        _bases.get_data(i,6),_bases.get_data(i,9));
+    }
+
+    _relative_norm.set_dim(n_in.get_dim());
+
+    for(i=0;i<n_in.get_dim()/4;i++){
         _relative_norm.set(norm_dex.get_data(i), 0.5);
     }
-    for(;i<_chifn->get_dim()/2;i++){
+    for(;i<n_in.get_dim()/2;i++){
         _relative_norm.set(norm_dex.get_data(i), 0.71);
     }
-    for(;i<(_chifn->get_dim()*3)/4;i++){
+    for(;i<(n_in.get_dim()*3)/4;i++){
         _relative_norm.set(norm_dex.get_data(i), 0.87);
     }
-    for(;i<_chifn->get_dim();i++){
+    for(;i<n_in.get_dim();i++){
         _relative_norm.set(norm_dex.get_data(i), 1.0);
     }
 
-    for(i=0;i<_chifn->get_dim();i++){
+    for(i=0;i<n_in.get_dim();i++){
         if(_relative_norm.get_data(i)<0.1){
             printf("WARNING relative norm %d %e\n",i,_relative_norm.get_data(i));
             exit(1);
@@ -108,6 +138,24 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 }
 
 
+void cost_fn::_project_associates(){
+    int ipt,idim,j;
+    _projected_associates.reset_preserving_room();
+    _projected_associates.set_dim(_associates.get_dim(),
+                                  _chifn->get_dim());
+
+    for(ipt=0;ipt<_associates.get_dim();ipt++){
+        for(idim=0;idim<_chifn->get_dim();idim++){
+            _projected_associates.set(ipt,idim,0.0);
+            for(j=0;j<_chifn->get_dim();j++){
+                _projected_associates.add_val(ipt,idim,
+                        _chifn->get_pt(_associates.get_data(ipt),
+                                       j)*_bases.get_data(idim,j));
+            }
+        }
+    }
+}
+
 double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd;
     int i,j,k;
@@ -115,11 +163,15 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     double ct=0.0;
     dd_avg=0.0;
 
+    if(_projected_associates.get_rows()==0){
+        _set_d_params();
+    }
+
     if(_use_relative_norm==1){
         for(i=0;i<_associates.get_dim();i++){
             dd=0.0;
             for(j=0;j<_chifn->get_dim();j++){
-                dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/(_scalar_norm*_relative_norm.get_data(j)),2);
+                dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/(_scalar_norm*_relative_norm.get_data(j)),2);
             }
             if(dd>1.0e-20){
                 dd_avg += 1.0/sqrt(dd);
@@ -131,7 +183,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         for(i=0;i<_associates.get_dim();i++){
             dd=0.0;
             for(j=0;j<_chifn->get_dim();j++){
-                dd+=power((pt.get_data(j)-_chifn->get_pt(_associates.get_data(i),j))/_scalar_norm,2);
+                dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/_scalar_norm,2);
             }
             if(dd>1.0e-20){
                 dd_avg += 1.0/sqrt(dd);
@@ -182,8 +234,18 @@ double cost_fn::operator()(const array_1d<double> &pt){
         exp_term=1.0;
     }
 
+    _pt_projected.reset_preserving_room();
+    _pt_projected.set_dim(_chifn->get_dim());
+    int i,j;
+    for(i=0;i<_chifn->get_dim();i++){
+        _pt_projected.set(i,0.0);
+        for(j=0;j<_chifn->get_dim();j++){
+            _pt_projected.add_val(i,pt.get_data(j)*_bases.get_data(i,j));
+        }
+    }
+
     if(exp_term>1.0e-7){
-        distance=nn_distance(pt);
+        distance=nn_distance(_pt_projected);
     }
     else{
         distance=0.0;
