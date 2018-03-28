@@ -2304,12 +2304,7 @@ void dalex::tendril_search(){
         is_a_strike=0;
         pt_start=_chifn->get_pts();
 
-        if(strikes>0){
-            is_a_strike=simplex_boundary_search(particle,origin,_exclusion_zones,&i_next,1);
-        }
-        else{
-            is_a_strike=simplex_boundary_search(particle,origin,_exclusion_zones,&i_next,0);
-        }
+        is_a_strike=simplex_boundary_search(particle,origin,_exclusion_zones,&i_next,1);
 
         if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
             if(local_ellipse.contains(_chifn->get_pt(i_next),1)==1){
