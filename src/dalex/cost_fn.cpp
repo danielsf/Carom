@@ -92,8 +92,8 @@ void cost_fn::_set_scalar_norm(){
         exit(1);
     }
 
-    array_1d<double> norm,norm_sorted;
-    array_1d<int> norm_dex;
+    double harmonic_mean=0.0;
+    double harmonic_ct=0.0;
     double min,max,mu;
     int idim,ipt,j;
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -113,12 +113,20 @@ void cost_fn::_set_scalar_norm(){
                 }
             }
         }
-        norm.set(idim,max-min);
-        norm_dex.set(idim,idim);
+
+        if(max-min>1.0e-20){
+            harmonic_ct+=1.0;
+            harmonic_mean+=1.0/(max-min);
+        }
     }
 
-    sort(norm,norm_sorted,norm_dex);
-    _scalar_norm=0.5*norm_sorted.get_data(norm.get_dim()/2);
+    if(harmonic_ct<0.1){
+        _scalar_norm=1.0;
+    }
+    else{
+        harmonic_mean = harmonic_ct/harmonic_mean;
+        _scalar_norm=harmonic_mean;
+    }
     printf("    set scalar norm to %e\n",_scalar_norm);
 }
 
