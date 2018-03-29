@@ -45,48 +45,6 @@ void cost_fn::_set_d_params(){
     printf("in set d params\n");
     _project_associates();
     printf("projected\n");
-    _set_scalar_norm();
-    printf("    scalar norm %e\n",_scalar_norm);
-}
-
-void cost_fn::_set_scalar_norm(){
-
-    double min_range,max_range;
-
-    double min,max,one_over_mean;
-    int i;
-    int idim,ipt;
-    one_over_mean=0.0;
-    for(idim=0;idim<_chifn->get_dim();idim++){
-        min=2.0*exception_value;
-        max=-2.0*exception_value;
-        for(ipt=0;ipt<_associates.get_dim();ipt++){
-            if(_projected_associates.get_data(ipt,idim)<min){
-                min=_projected_associates.get_data(ipt,idim);
-            }
-            if(_projected_associates.get_data(ipt,idim)>max){
-                max=_projected_associates.get_data(ipt,idim);
-            }
-        }
-
-        if(max-min>1.0e-20){
-            one_over_mean += 1.0/(max-min);
-        }
-
-        if(idim==0 || max-min<min_range){
-            min_range=max-min;
-        }
-        if(idim==0 || max-min > max_range){
-            max_range=max-min;
-        }
-
-    }
-
-    one_over_mean = one_over_mean/float(_chifn->get_dim());
-    _scalar_norm = 0.25/one_over_mean;
-
-    printf("scalar norm min max %e %e\n",
-    min_range,max_range);
 }
 
 
@@ -101,10 +59,6 @@ void cost_fn::set_relative_norms(const array_1d<double> &n_in){
         norm_dex.set(i,i);
     }
     sort(norm,norm_sorted,norm_dex);
-    for(i=0;i<norm.get_dim();i++){
-        printf("    norm %e -- %e %e\n",norm.get_data(i),
-        _bases.get_data(i,6),_bases.get_data(i,9));
-    }
 
     _relative_norm.set_dim(n_in.get_dim());
 
@@ -127,6 +81,10 @@ void cost_fn::set_relative_norms(const array_1d<double> &n_in){
             exit(1);
         }
     }
+
+    //_scalar_norm = norm_sorted.get_data(norm.get_dim()/2);
+    _scalar_norm=5.0;
+    printf("    set scalar norm to %e\n",_scalar_norm);
 
 }
 
