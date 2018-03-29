@@ -2066,10 +2066,10 @@ void dalex::find_tendril_candidates(double factor_in){
             cost=dchifn(minpt);
             fn_val.add(cost);
             if(_chifn->get_dim()>9){
-                sprintf(log_message,"    got %d chisq %e cost %e\n\n",
+                sprintf(log_message,"    got %d chisq %e cost %e\n",
                         particles.get_dim(),mu,cost);
                 write_to_log(log_message);
-                sprintf(log_message,"    pt %e %e\n",
+                sprintf(log_message,"    pt %e %e\n\n",
                                     minpt.get_data(6),
                                     minpt.get_data(9));
                 write_to_log(log_message);
