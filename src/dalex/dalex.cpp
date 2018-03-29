@@ -2069,6 +2069,10 @@ void dalex::find_tendril_candidates(double factor_in){
                 sprintf(log_message,"    got %d chisq %e cost %e\n\n",
                         particles.get_dim(),mu,cost);
                 write_to_log(log_message);
+                sprintf(log_message,"    pt %e %e\n",
+                                    minpt.get_data(6),
+                                    minpt.get_data(9));
+                write_to_log(log_message);
             }
 
             j=0;
