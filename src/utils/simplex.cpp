@@ -690,16 +690,10 @@ void simplex_minimizer::gradient_minimizer(){
     array_1d<double> gradient;
     gradient.set_name("simplex_gradient");
 
-    double step,dd,mean_step;
+    double step,dd;
     int i,j,k;
     step=-1.0;
 
-    // could this be a median?
-    array_1d<double> step_val,step_val_sorted;
-    array_1d<int> step_val_dex;
-    step_val.set_name("simplex_grad_step_val");
-    step_val_sorted.set_name("simplex_grad_step_val_sorted");
-    step_val_dex.set_name("simplex_grad_step_val_dex");
     for(i=0;i<_pts.get_rows();i++){
         for(j=i+1;j<_pts.get_rows();j++){
             dd=0.0;
@@ -707,12 +701,11 @@ void simplex_minimizer::gradient_minimizer(){
                 dd+=power(_pts.get_data(i,k)-_pts.get_data(j,k),2);
             }
             dd=sqrt(dd);
-            step_val.add(dd);
-            step_val_dex.add(step_val.get_dim()-1);
+            if(dd>step){
+                step=dd;
+            }
         }
     }
-    sort(step_val,step_val_sorted,step_val_dex);
-    mean_step=step_val_sorted.get_data(step_val.get_dim()/2);
 
     calculate_gradient(_pts(_il), gradient);
     gradient.normalize();
@@ -724,7 +717,6 @@ void simplex_minimizer::gradient_minimizer(){
     array_1d<double> perturbation;
     double mu;
     for(i=0;i<_pts.get_rows();i++){
-        step=normal_deviate(_dice,mean_step,mean_step);
         if(i!=_il){
             for(j=0;j<_pts.get_cols();j++){
                 perturbation.set(j,normal_deviate(_dice,0.0,1.0));
@@ -736,7 +728,7 @@ void simplex_minimizer::gradient_minimizer(){
         }
         else{
             for(j=0;j<_pts.get_cols();j++){
-                _pts.add_val(i,j,mean_step*0.5*gradient.get_data(j));
+                _pts.add_val(i,j,step*0.5*gradient.get_data(j));
             }
         }
         mu=evaluate(_pts(i));
@@ -748,6 +740,7 @@ void simplex_minimizer::gradient_minimizer(){
     _last_called_gradient=_called_evaluate;
 
 }
+
 
 void simplex_minimizer::expand(){
     if(_dice==NULL){
