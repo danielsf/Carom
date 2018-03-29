@@ -1967,6 +1967,7 @@ void dalex::find_tendril_candidates(double factor_in){
     at_least_one.set_name("find_tendril_at_least_one");
     double factor;
     int failures;
+    int go_on;
 
     array_1d<double> bisection_dir,delta_dir;
     bisection_dir.set_name("find_tendril_candidates_bisection_dir");
@@ -2039,7 +2040,15 @@ void dalex::find_tendril_candidates(double factor_in){
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
             failures++;
-            while(_chifn->get_fn(i_found)>target() && failures<3){
+
+            if(_chifn->get_fn(i_found)>target() && dchifn(minpt)>target()){
+                go_on=1;
+            }
+            else{
+                go_on=0;
+            }
+
+            while(go_on==1 && failures<3){
                 sprintf(log_message,"    trying again because %e > %e\n",
                         _chifn->get_fn(i_found),target());
                 write_to_log(log_message);
@@ -2057,6 +2066,9 @@ void dalex::find_tendril_candidates(double factor_in){
                 evaluate(minpt,&mu,&i_found);
                 ffmin.do_not_use_gradient();
                 failures++;
+                if(_chifn->get_fn(i_found)<target() || dchifn(minpt)<target()){
+                    go_on=0;
+                }
             }
             if(_chifn->get_fn(i_found)<target()){
                 at_least_one.add(i_found);
