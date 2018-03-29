@@ -44,6 +44,7 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 void cost_fn::_set_d_params(){
     printf("in set d params\n");
     _project_associates();
+    _set_scalar_norm();
     printf("projected\n");
 }
 
@@ -82,12 +83,44 @@ void cost_fn::set_relative_norms(const array_1d<double> &n_in){
         }
     }
 
-    //_scalar_norm = norm_sorted.get_data(norm.get_dim()/2);
-    _scalar_norm=5.0;
-    printf("    set scalar norm to %e\n",_scalar_norm);
-
 }
 
+
+void cost_fn::_set_scalar_norm(){
+    if(_chifn==NULL){
+        printf("CANNOT set scalar norm; chifn is NULL\n");
+        exit(1);
+    }
+
+    array_1d<double> norm,norm_sorted;
+    array_1d<int> norm_dex;
+    double min,max,mu;
+    int idim,ipt,j;
+    for(idim=0;idim<_chifn->get_dim();idim++){
+        min=2.0*exception_value;
+        max=-2.0*exception_value;
+        for(ipt=0;ipt<_chifn->get_pts();ipt++){
+            if(_chifn->get_fn(ipt)<_chifn->target()){
+                mu=0.0;
+                for(j=0;j<_chifn->get_dim();j++){
+                   mu+=_chifn->get_pt(ipt,j)*_bases.get_data(idim,j);
+                }
+                if(mu<min){
+                    min=mu;
+                }
+                if(mu>max){
+                    max=mu;
+                }
+            }
+        }
+        norm.set(idim,max-min);
+        norm_dex.set(idim,idim);
+    }
+
+    sort(norm,norm_sorted,norm_dex);
+    _scalar_norm=0.5*norm_sorted.get_data(norm.get_dim()/2);
+    printf("    set scalar norm to %e\n",_scalar_norm);
+}
 
 void cost_fn::_project_associates(){
     int ipt,idim,j;

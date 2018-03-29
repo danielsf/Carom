@@ -73,6 +73,7 @@ class cost_fn : public function_wrapper{
 
         void _project_associates();
         void _set_d_params();
+        void _set_scalar_norm();
 
 };
 
