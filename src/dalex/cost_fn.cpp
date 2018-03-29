@@ -160,28 +160,14 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         _set_d_params();
     }
 
-    if(_use_relative_norm==1){
-        for(i=0;i<_associates.get_dim();i++){
-            dd=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/(_scalar_norm*_relative_norm.get_data(j)),2);
-            }
-            if(dd>1.0e-20){
-                dd_avg += 1.0/sqrt(dd);
-                ct+=1.0;
-            }
+    for(i=0;i<_associates.get_dim();i++){
+        dd=0.0;
+        for(j=0;j<_chifn->get_dim();j++){
+            dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/_scalar_norm,2);
         }
-    }
-    else{
-        for(i=0;i<_associates.get_dim();i++){
-            dd=0.0;
-            for(j=0;j<_chifn->get_dim();j++){
-                dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/_scalar_norm,2);
-            }
-            if(dd>1.0e-20){
-                dd_avg += 1.0/sqrt(dd);
-                ct+=1.0;
-            }
+        if(dd>1.0e-20){
+            dd_avg += 1.0/sqrt(dd);
+            ct+=1.0;
         }
     }
 
