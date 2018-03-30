@@ -61,6 +61,7 @@ void cost_fn::_set_scalar_norm(){
     _relative_norm.reset_preserving_room();
 
     double harmonic_mean=0.0;
+    double geometric_mean=0.0;
     double harmonic_ct=0.0;
     double min,max,mu;
     int idim,ipt,j;
@@ -85,6 +86,7 @@ void cost_fn::_set_scalar_norm(){
         if(max-min>1.0e-20){
             harmonic_ct+=1.0;
             harmonic_mean+=1.0/(max-min);
+            geometric_mean+=log(max-min);
             _relative_norm.set(idim, max-min);
         }
         else{
@@ -93,13 +95,16 @@ void cost_fn::_set_scalar_norm(){
     }
 
     if(harmonic_ct<0.1){
-        _scalar_norm=1.0;
+        _scalar_norm=5.0;
     }
     else{
         harmonic_mean = harmonic_ct/harmonic_mean;
-        _scalar_norm=harmonic_mean;
+        geometric_mean=geometric_mean/harmonic_ct;
+        geometric_mean=exp(geometric_mean);
+        _scalar_norm=5.0;
     }
     printf("    set scalar norm to %e\n",_scalar_norm);
+    printf("    harmonic %e geometric %e\n",harmonic_mean,geometric_mean);
 }
 
 void cost_fn::_project_associates(){
