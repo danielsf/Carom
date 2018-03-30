@@ -1207,6 +1207,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
+    printf("    specified in associates %d\n",associates.contains(specified));
+
     int associates_from_tendril=1;
     if(associates.get_dim()==0){
         associates_from_tendril=0;
@@ -1249,217 +1251,33 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     array_2d<double> seed;
     seed.set_name("dalex_simplex_search_seed");
-    array_1d<double> trial1,trial2;
-    trial1.set_name("dalex_simplex_trial1");
-    trial2.set_name("dalex_simplex_trial2");
 
-    int d_step = _strikes+1;
-
-    array_2d<double> ellipse_pts;
-    ellipse_pts.set_name("dalex_simplex_boundary_ellipse_pts");
-    ellipse dummy_ellipse;
-    if(i_origin>=0 && associates_from_tendril==1){
-        for(i=0;i<associates.get_dim();i++){
-            ellipse_pts.add_row(_chifn->get_pt(associates.get_data(i)));
-        }
-    }
-
-    array_1d<double> distances,distances_sorted;
-    array_1d<int> distances_dex;
-    distances.set_name("simp_bou_dist");
-    distances_sorted.set_name("simp_bou_dist_sorted");
-    distances_dex.set_name("simp_bou_dist_dex");
-    if(ellipse_pts.get_rows()<2*_chifn->get_dim()){
-        printf("    need to build ellipse out of nearest good points\n");
-        for(i=0;i<_good_points.get_dim();i++){
-            distances.add(cardinal_distance(specified,_good_points.get_data(i)));
-            distances_dex.add(_good_points.get_data(i));
-        }
-        sort(distances,distances_sorted,distances_dex);
-        ellipse_pts.reset_preserving_room();
-        for(i=0;i<2*_chifn->get_dim();i++){
-            ellipse_pts.add_row(_chifn->get_pt(distances_dex.get_data(i)));
-        }
-    }
-
-    dummy_ellipse.build(ellipse_pts);
-    write_to_log("built ellipse\n");
-
-    int i_anchor;
-    array_1d<double> base_dir;
-    base_dir.set_name("dalex_simplex_boundary_base_dir");
-    if(i_origin>=0){
-        for(i=0;i<_chifn->get_dim();i++){
-            base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(i_origin,i));
-        }
-    }
-    else{
-        for(i=0;i<_chifn->get_dim();i++){
-            base_dir.set(i,_chifn->get_pt(specified,i)-_chifn->get_pt(mindex(),i));
-        }
-        if(_chifn->get_fn(specified)>target()){
-            for(i=0;i<_chifn->get_dim();i++){
-                base_dir.multiply_val(i,-1.0);
-            }
-        }
-    }
-
-    double base_dir_norm = base_dir.normalize();
-    sprintf(log_message,"base_dir_norm %e\n",base_dir_norm);
-    write_to_log(log_message);
-
-    i_anchor=specified;
-
-    array_1d<double> anchor;
-    anchor.set_name("simplex_boundary_anchor");
-    for(i=0;i<_chifn->get_dim();i++){
-        anchor.set(i,_chifn->get_pt(i_anchor,i));
-    }
-    array_1d<double> bisect_dir,epsilon;
-    bisect_dir.set_name("simplex_boundary_bisect_dir");
-    epsilon.set_name("simplex_boundary_bisect_dir");
-    int i_bisect1,i_bisect2,i_chosen;
-    double mu1,mu2;
+    double mu_pos,mu_neg;
     double component,rat;
-    array_1d<int> kept_dex;
-    kept_dex.set_name("simplex_boundary_kept_dex");
-    array_1d<double> avg_pt;
-    avg_pt.set_name("simplex_boundary_avg_pt");
+    array_1d<double> new_pt_pos,new_pt_neg;
+    new_pt_pos.set_name("simplex_boundary_new_pt_pos");
+    new_pt_neg.set_name("simplex_boundary_new_pt_neg");
 
-    double local_target,tt;
-    double dd,avg_dd;
-    int bad_iterations;
+    int idim;
 
     if(specified>=0){
-        i_anchor=specified;
-        if(_chifn->get_fn(i_anchor)<target()){
-            local_target=target();
-        }
-        else{
-            local_target=_chifn->get_fn(i_anchor)+0.5*(target()-chimin());
-        }
-        while(seed.get_rows()!=_chifn->get_dim()+1){
+        seed.add_row(_chifn->get_pt(specified));
+        for(idim=0;idim<_chifn->get_dim();idim++){
             for(i=0;i<_chifn->get_dim();i++){
-                for(j=0;j<_chifn->get_dim();j++){
-                    bisect_dir.set(j,dummy_ellipse.bases(i,j)+base_dir.get_data(j));
-                }
-                i_bisect1=i_anchor;
-                tt=local_target;
-                bad_iterations=0;
-                while(i_bisect1==i_anchor && bad_iterations<10){
-                    i_bisect1=bisection(i_anchor,bisect_dir,tt,0.001);
-                    tt+=0.5*(target()-chimin());
-                    bad_iterations++;
-                }
-
-                if(i_bisect1==i_anchor){
-                    bad_iterations=0;
-                    while(i_bisect1==i_anchor){
-                        for(j=0;j<_chifn->get_dim();j++){
-                            bisect_dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
-                        }
-                        i_bisect1=bisection(i_anchor,bisect_dir,local_target,0.001);
-                        bad_iterations++;
-                        if(bad_iterations%50==0){
-                            sprintf(log_message,"    bad_iterations on i_bisect1 %d -- %e %e\n",
-                            bad_iterations,_chifn->get_fn(i_anchor),local_target);
-                            write_to_log(log_message);
-                        }
-                        if(bad_iterations>200){
-                            printf("WARNING 200 bad iterations on i_bisect1\n");
-                            exit(1);
-                        }
-                    }
-                }
-
-                for(j=0;j<_chifn->get_dim();j++){
-                    bisect_dir.set(j,-1.0*dummy_ellipse.bases(i,j)+base_dir.get_data(j));
-                }
-
-                i_bisect2=i_anchor;
-                tt=local_target;
-                bad_iterations=0;
-                while(i_bisect2==i_anchor && bad_iterations<10){
-                    i_bisect2=bisection(i_anchor,bisect_dir,tt,0.001);
-                    tt+=0.5*(target()-chimin());
-                    bad_iterations++;
-                }
-
-                if(i_bisect2==i_anchor){
-                    bad_iterations=0;
-                    while(i_bisect1==i_anchor){
-                        for(j=0;j<_chifn->get_dim();j++){
-                            bisect_dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
-                        }
-                        i_bisect2=bisection(i_anchor,bisect_dir,local_target,0.001);
-                        bad_iterations++;
-                        if(bad_iterations%50==0){
-                            sprintf(log_message,"    bad_iterations on i_bisect2 %d -- %e %e\n",
-                            bad_iterations,_chifn->get_fn(i_anchor), local_target);
-                            write_to_log(log_message);
-                        }
-                        if(bad_iterations>200){
-                            printf("WARNING 200 bad iterations on i_bisect2\n");
-                            exit(1);
-                        }
-                    }
-                }
-
-                mu1=dchifn(_chifn->get_pt(i_bisect1));
-                mu2=dchifn(_chifn->get_pt(i_bisect2));
-
-                i_chosen=-1;
-                if(i_bisect1==i_anchor && i_bisect2!=i_anchor){
-                    i_chosen=i_bisect2;
-                }
-                else if(i_bisect1!=i_anchor && i_bisect2==i_anchor){
-                    i_chosen=i_bisect1;
-                }
-                else if(i_bisect1!=i_anchor && i_bisect2!=i_anchor){
-                    if(mu1<mu2){
-                        i_chosen=i_bisect1;
-                    }
-                    else{
-                        i_chosen=i_bisect2;
-                    }
-                }
-                else{
-                    printf("could not find good i_bisect\n");
-                    exit(1);
-                }
-
-                if(i_chosen>=0){
-                    for(j=0;j<_chifn->get_dim();j++){
-                        bisect_dir.set(j,0.5*(_chifn->get_pt(i_anchor,j)+_chifn->get_pt(i_chosen,j)));
-                    }
-                    evaluate(bisect_dir,&mu1,&j);
-                    seed.add_row(bisect_dir);
-                    kept_dex.add(i_chosen);
-                }
+                new_pt_pos.set(i,_chifn->get_pt(specified,i)+
+                              0.1*dchifn.get_norm(idim)*dchifn.basis(idim,i));
             }
-
-            if(seed.get_rows()<_chifn->get_dim()){
-                sprintf(log_message,"after looping dim; seed is %d\n",seed.get_rows());
-                write_to_log(log_message);
-                exit(1);
+            mu_pos=dchifn(new_pt_pos);
+            for(i=0;i<_chifn->get_dim();i++){
+                new_pt_neg.set(i,_chifn->get_pt(specified,i)-
+                              0.1*dchifn.get_norm(idim)*dchifn.basis(idim,i));
             }
-
-            if(seed.get_rows()==_chifn->get_dim()){
-                avg_dd=0.0;
-                for(i=0;i<_chifn->get_dim();i++){
-                    dd=0.0;
-                    for(j=0;j<_chifn->get_dim();j++){
-                        dd+=power(_chifn->get_pt(i_anchor,j)-seed.get_data(i,j),2);
-                    }
-                    avg_dd+=sqrt(dd);
-                }
-                avg_dd/=double(_chifn->get_dim());
-                for(i=0;i<_chifn->get_dim();i++){
-                    avg_pt.set(i,_chifn->get_pt(specified,i)+avg_dd*base_dir.get_data(i));
-                }
-                evaluate(avg_pt,&mu1,&i);
-                printf("    fn_avg %e\n",dchifn(avg_pt));
-                seed.add_row(avg_pt);
+            mu_neg=dchifn(new_pt_neg);
+            if(mu_pos<mu_neg){
+                seed.add_row(new_pt_pos);
+            }
+            else{
+                seed.add_row(new_pt_neg);
             }
         }
     }
@@ -1468,8 +1286,8 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         exit(1);
     }
 
-    sprintf(log_message,"got seeds; fn anchor %e; %d %d %d\n",
-    _chifn->get_fn(i_anchor),specified,i_origin,i_anchor);
+    sprintf(log_message,"got seeds; fn specified %e; %d %d\n",
+    _chifn->get_fn(specified),specified,i_origin);
     write_to_log(log_message);
 
     _chifn->set_search_type(old_type);
@@ -1551,6 +1369,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     double step;
     double rr;
     int n_good_fill=0;
+
+    array_1d<double> base_dir;
+    base_dir.set_name("dalex_simplex_boundary_base_dir");
     if(i_next[0]!=specified){
         for(i=0;i<_chifn->get_dim();i++){
             base_dir.set(i,_chifn->get_pt(i_next[0],i)-_chifn->get_pt(specified,i));
