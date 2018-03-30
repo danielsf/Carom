@@ -42,10 +42,15 @@ class cost_fn : public function_wrapper{
                     _bases.set(i,j,b_in.get_data(i,j));
                 }
             }
-            _set_d_params();
+            if(_chifn!=NULL){
+                _set_d_params();
+            }
         }
 
         double get_norm(int i){
+            if(_relative_norm.get_dim()==0){
+                _set_d_params();
+            }
             return _relative_norm.get_data(i);
         }
 
