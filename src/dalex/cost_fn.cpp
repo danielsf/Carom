@@ -56,6 +56,8 @@ void cost_fn::_set_scalar_norm(){
         exit(1);
     }
 
+    _relative_norm.reset_preserving_room();
+
     double harmonic_mean=0.0;
     double harmonic_ct=0.0;
     double min,max,mu;
@@ -81,6 +83,10 @@ void cost_fn::_set_scalar_norm(){
         if(max-min>1.0e-20){
             harmonic_ct+=1.0;
             harmonic_mean+=1.0/(max-min);
+            _relative_norm.set(idim, max-min);
+        }
+        else{
+            _relative_norm.set(idim,1.0);
         }
     }
 
