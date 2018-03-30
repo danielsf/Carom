@@ -50,6 +50,11 @@ for ix_dex in range(0,len(args.x),2):
     ix = args.x[ix_dex]
     iy = args.x[ix_dex+1]
 
+    subdir = 'x%dy%d' % (ix, iy)
+    full_out_dir = os.path.join(args.out_dir, subdir)
+    if not os.path.exists(full_out_dir):
+        os.mkdir(full_out_dir)
+
     if args.control is not None:
         (control_x,
          control_y,
@@ -79,13 +84,14 @@ for ix_dex in range(0,len(args.x),2):
         plt.scatter(dx, dy, marker='x', color='r', s=5)
         plt.xlabel('$\\theta_{%d}$' % ix)
         plt.ylabel('$\\theta_{%d}$' % iy)
+        plt.title('$\chi^2_{min} = %.2f$' % dmin)
 
         if args.limit is not None:
             npts=args.limit
         else:
             npts=len(dalex_data[file_name])
 
-        out_name = os.path.join(args.out_dir,
+        out_name = os.path.join(full_out_dir,
                                 '%s_%d_%d_%.2e.png' % (file_name, ix, iy, npts))
 
         plt.savefig(out_name)
