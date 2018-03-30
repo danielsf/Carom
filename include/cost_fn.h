@@ -42,6 +42,7 @@ class cost_fn : public function_wrapper{
                     _bases.set(i,j,b_in.get_data(i,j));
                 }
             }
+            _set_d_params();
         }
 
     private:

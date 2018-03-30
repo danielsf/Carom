@@ -37,6 +37,8 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     }
 
     _min_or_med=min_or_med;
+
+    _set_d_params();
 }
 
 
@@ -116,10 +118,6 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     double dd_avg;
     double ct=0.0;
     dd_avg=0.0;
-
-    if(_projected_associates.get_rows()==0){
-        _set_d_params();
-    }
 
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
