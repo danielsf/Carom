@@ -30,6 +30,11 @@ if args.out_dir is None:
 if args.d is None:
     raise RutnimeError('must specify d')
 
+if args.control == 'd12':
+    args.control = os.path.join('/Users', 'danielsf', 'physics',
+                                'MultiNest_v3.9', 'chains',
+                                'gaussianJellyBean_d12_s99_n50000_t1.00e-03.txt')
+
 if not os.path.isdir(args.out_dir):
     os.mkdir(args.out_dir)
 
