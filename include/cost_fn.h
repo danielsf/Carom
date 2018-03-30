@@ -45,6 +45,14 @@ class cost_fn : public function_wrapper{
             _set_d_params();
         }
 
+        double get_norm(int i){
+            return _relative_norm.get_data(i);
+        }
+
+        double basis(int i, int j){
+            return _bases.get_data(i,j);
+        }
+
     private:
         array_1d<int> _associates;
         double _scalar_norm;
