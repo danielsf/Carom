@@ -60,6 +60,11 @@ void cost_fn::_set_scalar_norm(){
 
     _relative_norm.reset_preserving_room();
 
+    array_1d<double> norm_sorted;
+    array_1d<int> norm_dex;
+    norm_sorted.set_name("set_scalar_norm_sorted");
+    norm_dex.set_name("set_scalar_norm_dex");
+
     double harmonic_mean=0.0;
     double geometric_mean=0.0;
     double harmonic_ct=0.0;
@@ -92,17 +97,17 @@ void cost_fn::_set_scalar_norm(){
         else{
             _relative_norm.set(idim,1.0);
         }
+        norm_dex.set(idim,idim);
     }
 
-    if(harmonic_ct<0.1){
-        _scalar_norm=5.0;
-    }
-    else{
+    sort(_relative_norm, norm_sorted, norm_dex);
+
+    if(harmonic_ct>0.1){
         harmonic_mean = harmonic_ct/harmonic_mean;
         geometric_mean=geometric_mean/harmonic_ct;
         geometric_mean=exp(geometric_mean);
-        _scalar_norm=5.0;
     }
+    _scalar_norm = norm_sorted.get_data(norm_sorted.get_dim()/2);
     printf("    set scalar norm to %e\n",_scalar_norm);
     printf("    harmonic %e geometric %e\n",harmonic_mean,geometric_mean);
 }
