@@ -14,7 +14,6 @@ void cost_fn::build(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
 
     printf("building cost_fn with %d associates\n",aa.get_dim());
     _called=0;
-    _use_relative_norm=1;
 
     _bases.set_name("dchi_interior_bases");
     _projected_associates.set_name("dchi_interior_projected_associates");
@@ -46,43 +45,6 @@ void cost_fn::_set_d_params(){
     _project_associates();
     _set_scalar_norm();
     printf("projected\n");
-}
-
-
-void cost_fn::set_relative_norms(const array_1d<double> &n_in){
-    _relative_norm.reset_preserving_room();
-
-    array_1d<double> norm,norm_sorted;
-    array_1d<int> norm_dex;
-    int i;
-    for(i=0;i<n_in.get_dim();i++){
-        norm.set(i,n_in.get_data(i));
-        norm_dex.set(i,i);
-    }
-    sort(norm,norm_sorted,norm_dex);
-
-    _relative_norm.set_dim(n_in.get_dim());
-
-    for(i=0;i<n_in.get_dim()/4;i++){
-        _relative_norm.set(norm_dex.get_data(i), 0.5);
-    }
-    for(;i<n_in.get_dim()/2;i++){
-        _relative_norm.set(norm_dex.get_data(i), 0.71);
-    }
-    for(;i<(n_in.get_dim()*3)/4;i++){
-        _relative_norm.set(norm_dex.get_data(i), 0.87);
-    }
-    for(;i<n_in.get_dim();i++){
-        _relative_norm.set(norm_dex.get_data(i), 1.0);
-    }
-
-    for(i=0;i<n_in.get_dim();i++){
-        if(_relative_norm.get_data(i)<0.1){
-            printf("WARNING relative norm %d %e\n",i,_relative_norm.get_data(i));
-            exit(1);
-        }
-    }
-
 }
 
 
