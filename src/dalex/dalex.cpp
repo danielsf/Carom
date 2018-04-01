@@ -1225,6 +1225,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     cost_fn dchifn(_chifn,associates);
+    dchifn.set_envelope(0.25*(target()-chimin()));
     dchifn.set_bases(_basis_vectors);
     printf("in simplex_boundary_search\n");
 
