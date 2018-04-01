@@ -110,6 +110,13 @@ void cost_fn::_set_scalar_norm(){
     _scalar_norm = norm_sorted.get_data(norm_sorted.get_dim()/2);
     printf("    set scalar norm to %e\n",_scalar_norm);
     printf("    harmonic %e geometric %e\n",harmonic_mean,geometric_mean);
+
+    for(idim=0;idim<_relative_norm.get_dim();idim++){
+        if(_relative_norm.get_data(idim)>_scalar_norm){
+            _relative_norm.set(idim,_scalar_norm);
+        }
+    }
+
 }
 
 void cost_fn::_project_associates(){
@@ -144,7 +151,7 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
     for(i=0;i<_associates.get_dim();i++){
         dd=0.0;
         for(j=0;j<_chifn->get_dim();j++){
-            dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/_scalar_norm,2);
+            dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/_relative_norm.get_data(j),2);
         }
         if(dd>1.0e-20){
             dd_avg += 1.0/sqrt(dd);
