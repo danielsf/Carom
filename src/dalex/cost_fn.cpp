@@ -107,9 +107,10 @@ void cost_fn::_set_scalar_norm(){
         geometric_mean=geometric_mean/harmonic_ct;
         geometric_mean=exp(geometric_mean);
     }
-    _scalar_norm = norm_sorted.get_data(norm_sorted.get_dim()/2);
+    double median = norm_sorted.get_data(norm_dex.get_dim()/2);
+    _scalar_norm = harmonic_mean;
     printf("    set scalar norm to %e\n",_scalar_norm);
-    printf("    harmonic %e geometric %e\n",harmonic_mean,geometric_mean);
+    printf("    median %e geometric %e\n",median,geometric_mean);
 
     for(idim=0;idim<_relative_norm.get_dim();idim++){
         if(_relative_norm.get_data(idim)>_scalar_norm){
