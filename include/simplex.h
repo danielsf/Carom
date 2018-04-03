@@ -5,6 +5,63 @@
 #include "goto_tools.h"
 #include "wrappers.h"
 
+#include <vector>
+#include "Minuit2/FCNBase.h"
+#include "Minuit2/MnMigrad.h"
+#include "Minuit2/MnUserParameterState.h"
+#include "Minuit2/FunctionMinimum.h"
+
+using namespace ROOT::Minuit2;
+
+class _minuit_wrapper : public FCNBase{
+    private:
+        function_wrapper *_chisquared;
+        int _dim;
+        mutable array_1d<double> _pp;
+
+    public:
+
+    _minuit_wrapper(){
+        _chisquared=NULL;
+        _dim=-1;
+        _pp.set_name("_minuit_wrapper_pp");
+    }
+
+    ~_minuit_wrapper(){}
+
+    void set_chisquared(function_wrapper *cc){
+        _chisquared=cc;
+    }
+
+    void set_dim(int ii){
+        _dim=ii;
+        _pp.reset_preserving_room();
+        _pp.set_dim(ii);
+    }
+
+    virtual double Up() const {return 1.0;}
+
+    double operator()(const std::vector<double> &pp) const{
+        if(_dim<0){
+            printf("CANNOT call _minuit_wrapper operator; dim<0\n");
+            exit(1);
+        }
+
+        if(_chisquared==NULL){
+            printf("CANNOT call _minuit_wrapper operator; _chisquared is NULL\n");
+            exit(1);
+        }
+
+        int i;
+        for(i=0;i<_dim;i++){
+            _pp.set(i,pp[i]);
+        }
+        return _chisquared[0](_pp);
+    }
+
+};
+
+
 class simplex_minimizer{
 
 public:
@@ -74,6 +131,7 @@ private:
 
     Ran *_dice;
     function_wrapper *_chisquared, *_cost;
+    _minuit_wrapper _minuit_fn;
 
     /*
     cost will need to be a function_wrapper sub-class

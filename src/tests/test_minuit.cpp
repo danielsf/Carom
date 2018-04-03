@@ -25,8 +25,8 @@ public:
         for(i=0;i<6;i++){
             ans += (pp[i]-i*2.1)*(pp[i]-i*2.1);
         }
-        std::cout<<ans<<" "<<pp[3]<<std::endl;
-        return ans;
+        std::cout<<"testing "<<ans<<" "<<pp[3]<<std::endl;
+        return ans+19.0;
     }
 
     virtual double Up() const{return 1.0;}
@@ -53,5 +53,13 @@ int main(int iargc, char *argv[]){
     for(i=0;i<6;i++){
         std::cout<<pp_out[i]<<std::endl;
     }
+
+    MnMigrad test_migrad2(my_fn, pp);
+    FunctionMinimum min2 = test_migrad2();
+    std::vector<double> pp_out2 = min2.UserParameters().Params();
+    for(i=0;i<6;i++){
+        std::cout<<pp_out2[i]<<std::endl;
+    }
+    std::cout<<min2.Fval()<<std::endl;
 
 }

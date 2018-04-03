@@ -217,12 +217,14 @@ void dalex::simplex_search(array_1d<int> &specified){
     _simplex_mindex=mindex();
 
     array_1d<double> min_pt;
+    min_pt.set_name("dalex_simplex_min_pt");
     ffmin.get_minpt(min_pt);
     double mu;
     int i_found;
     evaluate(min_pt, &mu, &i_found);
 
     _update_good_points(pt_0);
+    printf("done with this\n");
 
 }
 

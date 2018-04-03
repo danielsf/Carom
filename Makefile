@@ -16,10 +16,10 @@ LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 INCLUDE = -I$(DALEX_HOME)include/ -I$(MINUIT_DIR)
 
 # compilers
-cc = g++ -Wno-write-strings -O3 $(INCLUDE)
+cc = g++ -Wno-write-strings -O3 $(INCLUDE) -lMinuit2
 
 test_minuit: src/tests/test_minuit.cpp
-	$(cc) -o bin/test_minuit src/tests/test_minuit.cpp -lMinuit2
+	$(cc) -o bin/test_minuit src/tests/test_minuit.cpp
 
 object/containers.o: src/utils/containers.cpp include/containers.h
 	$(cc) -c -o object/containers.o src/utils/containers.cpp
