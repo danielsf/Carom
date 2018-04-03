@@ -1967,6 +1967,8 @@ void dalex::find_tendril_candidates(double factor_in){
     int go_on;
     array_1d<double> retry_pt;
     retry_pt.set_name("find_tendril_retry_pt");
+    double retry_dist,retry_dist_min;
+    int i_retry;
 
     array_1d<double> bisection_dir,delta_dir;
     bisection_dir.set_name("find_tendril_candidates_bisection_dir");
@@ -2052,8 +2054,23 @@ void dalex::find_tendril_candidates(double factor_in){
                         _chifn->get_fn(i_found),target());
                 write_to_log(log_message);
                 seed.reset_preserving_room();
+
+                i_retry=-1;
+                for(i=0;i<_good_points.get_dim();i++){
+                    j=_good_points.get_data(i);
+                    retry_dist=distance(i_found,j);
+                    if(i==0 || retry_dist<retry_dist_min){
+                        retry_dist_min=retry_dist;
+                        i_retry=j;
+                    }
+                }
+                if(i_retry<=0){
+                    printf("CANNOT retry; i_retry<0\n");
+                    exit(1);
+                }
+
                 for(i=0;i<_chifn->get_dim();i++){
-                    retry_pt.set(i,0.5*(_chifn->get_pt(mindex(),i)+
+                    retry_pt.set(i,0.5*(_chifn->get_pt(i_retry,i)+
                                         _chifn->get_pt(i_found,i)));
                 }
                 seed.add_row(retry_pt);
