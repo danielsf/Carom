@@ -2005,9 +2005,10 @@ void dalex::find_tendril_candidates(double factor_in){
                 seed.add_row(trial);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
                     for(i=0;i<_chifn->get_dim();i++){
-                       trial.set(i,seed.get_data(0,i)+0.1*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
+                       bisection_dir.set(i,good_ellipse.bases(jdim,i));
                     }
-                    seed.add_row(trial);
+                    i=bisection(i_found,bisection_dir,_chifn->get_fn(i_found)+_chifn->get_deltachi(),0.1);
+                    seed.add_row(_chifn->get_pt(i));
                 }
             }
             else{
@@ -2074,11 +2075,13 @@ void dalex::find_tendril_candidates(double factor_in){
                                         _chifn->get_pt(i_found,i)));
                 }
                 seed.add_row(retry_pt);
+                evaluate(retry_pt,&mu,&i_found);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
                     for(i=0;i<_chifn->get_dim();i++){
-                        trial.set(i,seed.get_data(0,i)+0.05*good_ellipse.radii(jdim)*good_ellipse.bases(jdim,i));
+                        bisection_dir.set(i,good_ellipse.bases(jdim,i));
                     }
-                    seed.add_row(trial);
+                    i=bisection(i_found,bisection_dir,_chifn->get_fn(i_found)+_chifn->get_deltachi(),0.1);
+                    seed.add_row(_chifn->get_pt(i));
                 }
                 ffmin.set_dice(_chifn->get_dice());
                 ffmin.use_gradient();
