@@ -25,6 +25,8 @@ void simplex_minimizer::initialize(){
     _dice=NULL;
     _limit=-1;
     _n_gradients=0;
+    _bases.reset();
+    _bases.set_name("simplex_bases");
 
     _min_temp=-3.0;
 
@@ -328,27 +330,64 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     char word[100];
     _minuit_fn.set_dim(seed.get_cols());
     _minuit_fn.set_chisquared(_chisquared);
-    int i,j;
-    double min,max;
-    for(i=0;i<seed.get_cols();i++){
-        for(j=0;j<seed.get_rows();j++){
-            if(j==0 || seed.get_data(j,i)<min){
-                min = seed.get_data(j,i);
+    int i,j,k;
+    double min,max,mu,mu_0;
+    if(_bases.get_rows()==0){
+        for(i=0;i<seed.get_cols();i++){
+            for(j=0;j<seed.get_rows();j++){
+                if(j==0 || seed.get_data(j,i)<min){
+                    min = seed.get_data(j,i);
+                }
+                if(j==0 || seed.get_data(j,i)>max){
+                    max = seed.get_data(j,i);
+                }
             }
-            if(j==0 || seed.get_data(j,i)>max){
-                max = seed.get_data(j,i);
-            }
+            sprintf(word,"pp%d",i);
+            input_params.Add(word,seed.get_data(0,i), max-min);
         }
-        sprintf(word,"pp%d",i);
-        input_params.Add(word,seed.get_data(0,i), max-min);
+    }
+    else{
+        _minuit_fn.set_bases(_bases);
+        for(i=0;i<seed.get_cols();i++){
+            for(j=0;j<seed.get_rows();j++){
+                mu=0.0;
+                for(k=0;k<seed.get_cols();k++){
+                    mu+=seed.get_data(j,k)*_bases.get_data(i,k);
+                }
+                if(j==0){
+                    mu_0=mu;
+                }
+                if(j==0 || mu<min){
+                    min=mu;
+                }
+                if(j==0|| mu>max){
+                    max=mu;
+                }
+            }
+            sprintf(word,"pp%d",i);
+            input_params.Add(word,mu_0,max-min);
+        }
+
     }
 
     MnMigrad migrad_runner(_minuit_fn, input_params);
     FunctionMinimum minuit_result = migrad_runner();
     std::vector<double> pp_out = minuit_result.UserParameters().Params();
-    for(i=0;i<seed.get_cols();i++){
-        min_pt.set(i,pp_out[i]);
-        _min_pt.set(i,pp_out[i]);
+    if(_bases.get_rows()==0){
+        for(i=0;i<seed.get_cols();i++){
+            min_pt.set(i,pp_out[i]);
+            _min_pt.set(i,pp_out[i]);
+        }
+    }
+    else{
+        for(i=0;i<seed.get_cols();i++){
+            min_pt.set(i,0.0);
+            _min_pt.set(i,0.0);
+            for(j=0;j<seed.get_cols();j++){
+                min_pt.add_val(i,pp_out[j]*_bases.get_data(j,i));
+                _min_pt.add_val(i,pp_out[j]*_bases.get_data(j,i));
+            }
+        }
     }
     printf("leaving find minimum -- %d -- %e\n",min_pt.get_dim(),minuit_result.Fval());
 }

@@ -207,6 +207,7 @@ void dalex::simplex_search(array_1d<int> &specified){
     }
 
     simplex_minimizer ffmin;
+    ffmin.set_bases(_basis_vectors);
     ffmin.set_chisquared(_chifn);
     ffmin.set_minmax(min,max);
     ffmin.set_dice(_chifn->get_dice());
@@ -1235,6 +1236,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     write_to_log(log_message);
 
     simplex_minimizer ffmin;
+    ffmin.set_bases(_basis_vectors);
     ffmin.set_chisquared(&dchifn);
     array_1d<double> min,max;
     min.set_name("dalex_simplex_search_min");
@@ -1850,6 +1852,7 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
     }
 
     simplex_minimizer ffmin;
+    ffmin.set_bases(_basis_vectors);
     ffmin.set_chisquared(&dchifn);
     ffmin.set_dice(_chifn->get_dice());
     ffmin.set_minmax(min,max);
@@ -1934,6 +1937,7 @@ void dalex::find_tendril_candidates(double factor_in){
     }
 
     simplex_minimizer ffmin;
+    ffmin.set_bases(_basis_vectors);
     ffmin.set_minmax(min,max);
     ffmin.set_chisquared(&dchifn);
 
@@ -2140,6 +2144,7 @@ void dalex::find_tendril_candidates(double factor_in){
     array_1d<double> new_min_pt;
 
     simplex_minimizer ffmin_2;
+    ffmin_2.set_bases(_basis_vectors);
     ffmin_2.set_chisquared(_chifn);
     ffmin_2.set_minmax(min,max);
     ffmin_2.set_dice(_chifn->get_dice());
