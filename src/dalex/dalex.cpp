@@ -1392,7 +1392,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
                 if(i_bisect2==i_anchor){
                     bad_iterations=0;
-                    while(i_bisect1==i_anchor){
+                    while(i_bisect2==i_anchor){
                         for(j=0;j<_chifn->get_dim();j++){
                             bisect_dir.set(j,normal_deviate(_chifn->get_dice(),0.0,1.0));
                         }
