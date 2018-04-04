@@ -1227,6 +1227,15 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
         }
     }
 
+    if(i_origin>=0){
+        if(associates.contains(i_origin)==0){
+            associates.add(i_origin);
+        }
+        if(associates.contains(specified)==0){
+            associates.add(specified);
+        }
+    }
+
     cost_fn dchifn(_chifn,associates);
     dchifn.set_envelope(0.25*(target()-chimin()));
     dchifn.set_bases(_basis_vectors);
