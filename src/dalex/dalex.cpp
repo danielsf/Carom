@@ -1869,6 +1869,9 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(double factor_in){
 
+    _particle_candidates.reset_preserving_room();
+    _origin_candidates.reset_preserving_room();
+
     char log_message[letters];
 
     write_to_log("finding tendril candidates\n");
@@ -2169,8 +2172,8 @@ void dalex::find_tendril_candidates(double factor_in){
     fn_val_sorted.set_name("find_tendrils_fn_val_sorted");
     sort(fn_val,fn_val_sorted,fn_val_dex);
 
-    for(i=0;i<_chifn->get_dim()/2;i++){
-        _particle_candidates.set(i,particles.get_data(fn_val_dex.get_data(i)));
+    for(i=0;i<particles.get_dim();i++){
+        _particle_candidates.set(i,particles.get_data(i));
         _origin_candidates.set(i,-1);
     }
     sprintf(log_message,"done finding tendrils -- chimin %e\n",chimin());
@@ -2219,7 +2222,22 @@ void dalex::get_new_tendril(int *particle, int *origin){
     cost_val_sorted.set_name("new_tendril_cost_val_sorted");
     cost_val_dex.set_name("new_tendril_cost_val_dex");
 
+    int invalid_candidates;
+
     while(particle[0]<0){
+        invalid_candidates = 0;
+        for(i=0;i<_particle_candidates.get_dim();i++){
+            if(_particle_candidates.get_data(i)<0){
+                invalid_candidates++;
+            }
+        }
+        if(invalid_candidates>=_chifn->get_dim()/2){
+            old_type=_chifn->get_search_type();
+            _chifn->set_search_type(_type_init_tendril);
+            find_tendril_candidates(3.0);
+            _chifn->set_search_type(old_type);
+        }
+
         if(_limit>0 && _chifn->get_pts()>_limit){
             _chifn->write_pts();
             return;
@@ -2265,7 +2283,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
 
         sort(cost_val, cost_val_sorted, cost_val_dex);
 
-        for(i=0;i<_particle_candidates.get_dim();i++){
+        for(i=0;i<_chifn->get_dim()/2;i++){
             ip=_particle_candidates.get_data(cost_val_dex.get_data(i));
             io=_origin_candidates.get_data(cost_val_dex.get_data(i));
             if(ip>=0){
@@ -2290,10 +2308,6 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 }
             }
         }
-        old_type=_chifn->get_search_type();
-        _chifn->set_search_type(_type_init_tendril);
-        find_tendril_candidates(3.0);
-        _chifn->set_search_type(old_type);
     }
 }
 
