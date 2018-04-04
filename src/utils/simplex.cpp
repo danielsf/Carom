@@ -332,6 +332,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     _minuit_fn.set_chisquared(_chisquared);
     int i,j,k;
     double min,max,mu,mu_0;
+    printf("    minimizer starts with %e\n",mu_guess);
+
     if(_bases.get_rows()==0){
         for(i=0;i<seed.get_cols();i++){
             for(j=0;j<seed.get_rows();j++){
@@ -389,7 +391,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
             }
         }
     }
-    printf("leaving find minimum -- %d -- %e\n",min_pt.get_dim(),minuit_result.Fval());
+    printf("    leaving find minimum -- %d -- %e\n",min_pt.get_dim(),minuit_result.Fval());
 }
 
 
