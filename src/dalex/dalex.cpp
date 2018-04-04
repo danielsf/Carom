@@ -2367,6 +2367,7 @@ void dalex::tendril_search(){
     get_new_tendril(&particle,&origin);
 
     ellipse_pts.reset_preserving_room();
+    local_ellipse.use_geo_center();
 
     while(strikes<3){
 
