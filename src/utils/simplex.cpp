@@ -331,7 +331,15 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     _minuit_fn.set_dim(seed.get_cols());
     _minuit_fn.set_chisquared(_chisquared);
     int i,j,k;
-    double min,max,mu,mu_0;
+    double min,max,mu,mu_guess;
+    int i_guess;
+    for(i=0;i<seed.get_rows();i++){
+        mu=_chisquared[0](seed(i));
+        if(i==0 || mu<mu_guess){
+            i_guess=i;
+            mu_guess=mu;
+        }
+    }
     printf("    minimizer starts with %e\n",mu_guess);
 
     if(_bases.get_rows()==0){
@@ -343,9 +351,12 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
                 if(j==0 || seed.get_data(j,i)>max){
                     max = seed.get_data(j,i);
                 }
+                if(j==i_guess){
+                    mu_guess=seed.get_data(j,i);
+                }
             }
             sprintf(word,"pp%d",i);
-            input_params.Add(word,seed.get_data(0,i), max-min);
+            input_params.Add(word,mu_guess, max-min);
         }
     }
     else{
@@ -356,8 +367,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
                 for(k=0;k<seed.get_cols();k++){
                     mu+=seed.get_data(j,k)*_bases.get_data(i,k);
                 }
-                if(j==0){
-                    mu_0=mu;
+                if(j==i_guess){
+                    mu_guess=mu;
                 }
                 if(j==0 || mu<min){
                     min=mu;
@@ -367,7 +378,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
                 }
             }
             sprintf(word,"pp%d",i);
-            input_params.Add(word,mu_0,max-min);
+            input_params.Add(word,mu_guess,max-min);
         }
 
     }
