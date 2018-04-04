@@ -1963,8 +1963,7 @@ void dalex::find_tendril_candidates(double factor_in){
     array_1d<int> at_least_one;
     at_least_one.set_name("find_tendril_at_least_one");
     double factor;
-    int failures;
-    int go_on;
+    int try_again;
     array_1d<double> retry_pt;
     retry_pt.set_name("find_tendril_retry_pt");
     double retry_dist,retry_dist_min;
@@ -1976,6 +1975,8 @@ void dalex::find_tendril_candidates(double factor_in){
     double bisection_target;
     array_1d<int> seed_int_list;
     seed_int_list.set_name("find_tendril_candidates_seed_int_list");
+
+    int strikes;
 
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -2038,19 +2039,24 @@ void dalex::find_tendril_candidates(double factor_in){
                 write_to_log("    done doing alternative seed in find_tendril_candidates\n");
             }
 
-            failures=0;
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
-            failures++;
 
-            if(_chifn->get_fn(i_found)>target() && dchifn(minpt)>target()){
-                go_on=1;
+            if(_chifn->get_fn(i_found)>target()){
+                try_again=1;
             }
             else{
-                go_on=0;
+                try_again=0;
             }
 
-            while(go_on==1 && failures<3){
+            strikes=0;
+            while(try_again==1){
+
+                if(_limit>0 && _chifn->get_pts()>_limit){
+                    _chifn->write_pts();
+                    return;
+                }
+
                 sprintf(log_message,"    trying again because %e > %e\n",
                         _chifn->get_fn(i_found),target());
                 write_to_log(log_message);
@@ -2088,14 +2094,23 @@ void dalex::find_tendril_candidates(double factor_in){
                 ffmin.find_minimum(seed,minpt);
                 evaluate(minpt,&mu,&i_found);
                 ffmin.do_not_use_gradient();
-                failures++;
-                if(_chifn->get_fn(i_found)<target() || dchifn(minpt)<target()){
-                    go_on=0;
+                if(_chifn->get_fn(i_found)<target()){
+                    try_again=0;
+                }
+                if(_chifn->get_fn(i_found)>target() &&
+                   dchifn(minpt)<target()){
+
+                    strikes++;
+                    if(strikes>=3){
+                        try_again=0;
+                    }
                 }
             }
+
             if(_chifn->get_fn(i_found)<target()){
                 at_least_one.add(i_found);
             }
+
             particles.add(i_found);
             write_to_end_pt_file(i_found);
             cost=dchifn(minpt);
