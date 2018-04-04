@@ -2366,9 +2366,10 @@ void dalex::tendril_search(){
 
     get_new_tendril(&particle,&origin);
 
+    ellipse_pts.reset_preserving_room();
+
     while(strikes<3){
 
-        ellipse_pts.reset_preserving_room();
         is_a_strike=0;
         pt_start=_chifn->get_pts();
 
@@ -2408,6 +2409,7 @@ void dalex::tendril_search(){
         if(ellipse_pts.get_rows()>2*_chifn->get_dim()){
             local_ellipse.build(ellipse_pts);
             _exclusion_zones.add(local_ellipse);
+            ellipse_pts.reset_preserving_room();
         }
 
     }
