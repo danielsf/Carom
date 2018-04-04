@@ -1990,6 +1990,7 @@ void dalex::find_tendril_candidates(double factor_in){
     seed_int_list.set_name("find_tendril_candidates_seed_int_list");
 
     int strikes;
+    int failures;
 
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -2063,6 +2064,7 @@ void dalex::find_tendril_candidates(double factor_in){
             }
 
             strikes=0;
+            failures=0;
             while(try_again==1){
 
                 if(_limit>0 && _chifn->get_pts()>_limit){
@@ -2117,6 +2119,10 @@ void dalex::find_tendril_candidates(double factor_in){
                     if(strikes>=3){
                         try_again=0;
                     }
+                }
+                failures++;
+                if(failures>_chifn->get_dim()/2){
+                    try_again=0;
                 }
             }
 
