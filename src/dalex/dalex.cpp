@@ -1337,6 +1337,7 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
 
     if(specified>=0){
         i_anchor=specified;
+        printf("    anchord dchifn %e\n",dchifn(_chifn->get_pt(i_anchor)));
         if(_chifn->get_fn(i_anchor)<target()){
             local_target=target();
         }
