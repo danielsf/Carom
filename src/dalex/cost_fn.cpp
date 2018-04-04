@@ -155,10 +155,13 @@ double cost_fn::nn_distance(const array_1d<double> &pt){
         for(j=0;j<_chifn->get_dim();j++){
             dd+=power((pt.get_data(j)-_projected_associates.get_data(i,j))/_relative_norm.get_data(j),2);
         }
-        if(dd>1.0e-20){
+        if(dd>1.0e-4){
             dd_avg += 1.0/sqrt(dd);
-            ct+=1.0;
         }
+        else{
+            dd_avg += 100.0;
+        }
+        ct+=1.0;
     }
 
     if(ct>0.0){
