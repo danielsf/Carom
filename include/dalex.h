@@ -91,7 +91,7 @@ class dalex{
             if(_end_pt_name[0]==0){
                 return;
             }
-            if(dex<0){
+            if(dex<0 || _chifn->get_fn(dex)>target()+1.0e5){
                 return;
             }
             FILE *out_file;
