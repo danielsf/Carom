@@ -1935,7 +1935,7 @@ void dalex::find_tendril_candidates(double factor_in){
     cost_fn dchifn(_chifn,associates,1);
     dchifn.set_bases(_basis_vectors);
     printf("in find_tendril_candidates\n");
-    double envelope=target()-chimin();
+    double envelope=0.25*(target()-chimin());
     if(envelope<2.0){
         envelope=2.0;
     }
