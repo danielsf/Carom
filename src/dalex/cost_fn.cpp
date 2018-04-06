@@ -102,13 +102,19 @@ void cost_fn::_set_scalar_norm(){
 
     sort(_relative_norm, norm_sorted, norm_dex);
 
+    double median = norm_sorted.get_data(norm_dex.get_dim()/2);
+
     if(harmonic_ct>0.1){
         harmonic_mean = harmonic_ct/harmonic_mean;
         geometric_mean=geometric_mean/harmonic_ct;
         geometric_mean=exp(geometric_mean);
     }
-    double median = norm_sorted.get_data(norm_dex.get_dim()/2);
-    _scalar_norm = 5.0;
+    else{
+        printf("NOT SURE WHAT TO DO harmonic_ct %e\n",harmonic_ct);
+        exit(1);
+    }
+
+    _scalar_norm = 0.5*harmonic_mean;
     printf("    set scalar norm to %e\n",_scalar_norm);
 
     printf("    min %e max %e\n",
