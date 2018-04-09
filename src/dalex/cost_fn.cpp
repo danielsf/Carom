@@ -234,8 +234,15 @@ double cost_fn::operator()(const array_1d<double> &pt){
         distance=0.0;
     }
 
+    double d_term;
+    if(distance<1.0){
+        d_term=distance;
+    }
+    else{
+        d_term=distance*distance;
+    }
     double val;
-    val = mu-1.0*delta*distance*distance*exp_term;
+    val = mu-1.0*delta*d_term*exp_term;
     _pt_cache.add(i_found);
     _fn_cache.add(val);
     return val;
