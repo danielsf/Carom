@@ -68,8 +68,6 @@ class dalex{
 
             _particle_candidates.set_name("_particle_candidates");
             _origin_candidates.set_name("_origin_candidates");
-
-            _tendril_end_pts.set_name("_tendril_end_pts");
         };
 
         void build(chisq_wrapper*);
@@ -269,8 +267,6 @@ class dalex{
         array_1d<int> _particles,_origins;
         array_1d<int> _particle_candidates,_origin_candidates;
         array_1d<int> _strikes_arr;
-
-        array_1d<int> _tendril_end_pts;
 
         void compass_search(ellipse&);
 
