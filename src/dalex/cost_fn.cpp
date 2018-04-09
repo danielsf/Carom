@@ -235,7 +235,7 @@ double cost_fn::operator()(const array_1d<double> &pt){
     }
 
     double val;
-    val = mu-1.0*delta*distance*exp_term;
+    val = mu-1.0*delta*distance*distance*exp_term;
     _pt_cache.add(i_found);
     _fn_cache.add(val);
     return val;
