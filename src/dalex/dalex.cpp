@@ -2352,12 +2352,8 @@ void dalex::init_fill(){
     int old_type=_chifn->get_search_type();
     _chifn->set_search_type(_type_init);
     find_tendril_candidates(1.0);
-    int i;
-    for(i=0;i<_particle_candidates.get_dim();i++){
-        _particle_candidates.set(i,-1);
-        _origin_candidates.set(i,-1);
-    }
-
+    _chifn->set_search_type(_type_init_tendril);
+    find_tendril_candidates(3.0);
     _chifn->set_search_type(old_type);
 }
 
