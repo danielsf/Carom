@@ -1894,13 +1894,27 @@ void dalex::find_tendril_candidates(double factor_in){
     associates_raw.set_name("find_tendril_associates_raw");
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("find_tendrils_ellipse_pts");
+    array_1d<int> ellipse_dexes;
+    ellipse_dexes.set_name("find_tendrils_ellipse_dexes");
     array_1d<double> center;
     center.set_name("find_tendrils_center");
     int i_center;
     int i,j;
+
+    for(i=0;i<_tendril_end_pts.get_dim();i++){
+        j=_tendril_end_pts.get_data(i);
+        if(_chifn->get_fn(j)<target() && ellipse_dexes.contains(j)==0){
+            ellipse_pts.add_row(_chifn->get_pt(j));
+            ellipse_dexes.add(j);
+            associates.add(j);
+            associates_raw.add(j);
+        }
+    }
+
     for(i=0;i<_chifn->get_pts();i++){
-        if(_chifn->get_fn(i)<target()){
+        if(_chifn->get_fn(i)<target() && ellipse_dexes.contains(i)==0){
             ellipse_pts.add_row(_chifn->get_pt(i));
+            ellipse_dexes.add(i);
             associates.add(i);
             associates_raw.add(i);
         }
@@ -2150,6 +2164,7 @@ void dalex::find_tendril_candidates(double factor_in){
             }
 
             particles.add(i_found);
+            _tendril_end_pts.add(i_found);
             write_to_end_pt_file(i_found);
             cost=dchifn(minpt);
             fn_val.add(cost);
