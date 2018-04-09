@@ -1879,6 +1879,9 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
 
 void dalex::find_tendril_candidates(double factor_in){
 
+    _particle_candidates.reset_preserving_room();
+    _origin_candidates.reset_preserving_room();
+
     char log_message[letters];
 
     write_to_log("finding tendril candidates\n");
@@ -2267,8 +2270,6 @@ void dalex::get_new_tendril(int *particle, int *origin){
         if(invalid_candidates>=_chifn->get_dim()/2){
             old_type=_chifn->get_search_type();
             _chifn->set_search_type(_type_init_tendril);
-            _particle_candidates.reset_preserving_room();
-            _origin_candidates.reset_preserving_room();
             find_tendril_candidates(3.0);
             _chifn->set_search_type(old_type);
         }
@@ -2352,8 +2353,12 @@ void dalex::init_fill(){
     int old_type=_chifn->get_search_type();
     _chifn->set_search_type(_type_init);
     find_tendril_candidates(1.0);
-    _chifn->set_search_type(_type_init_tendril);
-    find_tendril_candidates(3.0);
+    int i;
+    for(i=0;i<_particle_candidates.get_dim();i++){
+        _particle_candidates.set(i,-1);
+        _origin_candidates.set(i,-1);
+    }
+
     _chifn->set_search_type(old_type);
 }
 
