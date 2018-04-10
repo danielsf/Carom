@@ -2217,9 +2217,10 @@ void dalex::find_tendril_candidates(double factor_in){
 
     array_2d<double> simplex_seed;
     seed.set_name("find_candidates_simplex_seed");
-    for(i=0;i<_chifn->get_dim()+1;i++){
+    for(i=0;i<_chifn->get_dim();i++){
         simplex_seed.add_row(_chifn->get_pt(particles.get_data(fn_val_dex.get_data(i))));
     }
+    simplex_seed.add_row(_chifn->get_pt(mindex()));
 
     array_1d<double> new_min_pt;
 
