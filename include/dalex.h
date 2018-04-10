@@ -64,6 +64,7 @@ class dalex{
             _basis_ddsq.set_name("dalex_basis_ddsq");
 
             _minimizers.set_name("dalex_minimizers");
+            _tendril_init=0;
 
             _particle_candidates.set_name("_particle_candidates");
             _origin_candidates.set_name("_origin_candidates");
@@ -112,6 +113,7 @@ class dalex{
                                     ellipse_list&, int*, int);
         int _exploration_simplex(int,int,array_1d<int>&);
         void tendril_search();
+        void init_fill();
         void find_tendril_candidates(double);
         void get_new_tendril(int*,int*);
         void min_explore(int, int);
@@ -271,6 +273,7 @@ class dalex{
         int _limit;
         int _strikes,_strikeouts;
         int _has_struck;
+        int _tendril_init;
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;

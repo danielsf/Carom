@@ -115,6 +115,7 @@ void cost_fn::_set_scalar_norm(){
     }
 
     _scalar_norm = median;
+
     printf("    set scalar norm to %e\n",_scalar_norm);
 
     printf("    min %e max %e\n",
