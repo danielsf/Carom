@@ -15,6 +15,7 @@ def load_multinest_data(file_name, dim):
 
 
 def load_dalex_data(data_name, dim):
+    print('loading %s' % data_name)
     with open(data_name, 'r') as input_file:
         first_line = input_file.readline()
     first_line = first_line.split(' ')
