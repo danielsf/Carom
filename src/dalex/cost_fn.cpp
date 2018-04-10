@@ -90,9 +90,9 @@ void cost_fn::_set_scalar_norm(){
 
         if(max-min>1.0e-20){
             harmonic_ct+=1.0;
-            harmonic_mean+=1.0/(max-min);
-            geometric_mean+=log(max-min);
-            _relative_norm.set(idim, max-min);
+            harmonic_mean+=2.0/(max-min);
+            geometric_mean+=log(0.5*(max-min));
+            _relative_norm.set(idim, 0.5*(max-min));
         }
         else{
             _relative_norm.set(idim,1.0);
@@ -114,7 +114,7 @@ void cost_fn::_set_scalar_norm(){
         exit(1);
     }
 
-    _scalar_norm = 0.5*median;
+    _scalar_norm = median;
     printf("    set scalar norm to %e\n",_scalar_norm);
 
     printf("    min %e max %e\n",
