@@ -2267,7 +2267,9 @@ void dalex::get_new_tendril(int *particle, int *origin){
                 invalid_candidates++;
             }
         }
-        if(invalid_candidates>=_chifn->get_dim()/2){
+        if(invalid_candidates>=_chifn->get_dim()/2 ||
+            _particle_candidates.get_dim()<_chifn->get_dim()/2){
+
             old_type=_chifn->get_search_type();
             _chifn->set_search_type(_type_init_tendril);
             find_tendril_candidates(3.0);
@@ -2348,20 +2350,6 @@ void dalex::get_new_tendril(int *particle, int *origin){
 }
 
 
-void dalex::init_fill(){
-    int path_len=_tendril_path.get_rows();
-    int old_type=_chifn->get_search_type();
-    _chifn->set_search_type(_type_init);
-    find_tendril_candidates(1.0);
-    int i;
-    for(i=0;i<_particle_candidates.get_dim();i++){
-        _particle_candidates.set(i,-1);
-        _origin_candidates.set(i,-1);
-    }
-
-    _chifn->set_search_type(old_type);
-}
-
 void dalex::tendril_search(){
 
     char log_message[letters];
@@ -2387,15 +2375,6 @@ void dalex::tendril_search(){
     new_origins.set_name("new_origins");
 
     int particle, origin;
-
-    if(_tendril_init==0){
-        init_fill();
-        _tendril_init=1;
-        if(_limit>0 && _chifn->get_pts()>_limit){
-            _chifn->write_pts();
-            return;
-        }
-    }
 
     int strikes=0;
     _has_struck=0;

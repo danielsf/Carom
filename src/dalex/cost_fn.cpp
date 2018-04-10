@@ -114,7 +114,7 @@ void cost_fn::_set_scalar_norm(){
         exit(1);
     }
 
-    _scalar_norm = 0.5*harmonic_mean;
+    _scalar_norm = 0.5*median;
     printf("    set scalar norm to %e\n",_scalar_norm);
 
     printf("    min %e max %e\n",
