@@ -70,12 +70,11 @@ void cost_fn::_set_scalar_norm(){
     double harmonic_ct=0.0;
     double min,max,mu;
     int idim,ipt,j;
-    double mid_point = _chifn->chimin()+0.5*_chifn->get_deltachi();
     for(idim=0;idim<_chifn->get_dim();idim++){
         min=2.0*exception_value;
         max=-2.0*exception_value;
         for(ipt=0;ipt<_chifn->get_pts();ipt++){
-            if(_chifn->get_fn(ipt)<mid_point){
+            if(_chifn->get_fn(ipt)<_chifn->target()){
                 mu=0.0;
                 for(j=0;j<_chifn->get_dim();j++){
                    mu+=_chifn->get_pt(ipt,j)*_bases.get_data(idim,j);
@@ -115,7 +114,7 @@ void cost_fn::_set_scalar_norm(){
         exit(1);
     }
 
-    _scalar_norm = median;
+    _scalar_norm = 0.5*median;
     printf("    set scalar norm to %e\n",_scalar_norm);
 
     printf("    min %e max %e\n",
