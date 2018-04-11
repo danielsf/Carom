@@ -68,6 +68,8 @@ class dalex{
 
             _particle_candidates.set_name("_particle_candidates");
             _origin_candidates.set_name("_origin_candidates");
+
+            _scalar_norm=-1.0;
         };
 
         void build(chisq_wrapper*);
@@ -280,6 +282,8 @@ class dalex{
 
         char _log_file_name[letters];
         char _end_pt_name[letters+20];
+
+        double _scalar_norm;
 };
 
 #endif

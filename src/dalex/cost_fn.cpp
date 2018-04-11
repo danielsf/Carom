@@ -2,11 +2,13 @@
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa){
     _envelope=1.0;
+    _norm_is_frozen=0;
     build(cc,aa,1);
 }
 
 cost_fn::cost_fn(chisq_wrapper *cc, array_1d<int> &aa, int min_or_med){
     _envelope=1.0;
+    _norm_is_frozen=0;
     build(cc,aa,min_or_med);
 }
 
@@ -114,9 +116,11 @@ void cost_fn::_set_scalar_norm(){
         exit(1);
     }
 
-    _scalar_norm = median;
+    if(_norm_is_frozen==0){
+        _scalar_norm = median;
+    }
 
-    printf("    set scalar norm to %e\n",_scalar_norm);
+    printf("    set scalar norm to %e %d\n",_scalar_norm,_norm_is_frozen);
 
     printf("    min %e max %e\n",
            norm_sorted.get_data(0),

@@ -1237,6 +1237,9 @@ int dalex::simplex_boundary_search(const int specified, const int i_origin,
     }
 
     cost_fn dchifn(_chifn,associates);
+    if(_scalar_norm>0.0){
+        dchifn.freeze_norm(_scalar_norm);
+    }
     dchifn.set_envelope(0.25*(target()-chimin()));
     dchifn.set_bases(_basis_vectors);
     printf("in simplex_boundary_search\n");
@@ -1789,6 +1792,9 @@ int dalex::_exploration_simplex(int i1, int i0, array_1d<int> &associates){
         associate_pts.add_row(_chifn->get_pt(associates.get_data(i)));
     }
     cost_fn dchifn(_chifn, associates);
+    if(_scalar_norm>0.0){
+        dchifn.freeze_norm(_scalar_norm);
+    }
     dchifn.set_bases(_basis_vectors);
     printf("in _exploration_simplex\n");
 
@@ -1933,6 +1939,11 @@ void dalex::find_tendril_candidates(double factor_in){
     good_ellipse.build(center,ellipse_pts);
 
     cost_fn dchifn(_chifn,associates,1);
+
+    if(_scalar_norm>0.0){
+        dchifn.freeze_norm(_scalar_norm);
+    }
+
     dchifn.set_bases(_basis_vectors);
     printf("in find_tendril_candidates\n");
     double envelope=0.25*(target()-chimin());
@@ -2209,6 +2220,11 @@ void dalex::find_tendril_candidates(double factor_in){
 
         }
     }
+
+    if(_scalar_norm<0.0){
+        _scalar_norm=dchifn.scalar_norm();
+    }
+
     for(i=0;i<fn_val.get_dim();i++){
         fn_val_dex.add(i);
     }
@@ -2257,6 +2273,9 @@ void dalex::get_new_tendril(int *particle, int *origin){
     int old_type;
 
     cost_fn dchifn;
+    if(_scalar_norm>0.0){
+        dchifn.freeze_norm(_scalar_norm);
+    }
     dchifn.set_bases(_basis_vectors);
     printf("in get_new_tendril\n");
     array_1d<int> associates;

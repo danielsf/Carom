@@ -7,7 +7,12 @@ class cost_fn : public function_wrapper{
     public:
         cost_fn(chisq_wrapper*, array_1d<int>&);
         cost_fn(chisq_wrapper*, array_1d<int>&, int);
-        cost_fn(){_chifn=NULL;};
+
+        cost_fn(){
+                  _chifn=NULL;
+                  _norm_is_frozen=0;
+                  };
+
         ~cost_fn(){};
         void build(chisq_wrapper*, array_1d<int>&, int);
         virtual double operator()(const array_1d<double>&);
@@ -58,6 +63,19 @@ class cost_fn : public function_wrapper{
             return _bases.get_data(i,j);
         }
 
+        void freeze_norm(double dd){
+            int i;
+            _scalar_norm=dd;
+            _norm_is_frozen=1;
+            if(_chifn!=NULL && _bases.get_rows()>0){
+                _set_scalar_norm();
+            }
+        }
+
+        double scalar_norm(){
+            return _scalar_norm;
+        }
+
     private:
         array_1d<int> _associates;
         double _scalar_norm;
@@ -77,6 +95,8 @@ class cost_fn : public function_wrapper{
         void _project_associates();
         void _set_d_params();
         void _set_scalar_norm();
+
+        int _norm_is_frozen;
 
 };
 
