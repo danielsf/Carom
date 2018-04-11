@@ -1936,7 +1936,8 @@ void dalex::find_tendril_candidates(double factor_in){
     }
 
     ellipse good_ellipse;
-    good_ellipse.build(center,ellipse_pts);
+    good_ellipse.use_geo_center();
+    good_ellipse.build(ellipse_pts);
 
     cost_fn dchifn(_chifn,associates,1);
 
