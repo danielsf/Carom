@@ -2125,11 +2125,14 @@ void dalex::find_tendril_candidates(double factor_in){
 
                     seed.add_row(_chifn->get_pt(i_found));
                     i_start=i_found;
+                    printf("    using i_found %e\n",mu_found);
 
                 }
                 else{
                     seed.add_row(retry_pt);
                     i_start=i_retry;
+                    printf("    using i_retry %e %e\n",
+                    mu_retry,distance(mindex(),i_retry));
                 }
 
                 if(i_start<0){
