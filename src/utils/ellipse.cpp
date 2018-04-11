@@ -41,7 +41,9 @@ void ellipse::build(const array_1d<double> &center_in,
                     const array_2d<double> &pts_in){
 
     Ran dice(99);
-
+    if(center_in.get_dim()==pts_in.get_cols()){
+        _forced_center=1;
+    }
     _min.reset_preserving_room();
     _max.reset_preserving_room();
 
@@ -57,11 +59,10 @@ void ellipse::build(const array_1d<double> &center_in,
     _bases.reset_preserving_room();
     _radii.reset_preserving_room();
 
+    _find_center(pts_in);
+
     int i;
-    if(center_in.get_dim()!=pts_in.get_cols()){
-        _find_center(pts_in);
-    }
-    else{
+    if(center_in.get_dim()==pts_in.get_cols()){
         for(i=0;i<center_in.get_dim();i++){
             _center.set(i,center_in.get_data(i));
         }
@@ -186,15 +187,17 @@ void ellipse::_find_center(const array_2d<double> &pts_in){
         }
     }
 
-    array_1d<double> geo_center;
-    geo_center.set_name("ellipse_geo_center");
     for(i=0;i<dim;i++){
-        geo_center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
+        _geo_center.set(i,0.5*(min.get_data(i)+max.get_data(i)));
+    }
+
+    if(_forced_center==1){
+        return;
     }
 
     if(_use_geo_center==1){
         for(i=0;i<dim;i++){
-            _center.set(i,geo_center.get_data(i));
+            _center.set(i,_geo_center.get_data(i));
         }
         return;
     }
@@ -204,7 +207,7 @@ void ellipse::_find_center(const array_2d<double> &pts_in){
     for(i=0;i<pts_in.get_rows();i++){
         dd=0.0;
         for(j=0;j<dim;j++){
-           dd+=power((pts_in.get_data(i,j)-geo_center.get_data(j))/
+           dd+=power((pts_in.get_data(i,j)-_geo_center.get_data(j))/
                      (max.get_data(j)-min.get_data(j)),2);
         }
         if(i==0 || dd<ddmin){
