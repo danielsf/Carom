@@ -2002,8 +2002,6 @@ void dalex::find_tendril_candidates(double factor_in){
 
     int strikes;
     int failures;
-    int i_other_dim;
-    double other_sgn;
 
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -2014,25 +2012,9 @@ void dalex::find_tendril_candidates(double factor_in){
             factor=factor_in;
             while(i_found<0){
                 printf("    running with factor %e\n",factor);
-                i_other_dim=idim;
-                while(i_other_dim==idim){
-                    i_other_dim=_chifn->random_int()%_chifn->get_dim();
-                }
-
-                mu=_chifn->random_double();
-
-                if(mu<0.5){
-                    other_sgn=1.0;
-                }
-                else{
-                    other_sgn=-1.0;
-                }
 
                 for(i=0;i<_chifn->get_dim();i++){
                     trial.set(i,center.get_data(i)+sgn*factor*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
-                }
-                for(i=0;i<_chifn->get_dim();i++){
-                    trial.add_val(i,other_sgn*factor*0.25*good_ellipse.radii(idim)*good_ellipse.bases(i_other_dim,i));
                 }
                 evaluate(trial,&mu,&i_found);
                 printf("    first point is %d\n",i_found);
