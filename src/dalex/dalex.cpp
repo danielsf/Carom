@@ -2153,14 +2153,22 @@ void dalex::find_tendril_candidates(double factor_in){
             write_to_end_pt_file(i_found);
             cost=dchifn(minpt);
             fn_val.add(cost);
+
+
             if(_chifn->get_dim()>9){
                 sprintf(log_message,"    got %d chisq %e cost %e\n",
                         particles.get_dim(),mu,cost);
                 write_to_log(log_message);
+
                 sprintf(log_message,"    pt %e %e rad %e\n\n",
                                     minpt.get_data(6),
                                     minpt.get_data(9),
                                     good_ellipse.radii(idim));
+                write_to_log(log_message);
+            }
+            else{
+                sprintf(log_message,"    got %d chisq %e cost %e\n\n",
+                        particles.get_dim(),mu,cost);
                 write_to_log(log_message);
             }
 
