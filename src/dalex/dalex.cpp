@@ -2003,6 +2003,9 @@ void dalex::find_tendril_candidates(double factor_in){
 
     int strikes;
     int failures;
+    int i_start;
+    double mu_retry;
+    double mu_found;
 
     printf("n associates %d\n",associates.get_dim());
     for(idim=0;idim<_chifn->get_dim();idim++){
@@ -2066,6 +2069,11 @@ void dalex::find_tendril_candidates(double factor_in){
                 write_to_log("    done doing alternative seed in find_tendril_candidates\n");
             }
 
+            evaluate(seed(0), &mu, &i_start);
+            if(i_start<0){
+                printf("WARNING i_start %d\n",i_start);
+                exit(1);
+            }
             ffmin.find_minimum(seed,minpt);
             evaluate(minpt,&mu,&i_found);
 
@@ -2093,7 +2101,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 i_retry=-1;
                 for(i=0;i<_good_points.get_dim();i++){
                     j=_good_points.get_data(i);
-                    retry_dist=distance(i_found,j);
+                    retry_dist=distance(i_start,j);
                     if(i==0 || retry_dist<retry_dist_min){
                         retry_dist_min=retry_dist;
                         i_retry=j;
@@ -2106,10 +2114,28 @@ void dalex::find_tendril_candidates(double factor_in){
 
                 for(i=0;i<_chifn->get_dim();i++){
                     retry_pt.set(i,0.5*(_chifn->get_pt(i_retry,i)+
-                                        _chifn->get_pt(i_found,i)));
+                                        _chifn->get_pt(i_start,i)));
                 }
-                seed.add_row(retry_pt);
-                evaluate(retry_pt,&mu,&i_found);
+
+                evaluate(retry_pt,&mu_retry,&i_retry);
+                mu_found=_chifn->get_fn(i_found);
+
+                if(mu_found<target()+_chifn->get_deltachi() ||
+                   dchifn(_chifn->get_pt(i_found))<target()){
+
+                    seed.add_row(_chifn->get_pt(i_found));
+                    i_start=i_found;
+
+                }
+                else{
+                    seed.add_row(retry_pt);
+                    i_start=i_retry;
+                }
+
+                if(i_start<0){
+                    printf("WARNING retry point %d\n",i_start);
+                    exit(1);
+                }
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
                     for(i=0;i<_chifn->get_dim();i++){
                         bisection_dir.set(i,sgn*good_ellipse.bases(jdim,i));
