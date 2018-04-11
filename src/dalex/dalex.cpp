@@ -2014,7 +2014,7 @@ void dalex::find_tendril_candidates(double factor_in){
                 printf("    running with factor %e\n",factor);
 
                 for(i=0;i<_chifn->get_dim();i++){
-                    trial.set(i,center.get_data(i)+sgn*factor*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
+                    trial.set(i,good_ellipse.geo_center(i)+sgn*factor*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
                 }
                 evaluate(trial,&mu,&i_found);
                 printf("    first point is %d\n",i_found);
