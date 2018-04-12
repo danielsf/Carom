@@ -2178,12 +2178,25 @@ void dalex::iterate_on_minimum(){
 
     int strikes=0;
     int mindex_0 = mindex();
+    int i_start;
+
+    array_1d<int> possibilities;
+    possibilities.set_name("possibilities");
 
     while(strikes<3){
+        _get_minuit_errors();
+        possibilities.reset_preserving_room();
+        for(i=0;i<_chifn->get_pts();i++){
+            if(_chifn->get_fn(i)<target()){
+                possibilities.add(i);
+            }
+        }
+        i=_chifn->random_int()%possibilities.get_dim();
+        i_start=possibilities.get_data(i);
         min_0=chimin();
         n_start= _chifn->get_pts();
         min_before_simp = chimin();
-        simplex_search(mindex());
+        simplex_search(i_start);
         n_simplex = _chifn->get_pts()-n_start;
         d_simp = chimin()-min_before_simp;
         min_1=chimin();
