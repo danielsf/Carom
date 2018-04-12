@@ -108,7 +108,6 @@ class dalex{
         }
 
         void search();
-        void simplex_search_chain(int);
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
         int simplex_boundary_search(const int, const int,

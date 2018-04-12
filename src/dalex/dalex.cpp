@@ -84,22 +84,6 @@ void dalex::search(){
 
 }
 
-void dalex::simplex_search_chain(int old_mindex){
-    array_1d<double> dir;
-    dir.set_name("dalex_simplex_search_chain_dir");
-    int i;
-    for(i=0;i<_chifn->get_dim();i++){
-        dir.set(i,_chifn->get_pt(mindex(),i)-
-                  _chifn->get_pt(old_mindex,i));
-    }
-    double chi_target;
-    chi_target=chimin()+_chifn->random_double()*_chifn->get_deltachi();
-    chi_target+=_chifn->get_deltachi();
-    i=bisection(old_mindex, dir, chi_target, 0.1*_chifn->get_deltachi());
-    simplex_search(i);
-}
-
-
 void dalex::simplex_search(int ii){
     array_1d<int> specified;
     specified.add(ii);
