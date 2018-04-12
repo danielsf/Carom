@@ -32,6 +32,11 @@ public:
         printf("unimplemented get_time_spent in function_wrapper");
         exit(1);
     }
+
+    virtual double get_characteristic_length(int i){
+        printf("unimplemented characteristic_length\n");
+        exit(1);
+    }
 };
 
 #endif

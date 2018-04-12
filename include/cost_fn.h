@@ -74,6 +74,8 @@ class cost_fn : public function_wrapper{
             return _scalar_norm;
         }
 
+        virtual double get_characteristic_length(int);
+
     private:
         array_1d<int> _associates;
         double _scalar_norm;

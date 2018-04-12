@@ -323,7 +323,6 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     double mu,mu_min;
     int i_min;
     int i,j,k;
-    double max, min;
     for(i=0;i<seed.get_rows();i++){
         mu=_chisquared[0](seed(i));
         if(i==0 || mu<mu_min){
@@ -333,27 +332,6 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
     for(i=0;i<seed.get_cols();i++){
         seed_pt.set(i,seed.get_data(i_min,i));
-    }
-
-    for(i=0;i<seed.get_cols();i++){
-        for(j=0;j<seed.get_rows();j++){
-            if(_bases.get_rows()>0){
-                mu=0.0;
-                for(k=0;k<seed.get_cols();k++){
-                    mu+=seed.get_data(j,k)*_bases.get_data(i,k);
-                }
-            }
-            else{
-                mu=seed.get_data(j,i);
-            }
-            if(j==0 || mu<min){
-                min=mu;
-            }
-            if(j==0 ||mu>max){
-                max=mu;
-            }
-        }
-        errors.set(i,0.5*(max-min));
     }
 
     find_minimum(seed_pt,errors,min_pt);
@@ -372,6 +350,7 @@ void simplex_minimizer::find_minimum(array_1d<double> &seed_pt,
     _minuit_fn.set_chisquared(_chisquared);
     int i,j;
     double mu;
+    double sig;
     mu=_chisquared[0](seed_pt);
     printf("    minimizer starts with %e %d\n",mu,_bases.get_rows());
 
@@ -379,17 +358,20 @@ void simplex_minimizer::find_minimum(array_1d<double> &seed_pt,
         _minuit_fn.set_bases(_bases);
         for(i=0;i<seed_pt.get_dim();i++){
             mu=0.0;
+            sig=0.0;
             for(j=0;j<seed_pt.get_dim();j++){
                 mu+=seed_pt.get_data(j)*_bases.get_data(i,j);
+                sig+=power(_chisquared->get_characteristic_length(j)*_bases.get_data(i,j),2);
             }
             sprintf(word,"pp%d",i);
-            input_params.Add(word,mu,errors.get_data(i));
+            input_params.Add(word,mu,sqrt(sig));
         }
     }
     else{
         for(i=0;i<seed_pt.get_dim();i++){
             sprintf(word,"pp%d",i);
-            input_params.Add(word,seed_pt.get_data(i),errors.get_data(i));
+            input_params.Add(word,seed_pt.get_data(i),
+                             _chisquared->get_characteristic_length(i));
         }
 
     }
