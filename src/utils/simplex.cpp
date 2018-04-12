@@ -317,68 +317,79 @@ double simplex_minimizer::get_minimum(){
 }
 
 void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &min_pt){
-    is_it_safe("find_minimum");
-
-    if(seed.get_rows()!=seed.get_cols()+1){
-        printf("WARNING you gave simplex minimizer %d points of %d dim\n",
-        seed.get_rows(),seed.get_cols());
-        printf("Need dim+1 points\n");
-        exit(1);
-    }
-
-    MnUserParameters input_params;
-    char word[100];
-    _minuit_fn.set_dim(seed.get_cols());
-    _minuit_fn.set_chisquared(_chisquared);
+    array_1d<double> errors,seed_pt;
+    errors.set_name("mapping_errors");
+    seed_pt.set_name("mapping_seed");
+    double mu,mu_min;
+    int i_min;
     int i,j,k;
-    double min,max,mu,mu_guess;
-    int i_guess;
+    double max, min;
     for(i=0;i<seed.get_rows();i++){
         mu=_chisquared[0](seed(i));
-        if(i==0 || mu<mu_guess){
-            i_guess=i;
-            mu_guess=mu;
+        if(i==0 || mu<mu_min){
+            mu_min=mu;
+            i_min=i;
         }
     }
-    printf("    minimizer starts with %e\n",mu_guess);
+    for(i=0;i<seed.get_cols();i++){
+        seed_pt.set(i,seed.get_data(i_min,i));
+    }
 
-    if(_bases.get_rows()==0){
-        for(i=0;i<seed.get_cols();i++){
-            for(j=0;j<seed.get_rows();j++){
-                if(j==0 || seed.get_data(j,i)<min){
-                    min = seed.get_data(j,i);
-                }
-                if(j==0 || seed.get_data(j,i)>max){
-                    max = seed.get_data(j,i);
-                }
-                if(j==i_guess){
-                    mu_guess=seed.get_data(j,i);
-                }
-            }
-            sprintf(word,"pp%d",i);
-            input_params.Add(word,mu_guess, max-min);
-        }
-    }
-    else{
-        _minuit_fn.set_bases(_bases);
-        for(i=0;i<seed.get_cols();i++){
-            for(j=0;j<seed.get_rows();j++){
+    for(i=0;i<seed.get_cols();i++){
+        for(j=0;j<seed.get_rows();j++){
+            if(_bases.get_rows()>0){
                 mu=0.0;
                 for(k=0;k<seed.get_cols();k++){
                     mu+=seed.get_data(j,k)*_bases.get_data(i,k);
                 }
-                if(j==i_guess){
-                    mu_guess=mu;
-                }
-                if(j==0 || mu<min){
-                    min=mu;
-                }
-                if(j==0|| mu>max){
-                    max=mu;
-                }
+            }
+            else{
+                mu=seed.get_data(j,i);
+            }
+            if(j==0 || mu<min){
+                min=mu;
+            }
+            if(j==0 ||mu>max){
+                max=mu;
+            }
+        }
+        errors.set(i,0.5*(max-min));
+    }
+
+    find_minimum(seed_pt,errors,min_pt);
+
+}
+
+void simplex_minimizer::find_minimum(array_1d<double> &seed_pt,
+                                     array_1d<double> &errors,
+                                     array_1d<double> &min_pt){
+
+    is_it_safe("find_minimum");
+
+    MnUserParameters input_params;
+    char word[100];
+    _minuit_fn.set_dim(seed_pt.get_dim());
+    _minuit_fn.set_chisquared(_chisquared);
+    int i,j;
+    double mu;
+    mu=_chisquared[0](seed_pt);
+    printf("    minimizer starts with %e %d\n",mu,_bases.get_rows());
+
+    if(_bases.get_rows()>0){
+        _minuit_fn.set_bases(_bases);
+        for(i=0;i<seed_pt.get_dim();i++){
+            mu=0.0;
+            for(j=0;j<seed_pt.get_dim();j++){
+                mu+=seed_pt.get_data(j)*_bases.get_data(i,j);
             }
             sprintf(word,"pp%d",i);
-            input_params.Add(word,mu_guess,max-min);
+            input_params.Add(word,mu,errors.get_data(i));
+        }
+    }
+    else{
+        for(i=0;i<seed_pt.get_dim();i++){
+            sprintf(word,"pp%d",i);
+            input_params.Add(word,seed_pt.get_data(i),errors.get_data(i));
         }
 
     }
@@ -387,16 +398,16 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     FunctionMinimum minuit_result = migrad_runner();
     std::vector<double> pp_out = minuit_result.UserParameters().Params();
     if(_bases.get_rows()==0){
-        for(i=0;i<seed.get_cols();i++){
+        for(i=0;i<seed_pt.get_dim();i++){
             min_pt.set(i,pp_out[i]);
             _min_pt.set(i,pp_out[i]);
         }
     }
     else{
-        for(i=0;i<seed.get_cols();i++){
+        for(i=0;i<seed_pt.get_dim();i++){
             min_pt.set(i,0.0);
             _min_pt.set(i,0.0);
-            for(j=0;j<seed.get_cols();j++){
+            for(j=0;j<seed_pt.get_dim();j++){
                 min_pt.add_val(i,pp_out[j]*_bases.get_data(j,i));
                 _min_pt.add_val(i,pp_out[j]*_bases.get_data(j,i));
             }
