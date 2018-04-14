@@ -245,7 +245,3 @@ double cost_fn::operator()(const array_1d<double> &pt){
     _fn_cache.add(val);
     return val;
 }
-
-double cost_fn::get_characteristic_length(int ii){
-    return _chifn->get_characteristic_length(ii);
-}

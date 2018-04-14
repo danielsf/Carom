@@ -109,14 +109,9 @@ public:
     void is_a_model();
 
     /*
-    seed_pt
-    errors
-    min_pt (output)
+    the array_2d will be the input array of points;
+    the array_1d will be the output minimum point
     */
-    void find_minimum(array_1d<double>&,
-                      array_1d<double>&,
-                      array_1d<double>&);
-
     void find_minimum(array_2d<double>&, array_1d<double>&);
     double get_minimum();
 

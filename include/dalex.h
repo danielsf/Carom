@@ -70,7 +70,6 @@ class dalex{
             _origin_candidates.set_name("_origin_candidates");
 
             _scalar_norm=-1.0;
-            _minuit_errors.set_name("_minuit_errors");
         };
 
         void build(chisq_wrapper*);
@@ -108,10 +107,13 @@ class dalex{
         }
 
         void search();
+        void simplex_search_chain(int);
+        void simplex_search();
         void simplex_search(int);
         void simplex_search(array_1d<int>&);
         int simplex_boundary_search(const int, const int,
                                     ellipse_list&, int*, int);
+        int _exploration_simplex(int,int,array_1d<int>&);
         void tendril_search();
         void init_fill();
         void find_tendril_candidates(double);
@@ -282,10 +284,6 @@ class dalex{
         char _end_pt_name[letters+20];
 
         double _scalar_norm;
-
-        array_1d<double> _minuit_errors;
-
-        void _get_minuit_errors();
 };
 
 #endif
