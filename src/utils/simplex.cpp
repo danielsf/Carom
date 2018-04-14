@@ -330,8 +330,8 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     char word[100];
     _minuit_fn.set_dim(seed.get_cols());
     _minuit_fn.set_chisquared(_chisquared);
-    int i,j,k;
-    double min,max,mu,mu_guess;
+    int i,j;
+    double mu,mu_guess;
     int i_guess;
     for(i=0;i<seed.get_rows();i++){
         mu=_chisquared[0](seed(i));
@@ -342,43 +342,30 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     }
     printf("    minimizer starts with %e\n",mu_guess);
 
+    double sig;
+    double sig_factor=0.1;
+
     if(_bases.get_rows()==0){
         for(i=0;i<seed.get_cols();i++){
-            for(j=0;j<seed.get_rows();j++){
-                if(j==0 || seed.get_data(j,i)<min){
-                    min = seed.get_data(j,i);
-                }
-                if(j==0 || seed.get_data(j,i)>max){
-                    max = seed.get_data(j,i);
-                }
-                if(j==i_guess){
-                    mu_guess=seed.get_data(j,i);
-                }
-            }
+            mu_guess = seed.get_data(i_guess, i);
             sprintf(word,"pp%d",i);
-            input_params.Add(word,mu_guess, max-min);
+            input_params.Add(word,mu_guess,
+                             sig_factor*_chisquared->get_characteristic_length(i));
         }
     }
     else{
         _minuit_fn.set_bases(_bases);
         for(i=0;i<seed.get_cols();i++){
-            for(j=0;j<seed.get_rows();j++){
-                mu=0.0;
-                for(k=0;k<seed.get_cols();k++){
-                    mu+=seed.get_data(j,k)*_bases.get_data(i,k);
-                }
-                if(j==i_guess){
-                    mu_guess=mu;
-                }
-                if(j==0 || mu<min){
-                    min=mu;
-                }
-                if(j==0|| mu>max){
-                    max=mu;
-                }
+            mu_guess=0.0;
+            sig=0.0;
+            for(j=0;j<seed.get_cols();j++){
+                mu_guess+=seed.get_data(i_guess,j)*_bases.get_data(i,j);
+                sig+=power(_bases.get_data(i,j)*_chisquared->get_characteristic_length(j),2);
             }
+            sig=sqrt(sig);
+            sig*=sig_factor;
             sprintf(word,"pp%d",i);
-            input_params.Add(word,mu_guess,max-min);
+            input_params.Add(word,mu_guess,sig_factor);
         }
 
     }
