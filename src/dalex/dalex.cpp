@@ -85,18 +85,7 @@ void dalex::search(){
 }
 
 
-void dalex::simplex_search(){
-    array_1d<int> empty;
-    simplex_search(empty);
-}
-
-void dalex::simplex_search(int ii){
-    array_1d<int> specified;
-    specified.add(ii);
-    simplex_search(specified);
-}
-
-void dalex::simplex_search(array_1d<int> &specified){
+void dalex::simplex_search(int i_specified){
 
     printf("\n    doing dalex_simplex %e -- %e %e\n",chimin(),target(),_target_factor);
     safety_check("simplex_search");
@@ -117,10 +106,8 @@ void dalex::simplex_search(array_1d<int> &specified){
         max.set(i,_chifn->get_characteristic_length(i));
     }
 
-    for(i=0;i<specified.get_dim();i++){
-        seed.add_row(_chifn->get_pt(specified.get_data(i)));
-        seed_dex.add(specified.get_data(i));
-    }
+    seed.add_row(_chifn->get_pt(i_specified));
+    seed_dex.add(i_specified);
 
     ellipse local_ellipse;
     array_2d<double> ellipse_pts;
