@@ -141,8 +141,8 @@ void dalex::simplex_search(int i_specified){
             }
             dir.normalize();
         }
-        target_chi=_chifn->chimin()+_chifn->get_deltachi();
-        target_chi += _chifn->random_double()*_chifn->get_deltachi();
+        target_chi=_chifn->chimin()+0.25*_chifn->get_deltachi();
+        target_chi += 0.25*_chifn->random_double()*_chifn->get_deltachi();
         pos_ct=0;
         neg_ct=0;
         for(j=0;j<ellipse_pts.get_rows();j++){
