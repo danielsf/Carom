@@ -365,7 +365,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
             sig=sqrt(sig);
             sig*=sig_factor;
             sprintf(word,"pp%d",i);
-            input_params.Add(word,mu_guess,sig_factor);
+            input_params.Add(word,mu_guess,sig);
         }
 
     }
