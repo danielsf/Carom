@@ -106,9 +106,6 @@ void dalex::simplex_search(int i_specified){
         max.set(i,_chifn->get_characteristic_length(i));
     }
 
-    seed.add_row(_chifn->get_pt(i_specified));
-    seed_dex.add(i_specified);
-
     ellipse local_ellipse;
     array_2d<double> ellipse_pts;
     ellipse_pts.set_name("simplex_search_ellipse_pts");
@@ -132,7 +129,7 @@ void dalex::simplex_search(int i_specified){
     int neg_ct=0;
     int k;
     double dot_product;
-    for(i=0;seed.get_rows()<_chifn->get_dim()+1;i++){
+    for(i=0;seed.get_rows()<_chifn->get_dim();i++){
         if(i<_chifn->get_dim()){
             for(j=0;j<_chifn->get_dim();j++){
                 dir.set(j,local_ellipse.bases(i,j));
@@ -177,6 +174,20 @@ void dalex::simplex_search(int i_specified){
             seed.add_row(_chifn->get_pt(j));
         }
     }
+
+    array_1d<double> avg_pt;
+    avg_pt.set_name("simplex_search_avg_pt");
+    int i_avg;
+    double mu_avg;
+    for(i=0;i<_chifn->get_dim();i++){
+        avg_pt.set(i,0.0);
+        for(j=0;j<seed.get_rows();j++){
+            avg_pt.add_val(i,seed.get_data(j,i));
+        }
+        avg_pt.divide_val(i,float(seed.get_rows()));
+    }
+    evaluate(avg_pt, &mu_avg, &i_avg);
+    seed.add_row(avg_pt);
 
     simplex_minimizer ffmin;
     ffmin.set_bases(_basis_vectors);
