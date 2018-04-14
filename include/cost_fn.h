@@ -18,6 +18,15 @@ class cost_fn : public function_wrapper{
         virtual double operator()(const array_1d<double>&);
         virtual int get_called();
 
+        virtual double get_characteristic_length(int ii){
+            if(_chifn==NULL){
+                printf("CANNOT call get_characteristic_length\n");
+                printf("_chifn is null in cost function\n");
+                exit(1);
+            }
+            return _chifn->get_characteristic_length(ii);
+        }
+
         double nn_distance(const array_1d<double>&);
         void set_envelope(double dd){
             _envelope=dd;
