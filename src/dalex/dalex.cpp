@@ -1992,18 +1992,29 @@ void dalex::find_tendril_candidates(double factor_in){
     double mu_retry;
     double mu_found;
 
+    array_1d<double> spherical_dir;
+    spherical_dir.set_name("spherical_dir");
+
     printf("n associates %d\n",associates.get_dim());
-    for(idim=0;idim<_chifn->get_dim();idim++){
-        for(sgn=-1.0;sgn<1.1;sgn+=2.0){
+    for(idim=0;idim<2*_chifn->get_dim();idim++){
             pt_start=_chifn->get_pts();
             seed.reset_preserving_room();
             i_found=-1;
             factor=factor_in;
+            for(i=0;i<_chifn->get_dim();i++){
+                spherical_dir.set(i,normal_deviate(_chifn->get_dice(),0.0,1.0));
+            }
+            spherical_dir.normalize();
             while(i_found<0){
                 printf("    running with factor %e\n",factor);
 
                 for(i=0;i<_chifn->get_dim();i++){
-                    trial.set(i,good_ellipse.geo_center(i)+sgn*factor*good_ellipse.radii(idim)*good_ellipse.bases(idim,i));
+                    trial.set(i,good_ellipse.geo_center(i));
+                }
+                for(i=0;i<_chifn->get_dim();i++){
+                    for(j=0;j<_chifn->get_dim();j++){
+                        trial.add_val(j,factor*good_ellipse.radii(i)*spherical_dir.get_data(i)*good_ellipse.bases(i,j));
+                    }
                 }
                 evaluate(trial,&mu,&i_found);
                 printf("    first point is %d\n",i_found);
@@ -2020,6 +2031,12 @@ void dalex::find_tendril_candidates(double factor_in){
                 write_to_end_pt_file(i_found);
                 seed.add_row(trial);
                 for(jdim=0;jdim<_chifn->get_dim();jdim++){
+                    if(spherical_dir.get_data(jdim)<0.0){
+                        sgn=-1.0;
+                    }
+                    else{
+                        sgn=1.0;
+                    }
                     for(i=0;i<_chifn->get_dim();i++){
                        bisection_dir.set(i,sgn*good_ellipse.bases(jdim,i));
                     }
@@ -2168,10 +2185,9 @@ void dalex::find_tendril_candidates(double factor_in){
                         particles.get_dim(),mu,cost);
                 write_to_log(log_message);
 
-                sprintf(log_message,"    pt %e %e rad %e\n\n",
+                sprintf(log_message,"    pt %e %e \n\n",
                                     minpt.get_data(6),
-                                    minpt.get_data(9),
-                                    good_ellipse.radii(idim));
+                                    minpt.get_data(9));
                 write_to_log(log_message);
             }
             else{
@@ -2215,7 +2231,6 @@ void dalex::find_tendril_candidates(double factor_in){
             sprintf(log_message,"    chimin %e\n",chimin());
             write_to_log(log_message);
 
-        }
     }
 
     if(_scalar_norm<0.0){
