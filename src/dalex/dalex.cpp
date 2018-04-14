@@ -2295,7 +2295,7 @@ void dalex::get_new_tendril(int *particle, int *origin){
         if(invalid_candidates>=_chifn->get_dim()/2){
             old_type=_chifn->get_search_type();
             _chifn->set_search_type(_type_init_tendril);
-            find_tendril_candidates(3.0);
+            find_tendril_candidates(1.5);
             _chifn->set_search_type(old_type);
         }
 
