@@ -112,6 +112,7 @@ class dalex{
                                     ellipse_list&, int*, int);
         int _exploration_simplex(int,int,array_1d<int>&);
         void tendril_search();
+        void _tendril_search(int,int);
         void init_fill();
         void find_tendril_candidates(double);
         void get_new_tendril(int*,int*);

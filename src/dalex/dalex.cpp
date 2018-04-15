@@ -2402,6 +2402,25 @@ void dalex::init_fill(){
 
 void dalex::tendril_search(){
 
+    if(_tendril_init==0){
+        init_fill();
+        _tendril_init=1;
+        if(_limit>0 && _chifn->get_pts()>_limit){
+            _chifn->write_pts();
+            return;
+        }
+    }
+
+    int particle, origin;
+
+    get_new_tendril(&particle,&origin);
+    _tendril_search(particle, origin);
+    _tendril_search(mindex(), particle);
+
+}
+
+void dalex::_tendril_search(int particle, int origin){
+
     char log_message[letters];
     sprintf(log_message,"running tendril search - %d\n",_chifn->get_pts());
     write_to_log(log_message);
@@ -2424,21 +2443,8 @@ void dalex::tendril_search(){
     new_particles.set_name("tendril new_particles");
     new_origins.set_name("new_origins");
 
-    int particle, origin;
-
-    if(_tendril_init==0){
-        init_fill();
-        _tendril_init=1;
-        if(_limit>0 && _chifn->get_pts()>_limit){
-            _chifn->write_pts();
-            return;
-        }
-    }
-
     int strikes=0;
     _has_struck=0;
-
-    get_new_tendril(&particle,&origin);
 
     ellipse_pts.reset_preserving_room();
     local_ellipse.use_geo_center();
