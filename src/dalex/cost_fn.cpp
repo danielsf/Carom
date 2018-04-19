@@ -111,10 +111,6 @@ void cost_fn::_set_scalar_norm(){
         geometric_mean=geometric_mean/harmonic_ct;
         geometric_mean=exp(geometric_mean);
     }
-    else{
-        printf("NOT SURE WHAT TO DO harmonic_ct %e\n",harmonic_ct);
-        exit(1);
-    }
 
     if(_norm_is_frozen==0){
         _scalar_norm = median;
