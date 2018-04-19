@@ -343,7 +343,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
     printf("    minimizer starts with %e\n",mu_guess);
 
     double sig;
-    double sig_factor=0.1;
+    double sig_factor=0.01;
 
     if(_bases.get_rows()==0){
         for(i=0;i<seed.get_cols();i++){
