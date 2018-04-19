@@ -370,7 +370,7 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
 
     }
 
-    MnMigrad migrad_runner(_minuit_fn, input_params);
+    MnMigrad migrad_runner(_minuit_fn, input_params, 2);
     FunctionMinimum minuit_result = migrad_runner();
     std::vector<double> pp_out = minuit_result.UserParameters().Params();
     if(_bases.get_rows()==0){
