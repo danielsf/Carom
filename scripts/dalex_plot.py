@@ -110,7 +110,9 @@ for file_name in dalex_data:
     good_data = data_arr[good_dexes]
     print("stats for %s" % file_name)
     print("    chi^2 min: %e" % good_data['chisq'].min())
+    min_dex = np.argmin(good_data['chisq'])
     for ii in range(args.d):
-        print("    range %d: %e -> %e" % (ii,
-                                          good_data['x%d' % ii].min(),
-                                          good_data['x%d' % ii].max()))
+        print("    dim %d min %e; range: %e -> %e" % (ii,
+                                                      good_data['x%d' % ii][min_dex],
+                                                      good_data['x%d' % ii].min(),
+                                                      good_data['x%d' % ii].max()))
