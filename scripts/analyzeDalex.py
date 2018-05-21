@@ -208,6 +208,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
 def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
     if data is None:
         data = load_dalex_data(data_name, dim)
+        print('dalex data is loaded')
 
     if limit is not None:
         data_cut = data[:limit]
