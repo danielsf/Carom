@@ -30,7 +30,7 @@ if args.in_file is None:
 if args.out_dir is None:
     raise RuntimeError('must specify out_dir')
 if args.d is None:
-    raise RutnimeError('must specify d')
+    raise RuntimeError('must specify d')
 
 use_sub_dir = True
 if args.sub_dir.lower()[0] == 'f':
@@ -104,7 +104,7 @@ for ix_dex in range(0,len(args.x),2):
         if control_x is not None:
             plt.scatter(control_x, control_y, marker='o', color='k', s=5)
             alpha = 0.75
-        plt.scatter(dx, dy, marker='x', color='r', s=5, alphat=alpha)
+        plt.scatter(dx, dy, marker='x', color='r', s=5, alpha=alpha)
 
         if ix not in key_map_dict:
             plt.xlabel('$\\theta_{%d}$' % ix)
