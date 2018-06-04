@@ -19,6 +19,7 @@ parser.add_argument('--d', type=int, default=None)
 parser.add_argument('--c', type=float, default=21.03,
                     help='delta chisquared')
 parser.add_argument('--limit', type=int, default=None)
+parser.add_argument('--key_map', type=str, default=None)
 
 import os
 
@@ -47,6 +48,13 @@ if not isinstance(args.in_file, list):
     in_file_names = [args.in_file]
 else:
     in_file_names = args.in_file
+
+key_map_dict = {}
+if args.key_map is not None:
+    with open(args.key_map, 'r') as in_file:
+        for line in in_file:
+            params = line.strip().split()
+            key_map_dict[int(params[0])] = params[1]
 
 control_data = None
 control_x = None
@@ -95,8 +103,17 @@ for ix_dex in range(0,len(args.x),2):
         if control_x is not None:
             plt.scatter(control_x, control_y, marker='o', color='k', s=5)
         plt.scatter(dx, dy, marker='x', color='r', s=5)
-        plt.xlabel('$\\theta_{%d}$' % ix)
-        plt.ylabel('$\\theta_{%d}$' % iy)
+
+        if ix not in key_map_dict:
+            plt.xlabel('$\\theta_{%d}$' % ix)
+        else:
+            plt.xlabel(key_map_dict[ix])
+
+        if iy not in key_map_dict:
+            plt.ylabel('$\\theta_{%d}$' % iy)
+        else:
+            plt.ylabel(key_map_dict[iy])
+
         plt.title('$\chi^2_{min} = %.2f$' % dmin)
 
         if args.limit is not None:
