@@ -100,9 +100,11 @@ for ix_dex in range(0,len(args.x),2):
         dalex_data[file_name] = ddata
 
         plt.figsize = (30,30)
+        alpha = 1.0
         if control_x is not None:
             plt.scatter(control_x, control_y, marker='o', color='k', s=5)
-        plt.scatter(dx, dy, marker='x', color='r', s=5)
+            alpha = 0.75
+        plt.scatter(dx, dy, marker='x', color='r', s=5, alphat=alpha)
 
         if ix not in key_map_dict:
             plt.xlabel('$\\theta_{%d}$' % ix)
