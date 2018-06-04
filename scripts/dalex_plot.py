@@ -13,6 +13,7 @@ parser.add_argument('--in_file', type=str, default=None,
 parser.add_argument('--in_dir', type=str, default=None)
 parser.add_argument('--control', type=str, default=None)
 parser.add_argument('--out_dir', type=str, default=None)
+parser.add_argument('--sub_dir', type=str, default='T')
 parser.add_argument('--x', type=int, default=None, nargs='+')
 parser.add_argument('--d', type=int, default=None)
 parser.add_argument('--c', type=float, default=21.03,
@@ -29,6 +30,10 @@ if args.out_dir is None:
     raise RuntimeError('must specify out_dir')
 if args.d is None:
     raise RutnimeError('must specify d')
+
+use_sub_dir = True
+if args.sub_dir.lower()[0] == 'f':
+    use_sub_dir = False
 
 if args.control == 'd12':
     args.control = os.path.join('/Users', 'danielsf', 'physics',
@@ -56,9 +61,12 @@ for ix_dex in range(0,len(args.x),2):
     iy = args.x[ix_dex+1]
 
     subdir = 'x%dy%d' % (ix, iy)
-    full_out_dir = os.path.join(args.out_dir, subdir)
-    if not os.path.exists(full_out_dir):
-        os.mkdir(full_out_dir)
+    if use_sub_dir:
+        full_out_dir = os.path.join(args.out_dir, subdir)
+        if not os.path.exists(full_out_dir):
+            os.mkdir(full_out_dir)
+    else:
+        full_out_dir = args.out_dir
 
     if args.control is not None:
         (control_x,
