@@ -83,7 +83,7 @@ def marginalize(data_x, data_y, density_in, prob=0.95):
             break
 
     dexes = np.where(density_out>=cutoff)
-    return x_out[dexes], y_out[dexes]
+    return x_out[dexes], y_out[dexes], density_out[dexes]
 
 
 def raw_bayes(data_x, data_y, density_in, prob=0.95, chisq=None):
@@ -226,11 +226,11 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
     else:
         ref_data = data
 
-    ref_x, ref_y = marginalize(ref_data['x%d' % ix],
+    ref_x, ref_y, ref_dens = marginalize(ref_data['x%d' % ix],
                                ref_data['x%d' % iy],
                                ref_data['degen'])
 
-    return ref_x, ref_y, ref_data
+    return ref_x, ref_y, ref_data, ref_dens
 
 
 def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):

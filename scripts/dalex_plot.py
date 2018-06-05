@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import argparse
 import numpy as np
 
-from analyzeDalex import scatter_from_multinest_projection
+from analyzeDalex import scatter_from_multinest_marginalized
 from analyzeDalex import scatter_from_dalex
 
 parser = argparse.ArgumentParser()
@@ -88,7 +88,8 @@ for ix_dex in range(0,len(args.x),2):
     if args.control is not None:
         (control_x,
          control_y,
-         control_data) = scatter_from_multinest_projection(args.control,
+         control_data,
+         marg_density) = scatter_from_multinest_marginalized(args.control,
                                                            args.d,
                                                            ix, iy,
                                                            data=control_data)
@@ -196,6 +197,13 @@ for ix_dex in range(0,len(args.x),2):
         if i_sub_plot == 2:
             header_list.append(hh)
             label_list.append('MultiNest degen')
+
+        max_dex = np.argmax(marg_density)
+        plt.axvline(control_x[max_dex], color='y', linestyle='--', linewidth=5)
+        hh = plt.axhline(control_y[max_dex], color='y', linestyle='--', linewidth=5)
+        if i_sub_plot == 2:
+            header_list.append(hh)
+            label_list.append('MultiNest degen(marg)')
             plt.legend(header_list, label_list, loc=0)
 
         if ix not in key_map_dict:
@@ -226,7 +234,7 @@ for ix_dex in range(0,len(args.x),2):
         #plt.close()
 
 if args.limit is None:
-    out_name = os.path.join(args.out_dir, 'planck_plots.png')
+    out_name = os.path.join(args.out_dir, 'planck_plots_marginalized.png')
 else:
     out_name = os.path.join(args.out_dir, 'planck_plots_%.2e.png' % args.limit)
 plt.tight_layout()
