@@ -172,16 +172,31 @@ for ix_dex in range(0,len(args.x),2):
             alpha = 0.75
         plt.scatter(dx, dy, marker='x', color='r', s=5, alpha=alpha)
 
+        if i_sub_plot == 2:
+            header_list = []
+            label_list = []
+
         min_dex = np.argmin(ddata['chisq'])
         plt.axvline(ddata['x%d' % ix][min_dex], color='g', linestyle='--', linewidth=5)
-        plt.axhline(ddata['x%d' % iy][min_dex], color='g', linestyle='--', linewidth=5)
+        hh = plt.axhline(ddata['x%d' % iy][min_dex], color='g', linestyle='--', linewidth=5)
+        if i_sub_plot == 2:
+            header_list.append(hh)
+            label_list.append('chisq_min')
+
+        max_dex = np.argmin(control_data['chisq'])
+        plt.axvline(control_data['x%d' % ix][max_dex], color='c', linestyle='--', linewidth=5)
+        hh = plt.axhline(control_data['x%d' % iy][max_dex], color='c', linestyle='--', linewidth=5)
+        if i_sub_plot == 2:
+            header_list.append(hh)
+            label_list.append('MultiNest chisq')
 
         max_dex = np.argmax(control_data['degen'])
-        plt.axvline(0.5*(control_x.min()+control_x.max()), color='c', linestyle='--', linewidth=5)
-        plt.axhline(0.5*(control_y.min()+control_y.max()), color='c', linestyle='--', linewidth=5)
-
-        plt.axvline(0.5*(dx.min()+dx.max()), color='m', linestyle='--', linewidth=5)
-        plt.axhline(0.5*(dy.min()+dy.max()), color='m', linestyle='--', linewidth=5)
+        plt.axvline(control_data['x%d' % ix][max_dex], color='m', linestyle='--', linewidth=5)
+        hh = plt.axhline(control_data['x%d' % iy][max_dex], color='m', linestyle='--', linewidth=5)
+        if i_sub_plot == 2:
+            header_list.append(hh)
+            label_list.append('MultiNest degen')
+            plt.legend(header_list, label_list, loc=0)
 
         if ix not in key_map_dict:
             plt.xlabel('$\\theta_{%d}$' % ix)
