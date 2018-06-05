@@ -64,9 +64,17 @@ dalex_data = {}
 for file_name in in_file_names:
     dalex_data[file_name] = None
 
+i_sub_plot = 0
+plt.figure(figsize = (30,30))
+
 for ix_dex in range(0,len(args.x),2):
+    i_sub_plot += 1
+
+    plt.subplot(4,3,i_sub_plot)
+
     ix = args.x[ix_dex]
     iy = args.x[ix_dex+1]
+    print('plotting %d %d' % (ix,iy))
 
     subdir = 'x%dy%d' % (ix, iy)
     if use_sub_dir:
@@ -99,7 +107,7 @@ for ix_dex in range(0,len(args.x),2):
 
         dalex_data[file_name] = ddata
 
-        plt.figsize = (30,30)
+        #plt.figsize = (30,30)
         alpha = 1.0
         if control_x is not None:
             plt.scatter(control_x, control_y, marker='o', color='k', s=5)
@@ -109,14 +117,18 @@ for ix_dex in range(0,len(args.x),2):
         if ix not in key_map_dict:
             plt.xlabel('$\\theta_{%d}$' % ix)
         else:
-            plt.xlabel(key_map_dict[ix])
+            plt.xlabel(key_map_dict[ix],fontsize=30)
 
         if iy not in key_map_dict:
             plt.ylabel('$\\theta_{%d}$' % iy)
         else:
-            plt.ylabel(key_map_dict[iy])
+            plt.ylabel(key_map_dict[iy], fontsize=30)
 
-        plt.title('$\chi^2_{min} = %.2f$' % dmin)
+        plt.xticks(fontsize=30)
+        plt.yticks(fontsize=30)
+
+        if i_sub_plot == 1:
+            plt.title('Dalex $\chi^2_{min} = %.2f$' % dmin, fontsize=30)
 
         if args.limit is not None:
             npts=args.limit
@@ -126,8 +138,15 @@ for ix_dex in range(0,len(args.x),2):
         out_name = os.path.join(full_out_dir,
                                 '%s_%d_%d_%.2e.png' % (file_name, ix, iy, npts))
 
-        plt.savefig(out_name)
-        plt.close()
+        #plt.savefig(out_name)
+        #plt.close()
+
+if args.limit is None:
+    out_name = os.path.join(args.out_dir, 'planck_plots.png')
+else:
+    out_name = os.path.join(args.out_dir, 'planck_plots_%.2e.png' % args.limit)
+plt.tight_layout()
+plt.savefig(out_name)
 
 import numpy as np
 print('npts %d' % npts)
