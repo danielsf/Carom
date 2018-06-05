@@ -124,8 +124,8 @@ def get_scatter_fast(data_x, data_y, x_norm, y_norm):
     x_pix_check = meta_pix//n_y
     y_pix_check = meta_pix%n_y
 
-    np.testing.assert_array_equal(x_pix, x_pix_check)
-    np.testing.assert_array_equal(y_pix, y_pix_check)
+    #np.testing.assert_array_equal(x_pix, x_pix_check)
+    #np.testing.assert_array_equal(y_pix, y_pix_check)
 
     unique_meta_pix = np.unique(meta_pix)
     x_pix_out = unique_meta_pix//n_y
