@@ -107,6 +107,33 @@ def raw_bayes(data_x, data_y, density_in, prob=0.95, chisq=None):
     return data_x[dexes], data_y[dexes]
 
 
+def get_scatter_fast(data_x, data_y, x_norm, y_norm):
+
+    x_out = np.ones(len(data_x))*data_x[-1]
+    y_out = np.ones(len(data_y))*data_y[-1]
+
+    tol = 0.01
+
+    x_min = data_x.min()
+    y_min = data_y.min()
+    x_pix = np.round((data_x-x_min)/(tol*x_norm)).astype(int)
+    y_pix = np.round((data_y-y_min)/(tol*y_norm)).astype(int)
+    n_y = y_pix.max()+1
+    meta_pix = x_pix*n_y+y_pix
+
+    x_pix_check = meta_pix//n_y
+    y_pix_check = meta_pix%n_y
+
+    np.testing.assert_array_equal(x_pix, x_pix_check)
+    np.testing.assert_array_equal(y_pix, y_pix_check)
+
+    unique_meta_pix = np.unique(meta_pix)
+    x_pix_out = unique_meta_pix//n_y
+    y_pix_out = unique_meta_pix%n_y
+    print('downscaling %d %d' % (len(meta_pix), len(unique_meta_pix)))
+    return x_pix_out*tol*x_norm+x_min, y_pix_out*tol*y_norm+y_min
+
+
 def get_scatter(data_x, data_y, x_norm, y_norm):
 
     x_out = np.ones(len(data_x))*data_x[-1]
@@ -242,7 +269,7 @@ def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data
 
     dd_sorted_dexes = np.argsort(dd_arr)
 
-    x_grid, y_grid = get_scatter(good_x[dd_sorted_dexes],
+    x_grid, y_grid = get_scatter_fast(good_x[dd_sorted_dexes],
                                  good_y[dd_sorted_dexes],
                                  x_norm, y_norm)
 
