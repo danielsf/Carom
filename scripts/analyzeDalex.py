@@ -103,6 +103,7 @@ def raw_bayes(data_x, data_y, density_in, prob=0.95, chisq=None):
         print('maximum Multinest chisquared %e' % (chisq_valid.max()))
         print('median Multinest chisquared %e' % (np.median(chisq_valid)))
         print('min Multinest chisquared %e' % (chisq_valid.min()))
+        print('density cutoff %e' % cutoff)
     return data_x[dexes], data_y[dexes]
 
 
