@@ -42,6 +42,10 @@ test_ellipse_creator: object/ellipse.o src/tests/test_ellipse_creator.cpp
 	$(cc) -o bin/test_ellipse_creator src/tests/test_ellipse_creator.cpp \
 	object/containers.o object/goto_tools.o object/ellipse.o
 
+planck_ellipse: object/ellipse.o src/examples/planck_ellipse.cpp
+	$(cc) -o bin/planck_ellipse src/examples/planck_ellipse.cpp \
+	object/containers.o object/goto_tools.o object/ellipse.o
+
 object/kd.o: src/utils/kd.cpp include/kd.h object/containers.o object/goto_tools.o
 	$(cc) -c -o object/kd.o src/utils/kd.cpp
 
