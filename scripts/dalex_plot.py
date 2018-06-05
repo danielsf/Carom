@@ -3,6 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import argparse
+import numpy as np
 
 from analyzeDalex import scatter_from_multinest_projection
 from analyzeDalex import scatter_from_dalex
@@ -98,12 +99,69 @@ for ix_dex in range(0,len(args.x),2):
         else:
             full_name = file_name
 
+        if dalex_data[file_name] is None:
+            chisq_min=2.0e30
+            ct_lines = -1
+            with open(full_name, 'r') as in_file:
+                for line in in_file:
+                    if line[0] == '#':
+                        continue
+                    ct_lines += 1
+                    if args.limit is not None and ct_lines>args.limit:
+                        break
+                    params = line.strip().split()
+                    chisq = float(params[args.d])
+                    if chisq<chisq_min:
+                        chisq_min=chisq
+
+            print('globally got chisq_min %.2f' % chisq_min)
+
+            ct_lines = -1
+            ct_good_lines = 0
+            threshold = args.c+25.0
+            with open(full_name, 'r') as in_file:
+                for line in in_file:
+                    if line[0] == '#':
+                        continue
+                    ct_lines += 1
+                    if args.limit is not None and ct_lines>args.limit:
+                        break
+                    params = line.strip().split()
+                    chisq = float(params[args.d])
+                    if chisq<chisq_min+threshold:
+                        ct_good_lines += 1
+
+            print('got ct_good_lines %d' % ct_good_lines)
+
+            dalex_data[file_name] = {}
+            for ii in range(args.d):
+                dalex_data[file_name]['x%d' % ii] = np.zeros(ct_good_lines, dtype=float)
+            dalex_data[file_name]['chisq'] = np.zeros(ct_good_lines, dtype=float)
+
+            ct_lines = -1
+            ct_good_lines = 0
+            with open(full_name, 'r') as in_file:
+                for line in in_file:
+                    if line[0] == '#':
+                        continue
+                    ct_lines += 1
+                    if args.limit is not None and ct_lines>args.limit:
+                        break
+                    params = line.strip().split()
+                    chisq = float(params[args.d])
+                    if chisq<chisq_min+threshold:
+                        for ii in range(args.d):
+                            dalex_data[file_name]['x%d' %ii][ct_good_lines] = float(params[ii])
+                        dalex_data[file_name]['chisq'][ct_good_lines] = float(params[args.d])
+                        ct_good_lines += 1
+
+            print('got data')
+
         (dx, dy,
          dmin, dtarget,
          ddata) = scatter_from_dalex(full_name, args.d, ix, iy,
                                      delta_chi=args.c,
-                                     data=dalex_data[file_name],
-                                     limit=args.limit)
+                                     data=dalex_data[file_name])
 
         dalex_data[file_name] = ddata
 
