@@ -30,7 +30,7 @@ int main(int iargc, char *argv[]){
         fscanf(in_file,"%le",&mu);
         if(mu<chisq_min+delta_chisq){
             roll=dice.doub();
-            if(roll<0.1){
+            if(roll<0.2){
                 data.add_row(row);
             }
         }
