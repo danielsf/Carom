@@ -59,7 +59,7 @@ int main(int iargc, char *argv[]){
 
     out_file = fopen("output/planck/ellipse_bases.txt","w");
     for(i=0;i<dim;i++){
-        fprintf(out_file,"%e ",planck_ellipse.radii(i));
+        fprintf(out_file,"%e ",planck_ellipse.center(i));
     }
     fprintf(out_file,"\n");
     for(i=0;i<dim;i++){
