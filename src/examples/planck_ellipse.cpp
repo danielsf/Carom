@@ -6,6 +6,7 @@ int main(int iargc, char *argv[]){
     sprintf(planck_name,"output/planck/planck_out_high_q2.txt");
     FILE *in_file;
     in_file=fopen(planck_name,"r");
+    Ran dice(8812);
     int dim=33;
     char word[letters];
     int i;
@@ -19,6 +20,7 @@ int main(int iargc, char *argv[]){
     double delta_chisq=47.41;
     array_1d<double> row;
     row.set_name("row");
+    double roll;
     while(fscanf(in_file,"%le",&mu)>0){
         row.set(0,mu);
         for(i=1;i<dim;i++){
@@ -27,7 +29,10 @@ int main(int iargc, char *argv[]){
         }
         fscanf(in_file,"%le",&mu);
         if(mu<chisq_min+delta_chisq){
-            data.add_row(row);
+            roll=dice.doub();
+            if(roll<0.1){
+                data.add_row(row);
+            }
         }
         fscanf(in_file,"%le",&mu);
     }
@@ -49,6 +54,19 @@ int main(int iargc, char *argv[]){
             }
             fprintf(out_file,"\n");
         }
+    }
+    fclose(out_file);
+
+    out_file = fopen("output/planck/ellipse_bases.txt","w");
+    for(i=0;i<dim;i++){
+        fprintf(out_file,"%e ",planck_ellipse.radii(i));
+    }
+    fprintf(out_file,"\n");
+    for(i=0;i<dim;i++){
+        for(j=0;j<dim;j++){
+            fprintf(out_file,"%e ",planck_ellipse.bases(i,j));
+        }
+        fprintf(out_file,"\n");
     }
     fclose(out_file);
 
