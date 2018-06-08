@@ -9,7 +9,7 @@ if __name__ == "__main__":
     center = np.zeros(dim, dtype=float)
     bases = np.zeros((dim,dim), dtype=float)
     basis_file = 'ellipse_bases.txt'
-    data_file = 'planck_out_high_q2_culled.txt'
+    data_file = 'planck_out_high_q2_culled_cartoon.txt'
     with open(basis_file, 'r') as in_file:
         center_line = in_file.readline()
         params = center_line.strip().split()
@@ -44,7 +44,13 @@ if __name__ == "__main__":
     set_training = 0
     set_validation = 0
     projected = np.zeros(dim, dtype=float)
+
+    t_start = time.time()
     for i_line, line in enumerate(data_lines[1:]):
+        if i_line>0 and i_line%10000==0:
+            duration = time.time()-t_start
+            predicted = len(data_lines)*duration/i_line
+            print(i_line,duration,predicted/60.0,' mins')
         if line[0] == '#':
             continue
         params = np.array(line.strip().split()).astype(float)
