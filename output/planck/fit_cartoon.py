@@ -92,7 +92,7 @@ if __name__ == "__main__":
             zz1 = training_pts[i_pt][i_dim_1]**(i_order_1+1)
             mm[i_matrix_1][i_matrix_1] += zz1**2/ss
             bb[i_matrix_1] += cc*zz1/ss
-            for i_matrix_2 in range(i_matrix_1, n_matrix):
+            for i_matrix_2 in range(i_matrix_1+1, n_matrix):
                 i_dim_2 = i_matrix_2//order
                 i_order_2 = i_matrix_2%order
                 zz2 = training_pts[i_pt][i_dim_2]**(i_order_2+1)
