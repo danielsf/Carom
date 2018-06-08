@@ -27,6 +27,7 @@ if __name__ == "__main__":
 
     with open(data_file, 'r') as in_file:
         data_lines = in_file.readlines()
+
     n_data = len(data_lines)-1
     n_training = 2*n_data//3
 
@@ -127,27 +128,43 @@ if __name__ == "__main__":
     print(coeffs.max(),coeffs.min(),np.median(coeffs))
 
     print('writing junk.txt')
-    with open("junk_valid.txt", "w") as out_file_valid:
-        with open("junk_invalid.txt", "w") as out_file_invalid:
-            for i_pt, pt in enumerate(training_pts):
-                vv = 0.0
-                out_file = out_file_valid
+    with open("offenders.txt", "w") as offenders:
+        offenders.write('# true_delta_chisq model_delta_chisq pt...\n')
+        with open("junk_valid.txt", "w") as out_file_valid:
+            with open("junk_invalid.txt", "w") as out_file_invalid:
+                for i_pt, pt in enumerate(training_pts):
+                    vv = 0.0
+                    out_file = out_file_valid
 
-                rr = 0.0
-                for i_dim in range(dim):
-                    rr += (pt[i_dim]/radii[i_dim])**2
-                if rr>1.0:
-                    out_file = out_file_invalid
+                    rr = 0.0
+                    for i_dim in range(dim):
+                        rr += (pt[i_dim]/radii[i_dim])**2
+                    if rr>1.0:
+                        out_file = out_file_invalid
 
-                for i_dim in range(dim):
-                    for i_order in range(order):
-                        i_matrix = i_dim*order+i_order
-                        mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
-                        vv += mu
-                out_file.write('%e %e %e %e\n' %
-                               (training_chisq[i_pt]-chisq_min, vv,
-                                training_chisq[i_pt]-chisq_min-vv,
-                                training_r[i_pt]))
+                    for i_dim in range(dim):
+                        for i_order in range(order):
+                            i_matrix = i_dim*order+i_order
+                            mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
+                            vv += mu
+                    out_file.write('%e %e %e %e\n' %
+                                   (training_chisq[i_pt]-chisq_min, vv,
+                                    training_chisq[i_pt]-chisq_min-vv,
+                                    training_r[i_pt]))
+
+
+                    if training_chisq[i_pt]-chisq_min>47.41 and vv<47.41:
+                        bad_pt = np.zeros(dim, dtype=float)
+                        for i_dim in range(dim):
+                            bad_pt += training_pts[i_pt][i_dim]*bases[i_dim]
+                        bad_pt+=center
+                        offenders.write('%e %e ' %
+                                        (training_chisq[i_pt]-chisq_min,
+                                         vv))
+                        for i_dim in range(dim):
+                            offenders.write('%e ' % bad_pt[i_dim])
+                        offenders.write('\n')
+
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
