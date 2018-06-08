@@ -132,3 +132,7 @@ if __name__ == "__main__":
             out_file.write('%e %e %e\n' %
                            (training_chisq[i_pt]-chisq_min, vv,
                             training_chisq[i_pt]-chisq_min-vv))
+
+    for i_dim in range(dim):
+        i_matrix = i_dim*order+order-1
+        print(coeffs[i_matrix])
