@@ -8,19 +8,22 @@ if __name__ == "__main__":
     dim = 33
     center = np.zeros(dim, dtype=float)
     bases = np.zeros((dim,dim), dtype=float)
+    radii = np.zeros(dim, dtype=float)
     basis_file = 'ellipse_bases.txt'
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
     with open(basis_file, 'r') as in_file:
         center_line = in_file.readline()
         params = center_line.strip().split()
-        for ii in range(len(params)):
+        for ii in range(dim):
             mu = float(params[ii])
             center[ii] = mu
         for i_basis, line in enumerate(in_file):
             params = line.strip().split()
-            for ii in range(len(params)):
+            for ii in range(dim):
                 mu = float(params[ii])
                 bases[i_basis][ii] = mu
+            radii[i_basis] = float(params[-1])
+            assert len(params) == dim+1
 
     with open(data_file, 'r') as in_file:
         data_lines = in_file.readlines()
@@ -35,8 +38,10 @@ if __name__ == "__main__":
 
     training_pts = np.zeros((n_training, dim), dtype=float)
     training_chisq = np.zeros(n_training, dtype=float)
+    training_r = np.zeros(n_training, dtype=float)
     validation_pts = np.zeros((n_validation, dim), dtype=float)
     validation_chisq = np.zeros(n_validation, dtype=float)
+    validation_r = np.zeros(n_validation, dtype=float)
 
     rng = np.random.RandomState(553321984)
     roll = rng.random_sample(n_data)
@@ -58,17 +63,21 @@ if __name__ == "__main__":
         for ii in range(dim):
             projected[ii] = np.dot(bases[ii], pt-center)
 
+        rr = np.power(projected/radii,2).sum()
+
         if (set_validation==n_validation or
             roll[i_line]>ratio and set_training<n_training):
 
             for ii in range(dim):
                 training_pts[set_training][ii] = projected[ii]
             training_chisq[set_training] = params[dim]
+            training_r[set_training] = rr
             set_training+=1
         else:
              for ii in range(dim):
                  validation_pts[set_validation][ii] = projected[ii]
              validation_chisq[set_validation] = params[dim]
+             validation_r[set_validation] = rr
              set_validation += 1
 
     del data_lines
@@ -83,16 +92,6 @@ if __name__ == "__main__":
 
     delta_chisq=57.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
-
-    valid_training = np.where(training_chisq<chisq_min+delta_chisq)
-
-    dim_bounds = np.zeros(dim, dtype=float)
-    training_transpose = training_pts[valid_training].transpose()
-    for i_dim in range(dim):
-        dim_bounds[i_dim] = np.abs(training_transpose[i_dim]).max()
-
-    del training_transpose
-    gc.collect()
 
     sigma_sq = (1.0+(training_chisq-chisq_min)/20.0)**2
 
@@ -136,18 +135,22 @@ if __name__ == "__main__":
             for i_pt, pt in enumerate(training_pts):
                 vv = 0.0
                 out_file = out_file_valid
+
+                rr = 0.0
                 for i_dim in range(dim):
-                    if np.abs(pt[i_dim])>dim_bounds[i_dim]:
-                        out_file = out_file_invalid
-                        break
+                    rr += (pt[i_dim]/radii[i_dim])**2
+                if rr>1.0:
+                    out_file = out_file_invalid
+
                 for i_dim in range(dim):
                     for i_order in range(order):
                         i_matrix = i_dim*order+i_order
                         mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
                         vv += mu
-                out_file.write('%e %e %e\n' %
+                out_file.write('%e %e %e %e\n' %
                                (training_chisq[i_pt]-chisq_min, vv,
-                                training_chisq[i_pt]-chisq_min-vv))
+                                training_chisq[i_pt]-chisq_min-vv,
+                                training_r[i_pt]))
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1

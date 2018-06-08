@@ -66,7 +66,7 @@ int main(int iargc, char *argv[]){
         for(j=0;j<dim;j++){
             fprintf(out_file,"%e ",planck_ellipse.bases(i,j));
         }
-        fprintf(out_file,"\n");
+        fprintf(out_file,"%e \n",planck_ellipse.radii(i));
     }
     fclose(out_file);
 
