@@ -21,6 +21,7 @@ parser.add_argument('--c', type=float, default=21.03,
                     help='delta chisquared')
 parser.add_argument('--limit', type=int, default=None)
 parser.add_argument('--key_map', type=str, default=None)
+parser.add_argument('--ellipse_file', type=str, default=None)
 
 import os
 
@@ -49,6 +50,14 @@ if not isinstance(args.in_file, list):
     in_file_names = [args.in_file]
 else:
     in_file_names = args.in_file
+
+ellipse_data = None
+if args.ellipse_file is not None:
+    dt_list = []
+    for ii in range(args.d):
+        dt_list.append(('x%d' % ii, float))
+    dtype = np.dtype(dt_list)
+    ellipse_data = np.genfromtxt(args.ellipse_file, dtype=dtype)
 
 key_map_dict = {}
 if args.key_map is not None:
@@ -197,6 +206,12 @@ for ix_dex in range(0,len(args.x),2):
             header_list.append(hh)
             label_list.append('MultiNest degen')
             plt.legend(header_list, label_list, loc=0)
+
+        if ellipse_data is not None:
+            plt.scatter(ellipse_data['x%d' % ix],
+                        ellipse_data['x%d' % iy],
+                        marker='o', color='g',
+                        s=10)
 
         if ix not in key_map_dict:
             plt.xlabel('$\\theta_{%d}$' % ix)
