@@ -78,11 +78,8 @@ if __name__ == "__main__":
 
     #i_matrix = i_dim*order + i_order
 
-    delta_chisq=47.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
-    sigma_sq = np.where(training_chisq<chisq_min+delta_chisq,
-                        1.0,
-                        ((training_chisq-chisq_min)/delta_chisq)**2)
+    sigma_sq = (1.0+(training_chisq-chisq_min)/20.0)**2
 
     print('starting matrix loop')
     t_start = time.time()
