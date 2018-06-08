@@ -93,8 +93,7 @@ if __name__ == "__main__":
     delta_chisq=57.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
 
-    sigma_sq = np.where(training_chisq<chisq_min+delta_chisq,
-                        1.0,4.0)
+    sigma_sq = np.ones(len(training_chisq), dtype=float)
 
     mm = np.zeros((n_matrix, n_matrix), dtype=float)
     bb = np.zeros(n_matrix, dtype=float)
