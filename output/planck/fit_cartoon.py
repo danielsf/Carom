@@ -91,80 +91,100 @@ if __name__ == "__main__":
 
     #i_matrix = i_dim*order + i_order
 
+    n_iteration = 5
+
     delta_chisq=57.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
-
     sigma_sq = np.ones(len(training_chisq), dtype=float)
 
-    mm = np.zeros((n_matrix, n_matrix), dtype=float)
-    bb = np.zeros(n_matrix, dtype=float)
+    for iteration in range(n_iteration):
 
-    print('starting matrix loop')
-    t_start = time.time()
-    for i_pt in range(n_training):
-        cc = training_chisq[i_pt]-chisq_min
-        ss = sigma_sq[i_pt]
-        for i_matrix_1 in range(n_matrix):
-            i_dim_1 = i_matrix_1//order
-            i_order_1 = i_matrix_1%order
-            zz1 = training_pts[i_pt][i_dim_1]**(i_order_1+1)
-            mm[i_matrix_1][i_matrix_1] += zz1**2/ss
-            bb[i_matrix_1] += cc*zz1/ss
-            for i_matrix_2 in range(i_matrix_1+1, n_matrix):
-                i_dim_2 = i_matrix_2//order
-                i_order_2 = i_matrix_2%order
-                zz2 = training_pts[i_pt][i_dim_2]**(i_order_2+1)
-                mm[i_matrix_1][i_matrix_2] += zz1*zz2/ss
-                mm[i_matrix_2][i_matrix_1] += zz1*zz2/ss
+        mm = np.zeros((n_matrix, n_matrix), dtype=float)
+        bb = np.zeros(n_matrix, dtype=float)
 
-        if (i_pt+1)%1000 == 0:
-            duration = time.time()-t_start
-            predicted = n_training*duration/(i_pt+1)
-            print(i_pt,duration,predicted/3600.0)
+        print('starting matrix loop')
+        t_start = time.time()
+        for i_pt in range(n_training):
+            cc = training_chisq[i_pt]-chisq_min
+            ss = sigma_sq[i_pt]
+            for i_matrix_1 in range(n_matrix):
+                i_dim_1 = i_matrix_1//order
+                i_order_1 = i_matrix_1%order
+                zz1 = training_pts[i_pt][i_dim_1]**(i_order_1+1)
+                mm[i_matrix_1][i_matrix_1] += zz1**2/ss
+                bb[i_matrix_1] += cc*zz1/ss
+                for i_matrix_2 in range(i_matrix_1+1, n_matrix):
+                    i_dim_2 = i_matrix_2//order
+                    i_order_2 = i_matrix_2%order
+                    zz2 = training_pts[i_pt][i_dim_2]**(i_order_2+1)
+                    mm[i_matrix_1][i_matrix_2] += zz1*zz2/ss
+                    mm[i_matrix_2][i_matrix_1] += zz1*zz2/ss
 
-    print('solving coeffs')
-    coeffs = np.linalg.solve(mm, bb)
-    assert len(coeffs) == n_matrix
-    print(coeffs.max(),coeffs.min(),np.median(coeffs))
+            if (i_pt+1)%1000 == 0:
+                duration = time.time()-t_start
+                predicted = n_training*duration/(i_pt+1)
+                print(i_pt,duration,predicted/3600.0)
 
-    print('writing junk.txt')
-    with open("offenders.txt", "w") as offenders:
-        offenders.write('# true_delta_chisq model_delta_chisq pt...\n')
-        with open("junk_valid.txt", "w") as out_file_valid:
-            with open("junk_invalid.txt", "w") as out_file_invalid:
-                for i_pt, pt in enumerate(training_pts):
-                    vv = 0.0
-                    out_file = out_file_valid
+        print('solving coeffs')
+        coeffs = np.linalg.solve(mm, bb)
+        assert len(coeffs) == n_matrix
+        print(coeffs.max(),coeffs.min(),np.median(coeffs))
 
-                    rr = 0.0
-                    for i_dim in range(dim):
-                        rr += (pt[i_dim]/radii[i_dim])**2
-                    if rr>1.0:
-                        out_file = out_file_invalid
+        fit_chisq = np.zeros(n_training, dtype=float)
+        print('writing junk.txt')
+        with open("offenders.txt", "w") as offenders:
+            offenders.write('# true_delta_chisq model_delta_chisq pt...\n')
+            with open("junk_valid.txt", "w") as out_file_valid:
+                with open("junk_invalid.txt", "w") as out_file_invalid:
+                    for i_pt, pt in enumerate(training_pts):
+                        vv = 0.0
+                        out_file = out_file_valid
 
-                    for i_dim in range(dim):
-                        for i_order in range(order):
-                            i_matrix = i_dim*order+i_order
-                            mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
-                            vv += mu
-                    out_file.write('%e %e %e %e\n' %
-                                   (training_chisq[i_pt]-chisq_min, vv,
-                                    training_chisq[i_pt]-chisq_min-vv,
-                                    training_r[i_pt]))
-
-
-                    if training_chisq[i_pt]-chisq_min>47.41 and vv<47.41:
-                        bad_pt = np.zeros(dim, dtype=float)
+                        rr = 0.0
                         for i_dim in range(dim):
-                            bad_pt += training_pts[i_pt][i_dim]*bases[i_dim]
-                        bad_pt+=center
-                        offenders.write('%e %e ' %
-                                        (training_chisq[i_pt]-chisq_min,
-                                         vv))
-                        for i_dim in range(dim):
-                            offenders.write('%e ' % bad_pt[i_dim])
-                        offenders.write('\n')
+                            rr += (pt[i_dim]/radii[i_dim])**2
+                        if rr>1.0:
+                            out_file = out_file_invalid
 
+                        for i_dim in range(dim):
+                            for i_order in range(order):
+                                i_matrix = i_dim*order+i_order
+                                mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
+                                vv += mu
+                        fit_chisq[i_pt] = vv
+                        out_file.write('%e %e %e %e\n' %
+                                       (training_chisq[i_pt]-chisq_min, vv,
+                                        training_chisq[i_pt]-chisq_min-vv,
+                                        training_r[i_pt]))
+
+
+                        if training_chisq[i_pt]-chisq_min>47.41 and vv<47.41:
+                            bad_pt = np.zeros(dim, dtype=float)
+                            for i_dim in range(dim):
+                                bad_pt += training_pts[i_pt][i_dim]*bases[i_dim]
+                            bad_pt+=center
+                            offenders.write('%e %e ' %
+                                            (training_chisq[i_pt]-chisq_min,
+                                             vv))
+                            for i_dim in range(dim):
+                                offenders.write('%e ' % bad_pt[i_dim])
+                            offenders.write('\n')
+
+
+        print('re setting sigma_sq')
+        mismatch_rating = np.zeros(n_training, dtype=float)
+        for i_pt in range(n_training):
+            if fit_chisq[i_pt]<delta_chisq and training_chisq[i_pt]-chisq_min>delta_chisq:
+                mismatch_rating[i_pt] = (training_chisq[i_pt]-fit_chisq[i_pt]-chisq_min)
+            if fit_chisq[i_pt]>delta_chisq and training_chisq[i_pt]-chisq_min<delta_chisq:
+                mismatch_rating[i_pt] = fit_chisq[i_pt]-training_chisq[i_pt]+chisq_min
+
+        max_mismatch = mismatch_rating.max()
+        assert mismatch_rating.min()>-1.0e10
+        print('\nmax_mismatch %e\n' % max_mismatch)
+        dm = 0.1*max_mismatch
+        sigma_sq = 1.0+(max_mismatch/dm-mismatch_rating/dm)
+        assert len(sigma_sq) == n_training
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
