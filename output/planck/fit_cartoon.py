@@ -28,10 +28,12 @@ if __name__ == "__main__":
     with open(data_file, 'r') as in_file:
         data_lines = in_file.readlines()
 
+    #data_lines = data_lines[:500000]
+
     n_data = len(data_lines)-1
     n_training = 2*n_data//3
 
-    n_training = 3000
+    n_training = 10000
 
     n_validation = n_data-n_training
 
@@ -91,11 +93,11 @@ if __name__ == "__main__":
 
     #i_matrix = i_dim*order + i_order
 
-    n_iteration = 5
+    n_iteration = 10
 
-    delta_chisq=57.41
+    delta_chisq=47.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
-    sigma_sq = 100.0*np.ones(len(training_chisq), dtype=float)
+    sigma_sq = 1000.0*np.ones(len(training_chisq), dtype=float)
 
     for iteration in range(n_iteration):
 
@@ -140,11 +142,13 @@ if __name__ == "__main__":
                         vv = 0.0
                         out_file = out_file_valid
 
+                        """
                         rr = 0.0
                         for i_dim in range(dim):
                             rr += (pt[i_dim]/radii[i_dim])**2
                         if rr>1.0:
                             out_file = out_file_invalid
+                        """
 
                         for i_dim in range(dim):
                             for i_order in range(order):
@@ -174,16 +178,26 @@ if __name__ == "__main__":
         print('re setting sigma_sq')
         mismatch_rating = np.zeros(n_training, dtype=float)
         for i_pt in range(n_training):
-            if fit_chisq[i_pt]<delta_chisq and training_chisq[i_pt]-chisq_min>delta_chisq:
+            if fit_chisq[i_pt]<delta_chisq and (training_chisq[i_pt]-chisq_min)>delta_chisq:
+                if i_pt==712:
+                    print('fit was less than')
                 mismatch_rating[i_pt] = (training_chisq[i_pt]-fit_chisq[i_pt]-chisq_min)
-            if fit_chisq[i_pt]>delta_chisq and training_chisq[i_pt]-chisq_min<delta_chisq:
+            elif fit_chisq[i_pt]>delta_chisq and (training_chisq[i_pt]-chisq_min)<delta_chisq:
+                if i_pt==712:
+                    print('fit was greater than')
                 mismatch_rating[i_pt] = fit_chisq[i_pt]-training_chisq[i_pt]+chisq_min
+            else:
+                if i_pt==712:
+                    print('did not %e %e\n' % (fit_chisq[i_pt], training_chisq[i_pt]-chisq_min))
 
         max_mismatch = mismatch_rating.max()
+        max_dex = np.argmax(mismatch_rating)
         assert mismatch_rating.min()>-1.0e10
-        print('\nmax_mismatch %e\n' % max_mismatch)
+        print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e\n' %
+            (max_mismatch, max_dex, mismatch_rating[712],training_chisq[712]-chisq_min,
+             fit_chisq[712]))
         dm = 0.1*max_mismatch
-        local_sigma_sq = 1.0+(max_mismatch/dm-mismatch_rating/dm)
+        local_sigma_sq = (1.0+(max_mismatch/dm-mismatch_rating/dm))**2
         assert len(sigma_sq) == n_training
         sigma_sq = np.where(sigma_sq<local_sigma_sq, sigma_sq, local_sigma_sq)
 
