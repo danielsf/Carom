@@ -93,11 +93,11 @@ if __name__ == "__main__":
 
     #i_matrix = i_dim*order + i_order
 
-    n_iteration = 10
+    n_iteration = 30
 
     delta_chisq=47.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
-    sigma_sq = 1000.0*np.ones(len(training_chisq), dtype=float)
+    sigma_sq = np.ones(len(training_chisq), dtype=float)
 
     for iteration in range(n_iteration):
 
@@ -193,13 +193,13 @@ if __name__ == "__main__":
         max_mismatch = mismatch_rating.max()
         max_dex = np.argmax(mismatch_rating)
         assert mismatch_rating.min()>-1.0e10
-        print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e\n' %
+        print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e' %
             (max_mismatch, max_dex, mismatch_rating[712],training_chisq[712]-chisq_min,
              fit_chisq[712]))
-        dm = 0.1*max_mismatch
-        local_sigma_sq = (1.0+(max_mismatch/dm-mismatch_rating/dm))**2
-        assert len(sigma_sq) == n_training
-        sigma_sq = np.where(sigma_sq<local_sigma_sq, sigma_sq, local_sigma_sq)
+        factor = 1.0-0.5*(mismatch_rating/max_mismatch)
+        sigma_sq *= factor
+        print('sigma_sq %e %e %e' % (sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
+        print('\n')
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
