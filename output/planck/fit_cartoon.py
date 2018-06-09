@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     delta_chisq=57.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
-    sigma_sq = np.ones(len(training_chisq), dtype=float)
+    sigma_sq = 100.0*np.ones(len(training_chisq), dtype=float)
 
     for iteration in range(n_iteration):
 
@@ -183,8 +183,9 @@ if __name__ == "__main__":
         assert mismatch_rating.min()>-1.0e10
         print('\nmax_mismatch %e\n' % max_mismatch)
         dm = 0.1*max_mismatch
-        sigma_sq = 1.0+(max_mismatch/dm-mismatch_rating/dm)
+        local_sigma_sq = 1.0+(max_mismatch/dm-mismatch_rating/dm)
         assert len(sigma_sq) == n_training
+        sigma_sq = np.where(sigma_sq<local_sigma_sq, sigma_sq, local_sigma_sq)
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
