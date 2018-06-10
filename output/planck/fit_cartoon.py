@@ -193,14 +193,11 @@ if __name__ == "__main__":
         max_mismatch = mismatch_rating.max()
         max_dex = np.argmax(mismatch_rating)
         assert mismatch_rating.min()>-1.0e10
-
-        offenders = np.where(mismatch_rating>1.0e-10)
-        n_offenders = len(offenders[0])
-        print('\nmax_mismatch %e %d' % (max_mismatch, n_offenders))
-        trial_factor = delta_chisq/(delta_chisq+mismatch_rating[offenders])
-        factor = np.where(trial_factor<0.9, trial_factor, 0.9)
-        sigma_sq[offenders] *= factor
-        assert sigma_sq.min() > 0.0
+        print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e' %
+            (max_mismatch, max_dex, mismatch_rating[712],training_chisq[712]-chisq_min,
+             fit_chisq[712]))
+        factor = 1.0-0.5*(mismatch_rating/max_mismatch)
+        sigma_sq *= factor
         print('sigma_sq %e %e %e' % (sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
         print('\n')
 
