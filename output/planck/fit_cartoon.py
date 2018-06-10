@@ -99,6 +99,7 @@ if __name__ == "__main__":
     chisq_min = min(training_chisq.min(), validation_chisq.min())
     sigma_sq = np.ones(len(training_chisq), dtype=float)
 
+    min_failure = None
     for iteration in range(n_iteration):
 
         mm = np.zeros((n_matrix, n_matrix), dtype=float)
@@ -191,6 +192,9 @@ if __name__ == "__main__":
                     print('did not %e %e\n' % (fit_chisq[i_pt], training_chisq[i_pt]-chisq_min))
 
         max_mismatch = mismatch_rating.max()
+        if min_failure is None or max_mismatch<min_failure:
+            min_failure = max_mismatch
+            best_coeffs = coeffs
         max_dex = np.argmax(mismatch_rating)
         assert mismatch_rating.min()>-1.0e10
         print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e' %
@@ -204,3 +208,7 @@ if __name__ == "__main__":
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
         print(coeffs[i_matrix])
+
+    with open('coeffs_test.txt', 'w') as out_file:
+        for cc in coeffs_best:
+            out_file.write('%e\n' % cc)
