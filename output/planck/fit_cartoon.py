@@ -28,6 +28,17 @@ if __name__ == "__main__":
     with open(data_file, 'r') as in_file:
         data_lines = in_file.readlines()
 
+    chisq_min = None
+    for line in data_lines:
+        if line[0]== '#':
+            continue
+        params = line.strip().split()
+        if chisq_min is None or float(params[dim])<chisq_min:
+            chisq_min = float(params[dim])
+            print('    set chisq_min %e' % chisq_min)
+            center = np.array(params[:dim]).astype(float)
+
+    print('got chisq_min %e' % chisq_min)
     #data_lines = data_lines[:500000]
 
     n_data = len(data_lines)-1
