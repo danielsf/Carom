@@ -141,7 +141,6 @@ if __name__ == "__main__":
 
         coeffs = np.linalg.solve(mm, bb)
         assert len(coeffs) == n_matrix
-        print(coeffs.max(),coeffs.min(),np.median(coeffs))
 
         fit_chisq = np.zeros(n_training, dtype=float)
         for i_pt, pt in enumerate(training_pts):
@@ -165,7 +164,7 @@ if __name__ == "__main__":
                   (training_chisq[i_pt]-chisq_min)<delta_chisq):
 
                 mismatch_rating[i_pt] = fit_chisq[i_pt]-training_chisq[i_pt]+chisq_min
-                n_offender += 1
+                n_offenders += 1
 
         max_mismatch = mismatch_rating.max()
         inside = np.where(training_chisq[i_pt]-chisq_min<delta_chisq)
@@ -183,9 +182,8 @@ if __name__ == "__main__":
                                     fit_chisq[i_pt]))
 
         assert mismatch_rating.min()>-1.0e10
-        add_val = 1.0-mismatch_rating/(max_mismatch+1.0)
-        assert add_val.min()>-1.0e20
-        sigma_sq+= add_val
+        non_offenders = np.where(mismatch_rating<1.0e-10)
+        sigma_sq[non_offenders] += max_mismatch
         assert sigma_sq.min()>0.99
         print('\niter %d max_mis %e -- %d -- %.2e %.2e %.2e' %
               (iteration, max_mismatch, n_offenders,
