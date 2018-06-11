@@ -174,9 +174,7 @@ if __name__ == "__main__":
 
         max_mismatch = mismatch_rating.max()
         inside = np.where(training_chisq[i_pt]-chisq_min<delta_chisq)
-        perturb = True
         if min_failure is None or max_mismatch<min_failure:
-            perturb = False
             min_failure = max_mismatch
             best_coeffs = coeffs
 
@@ -194,8 +192,6 @@ if __name__ == "__main__":
         add_val = np.where(mismatch_rating<1.0e-10, 1.0,
                            1.0-mismatch_rating/max_mismatch)
         sigma_sq += add_val
-        if perturb:
-            sigma_sq += rng.random_sample(n_training)
         assert sigma_sq.min()>0.99
 
         print('\niter %d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
