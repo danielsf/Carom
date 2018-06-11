@@ -193,8 +193,9 @@ if __name__ == "__main__":
                            1.0-mismatch_rating/max_mismatch)
         sigma_sq += add_val
         assert sigma_sq.min()>0.99
-        print('\niter %d max_mis %e -- %d %d -- %.2e %.2e %.2e' %
-              (iteration, max_mismatch, n_offenders, len(non_offenders[0]),
+
+        print('\niter %d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
+              (iteration, max_mismatch, min_failure, n_offenders, len(non_offenders[0]),
                sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
 
         print('')
