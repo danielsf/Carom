@@ -128,26 +128,22 @@ if __name__ == "__main__":
 
         print('starting matrix loop %e' % training_chisq.min())
         t_start = time.time()
-        for i_pt in range(n_training):
-            cc = training_chisq[i_pt]-chisq_min
-            ss = sigma_sq[i_pt]
-            for i_matrix_1 in range(n_matrix):
-                #i_dim_1 = i_matrix_1//order
-                #i_order_1 = i_matrix_1%order
-                zz1 = pt_powers[i_pt*dim*order+i_matrix_1]
-                mm[i_matrix_1][i_matrix_1] += zz1**2/ss
-                bb[i_matrix_1] += cc*zz1/ss
-                for i_matrix_2 in range(i_matrix_1+1, n_matrix):
-                    #i_dim_2 = i_matrix_2//order
-                    #i_order_2 = i_matrix_2%order
-                    zz2 = pt_powers[i_pt*dim*order+i_matrix_2]
-                    mm[i_matrix_1][i_matrix_2] += zz1*zz2/ss
-                    mm[i_matrix_2][i_matrix_1] += zz1*zz2/ss
 
-            if (i_pt+1)%1000 == 0:
-                duration = time.time()-t_start
-                predicted = n_training*duration/(i_pt+1)
-                print(i_pt,duration,predicted/3600.0)
+        matrix_ct = 0
+        for i_matrix_1 in range(n_matrix):
+            zz1 = pt_powers[i_matrix_1:len(pt_powers):dim*order]
+            mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
+            bb[i_matrix_1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
+            for i_matrix_2 in range(i_matrix_1+1, n_matrix):
+                zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
+                mu = (zz1*zz2/sigma_sq).sum()
+                mm[i_matrix_1][i_matrix_2] = mu
+                mm[i_matrix_2][i_matrix_1] = mu
+                matrix_ct += 1
+                if (matrix_ct+1)%10000 == 0:
+                    duration = time.time()-t_start
+                    predicted = (0.5*n_matrix*(n_matrix-1))*duration/(i_pt+1)
+                    print(matrix_ct,duration,predicted/3600.0)
 
         coeffs = np.linalg.solve(mm, bb)
         assert len(coeffs) == n_matrix
