@@ -28,6 +28,8 @@ if __name__ == "__main__":
     with open(data_file, 'r') as in_file:
         data_lines = in_file.readlines()
 
+    #data_lines = data_lines[:100000]
+
     chisq_min = None
     for line in data_lines:
         if line[0]== '#':
@@ -38,7 +40,6 @@ if __name__ == "__main__":
             center = np.array(params[:dim]).astype(float)
 
     print('got chisq_min %e' % chisq_min)
-    #data_lines = data_lines[:500000]
 
     n_data = len(data_lines)-1
     n_training = 2*n_data//3
