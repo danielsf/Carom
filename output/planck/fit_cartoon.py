@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     #i_matrix = i_dim*order + i_order
 
-    n_iteration = 30
+    n_iteration = 300
 
     delta_chisq=47.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
@@ -142,7 +142,7 @@ if __name__ == "__main__":
                 matrix_ct += 1
                 if (matrix_ct+1)%10000 == 0:
                     duration = time.time()-t_start
-                    predicted = (0.5*n_matrix*(n_matrix-1))*duration/(i_pt+1)
+                    predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
                     print(matrix_ct,duration,predicted/3600.0)
 
         coeffs = np.linalg.solve(mm, bb)
