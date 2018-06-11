@@ -183,10 +183,10 @@ if __name__ == "__main__":
 
         assert mismatch_rating.min()>-1.0e10
         non_offenders = np.where(mismatch_rating<1.0e-10)
-        sigma_sq[non_offenders] += max_mismatch
+        sigma_sq[non_offenders] += max_mismatch/delta_chisq
         assert sigma_sq.min()>0.99
-        print('\niter %d max_mis %e -- %d -- %.2e %.2e %.2e' %
-              (iteration, max_mismatch, n_offenders,
+        print('\niter %d max_mis %e -- %d %d -- %.2e %.2e %.2e' %
+              (iteration, max_mismatch, n_offenders, len(non_offenders[0]),
                sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
 
         print('\n')
