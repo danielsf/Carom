@@ -195,7 +195,7 @@ if __name__ == "__main__":
               (iteration, max_mismatch, n_offenders, len(non_offenders[0]),
                sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
 
-        print('\n')
+        print('')
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
