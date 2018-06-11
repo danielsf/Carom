@@ -110,6 +110,16 @@ if __name__ == "__main__":
     chisq_min = min(training_chisq.min(), validation_chisq.min())
     sigma_sq = np.ones(len(training_chisq), dtype=float)
 
+    pt_powers = np.zeros(n_training*dim*order, dtype=float)
+    # i_power = i_pt*dim*order+i_dim*order+i_order
+    # i_power = i_pt*dim*order+i_matrix
+    print('made pt_powers')
+    for i_pt in range(n_training):
+        for i_dim in range(dim):
+            for i_order in range(order):
+                i_power = i_pt*dim*order+i_dim*order+i_order
+                pt_powers[i_power] = training_pts[i_pt][i_dim]**(i_order+1)
+
     min_failure = None
     for iteration in range(n_iteration):
 
@@ -122,15 +132,15 @@ if __name__ == "__main__":
             cc = training_chisq[i_pt]-chisq_min
             ss = sigma_sq[i_pt]
             for i_matrix_1 in range(n_matrix):
-                i_dim_1 = i_matrix_1//order
-                i_order_1 = i_matrix_1%order
-                zz1 = training_pts[i_pt][i_dim_1]**(i_order_1+1)
+                #i_dim_1 = i_matrix_1//order
+                #i_order_1 = i_matrix_1%order
+                zz1 = pt_powers[i_pt*dim*order+i_matrix_1]
                 mm[i_matrix_1][i_matrix_1] += zz1**2/ss
                 bb[i_matrix_1] += cc*zz1/ss
                 for i_matrix_2 in range(i_matrix_1+1, n_matrix):
-                    i_dim_2 = i_matrix_2//order
-                    i_order_2 = i_matrix_2%order
-                    zz2 = training_pts[i_pt][i_dim_2]**(i_order_2+1)
+                    #i_dim_2 = i_matrix_2//order
+                    #i_order_2 = i_matrix_2%order
+                    zz2 = pt_powers[i_pt*dim*order+i_matrix_2]
                     mm[i_matrix_1][i_matrix_2] += zz1*zz2/ss
                     mm[i_matrix_2][i_matrix_1] += zz1*zz2/ss
 
