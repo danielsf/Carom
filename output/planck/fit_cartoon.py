@@ -211,8 +211,10 @@ if __name__ == "__main__":
         print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e' %
             (max_mismatch, max_dex, mismatch_rating[712],training_chisq[712]-chisq_min,
              fit_chisq[712]))
-        factor = 1.0-0.5*(mismatch_rating/max_mismatch)
-        sigma_sq *= factor
+        add_val = 1.0-mismatch_rating/max_mismatch
+        assert add_val.min()>-1.0e20
+        sigma_sq+= add_val
+        assert sigma_sq.min()>0.99
         print('sigma_sq %e %e %e' % (sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
         print('\n')
 
