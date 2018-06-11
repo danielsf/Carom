@@ -221,5 +221,5 @@ if __name__ == "__main__":
         print(coeffs[i_matrix])
 
     with open('coeffs_test.txt', 'w') as out_file:
-        for cc in coeffs_best:
+        for cc in best_coeffs:
             out_file.write('%e\n' % cc)
