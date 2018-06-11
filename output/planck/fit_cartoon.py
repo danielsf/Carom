@@ -35,7 +35,6 @@ if __name__ == "__main__":
         params = line.strip().split()
         if chisq_min is None or float(params[dim])<chisq_min:
             chisq_min = float(params[dim])
-            print('    set chisq_min %e' % chisq_min)
             center = np.array(params[:dim]).astype(float)
 
     print('got chisq_min %e' % chisq_min)
@@ -116,7 +115,7 @@ if __name__ == "__main__":
         mm = np.zeros((n_matrix, n_matrix), dtype=float)
         bb = np.zeros(n_matrix, dtype=float)
 
-        print('starting matrix loop')
+        print('starting matrix loop %e' % training_chisq.min())
         t_start = time.time()
         for i_pt in range(n_training):
             cc = training_chisq[i_pt]-chisq_min
@@ -139,89 +138,60 @@ if __name__ == "__main__":
                 predicted = n_training*duration/(i_pt+1)
                 print(i_pt,duration,predicted/3600.0)
 
-        print('solving coeffs')
         coeffs = np.linalg.solve(mm, bb)
         assert len(coeffs) == n_matrix
         print(coeffs.max(),coeffs.min(),np.median(coeffs))
 
         fit_chisq = np.zeros(n_training, dtype=float)
-        print('writing junk.txt')
-        with open("offenders.txt", "w") as offenders:
-            offenders.write('# true_delta_chisq model_delta_chisq pt...\n')
-            with open("junk_valid.txt", "w") as out_file_valid:
-                with open("junk_invalid.txt", "w") as out_file_invalid:
-                    for i_pt, pt in enumerate(training_pts):
-                        vv = 0.0
-                        out_file = out_file_valid
+        for i_pt, pt in enumerate(training_pts):
+            vv = 0.0
+            for i_dim in range(dim):
+                for i_order in range(order):
+                    i_matrix = i_dim*order+i_order
+                    mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
+                    vv += mu
+            fit_chisq[i_pt] = vv
 
-                        """
-                        rr = 0.0
-                        for i_dim in range(dim):
-                            rr += (pt[i_dim]/radii[i_dim])**2
-                        if rr>1.0:
-                            out_file = out_file_invalid
-                        """
-
-                        for i_dim in range(dim):
-                            for i_order in range(order):
-                                i_matrix = i_dim*order+i_order
-                                mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
-                                vv += mu
-                        fit_chisq[i_pt] = vv
-                        out_file.write('%e %e %e %e\n' %
-                                       (training_chisq[i_pt]-chisq_min, vv,
-                                        training_chisq[i_pt]-chisq_min-vv,
-                                        training_r[i_pt]))
-
-
-                        if training_chisq[i_pt]-chisq_min>47.41 and vv<47.41:
-                            bad_pt = np.zeros(dim, dtype=float)
-                            for i_dim in range(dim):
-                                bad_pt += training_pts[i_pt][i_dim]*bases[i_dim]
-                            bad_pt+=center
-                            offenders.write('%e %e ' %
-                                            (training_chisq[i_pt]-chisq_min,
-                                             vv))
-                            for i_dim in range(dim):
-                                offenders.write('%e ' % bad_pt[i_dim])
-                            offenders.write('\n')
-
-
-        print('re setting sigma_sq')
         mismatch_rating = np.zeros(n_training, dtype=float)
+        n_offenders = 0
         for i_pt in range(n_training):
-            if fit_chisq[i_pt]<delta_chisq and (training_chisq[i_pt]-chisq_min)>delta_chisq:
-                if i_pt==712:
-                    print('fit was less than')
+            if (fit_chisq[i_pt]<delta_chisq and
+                (training_chisq[i_pt]-chisq_min)>delta_chisq):
+
                 mismatch_rating[i_pt] = (training_chisq[i_pt]-fit_chisq[i_pt]-chisq_min)
-            elif fit_chisq[i_pt]>delta_chisq and (training_chisq[i_pt]-chisq_min)<delta_chisq:
-                if i_pt==712:
-                    print('fit was greater than')
+                n_offenders += 1
+            elif (fit_chisq[i_pt]>delta_chisq and
+                  (training_chisq[i_pt]-chisq_min)<delta_chisq):
+
                 mismatch_rating[i_pt] = fit_chisq[i_pt]-training_chisq[i_pt]+chisq_min
-            else:
-                if i_pt==712:
-                    print('did not %e %e\n' % (fit_chisq[i_pt], training_chisq[i_pt]-chisq_min))
+                n_offender += 1
 
         max_mismatch = mismatch_rating.max()
+        inside = np.where(training_chisq[i_pt]-chisq_min<delta_chisq)
         if min_failure is None or max_mismatch<min_failure:
             min_failure = max_mismatch
             best_coeffs = coeffs
-        max_dex = np.argmax(mismatch_rating)
+
+            with open('coeffs_test.txt', 'w') as out_file:
+                for cc in best_coeffs:
+                    out_file.write('%e\n' % cc)
+            with open('fit_chisq.txt', 'w') as out_file:
+                for i_pt in range(n_training):
+                    out_file.write('%e %e\n' %
+                                   (training_chisq[i_pt]-chisq_min,
+                                    fit_chisq[i_pt]))
+
         assert mismatch_rating.min()>-1.0e10
-        print('\nmax_mismatch %e -- %d -- %.3e %.3e %.3e' %
-            (max_mismatch, max_dex, mismatch_rating[712],training_chisq[712]-chisq_min,
-             fit_chisq[712]))
-        add_val = 1.0-mismatch_rating/max_mismatch
+        add_val = 1.0-mismatch_rating/(max_mismatch+1.0)
         assert add_val.min()>-1.0e20
         sigma_sq+= add_val
         assert sigma_sq.min()>0.99
-        print('sigma_sq %e %e %e' % (sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
+        print('\niter %d max_mis %e -- %d -- %.2e %.2e %.2e' %
+              (iteration, max_mismatch, n_offenders,
+               sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
+
         print('\n')
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
         print(coeffs[i_matrix])
-
-    with open('coeffs_test.txt', 'w') as out_file:
-        for cc in best_coeffs:
-            out_file.write('%e\n' % cc)
