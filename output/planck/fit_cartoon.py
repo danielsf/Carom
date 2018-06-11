@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
         assert mismatch_rating.min()>-1.0e10
         non_offenders = np.where(mismatch_rating<1.0e-10)
-        add_val = np.where(mismatch_rating<1.0e-10, 2.0,
+        add_val = np.where(mismatch_rating<1.0e-10, 3.0,
                            1.0-mismatch_rating/max_mismatch)
         sigma_sq += add_val
         assert sigma_sq.min()>0.99
