@@ -215,9 +215,11 @@ if __name__ == "__main__":
                     out_file.write('%e\n' % cc)
             with open('fit_chisq.txt', 'w') as out_file:
                 for i_pt in range(n_training):
-                    out_file.write('%e %e\n' %
+                    out_file.write('%e %e %e %e\n' %
                                    (training_chisq[i_pt]-chisq_min,
-                                    fit_chisq[i_pt]))
+                                    fit_chisq[i_pt],
+                                    training_r[i_pt],
+                                    training_chisq[i_pt]-chisq_min-fit_chisq[i_pt]))
 
         print('\niter %d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
               (iteration, max_mismatch, min_failure, n_offenders, n_non_offenders,
