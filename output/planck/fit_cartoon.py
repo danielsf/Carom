@@ -97,11 +97,9 @@ if __name__ == "__main__":
     assert set_training == n_training
     assert set_validation == n_validation
 
-    n_matrix = order*dim
-
-    #i_matrix = i_dim*order + i_order
-
     n_iteration = 300
+
+    log_training_r = np.log(training_r+1.0)
 
     delta_chisq=47.41
     chisq_min = min(training_chisq.min(), validation_chisq.min())
@@ -117,6 +115,10 @@ if __name__ == "__main__":
                 i_power = i_pt*dim*order+i_dim*order+i_order
                 pt_powers[i_power] = training_pts[i_pt][i_dim]**(i_order+1)
 
+
+    n_matrix = order*dim+1
+    #i_matrix = i_dim*order + i_order
+
     min_failure = None
     for iteration in range(n_iteration):
 
@@ -127,11 +129,11 @@ if __name__ == "__main__":
         t_start = time.time()
 
         matrix_ct = 0
-        for i_matrix_1 in range(n_matrix):
+        for i_matrix_1 in range(n_matrix-1):
             zz1 = pt_powers[i_matrix_1:len(pt_powers):dim*order]
             mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
             bb[i_matrix_1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
-            for i_matrix_2 in range(i_matrix_1+1, n_matrix):
+            for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
                 zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
                 mu = (zz1*zz2/sigma_sq).sum()
                 mm[i_matrix_1][i_matrix_2] = mu
@@ -141,6 +143,15 @@ if __name__ == "__main__":
                     duration = time.time()-t_start
                     predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
                     print(matrix_ct,duration,predicted/3600.0)
+
+        zz1 = log_training_r
+        bb[n_matrix-1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
+        mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
+        for i_matrix_2 in range(n_matrix-1):
+            zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
+            mu = (zz1*zz2/sigma_sq).sum()
+            mm[n_matrix-1][i_matrix_2] = mu
+            mm[i_matrix_2][n_matrix-1] = mu
 
         coeffs = np.linalg.solve(mm, bb)
         assert len(coeffs) == n_matrix
@@ -153,6 +164,7 @@ if __name__ == "__main__":
                     i_matrix = i_dim*order+i_order
                     mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
                     vv += mu
+            vv += coeffs[n_matrix-1]*log_training_r[i_pt]
             fit_chisq[i_pt] = vv
 
         chi_wrong = np.abs(training_chisq-chisq_min-fit_chisq)
