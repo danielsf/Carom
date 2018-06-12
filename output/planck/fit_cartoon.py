@@ -81,15 +81,12 @@ if __name__ == "__main__":
 
         if (set_validation==n_validation or
             roll[i_line]>ratio and set_training<n_training):
-
-            for ii in range(dim):
-                training_pts[set_training][ii] = projected[ii]
+            training_pts[set_training] = projected
             training_chisq[set_training] = params[dim]
             training_r[set_training] = rr
             set_training+=1
         else:
-             for ii in range(dim):
-                 validation_pts[set_validation][ii] = projected[ii]
+             validation_pts[set_validation] = projected
              validation_chisq[set_validation] = params[dim]
              validation_r[set_validation] = rr
              set_validation += 1
