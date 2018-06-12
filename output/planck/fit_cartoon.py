@@ -158,22 +158,45 @@ if __name__ == "__main__":
                     vv += mu
             fit_chisq[i_pt] = vv
 
-        mismatch_rating = np.zeros(n_training, dtype=float)
-        n_offenders = 0
-        for i_pt in range(n_training):
-            if (fit_chisq[i_pt]<delta_chisq and
-                (training_chisq[i_pt]-chisq_min)>delta_chisq):
+        chi_wrong = np.abs(training_chisq-chisq_min-fit_chisq)
 
-                mismatch_rating[i_pt] = (training_chisq[i_pt]-fit_chisq[i_pt]-chisq_min)
-                n_offenders += 1
-            elif (fit_chisq[i_pt]>delta_chisq and
-                  (training_chisq[i_pt]-chisq_min)<delta_chisq):
+        # fine
+        quad_1 = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
+                                         fit_chisq>delta_chisq))
 
-                mismatch_rating[i_pt] = fit_chisq[i_pt]-training_chisq[i_pt]+chisq_min
-                n_offenders += 1
+        quad_1_1 = np.where(np.logical_and(training_chisq-chisq_min>1.5*delta_chisq,
+                                           fit_chisq>1.5*delta_chisq))
 
-        max_mismatch = mismatch_rating.max()
-        inside = np.where(training_chisq[i_pt]-chisq_min<delta_chisq)
+        # bad
+        quad_2 = np.where(np.logical_and(training_chisq-chisq_min<delta_chisq,
+                                         fit_chisq>delta_chisq))
+
+        # fine
+        quad_3 = np.where(np.logical_and(training_chisq-chisq_min<delta_chisq,
+                                         fit_chisq<delta_chisq))
+
+        # bad
+        quad_4 = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
+                                         fit_chisq<delta_chisq))
+
+        n_offenders = len(quad_4[0])+len(quad_2[0])
+        n_non_offenders = len(quad_1[0])+len(quad_3[0])
+        max_mismatch = max(chi_wrong[quad_4].max(), chi_wrong[quad_2].max())
+
+        sigma_sq[quad_3] += 2.0
+
+        sigma_sq[quad_1] += 2.0
+        sigma_sq[quad_1_1] += 2.0
+
+        max_val = max(chi_wrong[quad_2].max(), chi_wrong[quad_4].max())
+        #max_val = chi_wrong[quad_2].max()
+        sigma_sq[quad_2] += 1.0-chi_wrong[quad_2]/max_val
+
+        #max_val = chi_wrong[quad_4].max()
+        sigma_sq[quad_4] += 1.0-chi_wrong[quad_4]/max_val
+
+        assert sigma_sq.min()>0.99
+
         if min_failure is None or max_mismatch<min_failure:
             min_failure = max_mismatch
             best_coeffs = coeffs
@@ -187,15 +210,8 @@ if __name__ == "__main__":
                                    (training_chisq[i_pt]-chisq_min,
                                     fit_chisq[i_pt]))
 
-        assert mismatch_rating.min()>-1.0e10
-        non_offenders = np.where(mismatch_rating<1.0e-10)
-        add_val = np.where(mismatch_rating<1.0e-10, 3.0,
-                           1.0-mismatch_rating/max_mismatch)
-        sigma_sq += add_val
-        assert sigma_sq.min()>0.99
-
         print('\niter %d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
-              (iteration, max_mismatch, min_failure, n_offenders, len(non_offenders[0]),
+              (iteration, max_mismatch, min_failure, n_offenders, n_non_offenders,
                sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
 
         print('')
