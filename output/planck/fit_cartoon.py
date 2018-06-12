@@ -185,10 +185,7 @@ if __name__ == "__main__":
 
         sigma_sq[quad_3] += 2.0
 
-        wrong_ratio = chi_wrong[quad_1]/(training_chisq[quad_1]-chisq_min)
-        max_val = wrong_ratio.max()
-        add_val = 4.0 - 2.0*(1.0-wrong_ratio/max_val)
-        sigma_sq[quad_1] += 2.0 #add_val
+        sigma_sq[quad_1] += 2.0
         sigma_sq[quad_1_1] += 2.0
 
         max_val = max(chi_wrong[quad_2].max(), chi_wrong[quad_4].max())
