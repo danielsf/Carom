@@ -157,15 +157,9 @@ if __name__ == "__main__":
         assert len(coeffs) == n_matrix
 
         fit_chisq = np.zeros(n_training, dtype=float)
-        for i_pt, pt in enumerate(training_pts):
-            vv = 0.0
-            for i_dim in range(dim):
-                for i_order in range(order):
-                    i_matrix = i_dim*order+i_order
-                    mu = coeffs[i_matrix]*pt[i_dim]**(i_order+1)
-                    vv += mu
-            vv += coeffs[n_matrix-1]*log_training_r[i_pt]
-            fit_chisq[i_pt] = vv
+        for i_matrix in range(n_matrix-1):
+            fit_chisq += coeffs[i_matrix]*pt_powers[i_matrix:len(pt_powers):dim*order]
+        fit_chisq+=coeffs[n_matrix-1]*log_training_r
 
         chi_wrong = np.abs(training_chisq-chisq_min-fit_chisq)
 
