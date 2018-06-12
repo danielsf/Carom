@@ -183,6 +183,10 @@ if __name__ == "__main__":
         quad_4 = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
                                          fit_chisq<delta_chisq))
 
+        quad_4_meh = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
+                              np.logical_and(fit_chisq<delta_chisq,
+                                             chi_wrong<0.5*delta_chisq)))
+
         n_offenders = len(quad_4[0])+len(quad_2[0])
         n_non_offenders = len(quad_1[0])+len(quad_3[0])
         max_mismatch = max(chi_wrong[quad_4].max(), chi_wrong[quad_2].max())
@@ -198,7 +202,7 @@ if __name__ == "__main__":
         sigma_sq[quad_2] += 1.0-chi_wrong[quad_2]/max_val
 
         #max_val = chi_wrong[quad_4].max()
-        sigma_sq[quad_4] += 1.0-chi_wrong[quad_4]/max_val
+        sigma_sq[quad_4_meh] += 1.0-chi_wrong[quad_4_meh]/max_val
 
         assert sigma_sq.min()>0.99
 
