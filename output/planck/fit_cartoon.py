@@ -175,6 +175,10 @@ if __name__ == "__main__":
         quad_3 = np.where(np.logical_and(training_chisq-chisq_min<delta_chisq,
                                          fit_chisq<delta_chisq))
 
+        quad_3_1 = np.where(np.logical_and(training_chisq-chisq_min<0.5*delta_chisq,
+                                           0.5*fit_chisq<delta_chisq))
+
+
         # bad
         quad_4 = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
                                          fit_chisq<delta_chisq))
@@ -184,6 +188,7 @@ if __name__ == "__main__":
         max_mismatch = max(chi_wrong[quad_4].max(), chi_wrong[quad_2].max())
 
         sigma_sq[quad_3] += 2.0
+        sigma_sq[quad_3_1] += 1.0
 
         sigma_sq[quad_1] += 2.0
         sigma_sq[quad_1_1] += 2.0
