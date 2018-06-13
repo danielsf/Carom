@@ -32,7 +32,7 @@ class CartoonFitter(object):
         with open(data_file, 'r') as in_file:
             data_lines = in_file.readlines()
 
-        #data_lines = data_lines[:100000]
+        #data_lines = data_lines[:1000000]
 
         self.chisq_min = None
         for line in data_lines:
@@ -98,6 +98,105 @@ class CartoonFitter(object):
         assert set_training == self.n_training
         assert set_validation == self.n_validation
 
+        self.pt_powers = np.zeros(self.n_training*self.dim*self.order, dtype=float)
+        # i_power = i_pt*dim*order+i_dim*order+i_order
+        # i_power = i_pt*dim*order+i_matrix
+        print('made pt_powers')
+        for i_pt in range(self.n_training):
+            for i_dim in range(self.dim):
+                for i_order in range(self.order):
+                    i_power = i_pt*self.dim*self.order+i_dim*self.order+i_order
+                    self.pt_powers[i_power] = self.training_pts[i_pt][i_dim]**(i_order+1)
+
+        self.log_training_r = np.log(self.training_r+1.0)
+        self.delta_chisq=47.41
+
+    def fit(self, sigma_sq):
+
+        n_matrix = self.order*self.dim+1
+        #i_matrix = i_dim*order + i_order
+
+        mm = np.zeros((n_matrix, n_matrix), dtype=float)
+        bb = np.zeros(n_matrix, dtype=float)
+
+        print('starting matrix loop')
+        t_start = time.time()
+
+        matrix_ct = 0
+        for i_matrix_1 in range(n_matrix-1):
+            zz1 = self.pt_powers[i_matrix_1:len(self.pt_powers):self.dim*self.order]
+            mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
+            bb[i_matrix_1] = ((self.training_chisq-self.chisq_min)*zz1/sigma_sq).sum()
+            for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
+                zz2 = self.pt_powers[i_matrix_2:len(self.pt_powers):self.dim*self.order]
+                mu = (zz1*zz2/sigma_sq).sum()
+                mm[i_matrix_1][i_matrix_2] = mu
+                mm[i_matrix_2][i_matrix_1] = mu
+                matrix_ct += 1
+                if (matrix_ct+1)%10000 == 0:
+                    duration = time.time()-t_start
+                    predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
+                    print(matrix_ct,duration,predicted/3600.0)
+
+        zz1 = self.log_training_r
+        bb[n_matrix-1] = ((self.training_chisq-self.chisq_min)*zz1/sigma_sq).sum()
+        mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
+        for i_matrix_2 in range(n_matrix-1):
+            zz2 = self.pt_powers[i_matrix_2:len(self.pt_powers):self.dim*self.order]
+            mu = (zz1*zz2/sigma_sq).sum()
+            mm[n_matrix-1][i_matrix_2] = mu
+            mm[i_matrix_2][n_matrix-1] = mu
+
+        coeffs = np.linalg.solve(mm, bb)
+        assert len(coeffs) == n_matrix
+
+        fit_chisq = np.zeros(self.n_training, dtype=float)
+        for i_matrix in range(n_matrix-1):
+            fit_chisq += coeffs[i_matrix]*self.pt_powers[i_matrix:len(self.pt_powers):self.dim*self.order]
+        fit_chisq+=coeffs[n_matrix-1]*self.log_training_r
+
+        chi_wrong = np.abs(self.training_chisq-self.chisq_min-fit_chisq)
+
+        # fine
+        quad_1 = np.where(np.logical_and(self.training_chisq-self.chisq_min>self.delta_chisq,
+                                         fit_chisq>self.delta_chisq))
+
+        quad_1_1 = np.where(np.logical_and(self.training_chisq-self.chisq_min>1.5*self.delta_chisq,
+                                           fit_chisq>1.5*self.delta_chisq))
+
+        # bad
+        quad_2 = np.where(np.logical_and(self.training_chisq-self.chisq_min<self.delta_chisq,
+                                         fit_chisq>self.delta_chisq))
+
+        # fine
+        quad_3 = np.where(np.logical_and(self.training_chisq-self.chisq_min<self.delta_chisq,
+                                         fit_chisq<self.delta_chisq))
+
+        quad_3_1 = np.where(np.logical_and(self.training_chisq-self.chisq_min<0.5*self.delta_chisq,
+                                           0.5*fit_chisq<self.delta_chisq))
+
+
+        # bad
+        quad_4 = np.where(np.logical_and(self.training_chisq-self.chisq_min>self.delta_chisq,
+                                         fit_chisq<self.delta_chisq))
+
+        quad_4_1 = np.where(np.logical_and(self.training_chisq-self.chisq_min>self.delta_chisq,
+                            np.logical_and(fit_chisq<self.delta_chisq,
+                                           chi_wrong<0.5*self.delta_chisq)))
+
+
+        output = {}
+        output['coeffs'] = coeffs
+        output['chi_wrong'] = chi_wrong
+        output['quad_1'] = quad_1
+        output['quad_2'] = quad_2
+        output['quad_3'] = quad_3
+        output['quad_4'] = quad_4
+        output['quad_1_1'] = quad_1_1
+        output['quad_3_1'] = quad_3_1
+        output['quad_4_1'] = quad_4_1
+        output['fit_chisq'] = fit_chisq
+        return output
 
 
 if __name__ == "__main__":
@@ -110,26 +209,8 @@ if __name__ == "__main__":
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
     fitter.read_data(data_file, 10000)
 
-    exit()
-
     n_iteration = 300
-
-    log_training_r = np.log(training_r+1.0)
-
-    delta_chisq=47.41
-    chisq_min = min(training_chisq.min(), validation_chisq.min())
-    sigma_sq = np.ones(len(training_chisq), dtype=float)
-
-    pt_powers = np.zeros(n_training*dim*order, dtype=float)
-    # i_power = i_pt*dim*order+i_dim*order+i_order
-    # i_power = i_pt*dim*order+i_matrix
-    print('made pt_powers')
-    for i_pt in range(n_training):
-        for i_dim in range(dim):
-            for i_order in range(order):
-                i_power = i_pt*dim*order+i_dim*order+i_order
-                pt_powers[i_power] = training_pts[i_pt][i_dim]**(i_order+1)
-
+    sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
 
     n_matrix = order*dim+1
     #i_matrix = i_dim*order + i_order
@@ -137,73 +218,18 @@ if __name__ == "__main__":
     min_failure = None
     for iteration in range(n_iteration):
 
-        mm = np.zeros((n_matrix, n_matrix), dtype=float)
-        bb = np.zeros(n_matrix, dtype=float)
+        results = fitter.fit(sigma_sq)
 
-        print('starting matrix loop %e' % training_chisq.min())
-        t_start = time.time()
-
-        matrix_ct = 0
-        for i_matrix_1 in range(n_matrix-1):
-            zz1 = pt_powers[i_matrix_1:len(pt_powers):dim*order]
-            mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
-            bb[i_matrix_1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
-            for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
-                zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
-                mu = (zz1*zz2/sigma_sq).sum()
-                mm[i_matrix_1][i_matrix_2] = mu
-                mm[i_matrix_2][i_matrix_1] = mu
-                matrix_ct += 1
-                if (matrix_ct+1)%10000 == 0:
-                    duration = time.time()-t_start
-                    predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
-                    print(matrix_ct,duration,predicted/3600.0)
-
-        zz1 = log_training_r
-        bb[n_matrix-1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
-        mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
-        for i_matrix_2 in range(n_matrix-1):
-            zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
-            mu = (zz1*zz2/sigma_sq).sum()
-            mm[n_matrix-1][i_matrix_2] = mu
-            mm[i_matrix_2][n_matrix-1] = mu
-
-        coeffs = np.linalg.solve(mm, bb)
-        assert len(coeffs) == n_matrix
-
-        fit_chisq = np.zeros(n_training, dtype=float)
-        for i_matrix in range(n_matrix-1):
-            fit_chisq += coeffs[i_matrix]*pt_powers[i_matrix:len(pt_powers):dim*order]
-        fit_chisq+=coeffs[n_matrix-1]*log_training_r
-
-        chi_wrong = np.abs(training_chisq-chisq_min-fit_chisq)
-
-        # fine
-        quad_1 = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
-                                         fit_chisq>delta_chisq))
-
-        quad_1_1 = np.where(np.logical_and(training_chisq-chisq_min>1.5*delta_chisq,
-                                           fit_chisq>1.5*delta_chisq))
-
-        # bad
-        quad_2 = np.where(np.logical_and(training_chisq-chisq_min<delta_chisq,
-                                         fit_chisq>delta_chisq))
-
-        # fine
-        quad_3 = np.where(np.logical_and(training_chisq-chisq_min<delta_chisq,
-                                         fit_chisq<delta_chisq))
-
-        quad_3_1 = np.where(np.logical_and(training_chisq-chisq_min<0.5*delta_chisq,
-                                           0.5*fit_chisq<delta_chisq))
-
-
-        # bad
-        quad_4 = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
-                                         fit_chisq<delta_chisq))
-
-        quad_4_meh = np.where(np.logical_and(training_chisq-chisq_min>delta_chisq,
-                              np.logical_and(fit_chisq<delta_chisq,
-                                             chi_wrong<0.5*delta_chisq)))
+        chi_wrong = results['chi_wrong']
+        coeffs = results['coeffs']
+        quad_1 = results['quad_1']
+        quad_2 = results['quad_2']
+        quad_3 = results['quad_3']
+        quad_4 = results['quad_4']
+        quad_3_1 = results['quad_3_1']
+        quad_1_1 = results['quad_1_1']
+        quad_4_meh = results['quad_4_1']
+        fit_chisq = results['fit_chisq']
 
         n_offenders = len(quad_4[0])+len(quad_2[0])
         n_non_offenders = len(quad_1[0])+len(quad_3[0])
@@ -232,12 +258,12 @@ if __name__ == "__main__":
                 for cc in best_coeffs:
                     out_file.write('%e\n' % cc)
             with open('fit_chisq.txt', 'w') as out_file:
-                for i_pt in range(n_training):
+                for i_pt in range(fitter.n_training):
                     out_file.write('%e %e %e %e\n' %
-                                   (training_chisq[i_pt]-chisq_min,
+                                   (fitter.training_chisq[i_pt]-fitter.chisq_min,
                                     fit_chisq[i_pt],
-                                    training_r[i_pt],
-                                    training_chisq[i_pt]-chisq_min-fit_chisq[i_pt]))
+                                    fitter.training_r[i_pt],
+                                    fitter.training_chisq[i_pt]-fitter.chisq_min-fit_chisq[i_pt]))
 
         print('\niter %d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
               (iteration, max_mismatch, min_failure, n_offenders, n_non_offenders,
