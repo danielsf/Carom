@@ -1,6 +1,43 @@
 import numpy as np
 import time
 import gc
+import multiprocessing as mproc
+
+def make_matrix(i_proc, pt_powers, dim, order,
+                training_chisq, chisq_min, sigma_sq,
+                log_training_r, out_dict):
+    t_start = time.time()
+    n_matrix = order*dim+1
+    mm = np.zeros((n_matrix, n_matrix), dtype=float)
+    bb = np.zeros(n_matrix, dtype=float)
+    matrix_ct = 0
+    for i_matrix_1 in range(n_matrix-1):
+        zz1 = pt_powers[i_matrix_1:len(pt_powers):dim*order]
+        mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
+        bb[i_matrix_1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
+        for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
+            zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
+            mu = (zz1*zz2/sigma_sq).sum()
+            mm[i_matrix_1][i_matrix_2] = mu
+            mm[i_matrix_2][i_matrix_1] = mu
+            matrix_ct += 1
+            if (matrix_ct+1)%10000 == 0:
+                duration = time.time()-t_start
+                predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
+                print(matrix_ct,duration,predicted/3600.0)
+
+    zz1 = log_training_r
+    bb[n_matrix-1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
+    mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
+    for i_matrix_2 in range(n_matrix-1):
+        zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
+        mu = (zz1*zz2/sigma_sq).sum()
+        mm[n_matrix-1][i_matrix_2] = mu
+        mm[i_matrix_2][n_matrix-1] = mu
+
+    out_dict['m%d' % i_proc]= mm
+    out_dict['b%d' % i_proc] = bb
+    return None
 
 
 class CartoonFitter(object):
@@ -27,7 +64,7 @@ class CartoonFitter(object):
                 self.radii[i_basis] = float(params[-1])
                 assert len(params) == self.dim+1
 
-    def read_data(self, data_file, n_training):
+    def read_data(self, data_file, n_training, n_procs):
 
         with open(data_file, 'r') as in_file:
             data_lines = in_file.readlines()
@@ -102,15 +139,33 @@ class CartoonFitter(object):
         assert set_training == self.n_training
         assert set_validation == self.n_validation
 
-        self.pt_powers = np.zeros(self.n_training*self.dim*self.order, dtype=float)
+        self.n_procs = n_procs
+        self.pt_powers = {}
+        self.pt_dexes = {}
+        n_pts = [self.n_training//n_procs]*n_procs
+        if sum(n_pts)<self.n_training:
+            n_pts[-1] += self.n_training - sum(n_pts)
+
         # i_power = i_pt*dim*order+i_dim*order+i_order
         # i_power = i_pt*dim*order+i_matrix
+
+        i_start = 0
+        pt_sum = 0
+        for i_proc in range(n_procs):
+            i_end = i_start + n_pts[i_proc]
+            self.pt_dexes[i_proc] = (i_start, i_end)
+            local_pt_powers = np.zeros((i_end-i_start)*self.dim*self.order, dtype=float)
+            for i_pt in range(i_start, i_end):
+                pt_sum += 1
+                for i_dim in range(self.dim):
+                    for i_order in range(self.order):
+                        i_power = (i_pt-i_start)*self.dim*self.order+i_dim*self.order+i_order
+                        local_pt_powers[i_power] = self.training_pts[i_pt][i_dim]**(i_order+1)
+            self.pt_powers[i_proc] = local_pt_powers
+            i_start = i_end
+
+        assert pt_sum == self.n_training
         print('made pt_powers')
-        for i_pt in range(self.n_training):
-            for i_dim in range(self.dim):
-                for i_order in range(self.order):
-                    i_power = i_pt*self.dim*self.order+i_dim*self.order+i_order
-                    self.pt_powers[i_power] = self.training_pts[i_pt][i_dim]**(i_order+1)
 
         self.log_training_r = np.log(self.training_r+1.0)
         self.delta_chisq=47.41
@@ -120,43 +175,53 @@ class CartoonFitter(object):
         n_matrix = self.order*self.dim+1
         #i_matrix = i_dim*order + i_order
 
-        mm = np.zeros((n_matrix, n_matrix), dtype=float)
-        bb = np.zeros(n_matrix, dtype=float)
+        #def make_matrix(i_proc, pt_powers, n_matrix, dim, order,
+        #        training_chisq, chisq_min, sigma_sq, out_dict):
 
         print('starting matrix loop')
-        t_start = time.time()
+        mm_dict = {}
+        if self.n_procs == 1:
+            make_matrix(0, self.pt_powers[0], self.dim, self.order,
+                        self.training_chisq, self.chisq_min, sigma_sq,
+                        self.log_training_r, mm_dict)
 
-        matrix_ct = 0
-        for i_matrix_1 in range(n_matrix-1):
-            zz1 = self.pt_powers[i_matrix_1:len(self.pt_powers):self.dim*self.order]
-            mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
-            bb[i_matrix_1] = ((self.training_chisq-self.chisq_min)*zz1/sigma_sq).sum()
-            for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
-                zz2 = self.pt_powers[i_matrix_2:len(self.pt_powers):self.dim*self.order]
-                mu = (zz1*zz2/sigma_sq).sum()
-                mm[i_matrix_1][i_matrix_2] = mu
-                mm[i_matrix_2][i_matrix_1] = mu
-                matrix_ct += 1
-                if (matrix_ct+1)%10000 == 0:
-                    duration = time.time()-t_start
-                    predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
-                    print(matrix_ct,duration,predicted/3600.0)
+            mm = mm_dict['m0']
+            bb = mm_dict['b0']
+        else:
+            p_list = []
+            mm_dict = mproc.Manager().dict()
+            for i_proc in range(self.n_procs):
+                i_start = self.pt_dexes[i_proc][0]
+                i_end = self.pt_dexes[i_proc][1]
+                p = mproc.Process(target=make_matrix,
+                                  args=(i_proc, self.pt_powers[i_proc],
+                                        self.dim, self.order,
+                                        self.training_chisq[i_start:i_end],
+                                        self.chisq_min,
+                                        sigma_sq[i_start:i_end],
+                                        self.log_training_r[i_start:i_end],
+                                        mm_dict))
+                p.start()
+                p_list.append(p)
+            for p in p_list:
+                p.join()
 
-        zz1 = self.log_training_r
-        bb[n_matrix-1] = ((self.training_chisq-self.chisq_min)*zz1/sigma_sq).sum()
-        mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
-        for i_matrix_2 in range(n_matrix-1):
-            zz2 = self.pt_powers[i_matrix_2:len(self.pt_powers):self.dim*self.order]
-            mu = (zz1*zz2/sigma_sq).sum()
-            mm[n_matrix-1][i_matrix_2] = mu
-            mm[i_matrix_2][n_matrix-1] = mu
+            mm = mm_dict['m0']
+            bb = mm_dict['b0']
+            for i_proc in range(1,self.n_procs):
+                mm += mm_dict['m%d' % i_proc]
+                bb += mm_dict['b%d' % i_proc]
 
         coeffs = np.linalg.solve(mm, bb)
         assert len(coeffs) == n_matrix
 
         fit_chisq = np.zeros(self.n_training, dtype=float)
-        for i_matrix in range(n_matrix-1):
-            fit_chisq += coeffs[i_matrix]*self.pt_powers[i_matrix:len(self.pt_powers):self.dim*self.order]
+        for i_proc in range(self.n_procs):
+            i_start = self.pt_dexes[i_proc][0]
+            i_end = self.pt_dexes[i_proc][1]
+            pt_powers = self.pt_powers[i_proc]
+            for i_matrix in range(n_matrix-1):
+                fit_chisq[i_start:i_end] += coeffs[i_matrix]*pt_powers[i_matrix:len(pt_powers):self.dim*self.order]
         fit_chisq+=coeffs[n_matrix-1]*self.log_training_r
 
         chi_wrong = np.abs(self.training_chisq-self.chisq_min-fit_chisq)
@@ -211,7 +276,8 @@ if __name__ == "__main__":
     basis_file = 'ellipse_bases.txt'
     fitter.read_bases(basis_file)
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
-    fitter.read_data(data_file, 10000)
+    #fitter.read_data(data_file, 0.66)
+    fitter.read_data(data_file, 10000, 2)
 
     n_iteration = 300
     sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
