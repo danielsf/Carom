@@ -51,7 +51,7 @@ class CartoonFitter(object):
         else:
             self.n_training = int(np.round(n_training*n_data))
 
-        self.n_validation = n_data-n_training
+        self.n_validation = n_data-self.n_training
 
         ratio = 1.0-self.n_training/n_data
 
