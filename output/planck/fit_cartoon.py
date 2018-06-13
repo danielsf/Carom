@@ -172,6 +172,8 @@ class CartoonFitter(object):
         self.log_training_r = np.log(self.training_r+1.0)
         self.delta_chisq=47.41
         self.best_mismatch = 2.0e30
+        self.banked_coeffs = []
+        self.banked_fit = np.zeros(self.n_training, dtype=float)
 
     def fit(self, sigma_sq):
 
@@ -185,7 +187,8 @@ class CartoonFitter(object):
         mm_dict = {}
         if self.n_procs == 1:
             make_matrix(0, self.pt_powers[0], self.dim, self.order,
-                        self.training_chisq-self.chisq_min, sigma_sq,
+                        self.training_chisq-self.chisq_min-self.banked_fit,
+                        sigma_sq,
                         self.log_training_r, mm_dict)
 
             mm = mm_dict['m0']
@@ -199,7 +202,7 @@ class CartoonFitter(object):
                 p = mproc.Process(target=make_matrix,
                                   args=(i_proc, self.pt_powers[i_proc],
                                         self.dim, self.order,
-                                        self.training_chisq[i_start:i_end]-self.chisq_min,
+                                        self.training_chisq[i_start:i_end]-self.chisq_min-self.banked_fit,
                                         sigma_sq[i_start:i_end],
                                         self.log_training_r[i_start:i_end],
                                         mm_dict))
@@ -218,6 +221,7 @@ class CartoonFitter(object):
         assert len(coeffs) == n_matrix
 
         fit_chisq = np.zeros(self.n_training, dtype=float)
+        fit_chisq += self.banked_fit
         for i_proc in range(self.n_procs):
             i_start = self.pt_dexes[i_proc][0]
             i_end = self.pt_dexes[i_proc][1]
