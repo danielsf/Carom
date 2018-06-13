@@ -235,21 +235,6 @@ if __name__ == "__main__":
         n_non_offenders = len(quad_1[0])+len(quad_3[0])
         max_mismatch = max(chi_wrong[quad_4].max(), chi_wrong[quad_2].max())
 
-        sigma_sq[quad_3] += 2.0
-        sigma_sq[quad_3_1] += 1.0
-
-        sigma_sq[quad_1] += 2.0
-        sigma_sq[quad_1_1] += 2.0
-
-        max_val = max(chi_wrong[quad_2].max(), chi_wrong[quad_4].max())
-        #max_val = chi_wrong[quad_2].max()
-        sigma_sq[quad_2] += 1.0-chi_wrong[quad_2]/max_val
-
-        #max_val = chi_wrong[quad_4].max()
-        sigma_sq[quad_4_meh] += 1.0-chi_wrong[quad_4_meh]/max_val
-
-        assert sigma_sq.min()>0.99
-
         if min_failure is None or max_mismatch<min_failure:
             min_failure = max_mismatch
             best_coeffs = coeffs
@@ -270,6 +255,22 @@ if __name__ == "__main__":
                sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
 
         print('')
+
+
+        sigma_sq[quad_3] += 2.0
+        sigma_sq[quad_3_1] += 1.0
+
+        sigma_sq[quad_1] += 2.0
+        sigma_sq[quad_1_1] += 2.0
+
+        max_val = max(chi_wrong[quad_2].max(), chi_wrong[quad_4].max())
+        #max_val = chi_wrong[quad_2].max()
+        sigma_sq[quad_2] += 1.0-chi_wrong[quad_2]/max_val
+
+        #max_val = chi_wrong[quad_4].max()
+        sigma_sq[quad_4_meh] += 1.0-chi_wrong[quad_4_meh]/max_val
+
+        assert sigma_sq.min()>0.99
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
