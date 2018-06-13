@@ -46,7 +46,11 @@ class CartoonFitter(object):
         print('got chisq_min %e' % self.chisq_min)
 
         n_data = len(data_lines)-1
-        self.n_training = n_training
+        if n_training>1:
+            self.n_training = n_training
+        else:
+            self.n_training = int(np.round(n_training*data_lines))
+
         self.n_validation = n_data-n_training
 
         ratio = 1.0-self.n_training/n_data
