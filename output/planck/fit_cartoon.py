@@ -5,7 +5,7 @@ import multiprocessing as mproc
 import argparse
 
 def make_matrix(i_proc, pt_powers, dim, order,
-                training_chisq, chisq_min, sigma_sq,
+                training_chisq, sigma_sq,
                 log_training_r, out_dict):
     t_start = time.time()
     n_matrix = order*dim+1
@@ -15,7 +15,7 @@ def make_matrix(i_proc, pt_powers, dim, order,
     for i_matrix_1 in range(n_matrix-1):
         zz1 = pt_powers[i_matrix_1:len(pt_powers):dim*order]
         mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
-        bb[i_matrix_1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
+        bb[i_matrix_1] = (training_chisq*zz1/sigma_sq).sum()
         for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
             zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
             mu = (zz1*zz2/sigma_sq).sum()
@@ -28,7 +28,7 @@ def make_matrix(i_proc, pt_powers, dim, order,
                 print(matrix_ct,duration,' sec ',predicted/60.0,' mins')
 
     zz1 = log_training_r
-    bb[n_matrix-1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
+    bb[n_matrix-1] = (training_chisq*zz1/sigma_sq).sum()
     mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
     for i_matrix_2 in range(n_matrix-1):
         zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
@@ -185,7 +185,7 @@ class CartoonFitter(object):
         mm_dict = {}
         if self.n_procs == 1:
             make_matrix(0, self.pt_powers[0], self.dim, self.order,
-                        self.training_chisq, self.chisq_min, sigma_sq,
+                        self.training_chisq-self.chisq_min, sigma_sq,
                         self.log_training_r, mm_dict)
 
             mm = mm_dict['m0']
@@ -199,8 +199,7 @@ class CartoonFitter(object):
                 p = mproc.Process(target=make_matrix,
                                   args=(i_proc, self.pt_powers[i_proc],
                                         self.dim, self.order,
-                                        self.training_chisq[i_start:i_end],
-                                        self.chisq_min,
+                                        self.training_chisq[i_start:i_end]-self.chisq_min,
                                         sigma_sq[i_start:i_end],
                                         self.log_training_r[i_start:i_end],
                                         mm_dict))
