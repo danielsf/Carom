@@ -2,6 +2,7 @@ import numpy as np
 import time
 import gc
 import multiprocessing as mproc
+import argparse
 
 def make_matrix(i_proc, pt_powers, dim, order,
                 training_chisq, chisq_min, sigma_sq,
@@ -270,14 +271,18 @@ class CartoonFitter(object):
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--nproc', type=int, default=1)
+    parser.add_argument('--ntrain', type=float, default=0.66)
+    args = parser.parse_args()
+
     order = 7
     dim = 33
     fitter = CartoonFitter(order,dim)
     basis_file = 'ellipse_bases.txt'
     fitter.read_bases(basis_file)
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
-    #fitter.read_data(data_file, 0.66)
-    fitter.read_data(data_file, 10000, 2)
+    fitter.read_data(data_file, args.ntrain, args.nproc)
 
     n_iteration = 300
     sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
