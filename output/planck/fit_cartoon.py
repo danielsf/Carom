@@ -24,7 +24,7 @@ def make_matrix(i_proc, pt_powers, dim, order,
             if (matrix_ct+1)%10000 == 0:
                 duration = time.time()-t_start
                 predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
-                print(matrix_ct,duration,predicted/3600.0)
+                print(matrix_ct,duration,' sec ',predicted/60.0,' mins')
 
     zz1 = log_training_r
     bb[n_matrix-1] = ((training_chisq-chisq_min)*zz1/sigma_sq).sum()
@@ -286,7 +286,11 @@ if __name__ == "__main__":
     #i_matrix = i_dim*order + i_order
 
     min_failure = None
+    t_iter_start = time.time()
     for iteration in range(n_iteration):
+        t_last_iter = time.time()-t_iter_start
+        print('\nlast iteration took %.2e min\n' % (t_last_iter/60.0))
+        t_iter_start = time.time()
 
         results = fitter.fit(sigma_sq)
 
