@@ -158,10 +158,11 @@ class CartoonFitter(object):
             local_pt_powers = np.zeros((i_end-i_start)*self.dim*self.order, dtype=float)
             for i_pt in range(i_start, i_end):
                 pt_sum += 1
-                for i_dim in range(self.dim):
-                    for i_order in range(self.order):
-                        i_power = (i_pt-i_start)*self.dim*self.order+i_dim*self.order+i_order
-                        local_pt_powers[i_power] = self.training_pts[i_pt][i_dim]**(i_order+1)
+                for i_order in range(self.order):
+                    #i_power = (i_pt-i_start)*self.dim*self.order+i_dim*self.order+i_order
+                    i_power_0 = (i_pt-i_start)*self.dim*self.order+i_order
+                    i_power_1 = (i_pt-i_start)*self.dim*self.order+self.dim*order+i_order
+                    local_pt_powers[i_power_0:i_power_1:order] = self.training_pts[i_pt]**(i_order+1)
             self.pt_powers[i_proc] = local_pt_powers
             i_start = i_end
 
