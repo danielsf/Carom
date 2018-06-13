@@ -49,7 +49,7 @@ class CartoonFitter(object):
         if n_training>1:
             self.n_training = n_training
         else:
-            self.n_training = int(np.round(n_training*data_lines))
+            self.n_training = int(np.round(n_training*n_data))
 
         self.n_validation = n_data-n_training
 
