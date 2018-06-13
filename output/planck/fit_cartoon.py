@@ -171,6 +171,7 @@ class CartoonFitter(object):
 
         self.log_training_r = np.log(self.training_r+1.0)
         self.delta_chisq=47.41
+        self.best_mismatch = 2.0e30
 
     def fit(self, sigma_sq):
 
@@ -255,6 +256,31 @@ class CartoonFitter(object):
                             np.logical_and(fit_chisq<self.delta_chisq,
                                            chi_wrong<0.5*self.delta_chisq)))
 
+        n_offenders = len(quad_4[0])+len(quad_2[0])
+        n_non_offenders = len(quad_1[0])+len(quad_3[0])
+        max_mismatch = max(chi_wrong[quad_4].max(), chi_wrong[quad_2].max())
+
+        if max_mismatch<self.best_mismatch:
+            self.best_mismatch = max_mismatch
+            self.best_coeffs = coeffs
+
+            with open('coeffs_test.txt', 'w') as out_file:
+                out_file.write('# max_mismatch %e n_offenders %d\n' % (max_mismatch, n_offenders))
+                for cc in self.best_coeffs:
+                    out_file.write('%e\n' % cc)
+            with open('fit_chisq.txt', 'w') as out_file:
+                for i_pt in range(fitter.n_training):
+                    out_file.write('%e %e %e %e\n' %
+                                   (self.training_chisq[i_pt]-self.chisq_min,
+                                    fit_chisq[i_pt],
+                                    self.training_r[i_pt],
+                                    self.training_chisq[i_pt]-self.chisq_min-fit_chisq[i_pt]))
+
+        print('\nmax_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
+              (max_mismatch, self.best_mismatch, n_offenders, n_non_offenders,
+               sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
+
+        print('')
 
         output = {}
         output['coeffs'] = coeffs
@@ -292,7 +318,6 @@ if __name__ == "__main__":
     n_matrix = order*dim+1
     #i_matrix = i_dim*order + i_order
 
-    min_failure = None
     t_iter_start = time.time()
     for iteration in range(args.n_iter):
         t_last_iter = time.time()-t_iter_start
@@ -311,33 +336,6 @@ if __name__ == "__main__":
         quad_1_1 = results['quad_1_1']
         quad_4_meh = results['quad_4_1']
         fit_chisq = results['fit_chisq']
-
-        n_offenders = len(quad_4[0])+len(quad_2[0])
-        n_non_offenders = len(quad_1[0])+len(quad_3[0])
-        max_mismatch = max(chi_wrong[quad_4].max(), chi_wrong[quad_2].max())
-
-        if min_failure is None or max_mismatch<min_failure:
-            min_failure = max_mismatch
-            best_coeffs = coeffs
-
-            with open('coeffs_test.txt', 'w') as out_file:
-                out_file.write('# iteration %d max_mismatch %e n_offenders %d\n' % (iteration, max_mismatch, n_offenders))
-                for cc in best_coeffs:
-                    out_file.write('%e\n' % cc)
-            with open('fit_chisq.txt', 'w') as out_file:
-                for i_pt in range(fitter.n_training):
-                    out_file.write('%e %e %e %e\n' %
-                                   (fitter.training_chisq[i_pt]-fitter.chisq_min,
-                                    fit_chisq[i_pt],
-                                    fitter.training_r[i_pt],
-                                    fitter.training_chisq[i_pt]-fitter.chisq_min-fit_chisq[i_pt]))
-
-        print('\niter %d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
-              (iteration, max_mismatch, min_failure, n_offenders, n_non_offenders,
-               sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
-
-        print('')
-
 
         sigma_sq[quad_3] += 2.0
         sigma_sq[quad_3_1] += 1.0
