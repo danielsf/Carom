@@ -320,6 +320,7 @@ if __name__ == "__main__":
             best_coeffs = coeffs
 
             with open('coeffs_test.txt', 'w') as out_file:
+                out_file.write('# max_mismatch %e n_offenders %d\n' % (max_mismatch, n_offenders))
                 for cc in best_coeffs:
                     out_file.write('%e\n' % cc)
             with open('fit_chisq.txt', 'w') as out_file:
