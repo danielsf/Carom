@@ -2,100 +2,115 @@ import numpy as np
 import time
 import gc
 
+
+class CartoonFitter(object):
+
+    def __init__(self, order, dim):
+        self.order = order
+        self.dim = dim
+
+    def read_bases(self, basis_file):
+        self.center = np.zeros(self.dim, dtype=float)
+        self.bases = np.zeros((self.dim,self.dim), dtype=float)
+        self.radii = np.zeros(self.dim, dtype=float)
+        with open(basis_file, 'r') as in_file:
+            center_line = in_file.readline()
+            params = center_line.strip().split()
+            for ii in range(self.dim):
+                mu = float(params[ii])
+                self.center[ii] = mu
+            for i_basis, line in enumerate(in_file):
+                params = line.strip().split()
+                for ii in range(self.dim):
+                    mu = float(params[ii])
+                    self.bases[i_basis][ii] = mu
+                self.radii[i_basis] = float(params[-1])
+                assert len(params) == self.dim+1
+
+    def read_data(self, data_file, n_training):
+
+        with open(data_file, 'r') as in_file:
+            data_lines = in_file.readlines()
+
+        #data_lines = data_lines[:100000]
+
+        self.chisq_min = None
+        for line in data_lines:
+            if line[0]== '#':
+                continue
+            params = line.strip().split()
+            if self.chisq_min is None or float(params[self.dim])<self.chisq_min:
+                self.chisq_min = float(params[self.dim])
+                self.center = np.array(params[:self.dim]).astype(float)
+
+        print('got chisq_min %e' % self.chisq_min)
+
+        n_data = len(data_lines)-1
+        self.n_training = n_training
+        self.n_validation = n_data-n_training
+
+        ratio = 1.0-self.n_training/n_data
+
+        self.training_pts = np.zeros((self.n_training, self.dim), dtype=float)
+        self.training_chisq = np.zeros(self.n_training, dtype=float)
+        self.training_r = np.zeros(self.n_training, dtype=float)
+        self.validation_pts = np.zeros((self.n_validation, self.dim), dtype=float)
+        self.validation_chisq = np.zeros(self.n_validation, dtype=float)
+        self.validation_r = np.zeros(self.n_validation, dtype=float)
+
+        rng = np.random.RandomState(553321984)
+        roll = rng.random_sample(n_data)
+
+        set_training = 0
+        set_validation = 0
+        projected = np.zeros(self.dim, dtype=float)
+
+        t_start = time.time()
+        for i_line, line in enumerate(data_lines[1:]):
+            if i_line>0 and i_line%10000==0:
+                duration = time.time()-t_start
+                predicted = len(data_lines)*duration/i_line
+                print(i_line,duration,predicted/60.0,' mins')
+            if line[0] == '#':
+                continue
+            params = np.array(line.strip().split()).astype(float)
+            pt = params[:dim]
+            for ii in range(dim):
+                projected[ii] = np.dot(self.bases[ii], pt-self.center)
+
+            rr = np.power(projected/self.radii,2).sum()
+
+            if (set_validation==self.n_validation or
+                roll[i_line]>ratio and set_training<self.n_training):
+                self.training_pts[set_training] = projected
+                self.training_chisq[set_training] = params[self.dim]
+                self.training_r[set_training] = rr
+                set_training+=1
+            else:
+                 self.validation_pts[set_validation] = projected
+                 self.validation_chisq[set_validation] = params[self.dim]
+                 self.validation_r[set_validation] = rr
+                 set_validation += 1
+
+        del data_lines
+        gc.collect()
+
+        assert set_training == self.n_training
+        assert set_validation == self.n_validation
+
+
+
 if __name__ == "__main__":
 
     order = 7
     dim = 33
-    center = np.zeros(dim, dtype=float)
-    bases = np.zeros((dim,dim), dtype=float)
-    radii = np.zeros(dim, dtype=float)
+    fitter = CartoonFitter(order,dim)
     basis_file = 'ellipse_bases.txt'
+    fitter.read_bases(basis_file)
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
-    with open(basis_file, 'r') as in_file:
-        center_line = in_file.readline()
-        params = center_line.strip().split()
-        for ii in range(dim):
-            mu = float(params[ii])
-            center[ii] = mu
-        for i_basis, line in enumerate(in_file):
-            params = line.strip().split()
-            for ii in range(dim):
-                mu = float(params[ii])
-                bases[i_basis][ii] = mu
-            radii[i_basis] = float(params[-1])
-            assert len(params) == dim+1
+    fitter.read_data(data_file, 10000)
 
-    with open(data_file, 'r') as in_file:
-        data_lines = in_file.readlines()
-
-    #data_lines = data_lines[:100000]
-
-    chisq_min = None
-    for line in data_lines:
-        if line[0]== '#':
-            continue
-        params = line.strip().split()
-        if chisq_min is None or float(params[dim])<chisq_min:
-            chisq_min = float(params[dim])
-            center = np.array(params[:dim]).astype(float)
-
-    print('got chisq_min %e' % chisq_min)
-
-    n_data = len(data_lines)-1
-    n_training = 2*n_data//3
-
-    n_training = 10000
-
-    n_validation = n_data-n_training
-
-    ratio = 1.0-n_training/n_data
-
-    training_pts = np.zeros((n_training, dim), dtype=float)
-    training_chisq = np.zeros(n_training, dtype=float)
-    training_r = np.zeros(n_training, dtype=float)
-    validation_pts = np.zeros((n_validation, dim), dtype=float)
-    validation_chisq = np.zeros(n_validation, dtype=float)
-    validation_r = np.zeros(n_validation, dtype=float)
-
-    rng = np.random.RandomState(553321984)
-    roll = rng.random_sample(n_data)
-
-    set_training = 0
-    set_validation = 0
-    projected = np.zeros(dim, dtype=float)
-
-    t_start = time.time()
-    for i_line, line in enumerate(data_lines[1:]):
-        if i_line>0 and i_line%10000==0:
-            duration = time.time()-t_start
-            predicted = len(data_lines)*duration/i_line
-            print(i_line,duration,predicted/60.0,' mins')
-        if line[0] == '#':
-            continue
-        params = np.array(line.strip().split()).astype(float)
-        pt = params[:dim]
-        for ii in range(dim):
-            projected[ii] = np.dot(bases[ii], pt-center)
-
-        rr = np.power(projected/radii,2).sum()
-
-        if (set_validation==n_validation or
-            roll[i_line]>ratio and set_training<n_training):
-            training_pts[set_training] = projected
-            training_chisq[set_training] = params[dim]
-            training_r[set_training] = rr
-            set_training+=1
-        else:
-             validation_pts[set_validation] = projected
-             validation_chisq[set_validation] = params[dim]
-             validation_r[set_validation] = rr
-             set_validation += 1
-
-    del data_lines
-    gc.collect()
-
-    assert set_training == n_training
-    assert set_validation == n_validation
+    exit()
 
     n_iteration = 300
 
