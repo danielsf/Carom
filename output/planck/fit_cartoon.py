@@ -84,7 +84,7 @@ class CartoonFitter(object):
 
         n_data = len(data_lines)-1
         if n_training>1:
-            self.n_training = n_training
+            self.n_training = int(n_training)
         else:
             self.n_training = int(np.round(n_training*n_data))
 
