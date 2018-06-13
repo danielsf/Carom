@@ -276,9 +276,10 @@ if __name__ == "__main__":
     parser.add_argument('--n_proc', type=int, default=1)
     parser.add_argument('--n_train', type=float, default=0.66)
     parser.add_argument('--n_iter', type=int, default=100)
+    parser.add_argument('--order', type=int, default=8)
     args = parser.parse_args()
 
-    order = 7
+    order = args.order
     dim = 33
     fitter = CartoonFitter(order,dim)
     basis_file = 'ellipse_bases.txt'
