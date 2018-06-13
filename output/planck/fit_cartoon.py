@@ -273,8 +273,9 @@ class CartoonFitter(object):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--nproc', type=int, default=1)
-    parser.add_argument('--ntrain', type=float, default=0.66)
+    parser.add_argument('--n_proc', type=int, default=1)
+    parser.add_argument('--n_train', type=float, default=0.66)
+    parser.add_argument('--n_iter', type=int, default=100)
     args = parser.parse_args()
 
     order = 7
@@ -283,9 +284,8 @@ if __name__ == "__main__":
     basis_file = 'ellipse_bases.txt'
     fitter.read_bases(basis_file)
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
-    fitter.read_data(data_file, args.ntrain, args.nproc)
+    fitter.read_data(data_file, args.n_train, args.n_proc)
 
-    n_iteration = 300
     sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
 
     n_matrix = order*dim+1
@@ -293,7 +293,7 @@ if __name__ == "__main__":
 
     min_failure = None
     t_iter_start = time.time()
-    for iteration in range(n_iteration):
+    for iteration in range(args.n_iter):
         t_last_iter = time.time()-t_iter_start
         print('\nlast iteration took %.2e min\n' % (t_last_iter/60.0))
         t_iter_start = time.time()
