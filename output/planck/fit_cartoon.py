@@ -174,6 +174,24 @@ class CartoonFitter(object):
         self.best_mismatch = 2.0e30
         self.banked_coeffs = []
         self.banked_fit = np.zeros(self.n_training, dtype=float)
+        self.best_has_moved = False
+
+    def bank(self):
+        if not self.best_has_moved:
+            return False
+
+        self.banked_coeffs.append(self.best_coeffs)
+        fit_chisq = np.zeros(self.n_training, dtype=float)
+        for i_proc in range(self.n_procs):
+            i_start = self.pt_dexes[i_proc][0]
+            i_end = self.pt_dexes[i_proc][1]
+            pt_powers = self.pt_powers[i_proc]
+            for i_matrix in range(n_matrix-1):
+                fit_chisq[i_start:i_end] += self.best_coeffs[i_matrix]*pt_powers[i_matrix:len(pt_powers):self.dim*self.order]
+        fit_chisq+=self.best_coeffs[n_matrix-1]*self.log_training_r
+        self.banked_fit += fit_chisq
+        self.best_has_moved = False
+        return True
 
     def fit(self, sigma_sq):
 
@@ -202,7 +220,7 @@ class CartoonFitter(object):
                 p = mproc.Process(target=make_matrix,
                                   args=(i_proc, self.pt_powers[i_proc],
                                         self.dim, self.order,
-                                        self.training_chisq[i_start:i_end]-self.chisq_min-self.banked_fit,
+                                        self.training_chisq[i_start:i_end]-self.chisq_min-self.banked_fit[i_start:i_end],
                                         sigma_sq[i_start:i_end],
                                         self.log_training_r[i_start:i_end],
                                         mm_dict))
@@ -266,11 +284,17 @@ class CartoonFitter(object):
         if max_mismatch<self.best_mismatch:
             self.best_mismatch = max_mismatch
             self.best_coeffs = coeffs
+            self.best_has_moved = True
 
             with open('coeffs_test.txt', 'w') as out_file:
+                n_banked = len(self.banked_coeffs)
                 out_file.write('# max_mismatch %e n_offenders %d\n' % (max_mismatch, n_offenders))
                 for cc in self.best_coeffs:
-                    out_file.write('%e\n' % cc)
+                    out_file.write('%e ' % cc)
+                    for i_bank in range(n_banked):
+                        for i_c in range(len(self.best_coeffs)):
+                            out_file.write('%e ' % self.banked_coeffs[i_bank][i_c])
+                    out_file.write('\n')
             with open('fit_chisq.txt', 'w') as out_file:
                 for i_pt in range(fitter.n_training):
                     out_file.write('%e %e %e %e\n' %
@@ -306,6 +330,7 @@ if __name__ == "__main__":
     parser.add_argument('--n_train', type=float, default=0.66)
     parser.add_argument('--n_iter', type=int, default=100)
     parser.add_argument('--order', type=int, default=8)
+    parser.add_argument('--bank_every', type=int, default=50)
     args = parser.parse_args()
 
     order = args.order
@@ -326,6 +351,11 @@ if __name__ == "__main__":
         t_last_iter = time.time()-t_iter_start
         print('\nlast iteration took %.2e min\n' % (t_last_iter/60.0))
         t_iter_start = time.time()
+
+        if iteration>0 and iteration%args.bank_every==0:
+            is_banked = fitter.bank()
+            if is_banked:
+                sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
 
         results = fitter.fit(sigma_sq)
 
