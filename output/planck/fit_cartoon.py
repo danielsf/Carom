@@ -310,6 +310,10 @@ if __name__ == "__main__":
     fitter.read_data(data_file, args.n_train, args.n_proc)
 
     sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
+    sigma_sq = np.abs(fitter.training_chisq-fitter.chisq_min-fitter.delta_chisq)
+    sigma_sq /= (0.1*fitter.delta_chisq)
+    sigma_sq += 1.0
+    sigma_sq = np.where(sigma_sq<10.0, sigma_sq, 10.0)
 
     #i_matrix = i_dim*order + i_order
 
