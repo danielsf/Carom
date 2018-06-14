@@ -5,18 +5,17 @@ import multiprocessing as mproc
 import argparse
 
 def make_matrix(i_proc, pt_powers, dim, order,
-                training_chisq, sigma_sq,
-                log_training_r, out_dict):
+                training_chisq, sigma_sq, out_dict):
     t_start = time.time()
-    n_matrix = order*dim+1
+    n_matrix = order*dim
     mm = np.zeros((n_matrix, n_matrix), dtype=float)
     bb = np.zeros(n_matrix, dtype=float)
     matrix_ct = 0
-    for i_matrix_1 in range(n_matrix-1):
+    for i_matrix_1 in range(n_matrix):
         zz1 = pt_powers[i_matrix_1:len(pt_powers):dim*order]
         mm[i_matrix_1][i_matrix_1] = (zz1**2/sigma_sq).sum()
         bb[i_matrix_1] = (training_chisq*zz1/sigma_sq).sum()
-        for i_matrix_2 in range(i_matrix_1+1, n_matrix-1):
+        for i_matrix_2 in range(i_matrix_1+1, n_matrix):
             zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
             mu = (zz1*zz2/sigma_sq).sum()
             mm[i_matrix_1][i_matrix_2] = mu
@@ -27,15 +26,6 @@ def make_matrix(i_proc, pt_powers, dim, order,
                 predicted = (0.5*n_matrix*(n_matrix-1))*duration/(matrix_ct+1)
                 print(matrix_ct,duration,' sec ',predicted/60.0,' mins')
 
-    zz1 = log_training_r
-    bb[n_matrix-1] = (training_chisq*zz1/sigma_sq).sum()
-    mm[n_matrix-1][n_matrix-1] = (zz1**2/sigma_sq).sum()
-    for i_matrix_2 in range(n_matrix-1):
-        zz2 = pt_powers[i_matrix_2:len(pt_powers):dim*order]
-        mu = (zz1*zz2/sigma_sq).sum()
-        mm[n_matrix-1][i_matrix_2] = mu
-        mm[i_matrix_2][n_matrix-1] = mu
-
     out_dict['m%d' % i_proc]= mm
     out_dict['b%d' % i_proc] = bb
     return None
@@ -45,25 +35,26 @@ class CartoonFitter(object):
 
     def __init__(self, order, dim):
         self.order = order
-        self.dim = dim
+        self.dim = dim+1
+        self.raw_dim = dim
 
     def read_bases(self, basis_file):
-        self.center = np.zeros(self.dim, dtype=float)
-        self.bases = np.zeros((self.dim,self.dim), dtype=float)
-        self.radii = np.zeros(self.dim, dtype=float)
+        self.center = np.zeros(self.raw_dim, dtype=float)
+        self.bases = np.zeros((self.raw_dim,self.raw_dim), dtype=float)
+        self.radii = np.zeros(self.raw_dim, dtype=float)
         with open(basis_file, 'r') as in_file:
             center_line = in_file.readline()
             params = center_line.strip().split()
-            for ii in range(self.dim):
+            for ii in range(self.raw_dim):
                 mu = float(params[ii])
                 self.center[ii] = mu
             for i_basis, line in enumerate(in_file):
                 params = line.strip().split()
-                for ii in range(self.dim):
+                for ii in range(self.raw_dim):
                     mu = float(params[ii])
                     self.bases[i_basis][ii] = mu
                 self.radii[i_basis] = float(params[-1])
-                assert len(params) == self.dim+1
+                assert len(params) == self.raw_dim+1
 
     def read_data(self, data_file, n_training, n_procs):
 
@@ -77,9 +68,9 @@ class CartoonFitter(object):
             if line[0]== '#':
                 continue
             params = line.strip().split()
-            if self.chisq_min is None or float(params[self.dim])<self.chisq_min:
-                self.chisq_min = float(params[self.dim])
-                self.center = np.array(params[:self.dim]).astype(float)
+            if self.chisq_min is None or float(params[self.raw_dim])<self.chisq_min:
+                self.chisq_min = float(params[self.raw_dim])
+                self.center = np.array(params[:self.raw_dim]).astype(float)
 
         print('got chisq_min %e' % self.chisq_min)
 
@@ -105,7 +96,7 @@ class CartoonFitter(object):
 
         set_training = 0
         set_validation = 0
-        projected = np.zeros(self.dim, dtype=float)
+        projected = np.zeros(self.raw_dim, dtype=float)
 
         t_start = time.time()
         for i_line, line in enumerate(data_lines[1:]):
@@ -116,7 +107,7 @@ class CartoonFitter(object):
             if line[0] == '#':
                 continue
             params = np.array(line.strip().split()).astype(float)
-            pt = params[:dim]
+            pt = params[:self.raw_dim]
             for ii in range(dim):
                 projected[ii] = np.dot(self.bases[ii], pt-self.center)
 
@@ -124,13 +115,15 @@ class CartoonFitter(object):
 
             if (set_validation==self.n_validation or
                 roll[i_line]>ratio and set_training<self.n_training):
-                self.training_pts[set_training] = projected
-                self.training_chisq[set_training] = params[self.dim]
+                self.training_pts[set_training][:self.raw_dim] = projected
+                self.training_pts[set_training][self.dim-1] = np.log(1.0+rr)
+                self.training_chisq[set_training] = params[self.raw_dim]
                 self.training_r[set_training] = rr
                 set_training+=1
             else:
-                 self.validation_pts[set_validation] = projected
-                 self.validation_chisq[set_validation] = params[self.dim]
+                 self.validation_pts[set_validation][:self.raw_dim] = projected
+                 self.validation_pts[set_validation][:self.dim-1] = np.log(1.0+rr)
+                 self.validation_chisq[set_validation] = params[self.raw_dim]
                  self.validation_r[set_validation] = rr
                  set_validation += 1
 
@@ -175,7 +168,7 @@ class CartoonFitter(object):
 
     def fit(self, sigma_sq):
 
-        n_matrix = self.order*self.dim+1
+        n_matrix = self.order*self.dim
         #i_matrix = i_dim*order + i_order
 
         #def make_matrix(i_proc, pt_powers, n_matrix, dim, order,
@@ -186,7 +179,7 @@ class CartoonFitter(object):
         if self.n_procs == 1:
             make_matrix(0, self.pt_powers[0], self.dim, self.order,
                         self.training_chisq-self.chisq_min, sigma_sq,
-                        self.log_training_r, mm_dict)
+                        mm_dict)
 
             mm = mm_dict['m0']
             bb = mm_dict['b0']
@@ -201,7 +194,6 @@ class CartoonFitter(object):
                                         self.dim, self.order,
                                         self.training_chisq[i_start:i_end]-self.chisq_min,
                                         sigma_sq[i_start:i_end],
-                                        self.log_training_r[i_start:i_end],
                                         mm_dict))
                 p.start()
                 p_list.append(p)
@@ -222,9 +214,8 @@ class CartoonFitter(object):
             i_start = self.pt_dexes[i_proc][0]
             i_end = self.pt_dexes[i_proc][1]
             pt_powers = self.pt_powers[i_proc]
-            for i_matrix in range(n_matrix-1):
+            for i_matrix in range(n_matrix):
                 fit_chisq[i_start:i_end] += coeffs[i_matrix]*pt_powers[i_matrix:len(pt_powers):self.dim*self.order]
-        fit_chisq+=coeffs[n_matrix-1]*self.log_training_r
 
         chi_wrong = np.abs(self.training_chisq-self.chisq_min-fit_chisq)
 
@@ -314,7 +305,6 @@ if __name__ == "__main__":
 
     sigma_sq = np.ones(len(fitter.training_chisq), dtype=float)
 
-    n_matrix = order*dim+1
     #i_matrix = i_dim*order + i_order
 
     t_iter_start = time.time()
