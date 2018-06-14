@@ -37,6 +37,7 @@ class CartoonFitter(object):
         self.order = order
         self.dim = dim+1
         self.raw_dim = dim
+        self.i_iteration = 0
 
     def read_bases(self, basis_file):
         self.center = np.zeros(self.raw_dim, dtype=float)
@@ -167,6 +168,7 @@ class CartoonFitter(object):
         self.best_mismatch = 2.0e30
 
     def fit(self, sigma_sq):
+        self.i_iteration += 1
 
         n_matrix = self.order*self.dim
         #i_matrix = i_dim*order + i_order
@@ -255,7 +257,8 @@ class CartoonFitter(object):
             self.best_coeffs = coeffs
 
             with open('coeffs_test.txt', 'w') as out_file:
-                out_file.write('# max_mismatch %e n_offenders %d\n' % (max_mismatch, n_offenders))
+                out_file.write('# %d max_mismatch %e n_offenders %d\n' %
+                               (self.i_iteration, max_mismatch, n_offenders))
                 for cc in self.best_coeffs:
                     out_file.write('%e\n' % cc)
             with open('fit_chisq.txt', 'w') as out_file:
@@ -266,8 +269,9 @@ class CartoonFitter(object):
                                     self.training_r[i_pt],
                                     self.training_chisq[i_pt]-self.chisq_min-fit_chisq[i_pt]))
 
-        print('\nmax_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
-              (max_mismatch, self.best_mismatch, n_offenders, n_non_offenders,
+        print('\n%d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
+              (self.i_iteration, max_mismatch, self.best_mismatch,
+               n_offenders, n_non_offenders,
                sigma_sq.min(),np.median(sigma_sq),sigma_sq.max()))
 
         print('')
