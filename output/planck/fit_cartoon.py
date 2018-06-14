@@ -259,6 +259,8 @@ class CartoonFitter(object):
             with open('coeffs_test.txt', 'w') as out_file:
                 out_file.write('# %d max_mismatch %e n_offenders %d\n' %
                                (self.i_iteration, max_mismatch, n_offenders))
+                out_file.write('# dim %d order %d\n' % (self.dim, self.order))
+                out_file.write('# i_matrix = i_dim*order + i_order\n')
                 for cc in self.best_coeffs:
                     out_file.write('%e\n' % cc)
             with open('fit_chisq.txt', 'w') as out_file:
