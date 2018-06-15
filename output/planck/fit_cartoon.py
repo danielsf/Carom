@@ -358,9 +358,11 @@ if __name__ == "__main__":
             while keep_going:
                 keep_going = False
                 new_sigma_sq += 0.1*d_sigma
+                invalid = np.where(new_sigma_sq<1.0)
+                new_sigma_sq[invalid] = 1.0
                 results_test, metric_test = fitter.fit(new_sigma_sq)
                 print('running derivative %e -> %e' % (orig_metric, metric_test))
-                if metric_test < metric_best:
+                if metric_test < metric_best-1.0e10:
                     keep_going = True
                     results_best = copy.deepcopy(results)
                     metric_best = metric_test
@@ -405,7 +407,8 @@ if __name__ == "__main__":
         #max_val = chi_wrong[quad_4].max()
         sigma_sq[quad_4_meh] += 1.0-chi_wrong[quad_4_meh]/max_val
 
-        assert sigma_sq.min()>0.99
+        invalid = np.where(sigma_sq<1.0)
+        sigma_sq[invalid] = 1.0
 
     for i_dim in range(dim):
         i_matrix = i_dim*order+order-1
