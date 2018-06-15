@@ -340,13 +340,18 @@ if __name__ == "__main__":
         if metric_value_0 is None:
             metric_value_0 = metric_value
             sigma_sq_0 = np.copy(sigma_sq)
-        elif metric_value_0 is not None and metric_value<metric_value_0:
+        elif metric_value_0 is not None:
             orig_results = copy.deepcopy(results)
             orig_metric = metric_value
             orig_sigma_sq = np.copy(sigma_sq)
 
-            new_sigma_sq = np.copy(sigma_sq)
-            d_sigma = sigma_sq - sigma_sq_0
+            if metric_value<metric_value_0:
+                d_sigma = sigma_sq - sigma_sq_0
+                new_sigma_sq = np.copy(sigma_sq)
+            else:
+                d_sigma = sigma_sq_0-sigma_sq
+                new_sigma_sq = np.copy(sigma_sq_0)
+
             metric_test = None
             metric_best = metric_value
             keep_going = True
@@ -354,7 +359,7 @@ if __name__ == "__main__":
                 keep_going = False
                 new_sigma_sq += 0.1*d_sigma
                 results_test, metric_test = fitter.fit(new_sigma_sq)
-                print('running derivative %e' % metric_test)
+                print('running derivative %e -> %e' % (orig_metric, metric_test))
                 if metric_test < metric_best:
                     keep_going = True
                     results_best = copy.deepcopy(results)
@@ -362,14 +367,16 @@ if __name__ == "__main__":
                     sigma_sq_best = np.copy(new_sigma_sq)
 
             if orig_metric<=metric_best:
-                metric_value_0 = orig_metric
-                sigma_sq_0 = np.copy(orig_sigma_sq)
+                if orig_metric<metric_value_0:
+                    metric_value_0 = orig_metric
+                    sigma_sq_0 = np.copy(orig_sigma_sq)
                 sigma_sq = np.copy(orig_sigma_sq)
                 metric_value = orig_metric
                 results = orig_results
             else:
-                metric_value_0 = metric_best
-                sigma_sq_0 = np.copy(sigma_sq_best)
+                if metric_best<metric_value_0:
+                    metric_value_0 = metric_best
+                    sigma_sq_0 = np.copy(sigma_sq_best)
                 sigma_sq = np.copy(sigma_sq_best)
                 metric_value = metric_best
                 results = results_best
