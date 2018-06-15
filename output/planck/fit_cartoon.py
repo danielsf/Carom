@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 import time
 import gc
 import multiprocessing as mproc
@@ -297,7 +298,7 @@ class CartoonFitter(object):
         output['quad_3_1'] = quad_3_1
         output['quad_4_1'] = quad_4_1
         output['fit_chisq'] = fit_chisq
-        return output
+        return output, max_mismatch
 
 
 if __name__ == "__main__":
@@ -325,13 +326,53 @@ if __name__ == "__main__":
 
     #i_matrix = i_dim*order + i_order
 
+    sigma_sq_0 = None
+    metric_value_0 = None
+
     t_iter_start = time.time()
     for iteration in range(args.n_iter):
         t_last_iter = time.time()-t_iter_start
         print('\nlast iteration took %.2e min\n' % (t_last_iter/60.0))
         t_iter_start = time.time()
 
-        results = fitter.fit(sigma_sq)
+        results, metric_value = fitter.fit(sigma_sq)
+
+        if metric_value_0 is None:
+            metric_value_0 = metric_value
+            sigma_sq_0 = np.copy(sigma_sq)
+        elif metric_value_0 is not None and metric_value<metric_value_0:
+            orig_results = copy.deepcopy(results)
+            orig_metric = metric_value
+            orig_sigma_sq = np.copy(sigma_sq)
+
+            new_sigma_sq = np.copy(sigma_sq)
+            d_sigma = sigma_sq - sigma_sq_0
+            metric_test = None
+            metric_best = metric_value
+            keep_going = True
+            while keep_going:
+                keep_going = False
+                new_sigma_sq += 0.1*d_sigma
+                results_test, metric_test = fitter.fit(new_sigma_sq)
+                print('running derivative %e' % metric_test)
+                if metric_test < metric_best:
+                    keep_going = True
+                    results_best = copy.deepcopy(results)
+                    metric_best = metric_test
+                    sigma_sq_best = np.copy(new_sigma_sq)
+
+            if orig_metric<=metric_best:
+                metric_value_0 = orig_metric
+                sigma_sq_0 = np.copy(orig_sigma_sq)
+                sigma_sq = np.copy(orig_sigma_sq)
+                metric_value = orig_metric
+                results = orig_results
+            else:
+                metric_value_0 = metric_best
+                sigma_sq_0 = np.copy(sigma_sq_best)
+                sigma_sq = np.copy(sigma_sq_best)
+                metric_value = metric_best
+                results = results_best
 
         chi_wrong = results['chi_wrong']
         coeffs = results['coeffs']
