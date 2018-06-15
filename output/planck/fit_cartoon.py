@@ -163,7 +163,6 @@ class CartoonFitter(object):
         assert pt_sum == self.n_training
         print('made pt_powers')
 
-        self.log_training_r = np.log(self.training_r+1.0)
         self.delta_chisq=47.41
         self.best_mismatch = 2.0e30
 
