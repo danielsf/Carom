@@ -35,7 +35,7 @@ class CartoonFitter(object):
 
     def __init__(self, order, dim):
         self.order = order
-        self.dim = dim+1
+        self.dim = dim+2
         self.raw_dim = dim
         self.i_iteration = 0
 
@@ -117,12 +117,14 @@ class CartoonFitter(object):
             if (set_validation==self.n_validation or
                 roll[i_line]>ratio and set_training<self.n_training):
                 self.training_pts[set_training][:self.raw_dim] = projected
+                self.training_pts[set_training][self.dim-2] = rr
                 self.training_pts[set_training][self.dim-1] = np.log(1.0+rr)
                 self.training_chisq[set_training] = params[self.raw_dim]
                 self.training_r[set_training] = rr
                 set_training+=1
             else:
                  self.validation_pts[set_validation][:self.raw_dim] = projected
+                 self.validation_pts[set_validation][self.dim-2] = rr
                  self.validation_pts[set_validation][self.dim-1] = np.log(1.0+rr)
                  self.validation_chisq[set_validation] = params[self.raw_dim]
                  self.validation_r[set_validation] = rr
