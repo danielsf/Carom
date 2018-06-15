@@ -262,7 +262,7 @@ class CartoonFitter(object):
                                (self.i_iteration, max_mismatch, n_offenders))
                 out_file.write('# dim %d order %d\n' % (self.dim, self.order))
                 out_file.write('# i_matrix = i_dim*order + i_order\n')
-                out_file.write('# chisq_min %e\n' % chisq_min)
+                out_file.write('# chisq_min %e\n' % self.chisq_min)
                 out_file.write('# center\n')
                 out_file.write('# ')
                 for cc in self.center:
