@@ -261,15 +261,23 @@ class CartoonFitter(object):
                                (self.i_iteration, max_mismatch, n_offenders))
                 out_file.write('# dim %d order %d\n' % (self.dim, self.order))
                 out_file.write('# i_matrix = i_dim*order + i_order\n')
+                out_file.write('# chisq_min %e\n' % chisq_min)
+                out_file.write('# center\n')
+                out_file.write('# ')
+                for cc in self.center:
+                    out_file.write('%e ' % cc)
+                out_file.write('\n')
                 for cc in self.best_coeffs:
                     out_file.write('%e\n' % cc)
             with open('fit_chisq.txt', 'w') as out_file:
+                out_file.write('# training_chisq-chisq_min fit_chisq rr training-fit sigma_sq\n')
                 for i_pt in range(fitter.n_training):
-                    out_file.write('%e %e %e %e\n' %
+                    out_file.write('%e %e %e %e %e\n' %
                                    (self.training_chisq[i_pt]-self.chisq_min,
                                     fit_chisq[i_pt],
                                     self.training_r[i_pt],
-                                    self.training_chisq[i_pt]-self.chisq_min-fit_chisq[i_pt]))
+                                    self.training_chisq[i_pt]-self.chisq_min-fit_chisq[i_pt],
+                                    sigma_sq[i_pt]))
 
         print('\n%d max_mis %.4e best %.4e -- %d %d -- %.2e %.2e %.2e' %
               (self.i_iteration, max_mismatch, self.best_mismatch,
