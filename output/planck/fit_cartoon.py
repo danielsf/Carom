@@ -123,7 +123,7 @@ class CartoonFitter(object):
                 set_training+=1
             else:
                  self.validation_pts[set_validation][:self.raw_dim] = projected
-                 self.validation_pts[set_validation][:self.dim-1] = np.log(1.0+rr)
+                 self.validation_pts[set_validation][self.dim-1] = np.log(1.0+rr)
                  self.validation_chisq[set_validation] = params[self.raw_dim]
                  self.validation_r[set_validation] = rr
                  set_validation += 1
