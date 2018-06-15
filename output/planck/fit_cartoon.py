@@ -109,8 +109,7 @@ class CartoonFitter(object):
                 continue
             params = np.array(line.strip().split()).astype(float)
             pt = params[:self.raw_dim]
-            for ii in range(dim):
-                projected[ii] = np.dot(self.bases[ii], pt-self.center)
+            projected = np.dot(self.bases, pt-self.center)
 
             rr = np.power(projected/self.radii,2).sum()
 
