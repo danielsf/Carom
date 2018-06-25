@@ -362,7 +362,7 @@ if __name__ == "__main__":
                 new_sigma_sq[invalid] = 1.0
                 results_test, metric_test = fitter.fit(new_sigma_sq)
                 print('running derivative %e -> %e' % (orig_metric, metric_test))
-                if metric_test < metric_best-1.0e10:
+                if metric_test < metric_best-1.0e-10:
                     keep_going = True
                     results_best = copy.deepcopy(results)
                     metric_best = metric_test
