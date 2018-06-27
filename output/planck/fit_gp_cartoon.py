@@ -141,7 +141,7 @@ if __name__ == "__main__":
     #### fit quadratic mean model
     bb = np.zeros(dim, dtype=float)
     mm = np.zeros((dim,dim), dtype=float)
-    valid = np.where(np.logical_and(chisq>chisq_min+delta_chisq,chisq<1.0e6))
+    valid = np.where(np.logical_and(chisq>chisq_min+delta_chisq,chisq<1.0e5))
     quad_pts = data_pts[valid]
     quad_chisq = chisq[valid]
 
