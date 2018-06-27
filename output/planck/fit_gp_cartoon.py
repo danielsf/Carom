@@ -105,6 +105,8 @@ if __name__ == "__main__":
     basis_file = 'ellipse_bases.txt'
     data_file = 'planck_out_high_q2_culled_cartoon.txt'
 
+    rng = np.random.RandomState(57623)
+
     bases, radii = read_bases(basis_file, dim)
     data_pts, chisq = project_pts(data_file, bases, dim)
 
@@ -152,3 +154,11 @@ if __name__ == "__main__":
     quadratic_coeffs = np.linalg.solve(mm, bb)
     for qq in quadratic_coeffs:
         print(qq)
+
+    sample_pts = rng.randint(0,len(data_pts),size=10000)
+    sample_pts = np.unique(sample_pts)
+
+    with open('quadratic_check.txt', 'w') as out_file:
+        for i_pt in sample_pts:
+            fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
+            out_file.write('%e %e\n' % (chisq[i_pt]-chisq_min, fit))
