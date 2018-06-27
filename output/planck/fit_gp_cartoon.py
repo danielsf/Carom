@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from scipy import spatial as scipy_spatial
 
 def project_pts(data_file, bases, raw_dim):
     n_lines = 0
@@ -190,3 +191,11 @@ if __name__ == "__main__":
                 gp_pts[i_line] = params[:dim]
                 gp_chisq[i_line] = params[dim]
         assert i_line == n_gp_pts-1
+
+    normalized_pts = np.array([vv/radii for vv in gp_pts])
+
+    tree = scipy_spatial.KDTree(normalized_pts, leafsize=100)
+
+    covar_dist, covar_dex = tree.query(normalized_pts, k=100)
+
+    print('covar_dex ',covar_dex.shape)
