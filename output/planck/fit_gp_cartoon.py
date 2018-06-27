@@ -155,7 +155,7 @@ if __name__ == "__main__":
     for qq in quadratic_coeffs:
         print(qq)
 
-    sample_pts = rng.randint(0,len(data_pts),size=10000)
+    sample_pts = rng.randint(0,len(data_pts),size=100000)
     sample_pts = np.unique(sample_pts)
 
     with open('quadratic_check.txt', 'w') as out_file:
