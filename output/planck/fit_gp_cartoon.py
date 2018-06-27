@@ -102,6 +102,7 @@ def get_gp_set(data_pts, chisq, radii, n_pts, dim):
 if __name__ == "__main__":
 
     dim = 33
+    delta_chisq=47.41
     basis_file = 'ellipse_bases.txt'
     data_file = 'planck_out_high_q2.txt'
 
@@ -140,7 +141,7 @@ if __name__ == "__main__":
     #### fit quadratic mean model
     bb = np.zeros(dim, dtype=float)
     mm = np.zeros((dim,dim), dtype=float)
-    valid = np.where(np.logical_and(chisq>chisq_min+47.41,chisq<1.0e6))
+    valid = np.where(np.logical_and(chisq>chisq_min+delta_chisq,chisq<1.0e6))
     quad_pts = data_pts[valid]
     quad_chisq = chisq[valid]
 
