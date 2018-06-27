@@ -140,14 +140,18 @@ if __name__ == "__main__":
     #### fit quadratic mean model
     bb = np.zeros(dim, dtype=float)
     mm = np.zeros((dim,dim), dtype=float)
-    d_chisq = chisq-chisq_min
+    valid = np.where(chisq>chisq_min+47.41)
+    quad_pts = data_pts[valid]
+    quad_chisq = chisq[valid]
+
+    d_chisq = quad_chisq-chisq_min
     wgt = d_chisq
     for i_dim in range(dim):
         print('idim %d' % i_dim)
-        z1 = ((data_pts[:,i_dim]-min_pt[i_dim]))**2
+        z1 = ((quad_pts[:,i_dim]-min_pt[i_dim]))**2
         bb[i_dim] = np.sum(wgt*d_chisq*z1)
         for i_dim_2 in range(i_dim, dim):
-            z2 = ((data_pts[:,i_dim_2]-min_pt[i_dim_2]))**2
+            z2 = ((quad_pts[:,i_dim_2]-min_pt[i_dim_2]))**2
             mm[i_dim][i_dim_2] = np.sum(wgt*z1*z2)
             if i_dim != i_dim_2:
                 mm[i_dim_2][i_dim] = mm[i_dim][i_dim_2]
