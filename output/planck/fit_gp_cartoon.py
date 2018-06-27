@@ -111,9 +111,14 @@ if __name__ == "__main__":
     bases, radii = read_bases(basis_file, dim)
     data_pts, chisq = project_pts(data_file, bases, dim)
 
+    rr_arr = np.zeros(len(data_pts), dtype=float)
+
     min_dex = np.argmin(chisq)
     min_pt = data_pts[min_dex]
     chisq_min = chisq[min_dex]
+
+    for i_pt in range(len(data_pts)):
+        rr_arr[i_pt] = np.sqrt(np.sum(((data_pts[i_pt]-min_pt)/radii)**2))
 
     print(chisq.min(),np.median(chisq),chisq.max())
 
@@ -184,7 +189,9 @@ if __name__ == "__main__":
             if ((fit<delta_chisq and true_d>delta_chisq) or
                 (fit>delta_chisq and true_d<delta_chisq)):
 
-                out_file.write('%e %e\n' % (chisq[i_pt]-chisq_min, fit))
+                out_file.write('%e %e %e %e\n' %
+                (chisq[i_pt]-chisq_min, fit, rr_arr[i_pt],
+                 fit-true_d))
 
     print('metric %e pos %e\n' % (metric,pos_metric))
     print('filler %e\n' % filler_coeff)
