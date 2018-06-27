@@ -95,10 +95,13 @@ def get_gp_set(data_pts, chisq, quad_chisq, radii, n_pts, dim):
 
         dd = np.sum((pts_considered-gp_pts[n_assigned-1]/radii)**2, axis=1)
         #assert len(dd) == len(pts_considered)
+        n_update=0
         if dd_min is None:
             dd_min = dd
         else:
-            dd_min = np.where(dd_min<dd, dd_min, dd)
+            update = np.where(dd<dd_min)
+            n_update = len(update[0])
+            dd_min[update] = dd[update]
 
         chosen_pt = np.argmax(dd_min)
         actual_dex = valid[0][chosen_pt]
@@ -107,7 +110,7 @@ def get_gp_set(data_pts, chisq, quad_chisq, radii, n_pts, dim):
         gp_pts[n_assigned] = data_pts[actual_dex]
         gp_chisq[n_assigned] = chisq[actual_dex]
         n_assigned += 1
-        print(n_assigned,dd_min[chosen_pt])
+        print(n_assigned,dd_min[chosen_pt],n_update)
 
     return gp_pts, gp_chisq
 
