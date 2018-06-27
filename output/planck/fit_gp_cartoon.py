@@ -122,27 +122,6 @@ if __name__ == "__main__":
 
     print(chisq.min(),np.median(chisq),chisq.max())
 
-    n_gp_pts = 2000
-    gp_pts_file = 'gp_pts.txt'
-    if not os.path.exists(gp_pts_file):
-        gp_pts, gp_chisq = get_gp_set(data_pts, chisq, radii, n_gp_pts, dim)
-
-        with open(gp_pts_file, 'w') as out_file:
-            for i_pt in range(len(gp_pts)):
-                for ii in range(dim):
-                    out_file.write('%e ' % gp_pts[i_pt][ii])
-                out_file.write('%e\n' % gp_chisq[i_pt])
-    else:
-        print('reading in gp_pts')
-        gp_pts = np.zeros((n_gp_pts, dim), dtype=float)
-        gp_chisq = np.zeros(n_gp_pts, dtype=float)
-        with open(gp_pts_file, 'r') as in_file:
-            for i_line, line in enumerate(in_file):
-                params = np.array(line.strip().split()).astype(float)
-                gp_pts[i_line] = params[:dim]
-                gp_chisq[i_line] = params[dim]
-        assert i_line == n_gp_pts-1
-
     #### fit quadratic mean model
     bb = np.zeros(dim, dtype=float)
     mm = np.zeros((dim,dim), dtype=float)
@@ -195,3 +174,25 @@ if __name__ == "__main__":
 
     print('metric %e pos %e\n' % (metric,pos_metric))
     print('filler %e\n' % filler_coeff)
+
+    ### select points for GP ###
+    n_gp_pts = 2000
+    gp_pts_file = 'gp_pts.txt'
+    if not os.path.exists(gp_pts_file):
+        gp_pts, gp_chisq = get_gp_set(data_pts, chisq, radii, n_gp_pts, dim)
+
+        with open(gp_pts_file, 'w') as out_file:
+            for i_pt in range(len(gp_pts)):
+                for ii in range(dim):
+                    out_file.write('%e ' % gp_pts[i_pt][ii])
+                out_file.write('%e\n' % gp_chisq[i_pt])
+    else:
+        print('reading in gp_pts')
+        gp_pts = np.zeros((n_gp_pts, dim), dtype=float)
+        gp_chisq = np.zeros(n_gp_pts, dtype=float)
+        with open(gp_pts_file, 'r') as in_file:
+            for i_line, line in enumerate(in_file):
+                params = np.array(line.strip().split()).astype(float)
+                gp_pts[i_line] = params[:dim]
+                gp_chisq[i_line] = params[dim]
+        assert i_line == n_gp_pts-1
