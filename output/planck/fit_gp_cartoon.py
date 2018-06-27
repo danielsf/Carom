@@ -67,21 +67,11 @@ def get_gp_set(data_pts, chisq, radii, n_pts, dim):
 
     for ii in range(n_pts-1):
         if ii == 0:
-            valid = np.where(np.abs(chisq-target_chisq)<tol)
+            valid = np.where(chisq<target_chisq+tol)
             pts_considered = normalized_pts[valid]
             dd_min = None
-        elif ii == n_pts//3:
-            valid = np.where(chisq<target_chisq-0.5*delta_chisq)
-            pts_considered = normalized_pts[valid]
-            dd_min = None
-            for i_old in range(n_assigned):
-                dd = np.sum((pts_considered-gp_pts[i_old]/radii)**2, axis=1)
-                if dd_min is None:
-                    dd_min = dd
-                else:
-                    dd_min = np.where(dd_min<dd, dd_min, dd)
-        elif ii == 2*n_pts//3:
-            valid = np.where(np.abs(chisq-target_chisq-0.2*delta_chisq)<tol)
+        elif ii == n_pts//2:
+            valid = np.where(np.abs(chisq-target_chisq-4.0*tol)<tol)
             pts_considered = normalized_pts[valid]
             dd_min = None
             for i_old in range(n_assigned):
