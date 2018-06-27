@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     dim = 33
     basis_file = 'ellipse_bases.txt'
-    data_file = 'planck_out_high_q2_culled_cartoon.txt'
+    data_file = 'planck_out_high_q2.txt'
 
     rng = np.random.RandomState(57623)
 
@@ -140,14 +140,14 @@ if __name__ == "__main__":
     #### fit quadratic mean model
     bb = np.zeros(dim, dtype=float)
     mm = np.zeros((dim,dim), dtype=float)
-    valid = np.where(chisq>chisq_min+47.41)
+    valid = np.where(np.logical_and(chisq>chisq_min+47.41,chisq<1.0e6))
     quad_pts = data_pts[valid]
     quad_chisq = chisq[valid]
 
     d_chisq = quad_chisq-chisq_min
-    wgt = d_chisq
+    wgt = np.log10(d_chisq)
     for i_dim in range(dim):
-        print('idim %d' % i_dim)
+        print('idim %d %d' % (i_dim, len(quad_chisq)))
         z1 = ((quad_pts[:,i_dim]-min_pt[i_dim]))**2
         bb[i_dim] = np.sum(wgt*d_chisq*z1)
         for i_dim_2 in range(i_dim, dim):
