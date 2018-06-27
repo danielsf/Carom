@@ -192,10 +192,32 @@ if __name__ == "__main__":
                 gp_chisq[i_line] = params[dim]
         assert i_line == n_gp_pts-1
 
+    #### build GP covariance matrix
     normalized_pts = np.array([vv/radii for vv in gp_pts])
 
     tree = scipy_spatial.KDTree(normalized_pts, leafsize=100)
 
-    covar_dist, covar_dex = tree.query(normalized_pts, k=100)
+    n_neighbors = 100
+
+    covar_dist, covar_dex = tree.query(normalized_pts, k=n_neighbors)
 
     print('covar_dex ',covar_dex.shape)
+
+    covar_matrix = np.zeros((len(gp_pts), len(gp_pts)), dtype=float)
+
+    covar_weights = np.arange(1.0, 0.0, -1.0/n_neighbors)
+
+    print('building covar')
+    for i_1 in range(len(covar_dex)):
+        for i_2, ww in zip(covar_dex[i_1], covar_weights):
+            if ww>covar_matrix[i_1][i_2]:
+                covar_matrix[i_1][i_2] = ww
+                covar_matrix[i_2][i_1] = ww
+    print('built covar')
+
+    nugget = 1.0e-5
+    for i_1 in range(len(covar_matrix)):
+        covar_matrix[i_1][i_1] += nugget
+
+    print('inverting covar')
+    covar_inv = np.linalg.inv(covar_matrix)
