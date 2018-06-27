@@ -146,7 +146,7 @@ if __name__ == "__main__":
     quad_chisq = chisq[valid]
 
     d_chisq = quad_chisq-chisq_min
-    wgt = np.log10(d_chisq)
+    wgt = np.ones(len(d_chisq), dtype=float)
     for i_dim in range(dim):
         print('idim %d %d' % (i_dim, len(quad_chisq)))
         z1 = ((quad_pts[:,i_dim]-min_pt[i_dim])/radii[i_dim])**2
