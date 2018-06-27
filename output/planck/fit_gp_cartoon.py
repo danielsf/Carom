@@ -108,6 +108,10 @@ if __name__ == "__main__":
     bases, radii = read_bases(basis_file, dim)
     data_pts, chisq = project_pts(data_file, bases, dim)
 
+    min_dex = np.argmin(chisq)
+    min_pt = data_pts[min_dex]
+    chisq_min = chisq[min_dex]
+
     print(chisq.min(),np.median(chisq),chisq.max())
 
     n_gp_pts = 2000
@@ -130,3 +134,21 @@ if __name__ == "__main__":
                 gp_pts[i_line] = params[:dim]
                 gp_chisq[i_line] = params[dim]
         assert i_line == n_gp_pts-1
+
+    #### fit quadratic mean model
+    bb = np.zeros(dim, dtype=float)
+    mm = np.zeros((dim,dim), dtype=float)
+    d_chisq = chisq-chisq_min
+    for i_dim in range(dim):
+        print('idim %d' % i_dim)
+        z1 = ((data_pts[:,i_dim]-min_pt[i_dim])/radii[i_dim])**2
+        bb[i_dim] = np.sum(d_chisq*z1)
+        for i_dim_2 in range(i_dim, dim):
+            z2 = ((data_pts[:,i_dim_2]-min_pt[i_dim_2])/radii[i_dim_2])**2
+            mm[i_dim][i_dim_2] = np.sum(z1*z2)
+            if i_dim != i_dim_2:
+                mm[i_dim_2][i_dim] = mm[i_dim][i_dim_2]
+
+    quadratic_coeffs = np.linalg.solve(mm, bb)
+    for qq in quadratic_coeffs:
+        print(qq)
