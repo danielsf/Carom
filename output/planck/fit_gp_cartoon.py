@@ -158,7 +158,19 @@ if __name__ == "__main__":
     sample_pts = rng.randint(0,len(data_pts),size=100000)
     sample_pts = np.unique(sample_pts)
 
+    metric = 0.0
     with open('quadratic_check.txt', 'w') as out_file:
         for i_pt in sample_pts:
             fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
             out_file.write('%e %e\n' % (chisq[i_pt]-chisq_min, fit))
+            metric += (chisq[i_pt]-chisq_min-fit)**2
+
+    quadratic_coeffs = np.where(quadratic_coeffs>0.0, quadratic_coeffs, 1.0)
+    pos_metric = 0.0
+    with open('quadratic_check_pos.txt', 'w') as out_file:
+        for i_pt in sample_pts:
+            fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
+            out_file.write('%e %e\n' % (chisq[i_pt]-chisq_min, fit))
+            pos_metric += (chisq[i_pt]-chisq_min-fit)**2
+
+    print('metric %e pos %e\n' % (metric,pos_metric))
