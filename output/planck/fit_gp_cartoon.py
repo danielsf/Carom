@@ -143,10 +143,10 @@ if __name__ == "__main__":
     d_chisq = chisq-chisq_min
     for i_dim in range(dim):
         print('idim %d' % i_dim)
-        z1 = ((data_pts[:,i_dim]-min_pt[i_dim])/radii[i_dim])**2
+        z1 = ((data_pts[:,i_dim]-min_pt[i_dim]))**2
         bb[i_dim] = np.sum(d_chisq*z1)
         for i_dim_2 in range(i_dim, dim):
-            z2 = ((data_pts[:,i_dim_2]-min_pt[i_dim_2])/radii[i_dim_2])**2
+            z2 = ((data_pts[:,i_dim_2]-min_pt[i_dim_2]))**2
             mm[i_dim][i_dim_2] = np.sum(z1*z2)
             if i_dim != i_dim_2:
                 mm[i_dim_2][i_dim] = mm[i_dim][i_dim_2]
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     metric = 0.0
     with open('quadratic_check.txt', 'w') as out_file:
         for i_pt in sample_pts:
-            fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
+            fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt))**2)
             out_file.write('%e %e\n' % (chisq[i_pt]-chisq_min, fit))
             metric += (chisq[i_pt]-chisq_min-fit)**2
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     pos_metric = 0.0
     with open('quadratic_check_pos.txt', 'w') as out_file:
         for i_pt in sample_pts:
-            fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
+            fit = np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt))**2)
             out_file.write('%e %e\n' % (chisq[i_pt]-chisq_min, fit))
             pos_metric += (chisq[i_pt]-chisq_min-fit)**2
 
