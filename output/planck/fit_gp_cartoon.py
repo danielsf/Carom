@@ -257,6 +257,23 @@ if __name__ == "__main__":
 
     with open('multinest_gp_comparison.txt', 'w') as out_file:
         out_file.write('# true gp quad\n')
+        for pp, cc, in zip(multinest_pts, multinest_chisq):
+            rr = np.sqrt(np.sum(((pp-min_pt)/radii)**2))
+            qq = np.interp(rr, rr_grid, chisq_rr_grid)
+            normed = pp/radii
+            dist, dex = tree.query(normed, k=n_neighbors)
+            ell = dist[1]
+            ddsq = np.sum(((pp-gp_pts)/radii)**2, axis=1)
+            cq = np.exp(-0.5*ddsq/(ell*ell))
+            #cq = np.zeros(n_gp_pts, dtype=float)
+            #cq[dex] = covar_weights
+            fit = qq + np.dot(cq, covar_vec)
+
+            out_file.write('%e %e %e %e\n' % (cc, fit, qq, rr))
+    exit()
+
+    with open('multinest_gp_comparison.txt', 'w') as out_file:
+        out_file.write('# true gp quad\n')
         for pp, cc, cq_cheat in zip(gp_pts, gp_chisq, covar_matrix):
             rr = np.sqrt(np.sum(((pp-min_pt)/radii)**2))
             qq = np.interp(rr, rr_grid, chisq_rr_grid)
