@@ -79,4 +79,3 @@ if __name__ == "__main__":
             (multinest_chisq[i_pt], dalex_chisq[min_dex],
              dd[min_dex],
              multinest_chisq[i_pt]-dalex_chisq[min_dex]))
-        
