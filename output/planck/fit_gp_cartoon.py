@@ -121,6 +121,7 @@ if __name__ == "__main__":
     delta_chisq=47.41
     basis_file = 'ellipse_bases.txt'
     data_file = 'planck_out_high_q2.txt'
+    multinest_file = os.path.join('multinest', 'planck_d33_s123_n1000_t1.00e-03.txt')
 
     rng = np.random.RandomState(57623)
 
@@ -203,17 +204,22 @@ if __name__ == "__main__":
 
     print('covar_dex ',covar_dex.shape)
 
-    covar_matrix = np.zeros((len(gp_pts), len(gp_pts)), dtype=float)
+    covar_matrix = -1.0*np.ones((len(gp_pts), len(gp_pts)), dtype=float)
 
     covar_weights = np.arange(1.0, 0.0, -1.0/n_neighbors)
+    assert covar_weights.min()>0.0
 
     print('building covar')
     for i_1 in range(len(covar_dex)):
         for i_2, ww in zip(covar_dex[i_1], covar_weights):
-            if ww>covar_matrix[i_1][i_2]:
+            if covar_matrix[i_1][i_2]<-0.1 or ww<covar_matrix[i_1][i_2]:
                 covar_matrix[i_1][i_2] = ww
                 covar_matrix[i_2][i_1] = ww
-    print('built covar')
+
+    untouched = np.where(covar_matrix<-0.1)
+    covar_matrix[untouched] = 0.0
+    print('built covar %e %e %e' %
+    (covar_matrix.min(),np.median(covar_matrix),covar_matrix.max()))
 
     nugget = 1.0e-5
     for i_1 in range(len(covar_matrix)):
@@ -221,3 +227,38 @@ if __name__ == "__main__":
 
     print('inverting covar')
     covar_inv = np.linalg.inv(covar_matrix)
+
+    gp_quad_chisq = np.zeros(n_gp_pts, dtype=float)
+    for i_pt in range(n_gp_pts):
+        gp_quad_chisq[i_pt] = chisq_min+np.sum(quadratic_coeffs*((gp_pts[i_pt]-min_pt)/radii)**2)
+
+    covar_vec = np.dot(covar_inv, gp_chisq-gp_quad_chisq)
+    assert len(covar_vec) == n_gp_pts
+
+    #### test against MultiNest samples
+
+    n_multinest = 0
+    with open(multinest_file, 'r') as in_file:
+        for line in in_file:
+            n_multinest += 1
+
+    multinest_pts = np.zeros((n_multinest, dim), dtype=float)
+    multinest_chisq = np.zeros(n_multinest, dtype=float)
+    with open(multinest_file, 'r') as in_file:
+        for i_line, line in enumerate(in_file):
+            params = np.array(line.strip().split()).astype(float)
+            pt = np.dot(bases, params[2:])
+            multinest_pts[i_line] = pt
+            multinest_chisq[i_line]= params[1]
+
+    with open('multinest_gp_comparison.txt', 'w') as out_file:
+        out_file.write('# true gp quad\n')
+        for pp, cc, cq_cheat in zip(gp_pts, gp_chisq, covar_matrix):
+            qq = chisq_min + np.sum(quadratic_coeffs*((pp-min_pt)/radii)**2)
+            normed = pp/radii
+            dist, dex = tree.query(normed, k=n_neighbors)
+            cq = np.zeros(n_gp_pts, dtype=float)
+            cq[dex] = covar_weights
+            dd = np.sqrt(np.sum((cq-cq_cheat)**2))
+            fit = qq + np.dot(cq, covar_vec)
+            out_file.write('%e %e %e -- %e\n' % (cc, fit, qq, dd))
