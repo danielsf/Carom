@@ -139,6 +139,7 @@ if __name__ == "__main__":
 
     print(chisq.min(),np.median(chisq),chisq.max())
 
+
     #### fit quadratic mean model
     bb = np.zeros(dim, dtype=float)
     mm = np.zeros((dim,dim), dtype=float)
@@ -170,6 +171,16 @@ if __name__ == "__main__":
         quadratic_chisq[i_pt] = chisq_min+np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
 
     print('filler %e\n' % filler_coeff)
+
+    #### find ell interp grids
+    #target_chisq = chisq.min()+target_chisq
+    #valid = np.where(chisq<target_chisq+0.1*delta_chisq)
+    #ell_pts = np.array([vv/radii for vv in data_pts[valid]])
+    #ell_chisq = chisq[valid]
+    #ell_tree = scipy_spatial.KDTree(ell_pts, leafsize=100)
+
+    #ell_grid = np.arange(0.1, 2.0, 0.1)
+    #prev_pairs = None
 
     ### select points for GP ###
     n_gp_pts = 2000
