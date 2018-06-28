@@ -198,7 +198,7 @@ if __name__ == "__main__":
 
     tree = scipy_spatial.KDTree(normalized_pts, leafsize=100)
 
-    n_neighbors = 100
+    n_neighbors = 10
 
     covar_dist, covar_dex = tree.query(normalized_pts, k=n_neighbors)
 
@@ -211,7 +211,11 @@ if __name__ == "__main__":
 
     print('building covar')
     for i_1 in range(len(covar_dex)):
-        for i_2, ww in zip(covar_dex[i_1], covar_weights):
+        ell = covar_dist[i_1][1]
+        ddsq = np.sum(((gp_pts[i_1]-gp_pts)/radii)**2, axis=1)
+        local_wgt = np.exp(-0.5*ddsq/(ell*ell))
+        for i_2 in range(n_gp_pts):
+            ww = local_wgt[i_2]
             if covar_matrix[i_1][i_2]<-0.1 or ww<covar_matrix[i_1][i_2]:
                 covar_matrix[i_1][i_2] = ww
                 covar_matrix[i_2][i_1] = ww
@@ -257,8 +261,12 @@ if __name__ == "__main__":
             qq = chisq_min + np.sum(quadratic_coeffs*((pp-min_pt)/radii)**2)
             normed = pp/radii
             dist, dex = tree.query(normed, k=n_neighbors)
-            cq = np.zeros(n_gp_pts, dtype=float)
-            cq[dex] = covar_weights
+            ell = dist[1]
+            ddsq = np.sum(((pp-gp_pts)/radii)**2, axis=1)
+            cq = np.exp(-0.5*ddsq/(ell*ell))
+            #cq = np.zeros(n_gp_pts, dtype=float)
+            #cq[dex] = covar_weights
             dd = np.sqrt(np.sum((cq-cq_cheat)**2))
             fit = qq + np.dot(cq, covar_vec)
+
             out_file.write('%e %e %e -- %e\n' % (cc, fit, qq, dd))
