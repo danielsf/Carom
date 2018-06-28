@@ -68,7 +68,7 @@ if __name__ == "__main__":
     with open('mult_v_dalex.txt', 'w') as out_file:
         out_file.write('# mult dalex dd\n')
         for i_pt in range(to_search):
-            if i_pt>0:
+            if i_pt>0 and i_pt%500 == 0:
                 duration = (time.time()-t_start)/3600.0
                 predicted = to_search*duration/i_pt
                 print('%d of %d -- %.2e, %.2e (hrs)' %
