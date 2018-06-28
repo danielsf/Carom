@@ -43,8 +43,8 @@ if __name__ == "__main__":
         scale[i_dim] = dalex_pts[:,i_dim].max()-dalex_pts[:,i_dim].min()
     dalex_pts = np.array([vv/scale for vv in dalex_pts])
     print('read dalex data')
-    #tree = scipy_spatial.KDTree(dalex_pts, leafsize=10)
-    #print('built tree')
+    tree = scipy_spatial.KDTree(dalex_pts, leafsize=10)
+    print('built tree')
 
     n_multinest = 0
     with open(multinest_file, 'r') as in_file:
@@ -62,20 +62,21 @@ if __name__ == "__main__":
 
     to_search = len(multinest_pts)
     print('read multinest data')
-    #nn_dist, nn_dex = tree.query(multinest_pts[:to_search], k=1)
-    #print('queried')
     t_start = time.time()
+    d_pt = 1000
     with open('mult_v_dalex.txt', 'w') as out_file:
         out_file.write('# mult dalex dd\n')
-        for i_pt in range(to_search):
-            if i_pt>0:
-                duration = (time.time()-t_start)/3600.0
-                predicted = to_search*duration/i_pt
-                print('%d of %d -- %.2e, %.2e (hrs)' %
-                (i_pt, to_search,duration,predicted))
-            dd = np.sqrt(np.sum((multinest_pts[i_pt]-dalex_pts)**2,axis=1))
-            min_dex = np.argmin(dd)
-            out_file.write('%e %e %e %e\n' %
-            (multinest_chisq[i_pt], dalex_chisq[min_dex],
-             dd[min_dex],
-             multinest_chisq[i_pt]-dalex_chisq[min_dex]))
+        for i_start in range(0,to_search,d_pt):
+            i_end = i_start+d_pt
+            nn_dist, nn_dex = tree.query(multinest_pts[i_start:i_end], k=1)
+            duration = (time.time()-t_start)/3600.0
+            predicted = to_search*duration/i_end
+            print('%d of %d -- %.2e, %.2e (hrs)' %
+                (i_end, to_search,duration,predicted))
+            for i_sub in range(len(nn_dist)):
+                i_pt = i_start+i_sub
+                min_dex = nn_dex[i_sub]
+                out_file.write('%e %e %e %e\n' %
+                (multinest_chisq[i_pt], dalex_chisq[min_dex],
+                 nn_dist[i_sub],
+                 multinest_chisq[i_pt]-dalex_chisq[min_dex]))
