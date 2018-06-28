@@ -140,37 +140,26 @@ if __name__ == "__main__":
     print(chisq.min(),np.median(chisq),chisq.max())
 
 
-    #### fit quadratic mean model
-    bb = np.zeros(dim, dtype=float)
-    mm = np.zeros((dim,dim), dtype=float)
-    valid = np.where(np.logical_and(chisq>chisq_min+3.0*delta_chisq,chisq<1.0e5))
-    quad_pts = data_pts[valid]
-    quad_chisq = chisq[valid]
+    #### fit mean model
+    d_rr = 0.1
+    rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
+    chisq_rr_grid = [chisq_min]
+    rr_grid = [0.0]
+    rr_min = 0.0
+    for i_rr, rr in enumerate(rr_ideal_grid):
+        valid = np.where(np.logical_and(rr_arr>=rr_min,
+                                        rr_arr<rr))
 
-    d_chisq = quad_chisq-chisq_min
-    wgt = np.ones(len(d_chisq), dtype=float)
-    for i_dim in range(dim):
-        print('idim %d %d' % (i_dim, len(quad_chisq)))
-        z1 = ((quad_pts[:,i_dim]-min_pt[i_dim])/radii[i_dim])**2
-        bb[i_dim] = np.sum(wgt*d_chisq*z1)
-        for i_dim_2 in range(i_dim, dim):
-            z2 = ((quad_pts[:,i_dim_2]-min_pt[i_dim_2])/radii[i_dim])**2
-            mm[i_dim][i_dim_2] = np.sum(wgt*z1*z2)
-            if i_dim != i_dim_2:
-                mm[i_dim_2][i_dim] = mm[i_dim][i_dim_2]
+        if len(valid[0])>100:
+            mean_chisq = np.mean(chisq[valid])
+            chisq_rr_grid.append(mean_chisq)
+            rr_grid.append(0.5*(rr_min+rr))
+            rr_min=rr
 
-    quadratic_coeffs = np.linalg.solve(mm, bb)
-    for qq in quadratic_coeffs:
-        print(qq)
+    rr_grid = np.array(rr_grid)
+    chisq_rr_grid = np.array(chisq_rr_grid)
 
-    pos_coeffs = quadratic_coeffs[np.where(quadratic_coeffs>0.0)]
-    filler_coeff = np.median(pos_coeffs)
-    quadratic_coeffs = np.where(quadratic_coeffs>0.0, quadratic_coeffs, filler_coeff)
-    quadratic_chisq = np.zeros(len(data_pts), dtype=float)
-    for i_pt in range(len(data_pts)):
-        quadratic_chisq[i_pt] = chisq_min+np.sum(quadratic_coeffs*((data_pts[i_pt]-min_pt)/radii)**2)
-
-    print('filler %e\n' % filler_coeff)
+    print('built mean grids %e %e %d' % (rr_grid[-1], chisq_rr_grid[-1], len(rr_grid)))
 
     #### find ell interp grids
     #target_chisq = chisq.min()+target_chisq
@@ -243,9 +232,9 @@ if __name__ == "__main__":
     print('inverting covar')
     covar_inv = np.linalg.inv(covar_matrix)
 
-    gp_quad_chisq = np.zeros(n_gp_pts, dtype=float)
-    for i_pt in range(n_gp_pts):
-        gp_quad_chisq[i_pt] = chisq_min+np.sum(quadratic_coeffs*((gp_pts[i_pt]-min_pt)/radii)**2)
+    rr_gp = np.zeros(n_gp_pts, dtype=float)
+    rr_gp = np.sqrt(np.sum(((gp_pts-min_pt)/radii)**2,axis=1))
+    gp_quad_chisq = np.interp(rr_gp,rr_grid,chisq_rr_grid)
 
     covar_vec = np.dot(covar_inv, gp_chisq-gp_quad_chisq)
     assert len(covar_vec) == n_gp_pts
@@ -269,7 +258,8 @@ if __name__ == "__main__":
     with open('multinest_gp_comparison.txt', 'w') as out_file:
         out_file.write('# true gp quad\n')
         for pp, cc, cq_cheat in zip(gp_pts, gp_chisq, covar_matrix):
-            qq = chisq_min + np.sum(quadratic_coeffs*((pp-min_pt)/radii)**2)
+            rr = np.sqrt(np.sum(((pp-min_pt)/radii)**2))
+            qq = np.interp(rr, rr_grid, chisq_rr_grid)
             normed = pp/radii
             dist, dex = tree.query(normed, k=n_neighbors)
             ell = dist[1]
