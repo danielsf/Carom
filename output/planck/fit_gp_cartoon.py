@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import time
 from scipy import spatial as scipy_spatial
 
 import matplotlib
@@ -200,6 +201,7 @@ if __name__ == "__main__":
 
 
     #### fit mean model
+    t_start = time.time()
     d_rr = 0.1
     rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
     chisq_rr_grid = [chisq_min]
@@ -219,6 +221,7 @@ if __name__ == "__main__":
     chisq_rr_grid = np.array(chisq_rr_grid)
 
     print('built mean grids %e %e %d' % (rr_grid[-1], chisq_rr_grid[-1], len(rr_grid)))
+    print('that took %e seconds' % (time.time()-t_start))
 
     ### read in multinest
     n_multinest = 0
