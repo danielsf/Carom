@@ -199,6 +199,22 @@ if __name__ == "__main__":
 
     print(chisq.min(),np.median(chisq),chisq.max())
 
+    ### read in multinest
+    n_multinest = 0
+    with open(multinest_file, 'r') as in_file:
+        for line in in_file:
+            n_multinest += 1
+
+    multinest_pts = np.zeros((n_multinest, dim), dtype=float)
+    multinest_chisq = np.zeros(n_multinest, dtype=float)
+    multinest_rr = np.zeros(n_multinest, dtype=float)
+    with open(multinest_file, 'r') as in_file:
+        for i_line, line in enumerate(in_file):
+            params = np.array(line.strip().split()).astype(float)
+            pt = np.dot(bases, params[2:])
+            multinest_pts[i_line] = pt
+            multinest_chisq[i_line]= params[1]
+            multinest_rr[i_line] = np.sqrt(np.sum((multinest_pts[i_line]-min_pt)/radii)**2)
 
     #### fit mean model
     t_start = time.time()
@@ -223,24 +239,8 @@ if __name__ == "__main__":
     print('built mean grids %e %e %d' % (rr_grid[-1], chisq_rr_grid[-1], len(rr_grid)))
     print('that took %e seconds' % (time.time()-t_start))
 
-    ### read in multinest
-    n_multinest = 0
-    with open(multinest_file, 'r') as in_file:
-        for line in in_file:
-            n_multinest += 1
-
-    multinest_pts = np.zeros((n_multinest, dim), dtype=float)
-    multinest_chisq = np.zeros(n_multinest, dtype=float)
-    multinest_rr = np.zeros(n_multinest, dtype=float)
-    with open(multinest_file, 'r') as in_file:
-        for i_line, line in enumerate(in_file):
-            params = np.array(line.strip().split()).astype(float)
-            pt = np.dot(bases, params[2:])
-            multinest_pts[i_line] = pt
-            multinest_chisq[i_line]= params[1]
-            multinest_rr[i_line] = np.sqrt(np.sum((multinest_pts[i_line]-min_pt)/radii)**2)
-
     mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
+    print('evaluating multinest took us to %e seconds'% (time.time()-t_start))
 
     plt.figure(figsize=(30,30))
     valid = np.where(np.logical_and(multinest_chisq<5000.0,mean_chisq<5000.0))
