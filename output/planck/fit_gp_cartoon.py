@@ -248,10 +248,10 @@ if __name__ == "__main__":
     c_max = max(multinest_chisq[valid].max(),mean_chisq[valid].max())
     c_min = min(multinest_chisq[valid].min(),mean_chisq[valid].min())
     #plt.plot([c_min,c_max],[c_min,c_max],linestyle='--',color='r',linewidth=5)
-    plt.xlim((multinest_chisq[valid].min(),chisq[valid].max()))
+    plt.xlim((multinest_chisq[valid].min(),multinest_chisq[valid].max()))
     plt.ylim((mean_chisq[valid].min(),mean_chisq[valid].max()))
-    plt.xticks(fontsize=100)
-    plt.yticks(fontsize=100)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     plt.savefig('mult_mean_density.png')
     exit()
 
