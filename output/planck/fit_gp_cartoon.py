@@ -209,7 +209,7 @@ if __name__ == "__main__":
         valid = np.where(np.logical_and(rr_arr>=rr_min,
                                         rr_arr<rr))
 
-        if len(valid[0])>100:
+        if len(valid[0])>20:
             mean_chisq = np.mean(chisq[valid])
             chisq_rr_grid.append(mean_chisq)
             rr_grid.append(0.5*(rr_min+rr))
