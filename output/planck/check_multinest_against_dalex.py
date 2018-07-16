@@ -39,8 +39,11 @@ if __name__ == "__main__":
     dalex_pts = dalex_pts[valid]
     dalex_chisq = dalex_chisq[valid]
     scale = np.zeros(dim,dtype=float)
+    target_chisq=dalex_chisq.min()+47.41
+    inside = np.where(dalex_chisq<target_chisq)
+    inside_pts = dalex_pts[inside]
     for i_dim in range(dim):
-        scale[i_dim] = dalex_pts[:,i_dim].max()-dalex_pts[:,i_dim].min()
+        scale[i_dim] = inside_pts[:,i_dim].max()-inside_pts[:,i_dim].min()
     dalex_pts = np.array([vv/scale for vv in dalex_pts])
     print('read dalex data')
     #tree = scipy_spatial.KDTree(dalex_pts, leafsize=10)
