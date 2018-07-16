@@ -220,20 +220,39 @@ if __name__ == "__main__":
 
     print('built mean grids %e %e %d' % (rr_grid[-1], chisq_rr_grid[-1], len(rr_grid)))
 
-    mean_chisq = np.interp(rr_arr, rr_grid, chisq_rr_grid)
+    ### read in multinest
+    n_multinest = 0
+    with open(multinest_file, 'r') as in_file:
+        for line in in_file:
+            n_multinest += 1
+
+    multinest_pts = np.zeros((n_multinest, dim), dtype=float)
+    multinest_chisq = np.zeros(n_multinest, dtype=float)
+    multinest_rr = np.zeros(n_multinest, dtype=float)
+    with open(multinest_file, 'r') as in_file:
+        for i_line, line in enumerate(in_file):
+            params = np.array(line.strip().split()).astype(float)
+            pt = np.dot(bases, params[2:])
+            multinest_pts[i_line] = pt
+            multinest_chisq[i_line]= params[1]
+            multinest_rr[i_line] = np.sqrt(np.sum((multinest_pts[i_line]-min_pt)/radii)**2)
+
+    mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
 
     plt.figure(figsize=(30,30))
-    valid = np.where(np.logical_and(chisq<5000.0,mean_chisq<5000.0))
+    valid = np.where(np.logical_and(multinest_chisq<5000.0,mean_chisq<5000.0))
     print('valid points %.5e of %.5e' % (len(valid[0]),len(mean_chisq)))
-    plot_color_mesh(chisq[valid],mean_chisq[valid],1.0,1.0)
+    plot_color_mesh(multinest_chisq[valid],mean_chisq[valid],1.0,1.0)
     plt.xlabel('chisq', fontsize=40)
     plt.ylabel('mean model', fontsize=40)
-    c_max = max(chisq[valid].max(),mean_chisq[valid].max())
-    c_min = min(chisq[valid].min(),mean_chisq[valid].min())
-    plt.plot([c_min,c_max],[c_min,c_max],linestyle='--',color='r')
-    plt.savefig('mult_mean_density.png')
-    plt.xlim((chisq[valid].min(),chisq[valid].max()))
+    c_max = max(multinest_chisq[valid].max(),mean_chisq[valid].max())
+    c_min = min(multinest_chisq[valid].min(),mean_chisq[valid].min())
+    #plt.plot([c_min,c_max],[c_min,c_max],linestyle='--',color='r',linewidth=5)
+    plt.xlim((multinest_chisq[valid].min(),chisq[valid].max()))
     plt.ylim((mean_chisq[valid].min(),mean_chisq[valid].max()))
+    plt.xticks(fontsize=100)
+    plt.yticks(fontsize=100)
+    plt.savefig('mult_mean_density.png')
     exit()
 
 
@@ -248,6 +267,7 @@ if __name__ == "__main__":
     #prev_pairs = None
 
     ### select points for GP ###
+    mean_chisq = np.interp(rr_arr, rr_grid, chisq_rr_grid)
     n_gp_pts = 2000
     gp_pts_file = 'gp_pts.txt'
     if not os.path.exists(gp_pts_file):
@@ -316,20 +336,6 @@ if __name__ == "__main__":
     assert len(covar_vec) == n_gp_pts
 
     #### test against MultiNest samples
-
-    n_multinest = 0
-    with open(multinest_file, 'r') as in_file:
-        for line in in_file:
-            n_multinest += 1
-
-    multinest_pts = np.zeros((n_multinest, dim), dtype=float)
-    multinest_chisq = np.zeros(n_multinest, dtype=float)
-    with open(multinest_file, 'r') as in_file:
-        for i_line, line in enumerate(in_file):
-            params = np.array(line.strip().split()).astype(float)
-            pt = np.dot(bases, params[2:])
-            multinest_pts[i_line] = pt
-            multinest_chisq[i_line]= params[1]
 
     with open('multinest_gp_comparison.txt', 'w') as out_file:
         out_file.write('# true gp quad\n')
