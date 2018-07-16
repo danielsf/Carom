@@ -220,6 +220,23 @@ if __name__ == "__main__":
 
     print('built mean grids %e %e %d' % (rr_grid[-1], chisq_rr_grid[-1], len(rr_grid)))
 
+    mean_chisq = np.interp(rr_arr, rr_grid, chisq_rr_grid)
+
+    plt.figure(figsize=(30,30))
+    valid = np.where(np.logical_and(chisq<5000.0,mean_chisq<5000.0))
+    print('valid points %.5e of %.5e' % (len(valid[0]),len(mean_chisq)))
+    plot_color_mesh(chisq[valid],mean_chisq[valid],1.0,1.0)
+    plt.xlabel('chisq', fontsize=40)
+    plt.ylabel('mean model', fontsize=40)
+    c_max = max(chisq[valid].max(),mean_chisq[valid].max())
+    c_min = min(chisq[valid].min(),mean_chisq[valid].min())
+    plt.plot([c_min,c_max],[c_min,c_max],linestyle='--',color='r')
+    plt.savefig('mult_mean_density.png')
+    plt.xlim((chisq[valid].min(),chisq[valid].max()))
+    plt.ylim((mean_chisq[valid].min(),mean_chisq[valid].max()))
+    exit()
+
+
     #### find ell interp grids
     #target_chisq = chisq.min()+target_chisq
     #valid = np.where(chisq<target_chisq+0.1*delta_chisq)
