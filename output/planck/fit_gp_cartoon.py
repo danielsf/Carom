@@ -251,7 +251,7 @@ if __name__ == "__main__":
     n_gp_pts = 2000
     gp_pts_file = 'gp_pts.txt'
     if not os.path.exists(gp_pts_file):
-        gp_pts, gp_chisq = get_gp_set(data_pts, chisq, quadratic_chisq, radii, n_gp_pts, dim)
+        gp_pts, gp_chisq = get_gp_set(data_pts, chisq, mean_chisq, radii, n_gp_pts, dim)
 
         with open(gp_pts_file, 'w') as out_file:
             for i_pt in range(len(gp_pts)):
