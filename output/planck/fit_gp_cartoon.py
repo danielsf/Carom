@@ -282,12 +282,15 @@ if __name__ == "__main__":
                                 multinest_file=multinest_file,
                                 basis_file=basis_file)
 
+    valid = np.where(fitter.chisq<fitter.chisq.min()+delta_chisq)
+    print('valid %d' % len(valid[0]))
+
     pp = []
     init_dict = {}
     for ii in range(33):
         pp.append('p%d' % ii)
-        init_dict['p%d'%ii] = fitter._baseline_radii[ii]
-        init_dict['error_p%d'%ii] = 0.1*fitter._baseline_radii[ii]
+        init_dict['p%d'%ii] = 0.5*(fitter.data_pts[valid,ii].max()-fitter.data_pts[valid,ii].min())
+        init_dict['error_p%d'%ii] = 0.1*init_dict['p%d'%ii]
 
     mm = Minuit(fitter.fit_mean_model, use_array_call=True, forced_parameters=pp ,**init_dict)
     mm.migrad()
