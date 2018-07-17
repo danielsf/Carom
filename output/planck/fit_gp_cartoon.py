@@ -188,8 +188,11 @@ class MultinestMinimizer(object):
 
 
         self.min_dex = np.argmin(self.chisq)
-        self.min_pt = self.data_pts[self.min_dex]
+        self.min_pt = np.copy(self.data_pts[self.min_dex])
         self.chisq_min = self.chisq[self.min_dex]
+
+        for ipt in range(len(self.data_pts)):
+            self.data_pts[ipt] -= self.min_pt
 
         print(self.chisq.min(),np.median(self.chisq),self.chisq.max())
 
@@ -205,7 +208,7 @@ class MultinestMinimizer(object):
             for i_line, line in enumerate(in_file):
                 params = np.array(line.strip().split()).astype(float)
                 pt = np.dot(self.bases, params[2:])
-                self.multinest_pts[i_line] = pt
+                self.multinest_pts[i_line] = pt - self.min_pt
                 self.multinest_chisq[i_line]= params[1]
 
         self._baseline_metric = self.fit_mean_model(self._baseline_radii)
@@ -215,11 +218,11 @@ class MultinestMinimizer(object):
         rr_arr = np.zeros(len(self.data_pts), dtype=float)
 
         for i_pt in range(len(self.data_pts)):
-            rr_arr[i_pt] = np.sqrt(np.sum(((self.data_pts[i_pt]-self.min_pt)/radii)**2))
+            rr_arr[i_pt] = np.sqrt(np.sum((self.data_pts[i_pt]/radii)**2))
 
         multinest_rr = np.zeros(len(self.multinest_chisq), dtype=float)
         for i_line in range(len(self.multinest_pts)):
-            multinest_rr[i_line] = np.sqrt(np.sum((self.multinest_pts[i_line]-self.min_pt)/radii)**2)
+            multinest_rr[i_line] = np.sqrt(np.sum(self.multinest_pts[i_line]/radii)**2)
 
         return rr_arr, multinest_rr
 
