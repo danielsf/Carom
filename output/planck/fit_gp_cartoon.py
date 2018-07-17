@@ -193,6 +193,7 @@ class MultinestMinimizer(object):
 
         for ipt in range(len(self.data_pts)):
             self.data_pts[ipt] -= self.min_pt
+        self.data_pts_sq = self.data_pts**2
 
         print(self.chisq.min(),np.median(self.chisq),self.chisq.max())
 
@@ -215,10 +216,8 @@ class MultinestMinimizer(object):
 
     def _set_rr(self, radii):
 
-        rr_arr = np.zeros(len(self.data_pts), dtype=float)
-
-        for i_pt in range(len(self.data_pts)):
-            rr_arr[i_pt] = np.sqrt(np.sum((self.data_pts[i_pt]/radii)**2))
+        wgts = (1.0/radii)**2
+        rr_arr = np.sqrt(np.dot(self.data_pts_sq, wgts))
 
         multinest_rr = np.zeros(len(self.multinest_chisq), dtype=float)
         for i_line in range(len(self.multinest_pts)):
