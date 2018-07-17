@@ -260,7 +260,7 @@ class MultinestMinimizer(object):
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
             print('metric %.4e -- %.4e -- %.4e' % (metric,self._metric_min,self._baseline_metric))
-        print('metric took %e seconds' % (time.time()-t_start))
+        print('metric took %e seconds %e' % (time.time()-t_start,metric))
         return metric
 
 
