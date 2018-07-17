@@ -231,6 +231,10 @@ class MultinestMinimizer(object):
 
         print('set_rr took %e seconds' % (time.time()-t_start))
 
+        sorted_dex = np.argsort(rr_arr)
+        rr_arr = rr_arr[sorted_dex]
+        chisq_sorted = self.chisq[sorted_dex]
+
         #### fit mean model
         d_rr = 0.1
         rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
@@ -242,10 +246,13 @@ class MultinestMinimizer(object):
                                             rr_arr<rr))
 
             if len(valid[0])>20:
-                mean_chisq = np.mean(self.chisq[valid])
+                mean_chisq = np.mean(chisq_sorted[valid])
                 chisq_rr_grid.append(mean_chisq)
                 rr_grid.append(0.5*(rr_min+rr))
                 rr_min=rr
+                min_dex = valid[0].min()
+                rr_arr = rr_arr[min_dex:]
+                chisq_sorted = chisq_sorted[min_dex:]
 
         rr_grid = np.array(rr_grid)
         chisq_rr_grid = np.array(chisq_rr_grid)
