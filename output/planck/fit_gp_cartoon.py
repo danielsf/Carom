@@ -229,7 +229,7 @@ class MultinestMinimizer(object):
         (rr_arr,
          multinest_rr) = self._set_rr(radii)
 
-        print('set_rr took %e seconds' % (time.time()-t_start))
+        #print('set_rr took %e seconds' % (time.time()-t_start))
 
         sorted_dex = np.argsort(rr_arr)
         rr_arr = rr_arr[sorted_dex]
@@ -264,7 +264,7 @@ class MultinestMinimizer(object):
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
             print('metric %.4e -- %.4e -- %.4e' % (metric,self._metric_min,self._baseline_metric))
-        print('metric took %e seconds %e' % (time.time()-t_start,metric))
+        #print('metric took %e seconds %e' % (time.time()-t_start,metric))
         return metric
 
 
