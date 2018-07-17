@@ -2,6 +2,7 @@ import os
 import numpy as np
 import time
 from scipy import spatial as scipy_spatial
+from iminuit import Minuit
 
 import matplotlib
 matplotlib.use('Agg')
@@ -175,6 +176,88 @@ def get_gp_set(data_pts, chisq, quad_chisq, radii, n_pts, dim):
 
     return gp_pts, gp_chisq
 
+
+class MultinestMinimizer(object):
+
+    def __init__(self, basis_file=None, data_file=None, multinest_file=None):
+        self.dim = 33
+        self._metric_min=3.0e30
+
+        self.bases, self._baseline_radii = read_bases(basis_file, self.dim)
+        self.data_pts, self.chisq = project_pts(data_file, self.bases, self.dim)
+
+
+        self.min_dex = np.argmin(self.chisq)
+        self.min_pt = self.data_pts[self.min_dex]
+        self.chisq_min = self.chisq[self.min_dex]
+
+        print(self.chisq.min(),np.median(self.chisq),self.chisq.max())
+
+        ### read in multinest
+        n_multinest = 0
+        with open(multinest_file, 'r') as in_file:
+            for line in in_file:
+                n_multinest += 1
+
+        self.multinest_pts = np.zeros((n_multinest, dim), dtype=float)
+        self.multinest_chisq = np.zeros(n_multinest, dtype=float)
+        with open(multinest_file, 'r') as in_file:
+            for i_line, line in enumerate(in_file):
+                params = np.array(line.strip().split()).astype(float)
+                pt = np.dot(self.bases, params[2:])
+                self.multinest_pts[i_line] = pt
+                self.multinest_chisq[i_line]= params[1]
+
+        self._baseline_metric = self.fit_mean_model(self._baseline_radii)
+
+    def _set_rr(self, radii):
+
+        rr_arr = np.zeros(len(self.data_pts), dtype=float)
+
+        for i_pt in range(len(self.data_pts)):
+            rr_arr[i_pt] = np.sqrt(np.sum(((self.data_pts[i_pt]-self.min_pt)/radii)**2))
+
+        multinest_rr = np.zeros(len(self.multinest_chisq), dtype=float)
+        for i_line in range(len(self.multinest_pts)):
+            multinest_rr[i_line] = np.sqrt(np.sum((self.multinest_pts[i_line]-self.min_pt)/radii)**2)
+
+        return rr_arr, multinest_rr
+
+    def fit_mean_model(self, radii):
+
+        (rr_arr,
+         multinest_rr) = self._set_rr(radii)
+
+        #### fit mean model
+        t_start = time.time()
+        d_rr = 0.1
+        rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
+        chisq_rr_grid = [self.chisq_min]
+        rr_grid = [0.0]
+        rr_min = 0.0
+        for i_rr, rr in enumerate(rr_ideal_grid):
+            valid = np.where(np.logical_and(rr_arr>=rr_min,
+                                            rr_arr<rr))
+
+            if len(valid[0])>20:
+                mean_chisq = np.mean(self.chisq[valid])
+                chisq_rr_grid.append(mean_chisq)
+                rr_grid.append(0.5*(rr_min+rr))
+                rr_min=rr
+
+        rr_grid = np.array(rr_grid)
+        chisq_rr_grid = np.array(chisq_rr_grid)
+
+        mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
+        metric = 0.0
+        metric = np.sum(((mean_chisq-self.multinest_chisq)/self.multinest_chisq)**2)
+        if metric<self._metric_min:
+            self._metric_min=metric
+        if hasattr(self, '_baseline_metric'):
+            print('metric %.4e -- %.4e -- %.4e' % (metric,self._metric_min,self._baseline_metric))
+        return metric
+
+
 if __name__ == "__main__":
 
     dim = 33
@@ -185,62 +268,20 @@ if __name__ == "__main__":
 
     rng = np.random.RandomState(57623)
 
-    bases, radii = read_bases(basis_file, dim)
-    data_pts, chisq = project_pts(data_file, bases, dim)
+    fitter = MultinestMinimizer(data_file=data_file,
+                                multinest_file=multinest_file,
+                                basis_file=basis_file)
 
-    rr_arr = np.zeros(len(data_pts), dtype=float)
+    pp = []
+    init_dict = {}
+    for ii in range(33):
+        pp.append('p%d' % ii)
+        init_dict['p%d'%ii] = fitter._baseline_radii[ii]
+        init_dict['error_p%d'%ii] = 0.1*fitter._baseline_radii[ii]
 
-    min_dex = np.argmin(chisq)
-    min_pt = data_pts[min_dex]
-    chisq_min = chisq[min_dex]
-
-    for i_pt in range(len(data_pts)):
-        rr_arr[i_pt] = np.sqrt(np.sum(((data_pts[i_pt]-min_pt)/radii)**2))
-
-    print(chisq.min(),np.median(chisq),chisq.max())
-
-    ### read in multinest
-    n_multinest = 0
-    with open(multinest_file, 'r') as in_file:
-        for line in in_file:
-            n_multinest += 1
-
-    multinest_pts = np.zeros((n_multinest, dim), dtype=float)
-    multinest_chisq = np.zeros(n_multinest, dtype=float)
-    multinest_rr = np.zeros(n_multinest, dtype=float)
-    with open(multinest_file, 'r') as in_file:
-        for i_line, line in enumerate(in_file):
-            params = np.array(line.strip().split()).astype(float)
-            pt = np.dot(bases, params[2:])
-            multinest_pts[i_line] = pt
-            multinest_chisq[i_line]= params[1]
-            multinest_rr[i_line] = np.sqrt(np.sum((multinest_pts[i_line]-min_pt)/radii)**2)
-
-    #### fit mean model
-    t_start = time.time()
-    d_rr = 0.1
-    rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
-    chisq_rr_grid = [chisq_min]
-    rr_grid = [0.0]
-    rr_min = 0.0
-    for i_rr, rr in enumerate(rr_ideal_grid):
-        valid = np.where(np.logical_and(rr_arr>=rr_min,
-                                        rr_arr<rr))
-
-        if len(valid[0])>20:
-            mean_chisq = np.mean(chisq[valid])
-            chisq_rr_grid.append(mean_chisq)
-            rr_grid.append(0.5*(rr_min+rr))
-            rr_min=rr
-
-    rr_grid = np.array(rr_grid)
-    chisq_rr_grid = np.array(chisq_rr_grid)
-
-    print('built mean grids %e %e %d' % (rr_grid[-1], chisq_rr_grid[-1], len(rr_grid)))
-    print('that took %e seconds' % (time.time()-t_start))
-
-    mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
-    print('evaluating multinest took us to %e seconds'% (time.time()-t_start))
+    mm = Minuit(fitter.fit_mean_model, use_array_call=True, forced_parameters=pp ,**init_dict)
+    mm.migrad()
+    exit()
 
     plt.figure(figsize=(30,30))
     valid = np.where(np.logical_and(multinest_chisq<5000.0,mean_chisq<5000.0))
