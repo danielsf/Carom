@@ -224,12 +224,14 @@ class MultinestMinimizer(object):
         return rr_arr, multinest_rr
 
     def fit_mean_model(self, radii):
+        t_start = time.time()
 
         (rr_arr,
          multinest_rr) = self._set_rr(radii)
 
+        print('set_rr took %e seconds' % (time.time()-t_start))
+
         #### fit mean model
-        t_start = time.time()
         d_rr = 0.1
         rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
         chisq_rr_grid = [self.chisq_min]
@@ -255,6 +257,7 @@ class MultinestMinimizer(object):
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
             print('metric %.4e -- %.4e -- %.4e' % (metric,self._metric_min,self._baseline_metric))
+        print('metric took %e seconds' % (time.time()-t_start))
         return metric
 
 
