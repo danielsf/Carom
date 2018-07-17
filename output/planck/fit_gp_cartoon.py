@@ -212,16 +212,14 @@ class MultinestMinimizer(object):
                 self.multinest_pts[i_line] = pt - self.min_pt
                 self.multinest_chisq[i_line]= params[1]
 
+        self.multinest_pts_sq = self.multinest_pts**2
         self._baseline_metric = self.fit_mean_model(self._baseline_radii)
 
     def _set_rr(self, radii):
 
         wgts = (1.0/radii)**2
         rr_arr = np.sqrt(np.dot(self.data_pts_sq, wgts))
-
-        multinest_rr = np.zeros(len(self.multinest_chisq), dtype=float)
-        for i_line in range(len(self.multinest_pts)):
-            multinest_rr[i_line] = np.sqrt(np.sum(self.multinest_pts[i_line]/radii)**2)
+        multinest_rr = np.sqrt(np.dot(self.multinest_pts_sq, wgts))
 
         return rr_arr, multinest_rr
 
