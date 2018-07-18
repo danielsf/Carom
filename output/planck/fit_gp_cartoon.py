@@ -264,13 +264,17 @@ class MultinestMinimizer(object):
                             np.logical_and(mean_chisq<target, self.multinest_chisq>target),
                             np.logical_and(mean_chisq>target, self.multinest_chisq<target)))
 
-        metric = 0.0
-        metric = np.sum(((mean_chisq-self.multinest_chisq)/self.multinest_chisq)**2)
+        wgts = np.zeros(len(mean_chisq), dtype=float)
+        wgts[mis_char] = 1.0
+
+        metric = np.sum(((mean_chisq-self.multinest_chisq)*wgts)**2)
         if metric<self._metric_min:
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
             print('metric %.4e -- %.4e -- %.4e %d' %
             (metric,self._metric_min,self._baseline_metric, len(mis_char[0])))
+        else:
+            print("metric %e" % metric)
         #print('metric took %e seconds %e' % (time.time()-t_start,metric))
         return metric
 
