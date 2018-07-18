@@ -235,8 +235,6 @@ class MultinestMinimizer(object):
         rr_arr = rr_arr[sorted_dex]
         chisq_sorted = self.chisq[sorted_dex]
 
-        target_chisq = self.chisq_min+47.41
-
         #### fit mean model
         d_rr = 0.1
         rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
@@ -261,22 +259,11 @@ class MultinestMinimizer(object):
 
         mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
         metric = 0.0
-
-        mis_char = np.logical_or(
-                        np.logical_and(mean_chisq>target_chisq, self.multinest_chisq<target_chisq),
-                        np.logical_and(mean_chisq<target_chisq, self.multinest_chisq>target_chisq))
-
-        wgts = np.zeros(len(mean_chisq), dtype=float)
-        #wgts[mis_char] = 1.0/self.multinest_chisq[mis_char]
-        wgts[mis_char] = 1.0
-
-        metric = np.sum(((mean_chisq-self.multinest_chisq)*wgts)**2)
-
+        metric = np.sum(((mean_chisq-self.multinest_chisq)/self.multinest_chisq)**2)
         if metric<self._metric_min:
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
-            print('metric %.4e -- %.4e -- %.4e %d' %
-             (metric,self._metric_min,self._baseline_metric,len(mis_char[0])))
+            print('metric %.4e -- %.4e -- %.4e' % (metric,self._metric_min,self._baseline_metric))
         #print('metric took %e seconds %e' % (time.time()-t_start,metric))
         return metric
 
