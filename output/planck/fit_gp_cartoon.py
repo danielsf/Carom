@@ -258,12 +258,19 @@ class MultinestMinimizer(object):
         chisq_rr_grid = np.array(chisq_rr_grid)
 
         mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
+
+        target = self.chisq_min+47.41
+        mis_char = np.where(np.logical_or(
+                            np.logical_and(mean_chisq<target, self.multinest_chisq>target),
+                            np.logical_and(mean_chisq>target, self.multinest_chisq<target)))
+
         metric = 0.0
         metric = np.sum(((mean_chisq-self.multinest_chisq)/self.multinest_chisq)**2)
         if metric<self._metric_min:
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
-            print('metric %.4e -- %.4e -- %.4e' % (metric,self._metric_min,self._baseline_metric))
+            print('metric %.4e -- %.4e -- %.4e %d' %
+            (metric,self._metric_min,self._baseline_metric, len(mis_char[0])))
         #print('metric took %e seconds %e' % (time.time()-t_start,metric))
         return metric
 
