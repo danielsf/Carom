@@ -236,26 +236,26 @@ class MultinestMinimizer(object):
         chisq_sorted = self.chisq[sorted_dex]
 
         #### fit mean model
-        d_rr = 0.1
-        rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
+        n_steps = 7
+        d_n = len(rr_arr)//n_steps
         chisq_rr_grid = [self.chisq_min]
         rr_grid = [0.0]
         rr_min = 0.0
-        for i_rr, rr in enumerate(rr_ideal_grid):
-            valid = np.where(np.logical_and(rr_arr>=rr_min,
-                                            rr_arr<rr))
-
-            if len(valid[0])>20:
-                mean_chisq = np.mean(chisq_sorted[valid])
-                chisq_rr_grid.append(mean_chisq)
-                rr_grid.append(0.5*(rr_min+rr))
-                rr_min=rr
-                min_dex = valid[0].min()
-                rr_arr = rr_arr[min_dex:]
-                chisq_sorted = chisq_sorted[min_dex:]
+        for i_step in range(n_steps):
+            i_min = i_step*d_n
+            i_max = i_min + d_n
+            if i_step == n_steps-1:
+                i_max = -1
+            rr = 0.5*(rr_arr[i_min]+rr_arr[i_max])
+            cc = np.median(chisq_sorted[i_min:i_max])
+            rr_grid.append(rr)
+            chisq_rr_grid.append(cc)
 
         rr_grid = np.array(rr_grid)
         chisq_rr_grid = np.array(chisq_rr_grid)
+        sorted_dex = np.argsort(rr_grid)
+        rr_grid = rr_grid[sorted_dex]
+        chisq_rr_grid = chisq_rr_grid[sorted_dex]
 
         mean_chisq = np.interp(multinest_rr, rr_grid, chisq_rr_grid)
 
