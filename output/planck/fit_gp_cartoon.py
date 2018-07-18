@@ -237,30 +237,23 @@ class MultinestMinimizer(object):
 
         #### fit mean model
         d_rr = 0.1
-        rr_ideal_grid = np.arange(d_rr,rr_arr.max()+2*d_rr,d_rr)
+        rr_ideal_grid = np.arange(d_rr,rr_arr.max(),d_rr)
         chisq_rr_grid = [self.chisq_min]
         rr_grid = [0.0]
         rr_min = 0.0
         for i_rr, rr in enumerate(rr_ideal_grid):
-            if len(rr_arr) == 0:
-                break
-
             valid = np.where(np.logical_and(rr_arr>=rr_min,
                                             rr_arr<rr))
 
-            if len(valid[0])>2000000 or i_rr==(len(rr_ideal_grid)-1):
-                mean_chisq = np.median(chisq_sorted[valid])
+            if len(valid[0])>20:
+                mean_chisq = np.mean(chisq_sorted[valid])
                 chisq_rr_grid.append(mean_chisq)
                 rr_grid.append(0.5*(rr_min+rr))
                 rr_min=rr
-                dex_diff = np.unique(np.diff(valid[0]))
-                assert len(dex_diff) == 1
-                assert dex_diff[0] == 1
-                max_dex = valid[0].max()
-                rr_arr = rr_arr[max_dex:]
-                chisq_sorted = chisq_sorted[max_dex:]
+                min_dex = valid[0].min()
+                rr_arr = rr_arr[min_dex:]
+                chisq_sorted = chisq_sorted[min_dex:]
 
-        #print('exit with len(rr) %d %d' % (len(rr_arr),len(valid[0])))
         rr_grid = np.array(rr_grid)
         chisq_rr_grid = np.array(chisq_rr_grid)
 
@@ -271,29 +264,15 @@ class MultinestMinimizer(object):
                             np.logical_and(mean_chisq<target, self.multinest_chisq>target),
                             np.logical_and(mean_chisq>target, self.multinest_chisq<target)))
 
-        #wgts = 1.0/(3.0*self.multinest_chisq)
-        #wgts[mis_char] = 1.0/self.multinest_chisq[mis_char]
-        #wgts = 1.0/(1.0+np.abs(self.multinest_chisq-target))
-        #wgts = 1.0/self.multinest_chisq
-        wgts = np.ones(len(mean_chisq), dtype=float)/47.41
-        wgts[mis_char]*=2.0
-        metric_terms = np.abs(wgts*(mean_chisq-self.multinest_chisq))
+        wgts = np.zeros(len(mean_chisq), dtype=float)
+        wgts[mis_char] = 1.0
 
-        metric_terms = metric_terms[mis_char]
-        metric_terms = np.sort(metric_terms)
-        max_term = np.max(metric_terms)
-        median_term = np.median(metric_terms)
-
-        metric = metric_terms[3*len(metric_terms)//4] #np.sum(metric_terms**2)
-
+        metric = np.sum(((mean_chisq-self.multinest_chisq)*wgts)**2)
         if metric<self._metric_min:
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
-            #print(rr_grid)
-            #print(chisq_rr_grid)
-            print('metric %.4e -- %.4e -- %.4e %d %d %.2e %.2e' %
-            (metric,self._metric_min,self._baseline_metric, len(mis_char[0]),
-             len(rr_grid),max_term,median_term))
+            print('metric %.4e -- %.4e -- %.4e %d' %
+            (metric,self._metric_min,self._baseline_metric, len(mis_char[0])))
         else:
             print("metric %e" % metric)
         #print('metric took %e seconds %e' % (time.time()-t_start,metric))
