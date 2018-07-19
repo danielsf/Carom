@@ -3,6 +3,7 @@ import numpy as np
 import time
 from scipy import spatial as scipy_spatial
 from iminuit import Minuit
+import gc
 
 import matplotlib
 matplotlib.use('Agg')
@@ -250,7 +251,9 @@ class MultinestMinimizer(object):
                 self.multinest_chisq[i_line]= params[1]
 
         self.multinest_pts_sq = self.multinest_pts**2
-        self._baseline_metric = self.fit_mean_model(self._baseline_radii)
+        (self._baseline_metric,
+         self._delta_chisq,
+         self._multinest_mean) = self.fit_mean_model(self._baseline_radii, return_delta=True)
 
     def _set_rr(self, radii):
 
@@ -260,7 +263,7 @@ class MultinestMinimizer(object):
 
         return rr_arr, multinest_rr
 
-    def fit_mean_model(self, radii):
+    def fit_mean_model(self, radii, return_delta=False):
         t_start = time.time()
 
         (rr_arr,
@@ -316,8 +319,11 @@ class MultinestMinimizer(object):
             (metric,self._metric_min,self._baseline_metric, len(mis_char[0]),
              max_term,med_term))
         else:
-            print("metric %e" % metric)
+            print("metric %e -- %d %e %e" %(metric,len(mis_char[0]),max_term,med_term))
         #print('metric took %e seconds %e' % (time.time()-t_start,metric))
+        if return_delta:
+            interp_chisq = np.interp(rr_arr, rr_grid, chisq_rr_grid)
+            return metric, self.chisq-interp_chisq, mean_chisq
         return metric
 
 
@@ -334,6 +340,62 @@ if __name__ == "__main__":
     fitter = MultinestMinimizer(data_file=data_file,
                                 multinest_file=multinest_file,
                                 basis_file=basis_file)
+
+    target = fitter.chisq_min+delta_chisq
+
+    renormed_data = np.zeros(fitter.data_pts.shape, dtype=float)
+    print('renorm shape ',renormed_data.shape,fitter.data_pts.shape)
+    with open('planck_dalex_renormed.sav', 'w') as out_file:
+        for i_line in range(len(fitter.data_pts)):
+            renormed_data[i_line] = fitter.data_pts[i_line]/fitter._baseline_radii
+            for ii in range(dim):
+                out_file.write('%e ' % renormed_data[i_line][ii]);
+            out_file.write('\n')
+    renormed_multinest = np.zeros(fitter.multinest_pts.shape, dtype=float)
+    with open('planck_multinest_renormed.sav', 'w') as out_file:
+        for i_line in range(len(fitter.multinest_pts)):
+            renormed_multinest[i_line] = fitter.multinest_pts[i_line]/fitter._baseline_radii
+            for ii in range(dim):
+                out_file.write('%e ' % renormed_multinest[i_line][ii])
+            out_file.write('\n')
+
+    del fitter.data_pts
+    del fitter.multinest_pts
+    gc.collect()
+    exit()
+
+    print('making tree')
+    fit_tree = scipy_spatial.KDTree(renormed_data, leafsize=10)
+
+    print('starting fit')
+    fit_chisq = np.zeros(len(renormed_multinest), dtype=float)
+    true_chisq = fitter.multinest_chisq
+    t_start = time.time()
+    for i_line in range(len(renormed_multinest)):
+        #ddsq = np.array([np.sum((renormed_multinest[i_line]-pp)**2)
+        #                 for pp in renormed_data])
+        neighbor_dist, neighbor_dex = fit_tree.query(renormed_multinest[i_line], k=1)
+        nn_dex = neighbor_dex[0]
+        #nn_dex = np.argmin(ddsq)
+        dd = fitter._delta_chisq[nn_dex]
+        mm = fitter._multinest_mean[i_line]
+        cc = mm+dd
+        fit_chisq[i_line] = cc
+        if 1==1:
+            duration = time.time()-t_start
+            prediction = len(renormed_multinest)*duration/(i_line+1)
+            print("    %d took %e pred %e" % (i_line,duration,prediction))
+
+    mis_char = np.where(np.logical_or(
+                        np.logical_and(fit_chisq<target, true_chisq>target),
+                        np.logical_and(fit_chisq>target, true_chisq<target)))
+
+    mis_delta = np.abs(fit_chisq[mis_char]-true_chisq[mis_char])
+    print('n_mischar %d' % len(mis_char[0]))
+    print('worst %e' % mis_delta.max())
+    print('median %e' % np.median(mis_delta))
+
+    exit()
 
     valid = np.where(fitter.chisq<fitter.chisq.min()+delta_chisq)
     print('valid %d' % len(valid[0]))
