@@ -236,7 +236,7 @@ class MultinestMinimizer(object):
         chisq_sorted = self.chisq[sorted_dex]
 
         #### fit mean model
-        n_steps = 7
+        n_steps = 4
         d_n = len(rr_arr)//n_steps
         chisq_rr_grid = [self.chisq_min]
         rr_grid = [0.0]
@@ -267,12 +267,17 @@ class MultinestMinimizer(object):
         wgts = np.zeros(len(mean_chisq), dtype=float)
         wgts[mis_char] = 1.0
 
-        metric = np.sum(((mean_chisq-self.multinest_chisq)*wgts)**2)
+        metric_terms = np.abs(mean_chisq-self.multinest_chisq)
+        max_term = metric_terms[mis_char].max()
+        med_term = np.median(metric_terms[mis_char])
+
+        metric = np.sum((metric_terms*wgts)**2)
         if metric<self._metric_min:
             self._metric_min=metric
         if hasattr(self, '_baseline_metric'):
-            print('metric %.4e -- %.4e -- %.4e %d' %
-            (metric,self._metric_min,self._baseline_metric, len(mis_char[0])))
+            print('metric %.4e -- %.4e -- %.4e %d %.4e %.4e' %
+            (metric,self._metric_min,self._baseline_metric, len(mis_char[0]),
+             max_term,med_term))
         else:
             print("metric %e" % metric)
         #print('metric took %e seconds %e' % (time.time()-t_start,metric))
