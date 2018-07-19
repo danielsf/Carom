@@ -62,9 +62,10 @@ def plot_color_mesh(xx, yy, dx, dy, vmin=None, vmax=None):
                    #                               vmax=1.2e6))
     plt.colorbar()
 
-
-def project_pts(data_file, bases, raw_dim):
-    n_lines = 0
+def read_projected_pts(data_file, dim):
+    t_start = time.time()
+    n_lines=0
+    print('reading already projected points')
     with open(data_file, 'r') as in_file:
         for line in in_file:
             if not line.startswith('#'):
@@ -79,13 +80,49 @@ def project_pts(data_file, bases, raw_dim):
             if line.startswith('#'):
                 continue
             params = np.array(line.strip().split()).astype(float)
-            pt = params[:raw_dim]
-            projected = np.dot(bases, pt)
-            data_pts[i_line] = projected
+            data_pts[i_line] = params[:dim]
             chisq[i_line] = params[dim]
             i_line += 1
 
     assert i_line == n_lines
+    print('done reading points %e' % (time.time()-t_start))
+    return data_pts, chisq
+
+def project_pts(data_file, bases, dim):
+    t_start=time.time()
+    n_lines = 0
+    projected_name = data_file+'_projected_pts.sav'
+    if os.path.isfile(projected_name):
+        return read_projected_pts(projected_name, dim)
+
+    print('projecting points')
+
+    with open(data_file, 'r') as in_file:
+        for line in in_file:
+            if not line.startswith('#'):
+                n_lines += 1
+
+    data_pts = np.zeros((n_lines, dim), dtype=float)
+    chisq = np.zeros(n_lines, dtype=float)
+
+    i_line = 0
+    with open(data_file, 'r') as in_file:
+        with open(projected_name, 'w') as out_file:
+            for line in in_file:
+                if line.startswith('#'):
+                    continue
+                params = np.array(line.strip().split()).astype(float)
+                pt = params[:dim]
+                projected = np.dot(bases, pt)
+                data_pts[i_line] = projected
+                chisq[i_line] = params[dim]
+                for i_dim in range(dim):
+                    out_file.write('%e ' % data_pts[i_line][i_dim])
+                out_file.write('%e\n' % chisq[i_line])
+                i_line += 1
+
+    assert i_line == n_lines
+    print('done projecting points %e' % (time.time()-t_start))
     return data_pts, chisq
 
 def read_bases(basis_file, raw_dim):
