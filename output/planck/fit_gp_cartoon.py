@@ -255,6 +255,11 @@ class MultinestMinimizer(object):
          self._delta_chisq,
          self._multinest_mean) = self.fit_mean_model(self._baseline_radii, return_delta=True)
 
+    def set_best_radii(self):
+        (self._baseline_metric,
+         self._delta_chisq,
+         self._multinest_mean) = self.fit_mean_model(self._best_radii, return_delta=True)
+
     def _set_rr(self, radii):
 
         wgts = (1.0/radii)**2
@@ -311,9 +316,13 @@ class MultinestMinimizer(object):
         max_term = metric_terms[mis_char].max()
         med_term = np.median(metric_terms[mis_char])
 
-        metric = np.sum((metric_terms*wgts)**2)
+        metric = np.sum((metric_terms*wgts)**2)+(len(mis_char[0]))*1000.0
         if metric<self._metric_min:
+            print('setting best_radii')
             self._metric_min=metric
+            self._best_rr = np.copy(rr_grid)
+            self._best_chisq_rr = np.copy(chisq_rr_grid)
+            self._best_radii = np.copy(radii)
         if hasattr(self, '_baseline_metric'):
             print('metric %.4e -- %.4e -- %.4e %d %.4e %.4e' %
             (metric,self._metric_min,self._baseline_metric, len(mis_char[0]),
@@ -343,60 +352,6 @@ if __name__ == "__main__":
 
     target = fitter.chisq_min+delta_chisq
 
-    renormed_data = np.zeros(fitter.data_pts.shape, dtype=float)
-    print('renorm shape ',renormed_data.shape,fitter.data_pts.shape)
-    with open('planck_dalex_renormed.sav', 'w') as out_file:
-        for i_line in range(len(fitter.data_pts)):
-            renormed_data[i_line] = fitter.data_pts[i_line]/fitter._baseline_radii
-            for ii in range(dim):
-                out_file.write('%e ' % renormed_data[i_line][ii]);
-            out_file.write('\n')
-    renormed_multinest = np.zeros(fitter.multinest_pts.shape, dtype=float)
-    with open('planck_multinest_renormed.sav', 'w') as out_file:
-        for i_line in range(len(fitter.multinest_pts)):
-            renormed_multinest[i_line] = fitter.multinest_pts[i_line]/fitter._baseline_radii
-            for ii in range(dim):
-                out_file.write('%e ' % renormed_multinest[i_line][ii])
-            out_file.write('\n')
-
-    del fitter.data_pts
-    del fitter.multinest_pts
-    gc.collect()
-    exit()
-
-    print('making tree')
-    fit_tree = scipy_spatial.KDTree(renormed_data, leafsize=10)
-
-    print('starting fit')
-    fit_chisq = np.zeros(len(renormed_multinest), dtype=float)
-    true_chisq = fitter.multinest_chisq
-    t_start = time.time()
-    for i_line in range(len(renormed_multinest)):
-        #ddsq = np.array([np.sum((renormed_multinest[i_line]-pp)**2)
-        #                 for pp in renormed_data])
-        neighbor_dist, neighbor_dex = fit_tree.query(renormed_multinest[i_line], k=1)
-        nn_dex = neighbor_dex[0]
-        #nn_dex = np.argmin(ddsq)
-        dd = fitter._delta_chisq[nn_dex]
-        mm = fitter._multinest_mean[i_line]
-        cc = mm+dd
-        fit_chisq[i_line] = cc
-        if 1==1:
-            duration = time.time()-t_start
-            prediction = len(renormed_multinest)*duration/(i_line+1)
-            print("    %d took %e pred %e" % (i_line,duration,prediction))
-
-    mis_char = np.where(np.logical_or(
-                        np.logical_and(fit_chisq<target, true_chisq>target),
-                        np.logical_and(fit_chisq>target, true_chisq<target)))
-
-    mis_delta = np.abs(fit_chisq[mis_char]-true_chisq[mis_char])
-    print('n_mischar %d' % len(mis_char[0]))
-    print('worst %e' % mis_delta.max())
-    print('median %e' % np.median(mis_delta))
-
-    exit()
-
     valid = np.where(fitter.chisq<fitter.chisq.min()+delta_chisq)
     print('valid %d' % len(valid[0]))
 
@@ -409,6 +364,73 @@ if __name__ == "__main__":
 
     mm = Minuit(fitter.fit_mean_model, use_array_call=True, forced_parameters=pp ,**init_dict)
     mm.migrad()
+    fitter.set_best_radii()
+    with open('best_radii.txt','w') as out_file:
+        for rr in fitter._best_radii:
+            out_file.write('%e\n' % rr)
+
+    renormed_data = np.zeros(fitter.data_pts.shape, dtype=float)
+    print('renorm shape ',renormed_data.shape,fitter.data_pts.shape)
+    with open('planck_dalex_renormed.sav', 'w') as out_file:
+        for i_line in range(len(fitter.data_pts)):
+            renormed_data[i_line] = fitter.data_pts[i_line]/fitter._best_radii
+            for ii in range(dim):
+                out_file.write('%e ' % renormed_data[i_line][ii]);
+            out_file.write('\n')
+    renormed_multinest = np.zeros(fitter.multinest_pts.shape, dtype=float)
+    with open('planck_multinest_renormed.sav', 'w') as out_file:
+        for i_line in range(len(fitter.multinest_pts)):
+            renormed_multinest[i_line] = fitter.multinest_pts[i_line]/fitter._best_radii
+            for ii in range(dim):
+                out_file.write('%e ' % renormed_multinest[i_line][ii])
+            out_file.write('\n')
+
+    del fitter.data_pts
+    del fitter.multinest_pts
+    gc.collect()
+
+    print('making tree')
+    fit_tree = scipy_spatial.cKDTree(renormed_data, leafsize=10)
+
+    good_ct = 0
+    bad_ct = 0
+    print('starting fit')
+    fit_chisq = np.zeros(len(renormed_multinest), dtype=float)
+    true_chisq = fitter.multinest_chisq
+    t_start = time.time()
+    sampled_dexes = rng.choice(range(len(renormed_multinest)), 1000, replace=False)
+    for i_line in sampled_dexes:
+        #ddsq = np.array([np.sum((renormed_multinest[i_line]-pp)**2)
+        #                 for pp in renormed_data])
+        neighbor_dist, neighbor_dex = fit_tree.query(renormed_multinest[i_line], k=1)
+        nn_dex = neighbor_dex
+        #nn_dex = np.argmin(ddsq)
+        dd = fitter._delta_chisq[nn_dex]
+        mm = fitter._multinest_mean[i_line]
+        cc = mm+dd
+        if (cc<target and true_chisq[i_line]>target) or (cc>target and true_chisq[i_line]<target):
+            bad_ct += 1
+        else:
+            good_ct += 1
+        fit_chisq[i_line] = cc
+        if 1==1:
+            duration = time.time()-t_start
+            prediction = len(renormed_multinest)*duration/(i_line+1)
+            print("    %d took %e pred %e -- %e %e %e %e -- %d %d -- %e" %
+            (i_line,duration,prediction,cc,mm,dd,true_chisq[i_line],good_ct,bad_ct,neighbor_dist))
+
+    mis_char = np.where(np.logical_or(
+                        np.logical_and(fit_chisq<target, true_chisq>target),
+                        np.logical_and(fit_chisq>target, true_chisq<target)))
+
+    mis_delta = np.abs(fit_chisq[mis_char]-true_chisq[mis_char])
+    print('n_mischar %d' % len(mis_char[0]))
+    print('worst %e' % mis_delta.max())
+    print('median %e' % np.median(mis_delta))
+
+    exit()
+
+
     exit()
 
     plt.figure(figsize=(30,30))
