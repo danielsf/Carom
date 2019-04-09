@@ -3,6 +3,10 @@
 void dalex_initializer::search(){
     safety_check();
     int total_per=100*_chifn->get_dim();
+
+    //to speed up planck test
+    total_per = 20*_chifn->get_dim();
+
     int adjust_every=total_per/10;
     int n_groups=2;
     int n_particles=n_groups*(_chifn->get_dim()+1)+_chifn->get_dim()/2;
@@ -79,7 +83,7 @@ void dalex_initializer::search(){
         trails.set(ip,0,i_best);
     }
 
-
+    printf("done initializing particles\n");
     double needed_temp;
     array_1d<double> needed_temp_arr,needed_temp_sorted;
     array_1d<int> needed_temp_dex;
@@ -101,9 +105,11 @@ void dalex_initializer::search(){
     int i_dim,i_half;
     double sgn;
 
+    double bases_prob = 1.0/double(_chifn->get_dim());
+
     printf("starting steps with min %e\n",_chifn->chimin());
     for(i_step=0;i_step<total_per;i_step++){
-        if(i_step%(4*_chifn->get_dim())==0){
+        if(i_step==0 || _chifn->random_double()<bases_prob){
             bases.reset_preserving_room();
             while(bases.get_rows()!=_chifn->get_dim()){
                 for(i=0;i<_chifn->get_dim();i++){
@@ -154,14 +160,16 @@ void dalex_initializer::search(){
 
             i_dim=_chifn->random_int()%_chifn->get_dim();
 
-            rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
+            mu=2.0*exception_value;
+            while(mu>exception_value){
+                rr=normal_deviate(_chifn->get_dice(),0.0,1.0);
 
-            for(i=0;i<_chifn->get_dim();i++){
-                trial.set(i,_chifn->get_pt(_particles.get_data(ip),i)+
-                            rr*norm.get_data(i_dim)*bases.get_data(i_dim,i));
+                for(i=0;i<_chifn->get_dim();i++){
+                    trial.set(i,_chifn->get_pt(_particles.get_data(ip),i)+
+                                rr*norm.get_data(i_dim)*bases.get_data(i_dim,i));
+                }
+                mu=evaluate(trial,&i_found,ip,&mu_true);
             }
-            mu=evaluate(trial,&i_found,ip,&mu_true);
-
 
             accept_it=0;
 

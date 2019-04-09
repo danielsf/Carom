@@ -19,11 +19,14 @@ simplex_minimizer::simplex_minimizer(double aa, double bb, double gg){
 simplex_minimizer::~simplex_minimizer(){}
 
 void simplex_minimizer::initialize(){
+    _last_found_tol=1.0e-4;
     _cost=NULL;
     _chisquared=NULL;
     _dice=NULL;
     _limit=-1;
     _n_gradients=0;
+    _bases.reset();
+    _bases.set_name("simplex_bases");
 
     _min_temp=-3.0;
 
@@ -199,8 +202,9 @@ double simplex_minimizer::evaluate(const array_1d<double> &pt){
     _chisquared->get_called()-_called_evaluate);*/
 
     if(fval<_min_ff){
-        if(_min_ff-fval>fabs(_min_ff*1.0e-4)){
+        if(_ff_last_found-fval>fabs(_ff_last_found*_last_found_tol)){
             _last_found=_called_evaluate;
+            _ff_last_found=fval;
         }
         _min_ff=fval;
         //printf("    setting min %e\n",_min_ff);
@@ -322,229 +326,70 @@ void simplex_minimizer::find_minimum(array_2d<double> &seed, array_1d<double> &m
         exit(1);
     }
 
+    MnUserParameters input_params;
+    char word[100];
+    _minuit_fn.set_dim(seed.get_cols());
+    _minuit_fn.set_chisquared(_chisquared);
+    int i,j;
+    double mu,mu_guess;
+    int i_guess;
+    for(i=0;i<seed.get_rows();i++){
+        mu=_chisquared[0](seed(i));
+        if(i==0 || mu<mu_guess){
+            i_guess=i;
+            mu_guess=mu;
+        }
+    }
+    printf("    minimizer starts with %e\n",mu_guess);
 
-    if(_cost!=NULL){
-        _temp=0.0;
+    double sig;
+    double sig_factor=0.01;
+
+    if(_bases.get_rows()==0){
+        for(i=0;i<seed.get_cols();i++){
+            mu_guess = seed.get_data(i_guess, i);
+            sprintf(word,"pp%d",i);
+            input_params.Add(word,mu_guess,
+                             sig_factor*_chisquared->get_characteristic_length(i));
+        }
     }
     else{
-        _temp=-1000.0;
-    }
-
-    int ibefore=_chisquared->get_called();
-
-    if(_freeze_temp<0)_freeze_temp=0;
-
-    _freeze_called=0;
-    _called_cost=0;
-    _last_found=0;
-    _called_evaluate=0;
-    _last_called_gradient=0;
-    _last_cooled_off=0;
-
-
-    _min_ff=2.0*exception_value;
-    _true_min_ff=2.0*exception_value;
-    _min_pt.reset();
-    _pstar.reset();
-    _pstarstar.reset();
-    _last_improved_ff.reset();
-    _pts.reset();
-    _ff.reset();
-    _last_improved_pts.reset();
-    _last_improved_ff.reset();
-
-    int i;
-    if(_origin.get_dim()==0){
+        _minuit_fn.set_bases(_bases);
         for(i=0;i<seed.get_cols();i++){
-            _origin.set(i,0.0);
-            _transform.set(i,1.0);
-        }
-    }
-
-    int j;
-    _pts.set_cols(seed.get_cols());
-    _last_improved_pts.set_cols(seed.get_cols());
-    for(i=0;i<seed.get_rows();i++){
-        for(j=0;j<seed.get_cols();j++){
-            _pts.set(i,j,(seed.get_data(i,j)-_origin.get_data(j))/_transform.get_data(j));
-        }
-    }
-
-    array_1d<double> initial_min,initial_max;
-    initial_min.set_name("simplex_initial_min");
-    initial_max.set_name("simplex_initial_max");
-    for(i=0;i<_pts.get_rows();i++){
-        for(j=0;j<_pts.get_cols();j++){
-            if(i==0 || _pts.get_data(i,j)<initial_min.get_data(j)){
-                initial_min.set(j,_pts.get_data(i,j));
+            mu_guess=0.0;
+            sig=0.0;
+            for(j=0;j<seed.get_cols();j++){
+                mu_guess+=seed.get_data(i_guess,j)*_bases.get_data(i,j);
+                sig+=power(_bases.get_data(i,j)*_chisquared->get_characteristic_length(j),2);
             }
-            if(i==0 || _pts.get_data(i,j)>initial_max.get_data(j)){
-                initial_max.set(j,_pts.get_data(i,j));
+            sig=sqrt(sig);
+            sig*=sig_factor;
+            sprintf(word,"pp%d",i);
+            input_params.Add(word,mu_guess,sig);
+        }
+
+    }
+
+    MnMigrad migrad_runner(_minuit_fn, input_params, 2);
+    FunctionMinimum minuit_result = migrad_runner();
+    std::vector<double> pp_out = minuit_result.UserParameters().Params();
+    if(_bases.get_rows()==0){
+        for(i=0;i<seed.get_cols();i++){
+            min_pt.set(i,pp_out[i]);
+            _min_pt.set(i,pp_out[i]);
+        }
+    }
+    else{
+        for(i=0;i<seed.get_cols();i++){
+            min_pt.set(i,0.0);
+            _min_pt.set(i,0.0);
+            for(j=0;j<seed.get_cols();j++){
+                min_pt.add_val(i,pp_out[j]*_bases.get_data(j,i));
+                _min_pt.add_val(i,pp_out[j]*_bases.get_data(j,i));
             }
         }
     }
-
-    double mu;
-    for(i=0;i<seed.get_rows();i++){
-        mu=evaluate(_pts(i));
-        _ff.set(i,mu);
-    }
-
-    find_il();
-
-    int abort_max=_abort_max_factor*seed.get_cols();
-    if(abort_max<100){
-        abort_max=100;
-    }
-    int dim=seed.get_cols();
-    double spread,gradient_threshold;
-
-    array_1d<double> pbar,buffer;
-    pbar.set_name("simplex_pbar");
-    buffer.set_name("simplex_buffer");
-
-    spread=_ff.get_data(_ih)-_ff.get_data(_il);
-
-    if(_use_gradient==1){
-        abort_max*=2;
-    }
-
-    printf("    simplex starts with %e\n",_true_min_ff);
-    int go_on=1;
-    while(go_on==1){
-        if(_called_evaluate-_last_found>=abort_max){
-            go_on=0;
-        }
-
-        if(_limit>=0 && _called_evaluate>_limit){
-            go_on=0;
-        }
-
-       if(_is_a_model==1){
-           paranoia();
-       }
-
-       for(i=0;i<dim;i++){
-           pbar.set(i,0.0);
-           for(j=0;j<dim+1;j++){
-               if(j!=_ih){
-                   pbar.add_val(i,_pts.get_data(j,i));
-               }
-           }
-           pbar.divide_val(i,double(dim));
-       }
-
-       for(i=0;i<dim;i++){
-           _pstar.set(i,(1.0+_alpha)*pbar.get_data(i)-_alpha*_pts.get_data(_ih,i));
-       }
-       _fstar=evaluate(_pstar);
-
-       if(_fstar<_ff.get_data(_ih) && _fstar>_ff.get_data(_il)){
-           _ff.set(_ih,_fstar);
-           for(i=0;i<dim;i++){
-               _pts.set(_ih,i,_pstar.get_data(i));
-           }
-       }
-       else if(_fstar<_ff.get_data(_il)){
-           for(i=0;i<dim;i++){
-               _pstarstar.set(i,_gamma*_pstar.get_data(i)+(1.0-_gamma)*pbar.get_data(i));
-           }
-           _fstarstar=evaluate(_pstarstar);
-
-           if(_fstarstar<_ff.get_data(_il)){
-               for(i=0;i<dim;i++){
-                   _pts.set(_ih,i,_pstarstar.get_data(i));
-               }
-               _ff.set(_ih,_fstarstar);
-           }
-           else{
-               for(i=0;i<dim;i++){
-                   _pts.set(_ih,i,_pstar.get_data(i));
-               }
-               _ff.set(_ih,_fstar);
-           }
-       }
-
-       find_il();
-
-       j=1;
-       for(i=0;i<dim+1;i++){
-           if(_fstar<_ff.get_data(i) && i!=_ih){
-               j=0;
-           }
-       }
-
-       if(j==1){
-
-           for(i=0;i<dim;i++){
-                pbar.set(i,0.0);
-                for(j=0;j<dim+1;j++){
-                    if(j!=_ih){
-                        pbar.add_val(i,_pts.get_data(j,i));
-                    }
-                }
-                pbar.divide_val(i,double(dim));
-           }
-
-           for(i=0;i<dim;i++){
-               _pstarstar.set(i,_beta*_pts.get_data(_ih,i)+(1.0-_beta)*pbar.get_data(i));
-           }
-           _fstarstar=evaluate(_pstarstar);
-
-           if(_fstarstar<_ff.get_data(_ih)){
-               for(i=0;i<dim;i++)_pts.set(_ih,i,_pstarstar.get_data(i));
-               _ff.set(_ih,_fstarstar);
-           }
-           else{
-               find_il();
-               for(i=0;i<dim+1;i++){
-                   if(i!=_il){
-                       for(j=0;j<dim;j++){
-                           buffer.set(j,0.5*(_pts.get_data(i,j)+_pts.get_data(_il,j)));
-                       }
-                       mu=evaluate(buffer);
-                       _ff.set(i,mu);
-                       for(j=0;j<dim;j++){
-                           _pts.set(i,j,buffer.get_data(j));
-                       }
-                   }
-               }
-           }
-       }
-
-       find_il();
-       spread=_ff.get_data(_ih)-_ff.get_data(_il);
-
-       if(_temp<_min_temp)gradient_threshold=1.0e-1;
-       else gradient_threshold=0.1*_min_ff;
-
-       if(_use_gradient==1){
-           if(_called_evaluate>abort_max/2+_last_called_gradient){
-               gradient_minimizer();
-           }
-       }
-
-       if(_called_evaluate-_last_found>=abort_max && !(_temp<_min_temp)){
-           expand();
-           _last_found=_called_evaluate;
-       }
-       //printf("min %.3e treu %.3e spread %.3e since last %d %.3e\n",_min_ff,_true_min_ff,spread,_last_found-_called_evaluate,_temp);
-       //printf("spread %e %e %e\n\n",spread,_temp,_min_ff);
-    }
-
-    for(i=0;i<dim;i++){
-        min_pt.set(i,_min_pt.get_data(i));
-    }
-    /*printf("    leaving simplex %d %d %d %d\n",_called_evaluate,_last_found,_last_called_gradient,abort_max);
-    printf("    temp %e\n",_temp);
-    printf("    actually called %d\n",_chisquared->get_called()-ibefore);
-    printf("    _true_min_ff %e\n",_true_min_ff);*/
-
-    printf("    actually called %d\n",_chisquared->get_called()-ibefore);
-    printf("    gradient calls %d\n",_n_gradients);
-    printf("    got min %e\n",_true_min_ff);
-
-    _freeze_temp=-1;
+    printf("    leaving find minimum -- %d -- %e\n",min_pt.get_dim(),minuit_result.Fval());
 }
 
 
@@ -737,6 +582,7 @@ void simplex_minimizer::gradient_minimizer(){
     _last_called_gradient=_called_evaluate;
 
 }
+
 
 void simplex_minimizer::expand(){
     if(_dice==NULL){

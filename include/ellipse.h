@@ -14,7 +14,9 @@ class ellipse{
             _center.set_name("ellipse_center");
             _min.set_name("ellipse_min");
             _max.set_name("ellipse_max");
+            _geo_center.set_name("ellipse_geo_center");
             _use_geo_center=0;
+            _forced_center=0;
         }
 
         ~ellipse(){}
@@ -36,11 +38,16 @@ class ellipse{
         double radii(int i){return _radii.get_data(i);}
         int dim(){return _center.get_dim();}
         void copy(ellipse&);
+        double geo_center(int i){
+            return _geo_center.get_data(i);
+        }
 
     private:
         array_2d<double> _bases;
         array_1d<double> _radii,_center,_min,_max;
+        array_1d<double> _geo_center;
         int _use_geo_center;
+        int _forced_center;
 
         void _set_radii(const array_2d<double>&);
         void _find_center(const array_2d<double>&);

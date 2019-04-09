@@ -336,6 +336,10 @@ double chisq_wrapper::raw_evaluate(const array_1d<double> &pt){
     return _chifn[0](pt);
 }
 
+void chisq_wrapper::rebalance(){
+    _kptr->rebalance();
+}
+
 void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex){
     is_it_safe("evaluate");
 
@@ -361,11 +365,19 @@ void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex
     _called++;
 
     if(mu<exception_value){
-        _kptr->add(pt);
-        _fn.add(mu);
-        _search_type_log.add(_search_type);
-        dex[0]=_kptr->get_pts()-1;
+        dex[0]=add_pt(pt,mu);
+        if(_kptr->get_pts()%100000==0){
+            _kptr->rebalance();
+        }
     }
+
+}
+
+int chisq_wrapper::add_pt(const array_1d<double> &pt, double mu){
+    _kptr->add(pt);
+
+    _fn.add(mu);
+    _search_type_log.add(_search_type);
 
     if(mu<_chimin){
         _chimin=mu;
@@ -379,6 +391,7 @@ void chisq_wrapper::evaluate(const array_1d<double> &pt, double *value, int *dex
         write_pts();
     }
 
+    return _kptr->get_pts()-1;
 }
 
 int chisq_wrapper::get_called(){

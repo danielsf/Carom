@@ -32,6 +32,8 @@ public:
     void set_chisquared(chisquared*);
 
     void search(int);
+    void warm_start(char*, int);
+    void _search(int);
 
     void mcmc_init();
 
@@ -47,14 +49,19 @@ public:
     void assess_good_points(int);
     void assess_good_points(int,int);
 
+    void set_log_file_name(char*);
+
 private:
 
     chisq_wrapper _chifn;
     int _ct_dalex;
 
+    char _log_file_name[letters];
+
     dalex _cloud;
 
     char _outname[letters],_timingname[letters];
+    char _end_pt_name[letters+20];
 
     array_1d<int> _good_points;
 

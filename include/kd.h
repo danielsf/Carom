@@ -53,6 +53,7 @@ class kd_tree{
         */
         void build_tree(array_2d<double>&);
         void build_tree(array_2d<double>&,array_1d<double>&,array_1d<double>&);
+        void rebalance();
  
         /*
         These routines will set the maximum and minimum values (used for
@@ -133,6 +134,7 @@ class kd_tree{
         */
         void nn_srch(const array_1d<double>&,int,array_1d<int>&,array_1d<double>&);
         void nn_srch(int,int,array_1d<int>&,array_1d<double>&);
+        void brute_nn_srch(const array_1d<double>&, int*, double*);
         
         /*
         kernel_srch will do a neighbor search centered on a point (the first

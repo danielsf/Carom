@@ -1,5 +1,7 @@
 DALEX_HOME = /Users/danielsf/physics/Carom/
 
+MINUIT_DIR = /Users/danielsf/Minuit2-5.34.14/inc/
+
 LAPACK_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -llapack
 BLAS_LIB =-L/Users/danielsf/physics/lapack-3.5.0/ -lrefblas
 
@@ -11,10 +13,13 @@ R_PATH = /Users/danielsf/physics/lib/
 
 LIBRARIES = $(LAPACK_LIB) $(BLAS_LIB) $(ARPACK_LIB) $(FORTRAN_LIB)
 
-INCLUDE = -I$(DALEX_HOME)include/
+INCLUDE = -I$(DALEX_HOME)include/ -I$(MINUIT_DIR)
 
 # compilers
-cc = g++ -Wno-write-strings -O3 $(INCLUDE)
+cc = g++ -Wno-write-strings -O3 $(INCLUDE) -lMinuit2
+
+test_minuit: src/tests/test_minuit.cpp
+	$(cc) -o bin/test_minuit src/tests/test_minuit.cpp
 
 object/containers.o: src/utils/containers.cpp include/containers.h
 	$(cc) -c -o object/containers.o src/utils/containers.cpp
@@ -37,12 +42,22 @@ test_ellipse_creator: object/ellipse.o src/tests/test_ellipse_creator.cpp
 	$(cc) -o bin/test_ellipse_creator src/tests/test_ellipse_creator.cpp \
 	object/containers.o object/goto_tools.o object/ellipse.o
 
+planck_ellipse: object/ellipse.o src/examples/planck_ellipse.cpp
+	$(cc) -o bin/planck_ellipse src/examples/planck_ellipse.cpp \
+	object/containers.o object/goto_tools.o object/ellipse.o
+
 object/kd.o: src/utils/kd.cpp include/kd.h object/containers.o object/goto_tools.o
 	$(cc) -c -o object/kd.o src/utils/kd.cpp
 
 test_kd: src/tests/test_kd.cpp object/kd.o
 	$(cc) -o bin/test_kd src/tests/test_kd.cpp object/containers.o object/goto_tools.o \
 	object/kd.o $(LIBRARIES)
+
+test_kd_rebalance: src/tests/test_kd_rebalance.cpp object/kd.o
+	$(cc) -o bin/test_kd_rebalance src/tests/test_kd_rebalance.cpp \
+	object/containers.o object/goto_tools.o \
+	object/kd.o $(LIBRARIES)
+
 
 object/eigen_wrapper.o: src/utils/eigen_wrapper.cpp include/eigen_wrapper.h object/goto_tools.o
 	$(cc) -c -o object/eigen_wrapper.o src/utils/eigen_wrapper.cpp
@@ -157,6 +172,16 @@ object/ellipse.o
         object/dalex.o object/dalex_initializer.o object/explorers.o \
 	$(LIBRARIES)
 
+
+gp: src/examples/gp_example.cpp object/dalex_driver.o \
+object/jellyBean.o include/exampleLikelihoods.h object/eigen_wrapper.o \
+object/ellipse.o
+	$(cc) -o bin/gp src/examples/gp_example.cpp \
+	object/containers.o object/goto_tools.o object/kd.o object/chisq.o \
+	object/wrappers.o object/chisq_wrapper.o object/eigen_wrapper.o object/simplex.o \
+	object/cost_fn.o object/dalex_driver.o object/jellyBean.o object/ellipse.o \
+        object/dalex.o object/dalex_initializer.o object/explorers.o \
+	$(LIBRARIES)
 
 test_opt: src/examples/test_opt.cpp object/dalex_driver.o \
 object/jellyBean.o include/exampleLikelihoods.h object/mcmc.o object/eigen_wrapper.o

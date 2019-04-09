@@ -36,6 +36,8 @@ class dalex{
         };
 
         dalex(){
+            _log_file_name[0]=0;
+            _end_pt_name[0]=0;
             _chifn=NULL;
             _reset_threshold=0.5;
             _reset_chimin=2.0*exception_value;
@@ -63,6 +65,11 @@ class dalex{
 
             _minimizers.set_name("dalex_minimizers");
             _tendril_init=0;
+
+            _particle_candidates.set_name("_particle_candidates");
+            _origin_candidates.set_name("_origin_candidates");
+
+            _scalar_norm=-1.0;
         };
 
         void build(chisq_wrapper*);
@@ -71,13 +78,41 @@ class dalex{
             _limit=ii;
         }
 
+        void set_end_pt_name(char *word){
+            int i;
+            for(i=0;i<letters+19 && word[i]!=0;i++){
+                _end_pt_name[i]=word[i];
+            }
+            _end_pt_name[i]=0;
+            FILE *out_file;
+            out_file = fopen(_end_pt_name,"w");
+            fclose(out_file);
+        }
+
+        void write_to_end_pt_file(int dex){
+            if(_end_pt_name[0]==0){
+                return;
+            }
+            if(dex<0 || _chifn->get_fn(dex)>target()+1.0e5){
+                return;
+            }
+            FILE *out_file;
+            out_file = fopen(_end_pt_name, "a");
+            int i;
+            for(i=0;i<_chifn->get_dim();i++){
+                fprintf(out_file,"%e ",_chifn->get_pt(dex,i));
+            }
+            fprintf(out_file,"%e %d\n",_chifn->get_fn(dex),dex);
+            fclose(out_file);
+        }
+
         void search();
-        void simplex_search();
         void simplex_search(int);
-        void simplex_search(array_1d<int>&);
-        int simplex_boundary_search(const int, const int, ellipse_list&, int*);
+        int simplex_boundary_search(const int, const int,
+                                    ellipse_list&, int*, int);
         int _exploration_simplex(int,int,array_1d<int>&);
         void tendril_search();
+        void _tendril_search(int,int);
         void init_fill();
         void find_tendril_candidates(double);
         void get_new_tendril(int*,int*);
@@ -97,6 +132,21 @@ class dalex{
         }
 
         double get_norm(int);
+
+        void set_log_file_name(char *in){
+            int i;
+            for(i=0;i<letters-1 && in[i]!=0;i++){
+                _log_file_name[i]=in[i];
+            }
+            _log_file_name[i]=0;
+        }
+
+        void write_to_log(char*);
+
+        int mindex(){
+            safety_check("mindex");
+            return _chifn->mindex();
+        }
 
     private:
 
@@ -168,11 +218,6 @@ class dalex{
             return _chifn->chimin();
         }
 
-        int mindex(){
-            safety_check("mindex");
-            return _chifn->mindex();
-        }
-
         void safety_check(char *word){
             if(_chifn==NULL){
                 printf("ERROR: dalex called %s but _chifn is NULL\n", word);
@@ -213,7 +258,6 @@ class dalex{
 
         /////code related to minimizers
         array_1d<int> _minimizers;
-        void refine_minimum();
         void iterate_on_minimum();
 
         //////code related to tendrils
@@ -233,6 +277,11 @@ class dalex{
 
         ellipse_list _exclusion_zones;
         ellipse_sampler _ellipse_sampler;
+
+        char _log_file_name[letters];
+        char _end_pt_name[letters+20];
+
+        double _scalar_norm;
 };
 
 #endif

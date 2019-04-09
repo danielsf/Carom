@@ -1,6 +1,8 @@
 #include "dalex_driver.h"
 
 dalex_driver::dalex_driver(){
+    _log_file_name[0]=0;
+    _end_pt_name[0]=0;
     _ct_dalex=0;
     _last_did_min=0;
     sprintf(_outname,"output/carom_output.sav");
@@ -11,6 +13,14 @@ dalex_driver::dalex_driver(){
 
 dalex_driver::~dalex_driver(){
     _chifn.write_pts();
+}
+
+void dalex_driver::set_log_file_name(char *in){
+    int i;
+    for(i=0;i<letters-1 && in[i]!=0;i++){
+        _log_file_name[i]=in[i];
+    }
+    _log_file_name[i]=0;
 }
 
 double dalex_driver::evaluate(array_1d<double> &pt, int *dex){
@@ -62,6 +72,12 @@ void dalex_driver::set_confidence_limit(double cc){
 }
 
 void dalex_driver::set_seed(int ii){
+    FILE *log_file;
+    if(_log_file_name[0]!=0){
+        log_file = fopen(_log_file_name, "a");
+        fprintf(log_file,"setting seed to %d\n",ii);
+        fclose(log_file);
+    }
     _chifn.set_seed(ii);
 }
 
@@ -111,6 +127,8 @@ void dalex_driver::set_outname(char *nn){
         _outname[i]=nn[i];
     }
     _outname[i]=0;
+    sprintf(_end_pt_name,"%s_end_pts.txt",_outname);
+    _cloud.set_end_pt_name(_end_pt_name);
 }
 
 void dalex_driver::set_timingname(char *nn){
@@ -134,8 +152,6 @@ void dalex_driver::mcmc_init(){
 }
 
 void dalex_driver::search(int limit){
-    int pt_start;
-
     double min0=_chifn.chimin();
     _chifn.set_outname(_outname);
     _chifn.set_timingname(_timingname);
@@ -144,8 +160,49 @@ void dalex_driver::search(int limit){
     mcmc_init();
     printf("min now %e -> %e\n",min0,_chifn.chimin());
     printf("called %d\n",_chifn.get_pts());
+    _search(limit);
+    _cloud.write_to_end_pt_file(_cloud.mindex());
+}
 
+void dalex_driver::warm_start(char *warm_name, int limit){
+    _chifn.set_outname(_outname);
+    _chifn.set_timingname(_timingname);
+
+    double mu;
+    int i,j;
+    char word[letters];
+    array_1d<double>pt;
+    pt.set_name("dalex_driver_warm_pt");
+    FILE *in_file;
+    in_file=fopen(warm_name, "r");
+    for(i=0;i<get_dim()+3;i++){
+        fscanf(in_file,"%s",word);
+    }
+    while(fscanf(in_file,"%le",&mu)>0){
+        pt.set(0,mu);
+        for(i=1;i<get_dim();i++){
+            fscanf(in_file,"%le",&mu);
+            pt.set(i,mu);
+        }
+        fscanf(in_file,"%le",&mu);
+        fscanf(in_file,"%d",&j);
+        _chifn.set_search_type(j);
+        _chifn.add_pt(pt,mu);
+        if(_chifn.get_pts()%100000==0){
+            printf("read in %e pts\n",float(_chifn.get_pts()));
+        }
+    }
+    fclose(in_file);
+    printf("read in %d pts\n",_chifn.get_pts());
+    _chifn.rebalance();
+    _search(limit);
+}
+
+
+void dalex_driver::_search(int limit){
+    int pt_start;
     _cloud.set_limit(limit);
+    _cloud.set_log_file_name(_log_file_name);
 
     while(_chifn.get_pts()<limit){
 

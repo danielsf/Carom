@@ -15,6 +15,7 @@ def load_multinest_data(file_name, dim):
 
 
 def load_dalex_data(data_name, dim):
+    print('loading %s' % data_name)
     with open(data_name, 'r') as input_file:
         first_line = input_file.readline()
     first_line = first_line.split(' ')
@@ -85,7 +86,7 @@ def marginalize(data_x, data_y, density_in, prob=0.95):
     return x_out[dexes], y_out[dexes]
 
 
-def raw_bayes(data_x, data_y, density_in, prob=0.95):
+def raw_bayes(data_x, data_y, density_in, prob=0.95, chisq=None):
 
     sorted_density = np.sort(density_in)
     total_sum = density_in.sum()
@@ -97,7 +98,40 @@ def raw_bayes(data_x, data_y, density_in, prob=0.95):
             break
 
     dexes = np.where(density_in>=cutoff)
+    if chisq is not None:
+        chisq_valid = chisq[dexes]
+        print('maximum Multinest chisquared %e' % (chisq_valid.max()))
+        print('median Multinest chisquared %e' % (np.median(chisq_valid)))
+        print('min Multinest chisquared %e' % (chisq_valid.min()))
+        print('density cutoff %e' % cutoff)
     return data_x[dexes], data_y[dexes]
+
+
+def get_scatter_fast(data_x, data_y, x_norm, y_norm):
+
+    x_out = np.ones(len(data_x))*data_x[-1]
+    y_out = np.ones(len(data_y))*data_y[-1]
+
+    tol = 0.01
+
+    x_min = data_x.min()
+    y_min = data_y.min()
+    x_pix = np.round((data_x-x_min)/(tol*x_norm)).astype(int)
+    y_pix = np.round((data_y-y_min)/(tol*y_norm)).astype(int)
+    n_y = y_pix.max()+1
+    meta_pix = x_pix*n_y+y_pix
+
+    x_pix_check = meta_pix//n_y
+    y_pix_check = meta_pix%n_y
+
+    #np.testing.assert_array_equal(x_pix, x_pix_check)
+    #np.testing.assert_array_equal(y_pix, y_pix_check)
+
+    unique_meta_pix = np.unique(meta_pix)
+    x_pix_out = unique_meta_pix//n_y
+    y_pix_out = unique_meta_pix%n_y
+    print('downscaling %d %d' % (len(meta_pix), len(unique_meta_pix)))
+    return x_pix_out*tol*x_norm+x_min, y_pix_out*tol*y_norm+y_min
 
 
 def get_scatter(data_x, data_y, x_norm, y_norm):
@@ -105,7 +139,7 @@ def get_scatter(data_x, data_y, x_norm, y_norm):
     x_out = np.ones(len(data_x))*data_x[-1]
     y_out = np.ones(len(data_y))*data_y[-1]
 
-    tol = 0.0025
+    tol = 0.0001
 
     i_x_min = np.argmin(data_x)
     i_x_max = np.argmax(data_x)
@@ -166,13 +200,16 @@ def scatter_from_multinest_projection(file_name, dim, ix, iy, data=None,
 
     if data is None:
         ref_data = load_multinest_data(file_name, dim)
+        chisq_pass = ref_data['chisq']
 
     else:
         ref_data = data
+        chisq_pass = None
 
     ref_x, ref_y = raw_bayes(ref_data['x%d' % ix],
                                ref_data['x%d' % iy],
-                               ref_data['degen'])
+                               ref_data['degen'],
+                               chisq=chisq_pass)
 
     if downsample is None:
         return ref_x, ref_y, ref_data
@@ -199,6 +236,7 @@ def scatter_from_multinest_marginalized(file_name, dim, ix, iy, data=None):
 def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data=None, limit=None):
     if data is None:
         data = load_dalex_data(data_name, dim)
+        print('dalex data is loaded')
 
     if limit is not None:
         data_cut = data[:limit]
@@ -231,7 +269,7 @@ def scatter_from_dalex(data_name, dim, ix, iy, delta_chi=None, target=None, data
 
     dd_sorted_dexes = np.argsort(dd_arr)
 
-    x_grid, y_grid = get_scatter(good_x[dd_sorted_dexes],
+    x_grid, y_grid = get_scatter_fast(good_x[dd_sorted_dexes],
                                  good_y[dd_sorted_dexes],
                                  x_norm, y_norm)
 

@@ -73,7 +73,7 @@ public:
     void set_seed(int);
     void set_deltachi(double);
     void set_characteristic_length(int, double);
-    double get_characteristic_length(int);
+    virtual double get_characteristic_length(int);
     void set_min(array_1d<double>&);
     void set_max(array_1d<double>&);
     void set_ddmin(double);
@@ -94,6 +94,7 @@ public:
 
     double raw_evaluate(const array_1d<double>&);
     void evaluate(const array_1d<double>&, double*, int*);
+    int add_pt(const array_1d<double>&, double);
     virtual double operator()(const array_1d<double>&);
     double get_fn(int);
     double get_pt(int,int);
@@ -120,6 +121,8 @@ public:
     void set_confidence_limit(double);
     void set_dof(int);
     int get_seed();
+
+    void rebalance();
 
     kd_tree* get_tree();
     array_1d<double>* get_fn_arr();

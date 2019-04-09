@@ -117,6 +117,7 @@ void kd_tree::build_tree(array_2d<double> &mm){
 void kd_tree::build_tree(array_2d<double> &mm,
     array_1d<double> &nmin, array_1d<double> &nmax){
 
+
     if(nmin.get_dim()!=mm.get_cols()){
         printf("WARNING nimin dim %d cols %d\n",nmin.get_dim(),mm.get_cols());
         throw -1;
@@ -127,6 +128,7 @@ void kd_tree::build_tree(array_2d<double> &mm,
         throw -1;
     }
 
+
     search_time=0.0;
     search_ct=0;
 
@@ -134,7 +136,30 @@ void kd_tree::build_tree(array_2d<double> &mm,
     search_time_solo=0.0;
 
     data.reset();
-    tree.reset();
+
+    int i;
+
+    data.set_dim(mm.get_rows(),mm.get_cols());
+    data.set_name("kd_tree_data");
+
+
+    mins.set_name("kd_tree_mins");
+    maxs.set_name("kd_tree_maxs");
+
+    for(i=0;i<data.get_cols();i++){
+        mins.set(i,nmin.get_data(i));
+        maxs.set(i,nmax.get_data(i));
+    }
+
+    for(i=0;i<data.get_rows();i++){
+         data.set_row(i,mm(i));
+    }
+
+    rebalance();
+
+}
+
+void kd_tree::rebalance(){
 
     array_1d<int> inn,use_left,use_right;
     array_1d<double> tosort,sorted;
@@ -145,32 +170,26 @@ void kd_tree::build_tree(array_2d<double> &mm,
 
     diagnostic=1;
 
-    tree.set_dim(mm.get_rows(),4);
-    data.set_dim(mm.get_rows(),mm.get_cols());
+    if(tree.get_cols()!=data.get_cols() ||
+       tree.get_rows()!=data.get_rows()){
+
+        tree.reset();
+        tree.set_dim(data.get_rows(),data.get_cols());
+    }
+    else{
+        tree.reset_preserving_room();
+    }
 
     use_left.set_name("kd_tree_constructor_use_left");
     use_right.set_name("kd_tree_constructor_use_right");
     tree.set_name("kd_tree_tree");
-    data.set_name("kd_tree_data");
 
     //tree[i][0] will be the dimension being split
     //tree[i][1] will be left hand node (so, lt)
     //tree[i][2] will be right hand node (so, ge)
     //tree[i][3] will be parent
 
-    mins.set_name("kd_tree_mins");
-    maxs.set_name("kd_tree_maxs");
-
-    for(i=0;i<data.get_cols();i++){
-        mins.set(i,nmin.get_data(i));
-        maxs.set(i,nmax.get_data(i));
-    }
-
     array_1d<double> vector;
-
-    for(i=0;i<data.get_rows();i++){
-         data.set_row(i,mm(i));
-    }
 
     sorted.set_name("kd_tree_constructor_sorted");
     tosort.set_name("kd_tree_constructor_tosort");
@@ -385,6 +404,8 @@ void kd_tree::organize(array_1d<int> &use_in, int u_start,
         /*reset use before calling organize again; this prevents organize
         from eating up memory with unwieldy numbers of copies of use*/
         use.reset();
+
+        //printf("splitting caused %d %d\n",inp,ct-inp-1);
 
         if(inp!=0){
            /*there will be both a left and a right branch; call organize on both*/
@@ -824,6 +845,26 @@ array_1d<int> &neigh, array_1d<double> &dd, int where, int wherefrom){
             neigh_check(v,kk,neigh,dd,tree.get_data(where,3),where);
         }
     }
+}
+
+void kd_tree::brute_nn_srch(const array_1d<double> &pt, int *dex_out, double *dd_out){
+    int i,j,valid;
+    double dd_min,dd;
+    for(i=0;i<get_pts();i++){
+        dd=0.0;
+        valid=1;
+        for(j=0;j<get_dim() && valid==1;j++){
+            dd+=power((pt.get_data(j)-data.get_data(i,j))/(maxs.get_data(j)-mins.get_data(j)),2);
+            if(i>0 && dd>dd_min){
+                valid=0;
+            }
+        }
+        if(valid==1 && (i==0 || dd<dd_min)){
+            dd_min = dd;
+            dex_out[0] = i;
+        }
+    }
+    dd_out[0] = sqrt(dd_min);
 }
 
 void kd_tree::nn_srch(int dex, int kk, array_1d<int> &neigh,

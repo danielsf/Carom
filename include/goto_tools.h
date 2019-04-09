@@ -19,12 +19,20 @@ inline double power(double arg,int raised){
   double ans;
 
   if(raised==0)return 1.0;
-  else{ans=1.0;
-  for(n=0;n<raised;n++){
-    ans=ans*arg;
-  }
+  else{
+      ans=1.0;
+      if(raised>0){
+          for(n=0;n<raised;n++){
+              ans=ans*arg;
+          }
+      }
+      else{
+          for(n=0;n<(-1*raised);n++){
+              ans=ans/arg;
+          }
+      }
 
-  return ans;
+      return ans;
   }
 
 }
