@@ -20,6 +20,9 @@ ARPACK_LIB variables in the Makefile to point to the correct libraries.  You may
 also need to modify FORTRAN_LIB to allow C++ to link to the libraries (which are
 built with Fortran).
 
+As of April 2019, you will also require MINUIT (this is not reflected in the
+arXiv link above; we are still updating things)
+
 ## Running examples
 
 The likelihood functions from the paper are made available in easy to build and
